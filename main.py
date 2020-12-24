@@ -7,18 +7,6 @@ import pandas as pd
 from pandasql import sqldf
 from collections import defaultdict
 
-d1 = {1: 2, 3: 4}
-d2 = {1: 6, 2: 5, 3: 7}
-
-dd = defaultdict(list)
-
-for d in (d1, d2): # you can list as many input dicts as you want here
-    for key, value in d.items():
-        dd[key].append(value)
-
-print(dd)
-
-
 def readGTFSData ():
     # read every line and save in variable
     with open("GTFS_VBB_bereichsscharf/stops.txt", "r", encoding="utf8") as stops:
@@ -299,10 +287,9 @@ def slowGetGTFSdict(stopsList, stopTimesList, tripsList, calendarList, calendar_
     routeID = '17416_900'
     routeName = '100'
     #getFahrtOfroute_short_name(routeName, stopZeit, busFahrt, stopFahrt, routesFahrt)
-    getFahrtOfrouteFahrplan(routeName, stopZeit, busFahrt, stopFahrt, routesFahrt, calendarWeek)
+    getFahrtOfrouteFahrplan(routeName, stopZeit, busFahrt, stopFahrt, routesFahrt, calendarWeek, calendarDates)
 
-
-def getFahrtOfrouteFahrplan(routeName, stopZeit, busFahrt, stopFahrt, routesFahrt, calendarWeek):
+def getFahrtOfrouteFahrplan(routeName, stopZeit, busFahrt, stopFahrt, routesFahrt, calendarWeek, calendarDates):
     last_time = time.time()
 
     #DataFrame for every route
@@ -320,7 +307,10 @@ def getFahrtOfrouteFahrplan(routeName, stopZeit, busFahrt, stopFahrt, routesFahr
     #DataFrame with every service weekly
     dfWeek = pd.DataFrame(calendarWeek).set_index('service_id')
 
-    inputVar = [{'route_id': routeName}]
+    #DataFrame with every service dates
+    dfDates = pd.DataFrame(calendarDates).set_index('service_id', 'date')
+
+    inputVar = [{'route_short_name': routeName}]
     weekDay = [{'Monday': 'Monday'},
                {'Tuesday': 'Tuesday'},
                {'Wednesday': 'Wednesday'},
@@ -329,21 +319,66 @@ def getFahrtOfrouteFahrplan(routeName, stopZeit, busFahrt, stopFahrt, routesFahr
                {'Saturday': 'Saturday'},
                {'Sunday': 'Sunday'}]
 
-    varTest = pd.DataFrame(inputVar).set_index('route_id')
+    varTest = pd.DataFrame(inputVar).set_index('route_short_name')
     weekDaydf = pd.DataFrame(weekDay)
-    cond_join= '''
-                select dfTrips.trip_id, dfTrips.route_id, dfStops.stop_name, dfStopTimes.arrival_time
+
+    cond_weekdays= '''
+                select dfTrips.trip_id, dfTrips.route_id, dfStopTimes.stop_sequence, dfStops.stop_name, dfStopTimes.stop_headsign, dfStopTimes.arrival_time
                 from dfStopTimes 
-                left join dfTrips on dfStopTimes.trip_id = dfTrips.trip_id
-                left join dfWeek on  dfWeek.service_id = dfTrips.service_id
-                left join dfStops on dfStopTimes.stop_id = dfStops.stop_id
-                left join dfRoutes on dfRoutes.route_id  = dfTrips.route_id
+                inner join dfTrips on dfStopTimes.trip_id = dfTrips.trip_id
+                inner join dfStops on dfStopTimes.stop_id = dfStops.stop_id
+                inner join dfRoutes on dfRoutes.route_id  = dfTrips.route_id
+                inner join dfWeek on  dfWeek.service_id = dfTrips.service_id
                 left join varTest
-                left join weekDaydf
-                where dfRoutes.route_short_name = varTest.route_id;
+                where dfRoutes.route_short_name = varTest.route_short_name
+                  and not ( dfWeek.saturday= 1 
+                        OR dfWeek.sunday= 1 
+                      )                
+                and dfTrips.direction_id = 0
+                order by dfTrips.trip_id, dfStopTimes.arrival_time;
                '''
 
-    combo = sqldf(cond_join, locals())
+    cond_Fahrplan= '''
+                select dfStops.stop_name, GROUP_CONCAT(dfStopTimes.arrival_time, ';') as 'stop times mon-fri'
+                from dfStopTimes 
+                inner join dfTrips on dfStopTimes.trip_id = dfTrips.trip_id
+                inner join dfStops on dfStopTimes.stop_id = dfStops.stop_id
+                inner join dfRoutes on dfRoutes.route_id  = dfTrips.route_id
+                inner join dfWeek on  dfWeek.service_id = dfTrips.service_id
+                left join varTest
+                where dfRoutes.route_short_name = varTest.route_short_name
+                  and  ( dfWeek.friday= 1  
+                      )                
+                and dfTrips.direction_id = 0
+                group by dfStopTimes.stop_sequence
+                order by dfTrips.trip_id, dfStopTimes.arrival_time;
+               '''
+
+    cond_exceptions ='''
+                select dfTrips.trip_id, dfTrips.route_id, dfStops.stop_name, dfStopTimes.stop_headsign, dfStopTimes.arrival_time, dfWeek.monday, dfWeek.tuesday, dfWeek.wednesday, dfWeek.thursday, dfWeek.friday, dfWeek.saturday, dfWeek.sunday
+                from dfStopTimes 
+                left join dfTrips on dfStopTimes.trip_id = dfTrips.trip_id
+                left join dfStops on dfStopTimes.stop_id = dfStops.stop_id
+                left join dfRoutes on dfRoutes.route_id  = dfTrips.route_id
+                left join dfWeek on  dfWeek.service_id = dfTrips.service_id
+                left join varTest
+                where dfRoutes.route_short_name = varTest.route_id
+                  and dfTrips.direction_id = 0
+                  and dfWeek.service_id in (select dfDates.service_id
+                                            from dfDates
+                                            where dfDates.exception_type = 1
+                                            group by dfDates.service_id)
+                  and ( dfWeek.monday= 1 
+                        OR dfWeek.tuesday= 1 
+                        OR dfWeek.wednesday= 1 
+                        OR dfWeek.thursday= 1 
+                        OR dfWeek.friday= 1
+                      )
+                order by dfTrips.trip_id;
+               '''
+
+    fahrplan = sqldf(cond_Fahrplan, locals())
+    #fahrplanlike = sqldf(cond_Fahrplan, locals())
     #releae some memory
     dfTrips = None
     dfStopTimes = None
@@ -351,12 +386,10 @@ def getFahrtOfrouteFahrplan(routeName, stopZeit, busFahrt, stopFahrt, routesFahr
     dfRoutes = None
     dfWeek = None
 
-    combo.to_csv(r'pandas.txt', header=True, index='dfTrips.trip_id', sep=' ', mode='w', encoding='utf8')
+    fahrplan.to_csv(r'pandas.txt', header=True, index='', sep=',', mode='w', encoding='utf8')
 
     zeit = time.time() - last_time
     print("time: {} ".format(zeit))
-
-
 
 
 def main():
@@ -589,6 +622,17 @@ def getStopstoTripBINFOR(routeID, stopZeit, busFahrt, stopFahrt):
     print("time: {} ".format(zeit / 60))
 
 """
+d1 = {1: 2, 3: 4}
+d2 = {1: 6, 2: 5, 3: 7}
+
+dd = defaultdict(list)
+
+for d in (d1, d2): # you can list as many input dicts as you want here
+    for key, value in d.items():
+        dd[key].append(value)
+
+print(dd)
+
 # Make your pysqldf object:
 pysqldf = lambda q: sqldf(q, globals())
 
