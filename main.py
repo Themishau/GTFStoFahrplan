@@ -34,6 +34,42 @@ class Main(tk.Frame):
     def close_windows(self):
         self.parent.destroy()
 
+class Model():
+
+    def __init__(self):
+        self.xpoint = 200
+        self.ypoint = 200
+        self.res = None
+
+class Controller():
+    def __init__(self):
+        self.root = tk.frame()
+        self.model = Model()
+        self.view = View(self.root)
+        self.view.sidepanel.plotBut.bind("<Button>", self.my_plot)
+        self.view.sidepanel.clearButton.bind("<Button>", self.clear)
+
+    def run(self):
+        self.root.title("Tkinter MVC example")
+        self.root.deiconify()
+        self.root.mainloop()
+
+    def clear(self, event):
+        self.view.ax0.clear()
+        self.view.fig.canvas.draw()
+
+class View():
+    def __init__(self, master):
+        self.frame = Tk.Frame(master)
+        self.fig = Figure(figsize=(7.5, 4), dpi=80)
+        self.ax0 = self.fig.add_axes(
+            (0.05, .05, .90, .90), facecolor=(.75, .75, .75), frameon=False)
+        self.frame.pack(side=Tk.LEFT, fill=Tk.BOTH, expand=1)
+        self.sidepanel = SidePanel(master)
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.frame)
+        self.canvas.get_tk_widget().pack(side=Tk.TOP, fill=Tk.BOTH, expand=1)
+        self.canvas.draw()
+
 class MainGUI(tk.Frame):
     def __init__(self, parent, *args, **kwargs):
         tk.Frame.__init__(self, parent, *args, **kwargs)
@@ -311,8 +347,8 @@ def main():
 if __name__ == '__main__':
     print("start")
     #main()
-    root = tk.Tk()
-    MainGUI(root).pack(side="top", fill="both", expand=True)
+    gtfsMenu = Controller()
+
     root.mainloop()
 
 # these are some attempts to get the data fast
