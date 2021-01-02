@@ -10,19 +10,19 @@ async def read_gtfs_data ():
 
     # read every line and save in variable
     with open("GTFS_VBB_bereichsscharf/stops.txt", "r", encoding="utf8") as stops:
-        stopsList = stops.readlines()
+        stopsList = stops.readlines()[1:]
     with open("GTFS_VBB_bereichsscharf/stop_times.txt", "r", encoding="utf8") as stopTimes:
-        stopTimesList = stopTimes.readlines()
+        stopTimesList = stopTimes.readlines()[1:]
     with open("GTFS_VBB_bereichsscharf/trips.txt", "r", encoding="utf8") as trips:
-        tripsList = trips.readlines()
+        tripsList = trips.readlines()[1:]
     with open("GTFS_VBB_bereichsscharf/calendar.txt", "r", encoding="utf8") as calendar:
-        calendarList = calendar.readlines()
+        calendarList = calendar.readlines()[1:]
     with open("GTFS_VBB_bereichsscharf/calendar_dates.txt", "r", encoding="utf8") as calendar_dates:
-        calendar_datesList = calendar_dates.readlines()
+        calendar_datesList = calendar_dates.readlines()[1:]
     with open("GTFS_VBB_bereichsscharf/routes.txt", "r", encoding="utf8") as routes:
-        routesList = routes.readlines()
+        routesList = routes.readlines()[1:]
     with open("GTFS_VBB_bereichsscharf/agency.txt", "r", encoding="utf8") as routes:
-        agencyList = routes.readlines()
+        agencyList = routes.readlines()[1:]
 
 
     gtfsData = [stopsList, stopTimesList, tripsList, calendarList, calendar_datesList, routesList, agencyList]
@@ -36,7 +36,211 @@ async def read_gtfs_data ():
     agencyList = None
     return gtfsData
 
+async def get_gtfs_trip(inputgtfsData):
+    print("get_gtfs_trip start")
+    tripdict = {
+        "route_id": [],
+        "service_id": [],
+        "trip_id": [],
+        "trip_headsign": [],
+        "trip_short_name": [],
+        "direction_id": [],
+        "block_id": [],
+        "shape_id": [],
+        "wheelchair_accessible": [],
+        "bikes_allowed": []
+    }
+    for trip in inputgtfsData:
+        trip = trip.replace(", ", " ")
+        trip = trip.replace('"', "")
+        trip = trip.replace('\n', "")
+        data = trip.split(",")
+        tripdict["route_id"].append(data[0])
+        tripdict["service_id"].append(data[1])
+        tripdict["trip_id"].append(data[2])
+        tripdict["trip_headsign"].append(data[3])
+        tripdict["trip_short_name"].append(data[4])
+        tripdict["direction_id"].append(data[5])
+        tripdict["block_id"].append(data[6])
+        tripdict["shape_id"].append(data[7])
+        tripdict["wheelchair_accessible"].append(data[8])
+        tripdict["bikes_allowed"].append(data[9])
+    tripsList = None
+    print(tripdict['route_id'][1])
+    print("get_gtfs_trip loaded")
+    return tripdict
+
 async def get_gtfs_stop(inputgtfsData):
+    print("get_gtfs_stop start")
+    stopsdict = {
+        "stop_id": [],
+        "stop_code": [],
+        "stop_name": [],
+        "stop_desc": [],
+        "stop_lat": [],
+        "stop_lon": [],
+        "location_type": [],
+        "parent_station": [],
+        "wheelchair_accessible": [],
+        "platform_code": [],
+        "zone_id": []
+    }
+    for haltestellen in inputgtfsData:
+        haltestellen = haltestellen.replace(", ", " ")
+        haltestellen = haltestellen.replace('"', "")
+        haltestellen = haltestellen.replace('\n', "")
+        stopData = haltestellen.split(",")
+        stopsdict["stop_id"].append(stopData[0])
+        stopsdict["stop_code"].append(stopData[1])
+        stopsdict["stop_name"].append(stopData[2])
+        stopsdict["stop_desc"].append(stopData[3])
+        stopsdict["stop_lat"].append(stopData[4])
+        stopsdict["stop_lon"].append(stopData[5])
+        stopsdict["location_type"].append(stopData[6])
+        stopsdict["parent_station"].append(stopData[7])
+        stopsdict["wheelchair_accessible"].append(stopData[8])
+        stopsdict["platform_code"].append(stopData[9])
+        stopsdict["zone_id"].append(stopData[10])
+    stopsList = None
+    print("get_gtfs_stop loaded")
+    return stopsdict
+
+async def get_gtfs_stoptime(inputgtfsData):
+    print("get_gtfs_stoptime start")
+    stopTimesdict = {
+        "trip_id": [],
+        "arrival_time": [],
+        "departure_time": [],
+        "stop_id": [],
+        "stop_sequence": [],
+        "pickup_type": [],
+        "drop_off_type": [],
+        "stop_headsign": []
+    }
+    for stopTime in inputgtfsData:
+        stopTime = stopTime.replace(", ", " ")
+        stopTime = stopTime.replace('"', "")
+        stopTime = stopTime.replace('\n', "")
+        stopTimeData = stopTime.split(",")
+        stopTimesdict["trip_id"].append(stopTimeData[0])
+        stopTimesdict["arrival_time"].append(stopTimeData[1])
+        stopTimesdict["departure_time"].append(stopTimeData[2])
+        stopTimesdict["stop_id"].append(stopTimeData[3])
+        stopTimesdict["stop_sequence"].append(stopTimeData[4])
+        stopTimesdict["pickup_type"].append(stopTimeData[5])
+        stopTimesdict["drop_off_type"].append(stopTimeData[6])
+        stopTimesdict["stop_headsign"].append(stopTimeData[7])
+    stopTimesList = None
+    print("get_gtfs_stoptime loaded")
+    return stopTimesdict
+
+async def get_gtfs_calendarWeek(inputgtfsData):
+    print("get_gtfs_calendarWeek start")
+    calendarWeekdict = {
+        "service_id": [],
+        "monday": [],
+        "tuesday": [],
+        "wednesday": [],
+        "thursday": [],
+        "friday": [],
+        "saturday": [],
+        "sunday": [],
+        "start_date": [],
+        "end_date": []
+    }
+    for calendarDate in inputgtfsData:
+        calendarDate = calendarDate.replace(", ", " ")
+        calendarDate = calendarDate.replace('"', "")
+        calendarDate = calendarDate.replace('\n', "")
+        calendarData = calendarDate.split(",")
+        calendarWeekdict["service_id"].append(calendarData[0])
+        calendarWeekdict["monday"].append(calendarData[1])
+        calendarWeekdict["tuesday"].append(calendarData[2])
+        calendarWeekdict["wednesday"].append(calendarData[3])
+        calendarWeekdict["thursday"].append(calendarData[4])
+        calendarWeekdict["friday"].append(calendarData[5])
+        calendarWeekdict["saturday"].append(calendarData[6])
+        calendarWeekdict["sunday"].append(calendarData[7])
+        calendarWeekdict["start_date"].append(calendarData[8])
+        calendarWeekdict["end_date"].append(calendarData[9])
+    calendarList = None
+    print("get_gtfs_calendarWeek loaded")
+    return calendarWeekdict
+
+async def get_gtfs_calendarDates(inputgtfsData):
+    print("get_gtfs_calendarDates start")
+    calendarDatesdict = {
+        "service_id": [],
+        "date": [],
+        "exception_type": [],
+    }
+    for calendarDate in inputgtfsData:
+        calendarDate = calendarDate.replace(", ", " ")
+        calendarDate = calendarDate.replace('"', "")
+        calendarDate = calendarDate.replace('\n', "")
+        calendarDatesData = calendarDate.split(",")
+        calendarDatesdict["service_id"].append(calendarDatesData[0])
+        calendarDatesdict["date"].append(calendarDatesData[1])
+        calendarDatesdict["exception_type"].append(calendarDatesData[2])
+    calendar_datesList = None
+    print("get_gtfs_calendarDates loaded")
+    return calendarDatesdict
+
+async def get_gtfs_routes(inputgtfsData):
+    print("get_gtfs_routes start")
+    routesFahrtdict = {
+        "route_id": [],
+        "agency_id": [],
+        "route_short_name": [],
+        "route_long_name": [],
+        "route_type": [],
+        "route_color": [],
+        "route_text_color": [],
+        "route_desc": []
+    }
+    for routes in inputgtfsData:
+        routes = routes.replace(", ", " ")
+        routes = routes.replace('"', "")
+        routes = routes.replace('\n', "")
+        routesData = routes.split(",")
+        routesFahrtdict["route_id"].append(routesData[0])
+        routesFahrtdict["agency_id"].append(routesData[1])
+        routesFahrtdict["route_short_name"].append(routesData[2])
+        routesFahrtdict["route_long_name"].append(routesData[3])
+        routesFahrtdict["route_type"].append(routesData[4])
+        routesFahrtdict["route_color"].append(routesData[5])
+        routesFahrtdict["route_text_color"].append(routesData[6])
+        routesFahrtdict["route_desc"].append(routesData[7])
+    routesList = None
+    print("get_gtfs_routes loaded")
+    return routesFahrtdict
+
+async def get_gtfs_agencies(inputgtfsData):
+    print("get_gtfs_agencies start")
+    agencyFahrtdict = {
+        "agency_id": [],
+        "agency_name": [],
+        "agency_url": [],
+        "agency_timezone": [],
+        "agency_lang": [],
+        "agency_phone": []
+    }
+    for agency in inputgtfsData:
+        agency = agency.replace(", ", " ")
+        agency = agency.replace('"', "")
+        agency = agency.replace('\n', "")
+        agencyData = agency.split(",")
+        agencyFahrtdict["agency_id"].append(agencyData[0])
+        agencyFahrtdict["agency_name"].append(agencyData[1])
+        agencyFahrtdict["agency_url"].append(agencyData[2])
+        agencyFahrtdict["agency_timezone"].append(agencyData[3])
+        agencyFahrtdict["agency_lang"].append(agencyData[4])
+        agencyFahrtdict["agency_phone"].append(agencyData[5])
+    routesList = None
+    print("get_gtfs_agencies loaded")
+    return agencyFahrtdict
+
+async def get_gtfs_stopb(inputgtfsData):
     print("get_gtfs_stop start")
     stopsdict = []
     for haltestellen in inputgtfsData:
@@ -62,7 +266,7 @@ async def get_gtfs_stop(inputgtfsData):
     print("get_gtfs_stop loaded")
     return stopsdict
 
-async def get_gtfs_stoptime(inputgtfsData):
+async def get_gtfs_stoptimeb(inputgtfsData):
     print("get_gtfs_stoptime start")
     stopTimesdict = []
     for stopTime in inputgtfsData:
@@ -86,7 +290,7 @@ async def get_gtfs_stoptime(inputgtfsData):
     print("get_gtfs_stoptime loaded")
     return stopTimesdict
 
-async def get_gtfs_trip(inputgtfsData):
+async def get_gtfs_tripb(inputgtfsData):
     print("get_gtfs_trip start")
     tripdict = []
     for trip in inputgtfsData:
@@ -111,7 +315,7 @@ async def get_gtfs_trip(inputgtfsData):
     print("get_gtfs_trip loaded")
     return tripdict
 
-async def get_gtfs_calendarWeek(inputgtfsData):
+async def get_gtfs_calendarWeekb(inputgtfsData):
     print("get_gtfs_calendarWeek start")
     calendarWeekdict = []
     for calendarDate in inputgtfsData:
@@ -136,7 +340,7 @@ async def get_gtfs_calendarWeek(inputgtfsData):
     print("get_gtfs_calendarWeek loaded")
     return calendarWeekdict
 
-async def get_gtfs_calendarDates(inputgtfsData):
+async def get_gtfs_calendarDatesb(inputgtfsData):
     print("get_gtfs_calendarDates start")
     calendarDatesdict = []
     for calendarDate in inputgtfsData:
@@ -154,7 +358,7 @@ async def get_gtfs_calendarDates(inputgtfsData):
     print("get_gtfs_calendarDates loaded")
     return calendarDatesdict
 
-async def get_gtfs_routes(inputgtfsData):
+async def get_gtfs_routesb(inputgtfsData):
     print("get_gtfs_routes start")
     routesFahrtdict = []
     for routes in inputgtfsData:
@@ -177,7 +381,7 @@ async def get_gtfs_routes(inputgtfsData):
     print("get_gtfs_routes loaded")
     return routesFahrtdict
 
-async def get_gtfs_agencies(inputgtfsData):
+async def get_gtfs_agenciesb(inputgtfsData):
     print("get_gtfs_agencies start")
     agencyFahrtdict = []
     for agency in inputgtfsData:
@@ -237,6 +441,22 @@ def select_gtfs_routes_from_agancy(agency, routesFahrtdict):
     #print (agency_list.values.tolist())
     return routes_list.values.tolist()
 
+def select_gtfs_services_from_routes(route, tripdict, calendarWeekdict):
+    inputVar = [{'agency_id': route[0]}]
+    varTest = pd.DataFrame(inputVar).set_index('route_id')
+    tripdict = pd.DataFrame(tripdict)
+    cond_services_from_routes = '''
+                select dfRoutes.route_short_name
+                from dfRoutes 
+                left join varTest
+                where varTest.agency_id = dfRoutes.agency_id
+                order by dfRoutes.route_short_name;
+               '''
+    services_list = sqldf(cond_services_from_routes, locals())
+    services_list.values.tolist()
+    #print (agency_list.values.tolist())
+    return services_list.values.tolist()
+
 async def read_gtfs_agencies(agencies_dict):
     df_agency = pd.DataFrame(agencies_dict).set_index('agency_id')
     cond_agencies = '''
@@ -249,34 +469,60 @@ async def read_gtfs_agencies(agencies_dict):
     #print (agency_list.values.tolist())
     return agency_list.values.tolist()
 
-
 # tried to get all data in one variable but then I need to create a new index for every dict again
 # maybe I try to get change it later
-async def get_fahrt_ofroute_fahrplan(routeName, stopsdict, stopTimesdict, tripdict, calendarWeekdict, calendarDatesdict, routesFahrtdict, agencyFahrtdict):
+async def get_fahrt_ofroute_fahrplan(routeName, agencyName, stopsdict, stopTimesdict, tripdict, calendarWeekdict, calendarDatesdict, routesFahrtdict, agencyFahrtdict):
     print("get_fahrt_ofroute_fahrplan start")
     print(routeName)
+    print(agencyName)
     last_time = time.time()
 
     #DataFrame for every route
-    dfRoutes = pd.DataFrame(routesFahrtdict).set_index('route_id')
+    dfRoutes = pd.DataFrame.from_dict(routesFahrtdict)
 
     #DataFrame with every trip
-    dfTrips = pd.DataFrame(tripdict).set_index('trip_id')
+    #dfTrips = pd.DataFrame.from_dict(tripdict, orient='index') #if you want to have every trip as an row
+    dfTrips = pd.DataFrame.from_dict(tripdict)
+    #dfTrips.to_csv(routeName + 'TRIPSRoh.csv', header=True, quotechar='-', index='', sep=';', mode='w', encoding='utf8')
+    #dfTrips['trip_id'] = pd.to_numeric(dfTrips['trip_id'])
+    #print(dfTrips)
+    try:
+        #dfTrips['trip_id'] = pd.to_numeric(dfTrips['trip_id'])
+        dfTrips['trip_id'] = dfTrips['trip_id'].astype(int)
+    except:
+        print("can not convert dfTrips: trip_id into int")
 
     #DataFrame with every stop (time)
-    dfStopTimes = pd.DataFrame(stopTimesdict).set_index(['trip_id', 'stop_id'])
+    #dfStopTimes = pd.DataFrame.from_dict(stopTimesdict).set_index('stop_id', 'trip_id')
+    dfStopTimes = pd.DataFrame.from_dict(stopTimesdict)
+    try:
+        dfStopTimes['stop_sequence'] = dfStopTimes['stop_sequence'].astype(int)
+    except:
+        print("can not convert dfStopTimes: stop_sequence into int")
+    try:
+        dfStopTimes['stop_id'] = dfStopTimes['stop_id'].astype(int)
+    except:
+        print("can not convert dfStopTimes: stop_id into int")
+    try:
+        dfStopTimes['trip_id'] = dfStopTimes['trip_id'].astype(int)
+    except:
+        print("can not convert dfStopTimes: trip_id into int")
 
     #DataFrame with every stop
-    dfStops = pd.DataFrame(stopsdict).set_index('stop_id')
+    dfStops = pd.DataFrame.from_dict(stopsdict)
+    try:
+        dfStops['stop_id'] = dfStops['stop_id'].astype(int)
+    except:
+        print("can not convert dfStops: stop_id into int ")
 
     #DataFrame with every service weekly
-    dfWeek = pd.DataFrame(calendarWeekdict).set_index('service_id')
+    dfWeek = pd.DataFrame.from_dict(calendarWeekdict)
 
     #DataFrame with every service dates
-    dfDates = pd.DataFrame(calendarDatesdict).set_index('service_id', 'date')
+    dfDates = pd.DataFrame.from_dict(calendarDatesdict)
 
     #DataFrame with every agency
-    df_agency = pd.DataFrame(agencyFahrtdict).set_index('agency_id')
+    df_agency = pd.DataFrame.from_dict(agencyFahrtdict)
 
     weekDay = [{'Monday': 'Monday'},
                {'Tuesday': 'Tuesday'},
@@ -287,30 +533,33 @@ async def get_fahrt_ofroute_fahrplan(routeName, stopsdict, stopTimesdict, tripdi
                {'Sunday': 'Sunday'}]
     weekDaydf = pd.DataFrame(weekDay)
 
+    test = [{'direction': '0'},
+               {'direction': '1'},
+               {'direction': '1'},
+               {'direction': '0'},
+               {'direction': '0'},
+               {'direction': '0'},
+               {'direction': '0'}]
+    testdf = pd.DataFrame(test)
+
     # dataframe with the (bus) lines
     inputVar = [{'route_short_name': routeName}]
     varTest = pd.DataFrame(inputVar).set_index('route_short_name')
+    inputVarAgency = [{'agency_id': agencyName}]
+    varTestAgency = pd.DataFrame(inputVarAgency).set_index('agency_id')
 
 
-    cond_weekdays= '''
-                select dfTrips.trip_id, dfTrips.route_id, dfStopTimes.stop_sequence, dfStops.stop_name, dfStopTimes.stop_headsign, dfStopTimes.arrival_time
-                from dfStopTimes 
-                inner join dfTrips on dfStopTimes.trip_id = dfTrips.trip_id
-                inner join dfStops on dfStopTimes.stop_id = dfStops.stop_id
-                inner join dfRoutes on dfRoutes.route_id  = dfTrips.route_id
-                inner join dfWeek on  dfWeek.service_id = dfTrips.service_id
-                left join varTest
-                where dfRoutes.route_short_name = varTest.route_short_name
-                  and not ( dfWeek.saturday= 1 
-                        or dfWeek.sunday= 1 
-                      )                
-                and dfTrips.direction_id = 0
-                order by dfTrips.trip_id, dfStopTimes.arrival_time;
+    #conditions for searching in dfs
+
+    cond_FahrplanT5b= '''
+                select fahrplan.stop_sequence, fahrplan.stop_name, GROUP_CONCAT(coalesce(fahrplan.trip_id,'Keine Zeit'), ';' ) as trips_stop
+                from fahrplan    
+                group by fahrplan.stop_sequence;
                '''
 
     #select dfStops.stop_name, GROUP_CONCAT(dfStopTimes.arrival_time, ';') as 'stop times mon-fri'
-    cond_Fahrplan= '''
-                select dfStops.stop_name, GROUP_CONCAT(Nullif(dfStopTimes.arrival_time,'-'), ';') as 'stop times mon-fri'
+    cond_FahrplanO= '''
+                select dfStops.stop_name, GROUP_CONCAT(Nullif(dfStopTimes.arrival_time,'-'), ';') as 'stop times'
                 from dfStopTimes 
                 inner join dfTrips on dfStopTimes.trip_id = dfTrips.trip_id
                 inner join dfStops on dfStopTimes.stop_id = dfStops.stop_id
@@ -328,40 +577,219 @@ async def get_fahrt_ofroute_fahrplan(routeName, stopsdict, stopTimesdict, tripdi
                 group by dfStopTimes.stop_sequence
                 order by dfTrips.trip_id, dfStopTimes.arrival_time;
                '''
-
+    #GROUP_CONCAT(Nullif(dfStopTimes.arrival_time,'-'), ';')
+    cond_FahrplanT= '''
+                select dfStops.stop_name, dfStopTimes.stop_sequence, GROUP_CONCAT(coalesce(dfTrips.trip_id,''), ';') as 'trip'
+                from dfStopTimes 
+                inner join dfTrips on dfStopTimes.trip_id = dfTrips.trip_id
+                left join dfStops on dfStopTimes.stop_id = dfStops.stop_id
+                inner join dfRoutes on dfRoutes.route_id  = dfTrips.route_id
+                left join dfWeek on  dfWeek.service_id = dfTrips.service_id
+                left join varTest
+                left join varTestAgency
+                where dfRoutes.route_short_name = varTest.route_short_name -- in this case the bus line number
+                  and dfRoutes.agency_id = varTestAgency.agency_id -- in this case the bus line number
+                  and  ( dfWeek.monday=1 
+                     and dfWeek.tuesday=1
+                     and dfWeek.wednesday=1
+                     and dfWeek.thursday=1
+                     and dfWeek.friday=1
+                      )                
+                and dfTrips.direction_id = 0 -- shows the direction of the line 
+                group by dfStopTimes.stop_sequence
+                order by dfTrips.trip_id;
+               '''
+    cond_FahrplanT3= '''
+                select dfStopTimes.stop_sequence, dfStops.stop_name, dfStopTimes.stop_id, dfRoutes.route_id, dfTrips.service_id, dfTrips.direction_id
+                from dfStopTimes 
+                inner join dfTrips on dfStopTimes.trip_id = dfTrips.trip_id
+                inner join dfStops on dfStopTimes.stop_id = dfStops.stop_id
+                inner join dfRoutes on dfRoutes.route_id  = dfTrips.route_id
+                inner join dfWeek on  dfWeek.service_id = dfTrips.service_id
+                left join varTest
+                left join varTestAgency
+                where dfRoutes.route_short_name = varTest.route_short_name -- in this case the bus line number
+                  and dfRoutes.agency_id = varTestAgency.agency_id -- in this case the bus line number
+                  and  ( dfWeek.monday=1 
+                     and dfWeek.tuesday=1
+                     and dfWeek.wednesday=1
+                     and dfWeek.thursday=1
+                     and dfWeek.friday=1
+                      )     
+                and dfTrips.direction_id = 0 -- shows the direction of the line 
+                group by dfStopTimes.stop_sequence
+                order by dfTrips.trip_id, dfStopTimes.arrival_time;
+               '''
     cond_exceptions ='''
-                select dfTrips.trip_id, dfTrips.route_id, dfStops.stop_name, dfStopTimes.stop_headsign, dfStopTimes.arrival_time, dfWeek.monday, dfWeek.tuesday, dfWeek.wednesday, dfWeek.thursday, dfWeek.friday, dfWeek.saturday, dfWeek.sunday
+                    select dfTrips.trip_id, dfTrips.route_id, dfStops.stop_name, dfStopTimes.stop_headsign, dfStopTimes.arrival_time, dfWeek.monday, dfWeek.tuesday, dfWeek.wednesday, dfWeek.thursday, dfWeek.friday, dfWeek.saturday, dfWeek.sunday
+                    from dfStopTimes 
+                    left join dfTrips on dfStopTimes.trip_id = dfTrips.trip_id
+                    left join dfStops on dfStopTimes.stop_id = dfStops.stop_id
+                    left join dfRoutes on dfRoutes.route_id  = dfTrips.route_id
+                    left join dfWeek on  dfWeek.service_id = dfTrips.service_id
+                    left join varTest
+                    where dfRoutes.route_short_name = varTest.route_id
+                      and dfTrips.direction_id = 0
+                      and dfWeek.service_id in (select dfDates.service_id
+                                                from dfDates
+                                                where dfDates.exception_type = 1
+                                                group by dfDates.service_id)
+                      and ( dfWeek.monday= 1 
+                            OR dfWeek.tuesday= 1 
+                            OR dfWeek.wednesday= 1 
+                            OR dfWeek.thursday= 1 
+                            OR dfWeek.friday= 1
+                          )
+                    order by dfTrips.trip_id;
+                   '''
+    #select dfStops.stop_name, GROUP_CONCAT(coalesce(dfTrips.trip_id,'Keine Zeit'), ';') as 'trip'
+    #group by dfStopTimes.stop_sequence
+    cond_FahrplanT2= '''
+                select dfStopTimes.stop_sequence, dfStops.stop_name, GROUP_CONCAT(coalesce(dfTrips.trip_id,'Keine Zeit'), ';' ) as 'trips stop times at stop'
+                from dfStopTimes 
+                inner join dfTrips on dfStopTimes.trip_id = dfTrips.trip_id
+                inner join dfStops on dfStopTimes.stop_id = dfStops.stop_id
+                inner join dfRoutes on dfRoutes.route_id  = dfTrips.route_id
+                inner join dfWeek on  dfWeek.service_id = dfTrips.service_id
+                left join varTest
+                left join varTestAgency
+                where dfRoutes.route_short_name = varTest.route_short_name -- in this case the bus line number
+                  and dfRoutes.agency_id = varTestAgency.agency_id -- in this case the bus line number
+                  and  ( dfWeek.monday=1 
+                     and dfWeek.tuesday=1
+                     and dfWeek.wednesday=1
+                     and dfWeek.thursday=1
+                     and dfWeek.friday=1
+                      )     
+                and dfTrips.direction_id = 0 -- shows the direction of the line 
+                group by dfStopTimes.stop_sequence
+                order by dfStopTimes.stop_sequence, dfTrips.trip_id; -- need arrival_time for the right order
+               '''
+    #and (dfTrips.trip_id = 146290009 or dfTrips.trip_id = 146290363 or dfTrips.trip_id = 146290015 or dfTrips.trip_id = 146290013)
+    #select dfStopTimes.stop_sequence, dfStops.stop_name, GROUP_CONCAT (dfStopTimes.trip_id ORDER BY dfTrips.trip_id SEPARATOR ';') as 'trips stop times at stop'
+    cond_FahrplanT4BACKUP= '''
+                select dfTrips.trip_id, dfStops.stop_name, dfStopTimes.stop_sequence, dfStopTimes.arrival_time, dfTrips.service_id, dfStops.stop_id
                 from dfStopTimes 
                 left join dfTrips on dfStopTimes.trip_id = dfTrips.trip_id
                 left join dfStops on dfStopTimes.stop_id = dfStops.stop_id
                 left join dfRoutes on dfRoutes.route_id  = dfTrips.route_id
                 left join dfWeek on  dfWeek.service_id = dfTrips.service_id
                 left join varTest
-                where dfRoutes.route_short_name = varTest.route_id
-                  and dfTrips.direction_id = 0
-                  and dfWeek.service_id in (select dfDates.service_id
-                                            from dfDates
-                                            where dfDates.exception_type = 1
-                                            group by dfDates.service_id)
-                  and ( dfWeek.monday= 1 
-                        OR dfWeek.tuesday= 1 
-                        OR dfWeek.wednesday= 1 
-                        OR dfWeek.thursday= 1 
-                        OR dfWeek.friday= 1
-                      )
+                left join varTestAgency
+                where dfRoutes.route_short_name = varTest.route_short_name -- in this case the bus line number
+                  and (dfTrips.trip_id = 146290363 or dfTrips.trip_id = 146290009)
+                  and dfRoutes.agency_id = varTestAgency.agency_id -- in this case the bus line number
+                  and  ( dfWeek.monday=1 
+                     and dfWeek.tuesday=1
+                     and dfWeek.wednesday=1
+                     and dfWeek.thursday=1
+                     and dfWeek.friday=1
+                      )     
+                and dfTrips.direction_id = 0 -- shows the direction of the line 
                 order by dfTrips.trip_id;
                '''
 
-    fahrplan = sqldf(cond_Fahrplan, locals())
-    #fahrplanlike = sqldf(cond_Fahrplan, locals())
+    cond_FahrplanT4= '''
+                select dfTrips.trip_id, dfStops.stop_name, dfStopTimes.stop_sequence, dfStopTimes.arrival_time, dfTrips.service_id, dfStops.stop_id
+                from dfStopTimes 
+                left join dfTrips on dfStopTimes.trip_id = dfTrips.trip_id
+                left join dfStops on dfStopTimes.stop_id = dfStops.stop_id
+                left join dfRoutes on dfRoutes.route_id  = dfTrips.route_id
+                left join dfWeek on  dfWeek.service_id = dfTrips.service_id
+                left join varTest
+                left join varTestAgency
+                where dfRoutes.route_short_name = varTest.route_short_name -- in this case the bus line number
+                  and (dfTrips.trip_id = 146290363 or dfTrips.trip_id = 146290009)
+                  and dfRoutes.agency_id = varTestAgency.agency_id -- in this case the bus line number
+                  and  ( dfWeek.monday=1 
+                     and dfWeek.tuesday=1
+                     and dfWeek.wednesday=1
+                     and dfWeek.thursday=1
+                     and dfWeek.friday=1
+                      )     
+                and dfTrips.direction_id = 0 -- shows the direction of the line 
+                order by dfTrips.trip_id;
+               '''
+
+#                select fahrplan.stop_sequence, fahrplan.stop_name, GROUP_CONCAT(IFNULL(fahrplan.trip_id,'Keine Zeit'), ';') as trips_stops_time
+    cond_FahrplanT5= '''
+                select fahrplan.stop_sequence, fahrplan.stop_name, GROUP_CONCAT(coalesce(fahrplan.trip_id,'Keine Zeit'), ';' ) as trips_stops_time
+                from fahrplan    
+                group by fahrplan.stop_sequence,fahrplan.stop_name;
+               '''
+    cond_FahrplanT6= '''
+                select fahrplan.stop_sequence, fahrplan.stop_name, fahrplan.trips_stops_time
+                from fahrplan    
+                order by fahrplan.stop_sequence;
+               '''
+
+    cond_FahrplanTransponded1= '''
+                select fahrplan_T.stop_sequence, fahrplan_T.stop_name, GROUP_CONCAT(coalesce(fahrplan_T.trip_id,'Keine Zeit'), ';' ) as trips_stops_time
+                from fahrplan_T    
+                group by fahrplan_T.stop_sequence,fahrplan_T.stop_name;
+               '''
+
+    print("dataframes created")
+    fahrplan = sqldf(cond_FahrplanT4, locals())
+    fahrplan.to_csv(routeName + 'TRIPSRoh.csv', header=True, quotechar=' ', index='', sep=';', mode='w', encoding='utf8')
+    #fahrplan_T = fahrplan.groupby('stop_sequence')['trip_id'].apply(list).reset_index(name='Trips_stops')
+    #fahrplan_T = fahrplan.unstack(level=0, fill_value=0)
+    fahrplan_T = fahrplan.pivot(index=['stop_sequence','stop_name'], columns='trip_id', values='arrival_time')
+    fahrplan_T.to_csv(routeName + 'TESTING_PANDAS.csv', header=True, quotechar=' ', index='stop_name', sep=';', mode='w', encoding='utf8')
+    #print(fahrplan_T.dtypes)
+    #fahrplan_T = sqldf(cond_FahrplanTransponded1, locals())
+    #fahrplan_T.to_csv(routeName + 'T_TRIPRoh.csv', header=True, quotechar=' ', index='', sep=';', mode='w', encoding='utf8')
+    fahrplan = sqldf(cond_FahrplanT5, locals())
+    fahrplan.to_csv(routeName + 'TRIPGROUPRoh.csv', header=True, quotechar=' ', index='', sep=';', mode='w', encoding='utf8')
+
+
+    print (fahrplan)
+    fahrplan = sqldf(cond_FahrplanT6, locals())
+
+    fahrplan.set_index('stop_sequence')
+    fahrplan.to_csv(routeName + 'TESTING.csv', header=True, quotechar=' ', index='', sep=';', mode='w', encoding='utf8')
+
+    #fahrplan = None
+
+    cond_FahrplanTimes= '''
+                select fahrplan.stop_sequence, fahrplan.stop_name, dfStopTimes.arrival_time
+                from fahrplan 
+                left join dfStopTimes on dfStopTimes.stop_id = fahrplan.stop_id
+                left join dfRoutes on dfRoutes.route_id  = fahrplan.route_id
+                left join dfWeek on  dfWeek.service_id = fahrplan.service_id
+                left join varTest
+                where dfRoutes.route_short_name = varTest.route_short_name -- in this case the bus line number
+                  and  ( dfWeek.monday=1 
+                     and dfWeek.tuesday=1
+                     and dfWeek.wednesday=1
+                     and dfWeek.thursday=1
+                     and dfWeek.friday=1
+                      )     
+                and fahrplan.direction_id = 0; -- shows the direction of the line
+               '''
+
+    cond_FahrplanTimesGroup= '''
+                select fahrplan.stop_sequence, dfTrips.route_id, fahrplan.stop_name, GROUP_CONCAT(coalesce(dfTrips.trip_id,'Keine Zeit'), ';') as 'trips stop times at stop'
+                from dfStopTimes 
+                left join dfTrips on fahrplan.route_id = dfTrips.route_id
+                inner join fahrplan on dfStopTimes.stop_id = fahrplan.stop_id
+                    where dfStopTimes in (select dfStopTimes.trip_id 
+                                    from dfStopTimes 
+                                    inner join fahrplan on fahrplan.stop_id = dfStopTimes."stop_id"
+                                 )
+                group by dfStopTimes.stop_sequence
+                order by dfStopTimes.stop_sequence, dfStopTimes.arrival_time; -- shows the direction of the line
+               '''
+
+    fahrplan_with_stop_times = sqldf(cond_FahrplanT2, locals())
+    fahrplan_with_stop_times.to_csv(routeName + '.csv', header=True, quotechar=' ', index='', sep=';', mode='w', encoding='utf8')
+
     #releae some memory
     dfTrips = None
     dfStopTimes = None
     dfStops = None
     dfRoutes = None
     dfWeek = None
-
-    fahrplan.to_csv(routeName + '.csv', header=True, quotechar='-', index='', sep=';', mode='w', encoding='utf8')
 
     zeit = time.time() - last_time
     print("time: {} ".format(zeit))

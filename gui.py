@@ -6,6 +6,12 @@ from analyzeGTFS import *
 import asyncio
 import threading
 
+log = {
+        "Message": [],
+        "Error_Message": []
+      }
+
+
 class Navbar(tk.Frame):
     def __init__(self, root):
         self.navbarFrame = tk.Frame(root)
@@ -100,6 +106,7 @@ class Model():
         self.GTFSData = None
 
     def getRoutesOfAgency(self, agency):
+        self.selectedAgency = agency
         self.routesList = select_gtfs_routes_from_agancy(agency, self.routesFahrtdict)
         print("routes of agency loaded")
 
@@ -107,7 +114,7 @@ class Model():
         if (self.dataLoadedAndAvailable()):
             if (self.selectedRoute != None):
                 routeName = [self.selectedRoute]
-                tasks = [get_fahrt_ofroute_fahrplan(name, self.stopsdict, self.stopTimesdict, self.tripdict, self.calendarWeekdict, self.calendarDatesdict, self.routesFahrtdict, self.agencyFahrtdict) for name in routeName]
+                tasks = [get_fahrt_ofroute_fahrplan(name, self.selectedAgency[0], self.stopsdict, self.stopTimesdict, self.tripdict, self.calendarWeekdict, self.calendarDatesdict, self.routesFahrtdict, self.agencyFahrtdict) for name in routeName]
                 completed, pending = await asyncio.wait(tasks)
         else:
             messagebox.showerror( 'Fehler', 'Noch keine Daten')
@@ -279,5 +286,9 @@ class View():
         self.toolbar = Toolbar(parent)
         self.navbar = Navbar(parent)
 
+def fillLog(message, error_message):
+    log["log_id"].append(message)
+    log["log_id"].append(error_message)
 
-
+def writelog():
+    print('writelog')
