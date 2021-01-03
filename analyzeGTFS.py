@@ -465,7 +465,6 @@ def select_gtfs_services_from_routes(route, tripdict, calendarWeekdict):
                '''
     services_list = sqldf(cond_services_from_routes, locals())
     services_list.values.tolist()
-    print(services_list.values.tolist())
     return services_list.values.tolist()
 
 async def read_gtfs_agencies(agencies_dict):
@@ -587,7 +586,7 @@ async def get_fahrt_ofroute_fahrplan(routeName, agencyName, serviceName, stopsdi
                   and dfRoutes.agency_id = varTestAgency.agency_id -- in this case the bus line number
                   and dfTrips.service_id = varTestService.service_id
                   and dfTrips.direction_id = 0 -- shows the direction of the line 
-                order by dfTrips.trip_id;
+                order by dfStopTimes.stop_sequence, dfStopTimes.arrival_time, dfTrips.trip_id;
                '''
 
     print("dataframes created")
@@ -607,4 +606,5 @@ async def get_fahrt_ofroute_fahrplan(routeName, agencyName, serviceName, stopsdi
 
     zeit = time.time() - last_time
     print("time: {} ".format(zeit))
+    return zeit
 
