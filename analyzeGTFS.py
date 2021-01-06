@@ -4,25 +4,27 @@ import pandas as pd
 from pandasql import sqldf
 import asyncio
 import threading
+import zipfile
+import io
 
 
-async def read_gtfs_data ():
+async def read_gtfs_data (path):
 
-    # read every line and save in variable
-    with open("GTFS_VBB_bereichsscharf/stops.txt", "r", encoding="utf8") as stops:
-        stopsList = stops.readlines()[1:]
-    with open("GTFS_VBB_bereichsscharf/stop_times.txt", "r", encoding="utf8") as stopTimes:
-        stopTimesList = stopTimes.readlines()[1:]
-    with open("GTFS_VBB_bereichsscharf/trips.txt", "r", encoding="utf8") as trips:
-        tripsList = trips.readlines()[1:]
-    with open("GTFS_VBB_bereichsscharf/calendar.txt", "r", encoding="utf8") as calendar:
-        calendarList = calendar.readlines()[1:]
-    with open("GTFS_VBB_bereichsscharf/calendar_dates.txt", "r", encoding="utf8") as calendar_dates:
-        calendar_datesList = calendar_dates.readlines()[1:]
-    with open("GTFS_VBB_bereichsscharf/routes.txt", "r", encoding="utf8") as routes:
-        routesList = routes.readlines()[1:]
-    with open("GTFS_VBB_bereichsscharf/agency.txt", "r", encoding="utf8") as routes:
-        agencyList = routes.readlines()[1:]
+    with zipfile.ZipFile(path) as zf:
+        with io.TextIOWrapper(zf.open("stops.txt"), encoding="utf-8") as stops:
+            stopsList = stops.readlines()[1:]
+        with io.TextIOWrapper(zf.open("stop_times.txt"), encoding="utf-8") as stop_times:
+            stopTimesList = stop_times.readlines()[1:]
+        with io.TextIOWrapper(zf.open("trips.txt"), encoding="utf-8") as trips:
+            tripsList = trips.readlines()[1:]
+        with io.TextIOWrapper(zf.open("calendar.txt"), encoding="utf-8") as calendar:
+            calendarList = calendar.readlines()[1:]
+        with io.TextIOWrapper(zf.open("calendar_dates.txt"), encoding="utf-8") as calendar_dates:
+            calendar_datesList = calendar_dates.readlines()[1:]
+        with io.TextIOWrapper(zf.open("routes.txt"), encoding="utf-8") as routes:
+            routesList = routes.readlines()[1:]
+        with io.TextIOWrapper(zf.open("agency.txt"), encoding="utf-8") as agency:
+            agencyList = agency.readlines()[1:]
 
 
     gtfsData = [stopsList, stopTimesList, tripsList, calendarList, calendar_datesList, routesList, agencyList]

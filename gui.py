@@ -6,6 +6,7 @@ from analyzeGTFS import *
 import asyncio
 import threading
 
+
 log = {
         "Message": [],
         "Error_Message": []
@@ -46,10 +47,19 @@ class SidePanel(tk.Frame):
 
 class Main(tk.Frame):
     def __init__(self, root):
+
         self.mainFrame = tk.Frame(root)
-        self.namelbl = tk.Label(self.mainFrame, text="Agency and Routes")
-        self.namelbl.pack(side="top")
         self.mainFrame.pack(side=tk.TOP)
+
+        #textfield
+        self.namelbl = tk.Label(self.mainFrame, text="Enter path to GTFS-ZIP-File and click on load GTFS")
+        self.namelbl.pack(side=tk.TOP)
+
+        #entry
+        self.path = tk.Entry(self.mainFrame, width=80)
+        self.path.insert(0,'E:/onedrive/1_Daten_Dokumente_Backup/1_Laptop_Backup_PC/1000_Programmieren und Wirtschaftsinformatik/Praxisarbeit/GTFStoFahrplan/GTFS.zip')
+
+        self.path.pack(side=tk.TOP)
 
         #lists of agency
         self.agency_List = tk.Listbox(self.mainFrame, width=40)
@@ -72,8 +82,13 @@ class Main(tk.Frame):
         self.routes_List_scrollbar.config(command=self.routes_List.yview)
         self.routes_List.pack(side=tk.RIGHT)
 
+
+
+
+
 class Model():
     def __init__(self):
+        self.path = None
         self.GTFSData = None
         self.stopsdict = None
         self.stopTimesdict = None
@@ -114,7 +129,10 @@ class Model():
 
     #reads the files
     async def readGFTS(self):
-        self.GTFSData = await read_gtfs_data()
+        if (self.path == None):
+            messagebox.showerror( 'Error', 'no path!')
+            return
+        self.GTFSData = await read_gtfs_data(self.path)
 
     #gets the data out of the files
     async def getGTFS(self):
@@ -155,7 +173,7 @@ class Controller():
         self.root = tk.Tk()
 
         #init window size
-        self.root.geometry("750x300+400+400")
+        self.root.geometry("750x300+200+200")
 
         #counts running threads
         self.runningAsync = 0
@@ -312,6 +330,10 @@ class Controller():
         self.root.mainloop()
 
     def loadGTFSDATA(self, event):
+        try:
+            self.model.path = self.view.main.path.get()
+        except:
+            messagebox.showerror( 'Error', 'no path input')
         button = "loadGTFS"
         self.do_tasks(button)
 
@@ -345,9 +367,14 @@ class View():
         self.frame.pack(fill=tk.BOTH)
         self.main = Main(parent)
         self.sidePanel = SidePanel(parent)
+
         self.statusbar = Statusbar(parent)
         self.toolbar = Toolbar(parent)
         self.navbar = Navbar(parent)
+
+
+
+
 
 def fillLog(message, error_message):
     log["log_id"].append(message)
