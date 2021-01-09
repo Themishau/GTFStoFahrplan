@@ -6,25 +6,15 @@ from analyzeGTFS import *
 import asyncio
 import threading
 
-
 log = {
         "Message": [],
         "Error_Message": []
       }
 
-
 class Navbar(tk.Frame):
     def __init__(self, root):
         self.navbarFrame = tk.Frame(root)
         self.navbarFrame.pack(side=tk.LEFT, fill=tk.BOTH)
-
-class Toolbar(tk.Frame):
-    def __init__(self, root):
-        self.toolbarFrame = tk.Frame(root)
-        self.menubar = tk.Menu(self.toolbarFrame)
-        self.filemenu = tk.Menu(self.menubar)
-        self.menubar.add_cascade(label="File", menu=self.filemenu)
-        self.toolbarFrame.pack(side=tk.TOP, fill=tk.BOTH)
 
 class Statusbar(tk.Frame):
     def __init__(self, root):
@@ -34,22 +24,19 @@ class Statusbar(tk.Frame):
 class SidePanel(tk.Frame):
     def __init__(self, root):
         self.sidepanelFrame = tk.Frame(root)
-        self.sidepanelFrame.pack(side=tk.RIGHT, fill=tk.BOTH)
+        self.sidepanelFrame.pack(side=tk.BOTTOM, fill=tk.BOTH)
+        self.log = tk.Listbox(self.sidepanelFrame, width=40)
+        self.log_scroll = tk.Scrollbar(self.sidepanelFrame, orient="vertical")
+        self.log.config(yscrollcommand=self.log_scroll.set)
+        self.log_scroll.config(command=self.log.yview)
+        self.log.pack(side=tk.BOTTOM)
 
-        self.quitButton = tk.Button(self.sidepanelFrame, text="Quit")
-        self.quitButton.pack(side="bottom", fill=tk.BOTH)
-
-        self.LoadGTFSButton = tk.Button(self.sidepanelFrame, text="Load/Check GTFS")
-        self.LoadGTFSButton.pack(side="bottom", fill=tk.BOTH)
-
-        self.sidepanelStartButton = tk.Button(self.sidepanelFrame, text="Start")
-        self.sidepanelStartButton.pack(side="bottom", fill=tk.BOTH)
 
 class Main(tk.Frame):
     def __init__(self, root):
 
         self.mainFrame = tk.Frame(root)
-        self.mainFrame.pack(side=tk.TOP)
+        self.mainFrame.pack(side=tk.TOP, fill=tk.BOTH)
 
         #textfield
         self.namelbl = tk.Label(self.mainFrame, text="Enter path to GTFS-ZIP-File and click on load GTFS")
@@ -58,32 +45,39 @@ class Main(tk.Frame):
         #entry
         self.path = tk.Entry(self.mainFrame, width=80)
         self.path.insert(0,'E:/onedrive/1_Daten_Dokumente_Backup/1_Laptop_Backup_PC/1000_Programmieren und Wirtschaftsinformatik/Praxisarbeit/GTFStoFahrplan/GTFS.zip')
-
         self.path.pack(side=tk.TOP)
 
-        #lists of agency
-        self.agency_List = tk.Listbox(self.mainFrame, width=40)
-        self.agency_List_scrollbar = tk.Scrollbar(self.agency_List, orient="vertical")
-        self.agency_List.config(yscrollcommand=self.agency_List_scrollbar.set)
-        self.agency_List_scrollbar.config(command=self.agency_List.yview)
-        self.agency_List.pack(side=tk.LEFT)
+        #button quit
+        self.quitButton = tk.Button(self.mainFrame, text="Quit", width=30, borderwidth=5)
+        self.quitButton.pack(side=tk.BOTTOM )
+        #button start
+        self.mainStartButton = tk.Button(self.mainFrame, text="Start", width=30, borderwidth=5)
+        self.mainStartButton.pack(side=tk.BOTTOM)
 
         #lists of services
         self.services_List = tk.Listbox(self.mainFrame, width=55)
         self.services_List_scrollbar = tk.Scrollbar(self.services_List, orient="vertical")
         self.services_List.config(yscrollcommand=self.services_List_scrollbar.set)
         self.services_List_scrollbar.config(command=self.services_List.yview)
-        self.services_List.pack(side=tk.RIGHT)
+        self.services_List.pack(side=tk.BOTTOM, fill=tk.X)
 
         #lists of routes
         self.routes_List = tk.Listbox(self.mainFrame, width=20)
         self.routes_List_scrollbar = tk.Scrollbar(self.routes_List, orient="vertical")
         self.routes_List.config(yscrollcommand=self.routes_List_scrollbar.set)
         self.routes_List_scrollbar.config(command=self.routes_List.yview)
-        self.routes_List.pack(side=tk.RIGHT)
+        self.routes_List.pack(side=tk.BOTTOM, fill=tk.X)
 
+        #lists of agency
+        self.agency_List = tk.Listbox(self.mainFrame, width=40)
+        self.agency_List_scrollbar = tk.Scrollbar(self.agency_List, orient="vertical")
+        self.agency_List.config(yscrollcommand=self.agency_List_scrollbar.set)
+        self.agency_List_scrollbar.config(command=self.agency_List.yview)
+        self.agency_List.pack(side=tk.BOTTOM, fill=tk.X)
 
-
+        #button load gtfs
+        self.LoadGTFSButton = tk.Button(self.mainFrame, text="Load/Check GTFS", width=30, borderwidth=5)
+        self.LoadGTFSButton.pack(side=tk.TOP)
 
 
 class Model():
@@ -173,8 +167,8 @@ class Controller():
         self.root = tk.Tk()
 
         #init window size
-        self.root.geometry("750x300+200+200")
-
+        self.root.geometry("500x650+200+200")
+        self.root.resizable(0, 0)
         #counts running threads
         self.runningAsync = 0
 
@@ -186,15 +180,9 @@ class Controller():
         self.view.main.routes_List.bind('<<ListboxSelect>>', self.selection_route)
         self.view.main.agency_List.bind('<<ListboxSelect>>', self.selection_agency)
 
-        self.view.sidePanel.sidepanelStartButton.bind("<Button>", self.start)
-        self.view.sidePanel.LoadGTFSButton.bind("<Button>", self.loadGTFSDATA)
-        self.view.sidePanel.quitButton.bind("<Button>", self.closeprogram)
-
-        #bind tool bar buttons and functions
-        self.view.toolbar.filemenu.add_command(label="Start", command=self.analyze_gtfs)
-        self.view.toolbar.filemenu.add_command(label="Exit", command=self.closeprogrammenu)
-        self.root.config(menu=self.view.toolbar.menubar)
-
+        self.view.main.mainStartButton.bind("<Button>", self.start)
+        self.view.main.LoadGTFSButton.bind("<Button>", self.loadGTFSDATA)
+        self.view.main.quitButton.bind("<Button>", self.closeprogram)
 
     def selection_route(self, event):
         try:
@@ -346,10 +334,6 @@ class Controller():
         button = "loadFahrplan"
         self.do_tasks(button)
 
-    def open_file(self):
-        name = tk.filedialog()
-        print (name)
-
     def about(self):
         print ("This is a simple example of a menu")
 
@@ -359,22 +343,16 @@ class Controller():
     def closeprogrammenu(self):
         self.root.destroy()
 
-
 class View():
     def __init__(self, parent):
         self.frame = tk.Frame(parent)
         #self.frame.grid(sticky="NSEW")
         self.frame.pack(fill=tk.BOTH)
-        self.main = Main(parent)
         self.sidePanel = SidePanel(parent)
+        self.main = Main(parent)
 
         self.statusbar = Statusbar(parent)
-        self.toolbar = Toolbar(parent)
         self.navbar = Navbar(parent)
-
-
-
-
 
 def fillLog(message, error_message):
     log["log_id"].append(message)
