@@ -6,26 +6,28 @@ import asyncio
 import threading
 import zipfile
 import io
-
+from tkinter import messagebox
 
 async def read_gtfs_data (path):
 
-    with zipfile.ZipFile(path) as zf:
-        with io.TextIOWrapper(zf.open("stops.txt"), encoding="utf-8") as stops:
-            stopsList = stops.readlines()[1:]
-        with io.TextIOWrapper(zf.open("stop_times.txt"), encoding="utf-8") as stop_times:
-            stopTimesList = stop_times.readlines()[1:]
-        with io.TextIOWrapper(zf.open("trips.txt"), encoding="utf-8") as trips:
-            tripsList = trips.readlines()[1:]
-        with io.TextIOWrapper(zf.open("calendar.txt"), encoding="utf-8") as calendar:
-            calendarList = calendar.readlines()[1:]
-        with io.TextIOWrapper(zf.open("calendar_dates.txt"), encoding="utf-8") as calendar_dates:
-            calendar_datesList = calendar_dates.readlines()[1:]
-        with io.TextIOWrapper(zf.open("routes.txt"), encoding="utf-8") as routes:
-            routesList = routes.readlines()[1:]
-        with io.TextIOWrapper(zf.open("agency.txt"), encoding="utf-8") as agency:
-            agencyList = agency.readlines()[1:]
-
+    try:
+        with zipfile.ZipFile(path) as zf:
+            with io.TextIOWrapper(zf.open("stops.txt"), encoding="utf-8") as stops:
+                stopsList = stops.readlines()[1:]
+            with io.TextIOWrapper(zf.open("stop_times.txt"), encoding="utf-8") as stop_times:
+                stopTimesList = stop_times.readlines()[1:]
+            with io.TextIOWrapper(zf.open("trips.txt"), encoding="utf-8") as trips:
+                tripsList = trips.readlines()[1:]
+            with io.TextIOWrapper(zf.open("calendar.txt"), encoding="utf-8") as calendar:
+                calendarList = calendar.readlines()[1:]
+            with io.TextIOWrapper(zf.open("calendar_dates.txt"), encoding="utf-8") as calendar_dates:
+                calendar_datesList = calendar_dates.readlines()[1:]
+            with io.TextIOWrapper(zf.open("routes.txt"), encoding="utf-8") as routes:
+                routesList = routes.readlines()[1:]
+            with io.TextIOWrapper(zf.open("agency.txt"), encoding="utf-8") as agency:
+                agencyList = agency.readlines()[1:]
+    except:
+        return -1
 
     gtfsData = [stopsList, stopTimesList, tripsList, calendarList, calendar_datesList, routesList, agencyList]
 
@@ -242,169 +244,6 @@ async def get_gtfs_agencies(inputgtfsData):
     print("get_gtfs_agencies loaded")
     return agencyFahrtdict
 
-async def get_gtfs_stopb(inputgtfsData):
-    print("get_gtfs_stop start")
-    stopsdict = []
-    for haltestellen in inputgtfsData:
-        haltestellen = haltestellen.replace(", ", " ")
-        haltestellen = haltestellen.replace('"', "")
-        haltestellen = haltestellen.replace('\n', "")
-        stopData = haltestellen.split(",")
-        dataDict = {
-            "stop_id": stopData[0],
-            "stop_code": stopData[1],
-            "stop_name": stopData[2],
-            "stop_desc": stopData[3],
-            "stop_lat": stopData[4],
-            "stop_lon": stopData[5],
-            "location_type": stopData[6],
-            "parent_station": stopData[7],
-            "wheelchair_accessible": stopData[8],
-            "platform_code": stopData[9],
-            "zone_id": stopData[10]
-        }
-        stopsdict.append(dataDict)
-    stopsList = None
-    print("get_gtfs_stop loaded")
-    return stopsdict
-
-async def get_gtfs_stoptimeb(inputgtfsData):
-    print("get_gtfs_stoptime start")
-    stopTimesdict = []
-    for stopTime in inputgtfsData:
-        stopTime = stopTime.replace(", ", " ")
-        stopTime = stopTime.replace('"', "")
-        stopTime = stopTime.replace('\n', "")
-        stopTimeData = stopTime.split(",")
-        dataDict = {
-            "trip_id": stopTimeData[0],
-            "arrival_time": stopTimeData[1],
-            "departure_time": stopTimeData[2],
-            "stop_id": stopTimeData[3],
-            "stop_sequence": stopTimeData[4],
-            "pickup_type": stopTimeData[5],
-            "drop_off_type": stopTimeData[6],
-            "stop_headsign": stopTimeData[7],
-
-        }
-        stopTimesdict.append(dataDict)
-    stopTimesList = None
-    print("get_gtfs_stoptime loaded")
-    return stopTimesdict
-
-async def get_gtfs_tripb(inputgtfsData):
-    print("get_gtfs_trip start")
-    tripdict = []
-    for trip in inputgtfsData:
-        trip = trip.replace(", ", " ")
-        trip = trip.replace('"', "")
-        trip = trip.replace('\n', "")
-        data = trip.split(",")
-        dataDict = {
-            "route_id": data[0],
-            "service_id": data[1],
-            "trip_id": data[2],
-            "trip_headsign": data[3],
-            "trip_short_name": data[4],
-            "direction_id": data[5],
-            "block_id": data[6],
-            "shape_id": data[7],
-            "wheelchair_accessible": data[8],
-            "bikes_allowed": data[9]
-        }
-        tripdict.append(dataDict)
-    tripsList = None
-    print("get_gtfs_trip loaded")
-    return tripdict
-
-async def get_gtfs_calendarWeekb(inputgtfsData):
-    print("get_gtfs_calendarWeek start")
-    calendarWeekdict = []
-    for calendarDate in inputgtfsData:
-        calendarDate = calendarDate.replace(", ", " ")
-        calendarDate = calendarDate.replace('"', "")
-        calendarDate = calendarDate.replace('\n', "")
-        calendarData = calendarDate.split(",")
-        dataDict = {
-            "service_id": calendarData[0],
-            "monday": calendarData[1],
-            "tuesday": calendarData[2],
-            "wednesday": calendarData[3],
-            "thursday": calendarData[4],
-            "friday": calendarData[5],
-            "saturday": calendarData[6],
-            "sunday": calendarData[7],
-            "start_date": calendarData[8],
-            "end_date": calendarData[9]
-        }
-        calendarWeekdict.append(dataDict)
-    calendarList = None
-    print("get_gtfs_calendarWeek loaded")
-    return calendarWeekdict
-
-async def get_gtfs_calendarDatesb(inputgtfsData):
-    print("get_gtfs_calendarDates start")
-    calendarDatesdict = []
-    for calendarDate in inputgtfsData:
-        calendarDate = calendarDate.replace(", ", " ")
-        calendarDate = calendarDate.replace('"', "")
-        calendarDate = calendarDate.replace('\n', "")
-        calendarDatesData = calendarDate.split(",")
-        dataDict = {
-            "service_id": calendarDatesData[0],
-            "date": calendarDatesData[1],
-            "exception_type": calendarDatesData[2],
-        }
-        calendarDatesdict.append(dataDict)
-    calendar_datesList = None
-    print("get_gtfs_calendarDates loaded")
-    return calendarDatesdict
-
-async def get_gtfs_routesb(inputgtfsData):
-    print("get_gtfs_routes start")
-    routesFahrtdict = []
-    for routes in inputgtfsData:
-        routes = routes.replace(", ", " ")
-        routes = routes.replace('"', "")
-        routes = routes.replace('\n', "")
-        routesData = routes.split(",")
-        dataDict = {
-            "route_id": routesData[0],
-            "agency_id": routesData[1],
-            "route_short_name": routesData[2],
-            "route_long_name": routesData[3],
-            "route_type": routesData[4],
-            "route_color": routesData[5],
-            "route_text_color": routesData[6],
-            "route_desc": routesData[7]
-        }
-        routesFahrtdict.append(dataDict)
-    routesList = None
-    print("get_gtfs_routes loaded")
-    return routesFahrtdict
-
-async def get_gtfs_agenciesb(inputgtfsData):
-    print("get_gtfs_agencies start")
-    agencyFahrtdict = []
-    for agency in inputgtfsData:
-        agency = agency.replace(", ", " ")
-        agency = agency.replace('"', "")
-        agency = agency.replace('\n', "")
-        agencyData = agency.split(",")
-        dataDict = {
-            "agency_id": agencyData[0],
-            "agency_name": agencyData[1],
-            "agency_url": agencyData[2],
-            "agency_timezone": agencyData[3],
-            "agency_lang": agencyData[4],
-            "agency_phone": agencyData[5],
-
-        }
-        agencyFahrtdict.append(dataDict)
-    routesList = None
-    print("get_gtfs_agencies loaded")
-    return agencyFahrtdict
-
 async def get_gtfs(inputgtfsData):
     """ Creating and starting 10 tasks.
     tasks = get_gtfs_stop(inputgtfsData[0]),\
@@ -504,7 +343,6 @@ async def get_fahrt_ofroute_fahrplan(routeName, agencyName, serviceName, stopsdi
         print("can not convert dfTrips: trip_id into int")
 
     #DataFrame with every stop (time)
-    #dfStopTimes = pd.DataFrame.from_dict(stopTimesdict).set_index('stop_id', 'trip_id')
     dfStopTimes = pd.DataFrame.from_dict(stopTimesdict)
     try:
         dfStopTimes['stop_sequence'] = dfStopTimes['stop_sequence'].astype(int)
@@ -552,7 +390,6 @@ async def get_fahrt_ofroute_fahrplan(routeName, agencyName, serviceName, stopsdi
     inputVarService = [{'service_id': serviceName}]
     varTestService = pd.DataFrame(inputVarService).set_index('service_id')
 
-
     #conditions for searching in dfs
     cond_FahrplanWeekDays= '''
                 select dfTrips.trip_id, dfStops.stop_name, dfStopTimes.stop_sequence, dfStopTimes.arrival_time, dfTrips.service_id, dfStops.stop_id
@@ -591,7 +428,6 @@ async def get_fahrt_ofroute_fahrplan(routeName, agencyName, serviceName, stopsdi
                 order by dfStopTimes.stop_sequence, dfStopTimes.arrival_time, dfTrips.trip_id;
                '''
 
-    print("dataframes created")
     fahrplan = sqldf(cond_Fahrplan, locals())
     fahrplan.to_csv(routeName + 'TRIPSRoh.csv', header=True, quotechar=' ', index='', sep=';', mode='w', encoding='utf8')
     #fahrplan_pivot = fahrplan.groupby('stop_sequence')['trip_id'].apply(list).reset_index(name='Trips_stops')

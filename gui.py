@@ -14,71 +14,83 @@ log = {
 class Navbar(tk.Frame):
     def __init__(self, root):
         self.navbarFrame = tk.Frame(root)
-        self.navbarFrame.pack(side=tk.LEFT, fill=tk.BOTH)
+        #self.navbarFrame.pack(side=tk.LEFT, fill=tk.BOTH)
 
 class Statusbar(tk.Frame):
     def __init__(self, root):
         self.statusbarFrame = tk.Frame(root)
-        self.statusbarFrame.pack(side=tk.BOTTOM, fill=tk.BOTH)
+        #self.statusbarFrame.grid(row = 0, column = 0, sticky = tk.W, pady = 2)
 
 class SidePanel(tk.Frame):
     def __init__(self, root):
         self.sidepanelFrame = tk.Frame(root)
-        self.sidepanelFrame.pack(side=tk.BOTTOM, fill=tk.BOTH)
-        self.log = tk.Listbox(self.sidepanelFrame, width=40)
+        self.sidepanelFrame.grid(sticky="NSEW")
+        self.log = tk.Listbox(self.sidepanelFrame, width=50)
         self.log_scroll = tk.Scrollbar(self.sidepanelFrame, orient="vertical")
         self.log.config(yscrollcommand=self.log_scroll.set)
         self.log_scroll.config(command=self.log.yview)
-        self.log.pack(side=tk.BOTTOM)
+        self.log.grid(row = 0, column = 0, sticky = tk.N, pady = 0, columnspan = 4)
+
+
 
 
 class Main(tk.Frame):
     def __init__(self, root):
 
         self.mainFrame = tk.Frame(root)
-        self.mainFrame.pack(side=tk.TOP, fill=tk.BOTH)
+        self.mainFrame.grid(sticky="NSEW")
 
         #textfield
         self.namelbl = tk.Label(self.mainFrame, text="Enter path to GTFS-ZIP-File and click on load GTFS")
-        self.namelbl.pack(side=tk.TOP)
+        self.namelbl.grid(row = 0, column = 0, sticky = tk.N, pady = 2, columnspan = 4)
 
         #entry
         self.path = tk.Entry(self.mainFrame, width=80)
         self.path.insert(0,'E:/onedrive/1_Daten_Dokumente_Backup/1_Laptop_Backup_PC/1000_Programmieren und Wirtschaftsinformatik/Praxisarbeit/GTFStoFahrplan/GTFS.zip')
-        self.path.pack(side=tk.TOP)
+        self.path.grid(row = 1, column = 0, sticky = tk.N, pady = 2, columnspan = 4)
 
         #button quit
-        self.quitButton = tk.Button(self.mainFrame, text="Quit", width=30, borderwidth=5)
-        self.quitButton.pack(side=tk.BOTTOM )
+        self.quitButton = tk.Button(self.mainFrame, text="Quit", width=30, borderwidth=5, bg='#FBD975')
+        self.quitButton.grid(row = 5, column = 2, sticky = tk.N, pady = 0)
         #button start
-        self.mainStartButton = tk.Button(self.mainFrame, text="Start", width=30, borderwidth=5)
-        self.mainStartButton.pack(side=tk.BOTTOM)
+        self.mainStartButton = tk.Button(self.mainFrame, text="Start", width=30, borderwidth=5, bg='#FBD975')
+        self.mainStartButton.grid(row = 5, column = 1, sticky = tk.N, pady = 0)
+        #button load gtfs
+        self.LoadGTFSButton = tk.Button(self.mainFrame, text="Load/Check GTFS", width=30, borderwidth=5, bg='#FBD975')
+        self.LoadGTFSButton.grid(row = 5, column = 0, sticky = tk.N, pady = 0)
 
         #lists of services
-        self.services_List = tk.Listbox(self.mainFrame, width=55)
+        self.services_List = tk.Listbox(self.mainFrame, width=100)
         self.services_List_scrollbar = tk.Scrollbar(self.services_List, orient="vertical")
         self.services_List.config(yscrollcommand=self.services_List_scrollbar.set)
         self.services_List_scrollbar.config(command=self.services_List.yview)
-        self.services_List.pack(side=tk.BOTTOM, fill=tk.X)
+        self.services_List.grid(row = 4, column = 0, sticky = tk.N, pady = 4, columnspan = 4)
 
         #lists of routes
-        self.routes_List = tk.Listbox(self.mainFrame, width=20)
+        self.routes_List = tk.Listbox(self.mainFrame, width=100)
         self.routes_List_scrollbar = tk.Scrollbar(self.routes_List, orient="vertical")
         self.routes_List.config(yscrollcommand=self.routes_List_scrollbar.set)
         self.routes_List_scrollbar.config(command=self.routes_List.yview)
-        self.routes_List.pack(side=tk.BOTTOM, fill=tk.X)
+        self.routes_List.grid(row = 3, column = 0, sticky = tk.N, pady = 4, columnspan = 4)
 
         #lists of agency
-        self.agency_List = tk.Listbox(self.mainFrame, width=40)
+        self.agency_List = tk.Listbox(self.mainFrame, width=100)
         self.agency_List_scrollbar = tk.Scrollbar(self.agency_List, orient="vertical")
         self.agency_List.config(yscrollcommand=self.agency_List_scrollbar.set)
         self.agency_List_scrollbar.config(command=self.agency_List.yview)
-        self.agency_List.pack(side=tk.BOTTOM, fill=tk.X)
+        self.agency_List.grid(row = 2, column = 0, sticky = tk.N, pady = 4, columnspan = 4)
 
-        #button load gtfs
-        self.LoadGTFSButton = tk.Button(self.mainFrame, text="Load/Check GTFS", width=30, borderwidth=5)
-        self.LoadGTFSButton.pack(side=tk.TOP)
 
+
+class View():
+    def __init__(self, parent):
+        self.frame = tk.Frame(parent)
+        #self.frame.grid(sticky="NSEW")
+        #self.frame.pack(fill=tk.BOTH)
+        self.main = Main(parent)
+        self.sidePanel = SidePanel(parent)
+        self.statusbar = Statusbar(parent)
+        self.navbar = Navbar(parent)
 
 class Model():
     def __init__(self):
@@ -103,13 +115,13 @@ class Model():
 
     def dataLoadedAndAvailable(self):
         if (self.stopsdict == None
-         or self.stopTimesdict == None
-         or self.tripdict == None
-         or self.calendarWeekdict == None
-         or self.calendarDatesdict == None
-         or self.routesFahrtdict == None
-         or self.selectedService == None
-         or self.selectedRoute == None):
+                or self.stopTimesdict == None
+                or self.tripdict == None
+                or self.calendarWeekdict == None
+                or self.calendarDatesdict == None
+                or self.routesFahrtdict == None
+                or self.selectedService == None
+                or self.selectedRoute == None):
             return False
         else:
             return True
@@ -117,9 +129,13 @@ class Model():
     #import the data into the data framework
     async def import_GTFS(self):
         await self.readGFTS()
+
+        if (self.GTFSData == -1):
+            messagebox.showerror( 'Error in read_gtfs_data', 'wrong path!')
+            return -1
+
         await self.getGTFS()
         self.agenciesList = await read_gtfs_agencies(self.agencyFahrtdict)
-        print("GTFS imported")
 
     #reads the files
     async def readGFTS(self):
@@ -155,7 +171,7 @@ class Model():
             completed, pending = await asyncio.wait(tasks)
             results = [task.result() for task in completed]
             print ("time: {} ".format(results[0]))
-            print()
+            messagebox.showinfo( 'create fahrplan:', 'Done!')
         else:
             messagebox.showerror( 'Error in Create Fahrplan', 'Missing Data!')
             return
@@ -167,7 +183,7 @@ class Controller():
         self.root = tk.Tk()
 
         #init window size
-        self.root.geometry("500x650+200+200")
+        self.root.geometry("675x760+300+200")
         self.root.resizable(0, 0)
         #counts running threads
         self.runningAsync = 0
@@ -221,7 +237,11 @@ class Controller():
         self.view.main.agency_List.bind('<<ListboxSelect>>', self.selection_agency)
         #self.view.main.agency_List.unbind_all(self)
 
+    def writeGUILog(self, text):
+        self.view.sidePanel.log.insert("end", text)
+
     def update_services_List(self):
+        self.writeGUILog("updating services list...")
         if (self.view.main.services_List != None):
             self.view.main.services_List.delete(0,'end')
         for services in self.model.servicesList:
@@ -235,24 +255,27 @@ class Controller():
             stringWeekdays = stringWeekdays + ('Sunday, ' if services[7] == '1' else '')
             self.view.main.services_List.insert("end", str(services[0]) + ', ' + stringWeekdays)
             #self.view.main.agency_List.grid(row=0, column=0, columnspan=1)
-        print("services list updated")
+        self.writeGUILog("service list updated")
 
     def update_routes_List(self):
+        self.writeGUILog("updating routes list...")
         if (self.view.main.routes_List != None):
             self.view.main.routes_List.delete(0,'end')
         for routes in self.model.routesList:
             self.view.main.routes_List.insert("end", routes[0])
             #self.view.main.agency_List.grid(row=0, column=0, columnspan=1)
-        print("routes list updated")
+        self.writeGUILog("routes list updated")
 
     def update_agency_List(self):
+        self.writeGUILog("updating agencies list...")
         for agency in self.model.agenciesList:
             #printAgency = agency[0] + ", " + agency[1]
             self.view.main.agency_List.insert("end", agency[1])
             #self.view.main.agency_List.grid(row=0, column=0, columnspan=1)
-        print("agency list updated")
+        self.writeGUILog("agencies list updated")
 
     def async_loadGTFS(self):
+        self.writeGUILog("loading GTFS data...")
         #clear list
         if (self.view.main.agency_List != None):
             self.view.main.agency_List.delete(0,'end')
@@ -270,6 +293,7 @@ class Controller():
         loop.close()
 
         self.runningAsync = self.runningAsync - 1
+        self.writeGUILog("GTFS data loaded")
 
     def service_route_selected(self):
         try:
@@ -302,7 +326,6 @@ class Controller():
         else:
             messagebox.showerror( 'Error', 'no route/service selected')
 
-
     def do_tasks(self, button):
         """ Function/Button starting the asyncio part. """
         if (button == "loadGTFS"):
@@ -325,8 +348,8 @@ class Controller():
         button = "loadGTFS"
         self.do_tasks(button)
 
-
     def start(self, event):
+        self.writeGUILog("start: create fahrplan...")
         button = "loadFahrplan"
         self.do_tasks(button)
 
@@ -342,17 +365,6 @@ class Controller():
 
     def closeprogrammenu(self):
         self.root.destroy()
-
-class View():
-    def __init__(self, parent):
-        self.frame = tk.Frame(parent)
-        #self.frame.grid(sticky="NSEW")
-        self.frame.pack(fill=tk.BOTH)
-        self.sidePanel = SidePanel(parent)
-        self.main = Main(parent)
-
-        self.statusbar = Statusbar(parent)
-        self.navbar = Navbar(parent)
 
 def fillLog(message, error_message):
     log["log_id"].append(message)
