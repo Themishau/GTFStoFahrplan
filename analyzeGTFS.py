@@ -329,8 +329,15 @@ async def get_fahrt_ofroute_fahrplan(routeName, agencyName, serviceName, stopsdi
     print(serviceName)
     last_time = time.time()
 
+    header_for_export_data = {'Agency': [agencyName],
+                              'Route': [routeName],
+                              'Service Number': [serviceName],
+                              'Start': [''],
+                              'Stop': ['']
+                             }
+    dfheader_for_export_data = pd.DataFrame.from_dict(header_for_export_data)
     #DataFrame for every route
-    dfRoutes = pd.DataFrame.from_dict(routesFahrtdict)
+    dfRoutes = pd.DataFrame.from_dict(routesFahrtdict).set_index('route_id')
 
     #DataFrame with every trip
     #dfTrips = pd.DataFrame.from_dict(tripdict, orient='index') #if you want to have every trip as an row
@@ -344,6 +351,11 @@ async def get_fahrt_ofroute_fahrplan(routeName, agencyName, serviceName, stopsdi
 
     #DataFrame with every stop (time)
     dfStopTimes = pd.DataFrame.from_dict(stopTimesdict)
+
+    #todo: set arrival time to date
+    dfStopTimes = dfStopTimes['arrival_time'].apply(pd.to_timedelta, unit='s')
+    #dfStopTimes = dfStopTimes.apply(dfStopTimes['arrival_time'].to_timedelta, unit='s')
+
     try:
         dfStopTimes['stop_sequence'] = dfStopTimes['stop_sequence'].astype(int)
     except:
@@ -354,24 +366,33 @@ async def get_fahrt_ofroute_fahrplan(routeName, agencyName, serviceName, stopsdi
         print("can not convert dfStopTimes: stop_id into int")
     try:
         dfStopTimes['trip_id'] = dfStopTimes['trip_id'].astype(int)
+
     except:
         print("can not convert dfStopTimes: trip_id into int")
 
     #DataFrame with every stop
-    dfStops = pd.DataFrame.from_dict(stopsdict)
+    dfStops = pd.DataFrame.from_dict(stopsdict).set_index('stop_id')
     try:
         dfStops['stop_id'] = dfStops['stop_id'].astype(int)
     except:
         print("can not convert dfStops: stop_id into int ")
 
+    #try to set some more indeces
+    try:
+        dfTrips = dfTrips.set_index('trip_id')
+        dfStopTimes = dfStopTimes.set_index(['trip_id', 'stop_id'])
+        dfStops = dfStops.set_index('stop_id')
+    except:
+        print("can not set index: stop_id into int ")
+
     #DataFrame with every service weekly
-    dfWeek = pd.DataFrame.from_dict(calendarWeekdict)
+    dfWeek = pd.DataFrame.from_dict(calendarWeekdict).set_index('service_id')
 
     #DataFrame with every service dates
-    dfDates = pd.DataFrame.from_dict(calendarDatesdict)
+    dfDates = pd.DataFrame.from_dict(calendarDatesdict).set_index('service_id')
 
     #DataFrame with every agency
-    df_agency = pd.DataFrame.from_dict(agencyFahrtdict)
+    df_agency = pd.DataFrame.from_dict(agencyFahrtdict).set_index('agency_id')
 
     weekDay = [{'Monday': 'Monday'},
                {'Tuesday': 'Tuesday'},
@@ -389,6 +410,7 @@ async def get_fahrt_ofroute_fahrplan(routeName, agencyName, serviceName, stopsdi
     varTestAgency = pd.DataFrame(inputVarAgency).set_index('agency_id')
     inputVarService = [{'service_id': serviceName}]
     varTestService = pd.DataFrame(inputVarService).set_index('service_id')
+
 
     #conditions for searching in dfs
     cond_FahrplanWeekDays= '''
@@ -412,8 +434,19 @@ async def get_fahrt_ofroute_fahrplan(routeName, agencyName, serviceName, stopsdi
                 order by dfTrips.trip_id;
                '''
 
+    #todo: für jede woche in calendar_dates.txt eine liste machen!
     cond_Fahrplan= '''
-                select dfTrips.trip_id, dfStops.stop_name, dfStopTimes.stop_sequence, dfStopTimes.arrival_time, dfTrips.service_id, dfStops.stop_id
+                select 
+                        (select st_dfStopTimes.arrival_time 
+                                from dfStopTimes st_dfStopTimes
+                                where st_dfStopTimes.stop_sequence = 0
+                                  and dfStopTimes.trip_id = st_dfStopTimes.trip_id) as start_time, 
+                        dfTrips.trip_id,
+                        dfStops.stop_name,
+                        dfStopTimes.stop_sequence, 
+                        dfStopTimes.arrival_time, 
+                        dfTrips.service_id, 
+                        dfStops.stop_id         
                 from dfStopTimes 
                 left join dfTrips on dfStopTimes.trip_id = dfTrips.trip_id
                 left join dfStops on dfStopTimes.stop_id = dfStops.stop_id
@@ -425,15 +458,18 @@ async def get_fahrt_ofroute_fahrplan(routeName, agencyName, serviceName, stopsdi
                   and dfRoutes.agency_id = varTestAgency.agency_id -- in this case the bus line number
                   and dfTrips.service_id = varTestService.service_id
                   and dfTrips.direction_id = 0 -- shows the direction of the line 
-                order by dfStopTimes.stop_sequence, dfStopTimes.arrival_time, dfTrips.trip_id;
+                order by dfStopTimes.stop_sequence, dfStopTimes.arrival_time;
                '''
 
     fahrplan = sqldf(cond_Fahrplan, locals())
     fahrplan.to_csv(routeName + 'TRIPSRoh.csv', header=True, quotechar=' ', index='', sep=';', mode='w', encoding='utf8')
-    #fahrplan_pivot = fahrplan.groupby('stop_sequence')['trip_id'].apply(list).reset_index(name='Trips_stops')
-    #fahrplan_pivot = fahrplan.unstack(level=0, fill_value=0)
-    fahrplan_pivot = fahrplan.pivot(index=['stop_sequence','stop_name'], columns='trip_id', values='arrival_time')
-    fahrplan_pivot.to_csv(routeName + 'pivot_table.csv', header=True, quotechar=' ', index='stop_name', sep=';', mode='w', encoding='utf8')
+
+    # creating a pivot table
+    fahrplan_pivot = fahrplan.pivot(index=['stop_sequence','stop_name'], columns=['start_time', 'trip_id'], values='arrival_time')
+    #fahrplan_pivot = fahrplan.pivot_table(index=['stop_sequence','stop_name'], columns='trip_id', values='arrival_time')
+    fahrplan_pivot = fahrplan_pivot.sort_index(axis=0)
+    #fahrplan_pivot.unstuck('arrival_time')
+    #fahrplan_pivot.reindex(fahrplan_pivot['trip_id'], axis=1)
 
     #releae some memory
     dfTrips = None
@@ -444,5 +480,10 @@ async def get_fahrt_ofroute_fahrplan(routeName, agencyName, serviceName, stopsdi
 
     zeit = time.time() - last_time
     print("time: {} ".format(zeit))
-    return zeit
+    return zeit, dfheader_for_export_data, fahrplan_pivot
+
+def outputFahrplan(routeName, dfheader_for_export_data, fahrplan_pivot):
+    # save as csv
+    dfheader_for_export_data.to_csv(routeName + 'pivot_table.csv', header=True, quotechar=' ', sep=';', mode='w', encoding='utf8')
+    fahrplan_pivot.to_csv(routeName + 'pivot_table.csv', header=True, quotechar=' ', index='stop_name', sep=';', mode='a', encoding='utf8')
 
