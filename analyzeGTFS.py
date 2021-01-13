@@ -7,6 +7,16 @@ import threading
 import zipfile
 import io
 from tkinter import messagebox
+import re
+
+# the is the one way to add a 0 to the time hh:mm:ss, if 0 is missing like in 6:44:33
+def time_in_string(time):
+    pattern = re.findall('^\d{1}:\d{2}:\d{2}$', time)
+
+    if (pattern):
+        return '0' + time
+    else:
+        return time
 
 async def read_gtfs_data (path):
 
@@ -349,12 +359,19 @@ async def get_fahrt_ofroute_fahrplan(routeName, agencyName, serviceName, stopsdi
     except:
         print("can not convert dfTrips: trip_id into int")
 
+
+
+    #dfStopTimes.to_datetime(dfStopTimes['arrival_time'], format='%H:%M:%S').dt.strftime('%H:%M:%S')
+    #dfStopTimes['arrival_time'] = pd.to_datetime(dfStopTimes['arrival_time'], format='%H:%M:%S')
+    #dfStopTimes['arrival_time'] = (pd.to_datetime(dfStopTimes['arrival_time'].str[0:1:2], format='%H:%M:%S').dt.tz_localize('Europe/Berlin').dt.tz_convert('UTC'))
+
     #DataFrame with every stop (time)
     dfStopTimes = pd.DataFrame.from_dict(stopTimesdict)
-
-    #todo: set arrival time to date
-    dfStopTimes = dfStopTimes['arrival_time'].apply(pd.to_timedelta, unit='s')
-    #dfStopTimes = dfStopTimes.apply(dfStopTimes['arrival_time'].to_timedelta, unit='s')
+    try:
+        dfStopTimes['arrival_time'] = dfStopTimes['arrival_time'].apply(lambda x: time_in_string(x))
+        dfStopTimes['arrival_time'] = dfStopTimes['arrival_time'].apply(str)
+    except:
+        print ("can not convert dfStopTimes: arrival_time into string and change time")
 
     try:
         dfStopTimes['stop_sequence'] = dfStopTimes['stop_sequence'].astype(int)
@@ -403,6 +420,11 @@ async def get_fahrt_ofroute_fahrplan(routeName, agencyName, serviceName, stopsdi
                {'Sunday': 'Sunday'}]
     weekDaydf = pd.DataFrame(weekDay)
 
+    dummy_direction = 0
+    direction = [{'direction_id': dummy_direction}
+
+                ]
+    dfdirection = d.DataFrame(direction)
     # dataframe with the (bus) lines
     inputVar = [{'route_short_name': routeName}]
     varTest = pd.DataFrame(inputVar).set_index('route_short_name')
@@ -434,7 +456,7 @@ async def get_fahrt_ofroute_fahrplan(routeName, agencyName, serviceName, stopsdi
                 order by dfTrips.trip_id;
                '''
 
-    #todo: für jede woche in calendar_dates.txt eine liste machen!
+
     cond_Fahrplan= '''
                 select 
                         (select st_dfStopTimes.arrival_time 
@@ -460,16 +482,47 @@ async def get_fahrt_ofroute_fahrplan(routeName, agencyName, serviceName, stopsdi
                   and dfTrips.direction_id = 0 -- shows the direction of the line 
                 order by dfStopTimes.stop_sequence, dfStopTimes.arrival_time;
                '''
+    #todo: für jede woche in calendar_dates.txt eine liste machen!
+    cond_Fahrplan_calendar_dates= '''
+                select  dfDates.date,
+                        (select st_dfStopTimes.arrival_time 
+                                from dfStopTimes st_dfStopTimes
+                                where st_dfStopTimes.stop_sequence = 0
+                                  and dfStopTimes.trip_id = st_dfStopTimes.trip_id) as start_time, 
+                        dfTrips.trip_id,
+                        dfStops.stop_name,
+                        dfStopTimes.stop_sequence, 
+                        dfStopTimes.arrival_time, 
+                        dfTrips.service_id, 
+                        dfStops.stop_id         
+                from dfStopTimes 
+                left join dfTrips on dfStopTimes.trip_id = dfTrips.trip_id
+                left join dfStops on dfStopTimes.stop_id = dfStops.stop_id
+                left join dfRoutes on dfRoutes.route_id  = dfTrips.route_id
+                left join dfDates on dfDates.service_id = dfTrips.service_id
+                left join varTest
+                left join varTestAgency
+                left join varTestService
+                where dfRoutes.route_short_name = varTest.route_short_name -- in this case the bus line number
+                  and dfRoutes.agency_id = varTestAgency.agency_id -- in this case the bus line number
+                  and dfTrips.service_id = varTestService.service_id
+                  and dfDates.service_id = varTestService.service_id
+                  and dfTrips.direction_id = 0 -- shows the direction of the line 
+                order by dfStopTimes.stop_sequence, dfStopTimes.arrival_time;
+               '''
 
     fahrplan = sqldf(cond_Fahrplan, locals())
-    fahrplan.to_csv(routeName + 'TRIPSRoh.csv', header=True, quotechar=' ', index='', sep=';', mode='w', encoding='utf8')
+    fahrplan_calendar_weeks = sqldf(cond_Fahrplan_calendar_dates, locals())
+
 
     # creating a pivot table
     fahrplan_pivot = fahrplan.pivot(index=['stop_sequence','stop_name'], columns=['start_time', 'trip_id'], values='arrival_time')
-    #fahrplan_pivot = fahrplan.pivot_table(index=['stop_sequence','stop_name'], columns='trip_id', values='arrival_time')
     fahrplan_pivot = fahrplan_pivot.sort_index(axis=0)
-    #fahrplan_pivot.unstuck('arrival_time')
-    #fahrplan_pivot.reindex(fahrplan_pivot['trip_id'], axis=1)
+
+    fahrplan_calendar_weeks_pivot = fahrplan_calendar_weeks.pivot(index=['stop_sequence','stop_name'], columns=['start_time', 'trip_id', 'date'], values='arrival_time')
+    fahrplan_calendar_weeks_pivot = fahrplan_calendar_weeks.sort_index(axis=0)
+
+    fahrplan_calendar_weeks_pivot.to_csv(routeName + 'WITHWEEKS.csv', header=True, quotechar=' ', index='', sep=';', mode='w', encoding='utf8')
 
     #releae some memory
     dfTrips = None
