@@ -2,6 +2,7 @@
 import tkinter as tk
 from tkinter import filedialog
 from tkinter import messagebox
+import itertools
 from analyzeGTFS import *
 import asyncio
 import threading
@@ -49,7 +50,7 @@ class Main(tk.Frame):
 
         #entry
         self.output_path = tk.Entry(self.mainFrame, width=80)
-        self.output_path.insert(0,'E:/onedrive/1_Daten_Dokumente_Backup/1_Laptop_Backup_PC/1000_Programmieren und Wirtschaftsinformatik/Praxisarbeit/GTFStoFahrplan')
+        self.output_path.insert(0,'E:/onedrive/1_Daten_Dokumente_Backup/1_Laptop_Backup_PC/1000_Programmieren und Wirtschaftsinformatik/Praxisarbeit/GTFStoFahrplan/CSV/')
         self.output_path.grid(row = 3, column = 0, sticky = tk.N, pady = 2, columnspan = 4)
 
         #button quit
@@ -69,6 +70,10 @@ class Main(tk.Frame):
         self.services_List_scrollbar.config(command=self.services_List.yview)
         self.services_List.grid(row = 6, column = 0, sticky = tk.N, pady = 4, columnspan = 4)
 
+        #state button date pr weekday
+        self.toogle_btn = tk.Button(text="Date", width=12)
+        self.toogle_btn.grid(row = 6, column = 0, sticky = tk.N, pady = 4, columnspan = 4)
+
         #lists of routes
         self.routes_List = tk.Listbox(self.mainFrame, width=100)
         self.routes_List_scrollbar = tk.Scrollbar(self.routes_List, orient="vertical")
@@ -82,6 +87,8 @@ class Main(tk.Frame):
         self.agency_List.config(yscrollcommand=self.agency_List_scrollbar.set)
         self.agency_List_scrollbar.config(command=self.agency_List.yview)
         self.agency_List.grid(row = 4, column = 0, sticky = tk.N, pady = 4, columnspan = 4)
+
+
 
 class View():
     def __init__(self, parent):
@@ -98,7 +105,8 @@ class Model():
 
         self.input_path = None
         self.output_path = None
-
+        self.options = ['Date','Weekday']
+        self.selected_option = 0
         self.time = None
 
         self.GTFSData = None
@@ -119,6 +127,12 @@ class Model():
         self.selectedRoute = None
         self.selectedService = None
 
+    def info(self, message, title="ShowInfo"):
+        root = tk.Tk()
+        root.overrideredirect(1)
+        root.withdraw()
+        messagebox.showinfo(title, message)
+        root.destroy()
 
     def dataLoadedAndAvailable(self):
         if (self.stopsdict == None
@@ -153,7 +167,13 @@ class Model():
 
     #gets the data out of the files
     async def getGTFS(self):
-        self.stopsdict, self.stopTimesdict, self.tripdict, self.calendarWeekdict, self.calendarDatesdict, self.routesFahrtdict, self.agencyFahrtdict = await get_gtfs(self.GTFSData)
+        self.stopsdict,\
+        self.stopTimesdict,\
+        self.tripdict,\
+        self.calendarWeekdict,\
+        self.calendarDatesdict,\
+        self.routesFahrtdict,\
+        self.agencyFahrtdict = await get_gtfs(self.GTFSData)
         #clear some variables not needed anymore
         self.GTFSData = None
 
@@ -174,14 +194,28 @@ class Model():
         if (self.dataLoadedAndAvailable() and self.selectedRoute != None and self.selectedService != None):
             selectedService = self.selectedService.split(",")
             routeName = [self.selectedRoute]
-            tasks = [get_fahrt_ofroute_fahrplan(name[0], self.selectedAgency[0],  selectedService[0], self.stopsdict, self.stopTimesdict, self.tripdict, self.calendarWeekdict, self.calendarDatesdict, self.routesFahrtdict, self.agencyFahrtdict) for name in routeName]
+            tasks = [get_fahrt_ofroute_fahrplan(name[0],
+                                                self.selectedAgency[0],
+                                                selectedService[0], #we need to split it
+                                                self.stopsdict,
+                                                self.stopTimesdict,
+                                                self.tripdict,
+                                                self.calendarWeekdict,
+                                                self.calendarDatesdict,
+                                                self.routesFahrtdict,
+                                                self.agencyFahrtdict,
+                                                self.output_path) for name in routeName]
+
             completed, pending = await asyncio.wait(tasks)
             results = [task.result() for task in completed]
+
             self.time = "time: {} ".format(results[0][0])
-            outputFahrplan(routeName[0][0], results[0][1], results[0][2])
+
+            outputFahrplan(routeName[0][0], results[0][1], results[0][2], self.output_path)
+
             messagebox.showinfo( 'create fahrplan:', 'Done!')
         else:
-            messagebox.showerror( 'Error in Create Fahrplan', 'Missing Data!')
+            messagebox.showerror( 'Error in Create Fahrplan', 'Missing data! Check input data and output path!')
             return
 
 
@@ -208,9 +242,45 @@ class Controller():
 
         #bind events to buttons
         self.view.main.mainStartButton.bind("<Button>", self.start)
-        self.view.main.LoadGTFSButton.bind("<Button>", self.load_gtfsdata)
+        self.view.main.LoadGTFSButton.bind("<Button>", self.load_gtfsdata_event)
         self.view.main.quitButton.bind("<Button>", self.close_program)
 
+        self.view.main.toogle_btn.bind("<Button>", self.select_option)
+
+    def hide_instance_attribute(self, instanceAttribute):
+        print (instanceAttribute)
+        instanceAttribute.grid_remove()
+
+    def show_instance_attribute(self, instanceAttribute):
+        print()
+
+    def toggle(self, option):
+        if (option == 'Date'):
+            self.view.main.toogle_btn.config(text='Dates')
+            try:
+                self.hide_instance_attribute(self.view.main.services_List)
+            except:
+                print('error')
+            self.update_services_List()
+        elif (option == 'Weekday'):
+            self.view.main.toogle_btn.config(text='Weekday')
+            self.view.main.services_List.grid(row = 6, column = 0, sticky = tk.N, pady = 4, columnspan = 4)
+            self.update_services_List()
+
+    def select_option (self, event):
+        if self.model.selectedRoute != None:
+            try:
+                options = len(self.model.options)
+                selected_option = self.model.selected_option
+                if selected_option == (options - 1):
+                    self.model.selected_option = 0
+                else:
+                    self.model.selected_option = self.model.selected_option = + 1
+                self.toggle(self.model.options[self.model.selected_option])
+            except:
+                messagebox.showerror('Error SELECT ROUTE', 'Nothing Selected!')
+
+    #loads and updates service list based on selected route
     def selection_route(self, event):
         try:
             selection_route = None
@@ -218,11 +288,13 @@ class Controller():
                 if (route[0] == self.view.main.routes_List.selection_get()):
                     print(self.view.main.routes_List.selection_get())
                     selection_route = route
-            if (selection_route == None):
+            if selection_route == None:
                 return
+            #loads services
             self.model.getServicesOfRoutes(selection_route)
             self.model.selectedRoute = selection_route
             self.update_services_List()
+
         except:
             messagebox.showerror('Error SELECT ROUTE', 'Nothing Selected!')
 
@@ -237,36 +309,36 @@ class Controller():
                 return
             self.model.getRoutesOfAgency(selected_agency)
             self.update_routes_List()
-
-
         except:
             messagebox.showerror('Error SELECT AGENCY', 'Nothing Selected!')
 
-    def selectionBindings(self):
+    def selection_bindings(self):
         #bind list selections
         self.view.main.routes_List.bind('<<ListboxSelect>>', self.selection_route)
         self.view.main.agency_List.bind('<<ListboxSelect>>', self.selection_agency)
         #self.view.main.agency_List.unbind_all(self)
 
-    def write_gui_log(self, text):
-        self.view.sidePanel.log.insert("end", text)
-
     def update_services_List(self):
         self.write_gui_log("updating services list...")
-        if (self.view.main.services_List != None):
-            self.view.main.services_List.delete(0,'end')
-        for services in self.model.servicesList:
-            stringWeekdays = ''
-            stringWeekdays = stringWeekdays + ('Monday, ' if services[1] == '1' else '')
-            stringWeekdays = stringWeekdays + ('Tuesday, ' if services[2] == '1' else '')
-            stringWeekdays = stringWeekdays + ('Wednesday, ' if services[3] == '1' else '')
-            stringWeekdays = stringWeekdays + ('Thursday, ' if services[4] == '1'  else '')
-            stringWeekdays = stringWeekdays + ('Friday, ' if services[5] == '1' else '')
-            stringWeekdays = stringWeekdays + ('Saturday, ' if services[6] == '1' else '')
-            stringWeekdays = stringWeekdays + ('Sunday, ' if services[7] == '1' else '')
-            self.view.main.services_List.insert("end", str(services[0]) + ', ' + stringWeekdays)
-            #self.view.main.agency_List.grid(row=0, column=0, columnspan=1)
-        self.write_gui_log("service list updated")
+        if (self.model.options[self.model.selected_option] == 'Weekday'):
+            if (self.view.main.services_List != None):
+                self.view.main.services_List.delete(0,'end')
+            for services in self.model.servicesList:
+                stringWeekdays = ''
+                stringWeekdays = stringWeekdays + ('Monday, ' if services[1] == '1' else '')
+                stringWeekdays = stringWeekdays + ('Tuesday, ' if services[2] == '1' else '')
+                stringWeekdays = stringWeekdays + ('Wednesday, ' if services[3] == '1' else '')
+                stringWeekdays = stringWeekdays + ('Thursday, ' if services[4] == '1'  else '')
+                stringWeekdays = stringWeekdays + ('Friday, ' if services[5] == '1' else '')
+                stringWeekdays = stringWeekdays + ('Saturday, ' if services[6] == '1' else '')
+                stringWeekdays = stringWeekdays + ('Sunday, ' if services[7] == '1' else '')
+                self.view.main.services_List.insert("end", str(services[0]) + ', ' + stringWeekdays)
+                #self.view.main.agency_List.grid(row=0, column=0, columnspan=1)
+            self.write_gui_log("service list updated")
+        elif (self.model.options[self.model.selected_option] == 'Date'):
+            if (self.view.main.services_List != None):
+                self.view.main.services_List.delete(0,'end')
+
 
     def update_routes_List(self):
         self.write_gui_log("updating routes list...")
@@ -301,8 +373,15 @@ class Controller():
         except:
             messagebox.showerror('Error', 'Something went wrong!')
 
+    def do_tasks(self, button):
+        if (button == "loadGTFS"):
+            threading.Thread(target= self.async_task_load_GTFS_data, args=()).start()
+        elif (button == "loadFahrplan"):
+            print('start creating fahrplan')
+            threading.Thread(target=self.async_task_create_Fahrplan, args=()).start()
+
     #loads data from zip
-    def async_loadGTFS(self):
+    def async_task_load_GTFS_data(self):
         self.write_gui_log("loading GTFS data...")
         #clear list
         if (self.view.main.agency_List != None):
@@ -324,7 +403,7 @@ class Controller():
         self.write_gui_log("GTFS data loaded")
 
     #routine to create fahrplan
-    def async_create_Fahrplan(self):
+    def async_task_create_Fahrplan(self):
         if(self.runningAsync > 0):
             messagebox.showerror( 'Error', 'Program is already running')
             return
@@ -341,20 +420,17 @@ class Controller():
         else:
             messagebox.showerror( 'Error', 'no route/service selected')
 
-    def do_tasks(self, button):
-        if (button == "loadGTFS"):
-            threading.Thread(target= self.async_loadGTFS, args=()).start()
-        elif (button == "loadFahrplan"):
-            print('start creating fahrplan')
-            threading.Thread(target=self.async_create_Fahrplan, args=()).start()
-
-    def load_gtfsdata(self, event):
+    def load_gtfsdata_event(self, event):
         try:
             self.model.input_path = self.view.main.input_path.get()
+            self.model.output_path = self.view.main.output_path.get()
         except:
-            messagebox.showerror( 'Error', 'no path input')
+            messagebox.showerror( 'Error', 'check path')
         button = "loadGTFS"
         self.do_tasks(button)
+
+    def write_gui_log(self, text):
+        self.view.sidePanel.log.insert("end", text)
 
     def start(self, event):
         self.write_gui_log("start: create fahrplan...")

@@ -332,7 +332,17 @@ async def read_gtfs_agencies(agencies_dict):
 
 # tried to get all data in one variable but then I need to create a new index for every dict again
 # maybe I try to get change it later
-async def get_fahrt_ofroute_fahrplan(routeName, agencyName, serviceName, stopsdict, stopTimesdict, tripdict, calendarWeekdict, calendarDatesdict, routesFahrtdict, agencyFahrtdict):
+async def get_fahrt_ofroute_fahrplan(routeName,
+                                     agencyName,
+                                     serviceName,
+                                     stopsdict,
+                                     stopTimesdict,
+                                     tripdict,
+                                     calendarWeekdict,
+                                     calendarDatesdict,
+                                     routesFahrtdict,
+                                     agencyFahrtdict,
+                                     output_path):
     print("get_fahrt_ofroute_fahrplan start")
     print(routeName)
     print(agencyName)
@@ -422,9 +432,8 @@ async def get_fahrt_ofroute_fahrplan(routeName, agencyName, serviceName, stopsdi
 
     dummy_direction = 0
     direction = [{'direction_id': dummy_direction}
-
                 ]
-    dfdirection = d.DataFrame(direction)
+    dfdirection = pd.DataFrame(direction)
     # dataframe with the (bus) lines
     inputVar = [{'route_short_name': routeName}]
     varTest = pd.DataFrame(inputVar).set_index('route_short_name')
@@ -456,7 +465,6 @@ async def get_fahrt_ofroute_fahrplan(routeName, agencyName, serviceName, stopsdi
                 order by dfTrips.trip_id;
                '''
 
-
     cond_Fahrplan= '''
                 select 
                         (select st_dfStopTimes.arrival_time 
@@ -482,7 +490,36 @@ async def get_fahrt_ofroute_fahrplan(routeName, agencyName, serviceName, stopsdi
                   and dfTrips.direction_id = 0 -- shows the direction of the line 
                 order by dfStopTimes.stop_sequence, dfStopTimes.arrival_time;
                '''
+
     #todo: für jede woche in calendar_dates.txt eine liste machen!
+    cond_Fahrplan_calendar_dates_services= '''
+                select  dfDates.date,
+                        (select st_dfStopTimes.arrival_time 
+                                from dfStopTimes st_dfStopTimes
+                                where st_dfStopTimes.stop_sequence = 0
+                                  and dfStopTimes.trip_id = st_dfStopTimes.trip_id) as start_time, 
+                        dfTrips.trip_id,
+                        dfStops.stop_name,
+                        dfStopTimes.stop_sequence, 
+                        dfStopTimes.arrival_time, 
+                        dfTrips.service_id, 
+                        dfStops.stop_id         
+                from dfStopTimes 
+                left join dfTrips on dfStopTimes.trip_id = dfTrips.trip_id
+                left join dfStops on dfStopTimes.stop_id = dfStops.stop_id
+                left join dfRoutes on dfRoutes.route_id  = dfTrips.route_id
+                left join dfDates on dfDates.service_id = dfTrips.service_id
+                left join varTest
+                left join varTestAgency
+                left join varTestService
+                where dfRoutes.route_short_name = varTest.route_short_name -- in this case the bus line number
+                  and dfRoutes.agency_id = varTestAgency.agency_id -- in this case the bus line number
+                  and dfTrips.service_id = varTestService.service_id
+                  and dfDates.service_id = varTestService.service_id
+                  and dfTrips.direction_id = 0 -- shows the direction of the line 
+                order by dfStopTimes.stop_sequence, dfStopTimes.arrival_time;
+               '''
+
     cond_Fahrplan_calendar_dates= '''
                 select  dfDates.date,
                         (select st_dfStopTimes.arrival_time 
@@ -514,15 +551,15 @@ async def get_fahrt_ofroute_fahrplan(routeName, agencyName, serviceName, stopsdi
     fahrplan = sqldf(cond_Fahrplan, locals())
     fahrplan_calendar_weeks = sqldf(cond_Fahrplan_calendar_dates, locals())
 
-
     # creating a pivot table
     fahrplan_pivot = fahrplan.pivot(index=['stop_sequence','stop_name'], columns=['start_time', 'trip_id'], values='arrival_time')
     fahrplan_pivot = fahrplan_pivot.sort_index(axis=0)
 
-    fahrplan_calendar_weeks_pivot = fahrplan_calendar_weeks.pivot(index=['stop_sequence','stop_name'], columns=['start_time', 'trip_id', 'date'], values='arrival_time')
-    fahrplan_calendar_weeks_pivot = fahrplan_calendar_weeks.sort_index(axis=0)
+    fahrplan_calendar_weeks_pivot = fahrplan_calendar_weeks.pivot(index=['date', 'stop_sequence','stop_name'], columns=['start_time', 'trip_id'], values='arrival_time')
+    fahrplan_calendar_weeks_pivot = fahrplan_calendar_weeks_pivot.sort_index(axis=0)
+    #fahrplan_calendar_weeks_pivot = fahrplan_calendar_weeks_pivot.
 
-    fahrplan_calendar_weeks_pivot.to_csv(routeName + 'WITHWEEKS.csv', header=True, quotechar=' ', index='', sep=';', mode='w', encoding='utf8')
+    fahrplan_calendar_weeks_pivot.to_csv(routeName + 'WITHWEEKS.csv', header=True, quotechar=' ', index=True, sep=';', mode='w', encoding='utf8')
 
     #releae some memory
     dfTrips = None
@@ -535,8 +572,8 @@ async def get_fahrt_ofroute_fahrplan(routeName, agencyName, serviceName, stopsdi
     print("time: {} ".format(zeit))
     return zeit, dfheader_for_export_data, fahrplan_pivot
 
-def outputFahrplan(routeName, dfheader_for_export_data, fahrplan_pivot):
+def outputFahrplan(routeName, dfheader_for_export_data, fahrplan_pivot, output_path):
     # save as csv
-    dfheader_for_export_data.to_csv(routeName + 'pivot_table.csv', header=True, quotechar=' ', sep=';', mode='w', encoding='utf8')
-    fahrplan_pivot.to_csv(routeName + 'pivot_table.csv', header=True, quotechar=' ', index='stop_name', sep=';', mode='a', encoding='utf8')
+    dfheader_for_export_data.to_csv(output_path + routeName + 'pivot_table.csv', header=True, quotechar=' ', sep=';', mode='w', encoding='utf8')
+    fahrplan_pivot.to_csv(output_path + routeName + 'pivot_table.csv', header=True, quotechar=' ', index='stop_name', sep=';', mode='a', encoding='utf8')
 
