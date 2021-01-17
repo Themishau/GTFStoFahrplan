@@ -19,6 +19,13 @@ def time_in_string(time):
     else:
         return time
 
+def check_dates_input(dates):
+    pattern1 = re.findall('^\d{8}(?:\d{8})*(?:,\d{8})*$', dates)
+    print(dates)
+    if (pattern1):
+        return True
+    else:
+        return False
 
 async def read_gtfs_data(path):
     try:
@@ -361,6 +368,9 @@ async def create_fahrplan_dates(routeName,
     print(agencyName)
     print(dates)
     last_time = time.time()
+
+    if not check_dates_input(dates):
+        return
 
     # DataFrame for header information
     header_for_export_data = {'Agency': [agencyName],
@@ -705,28 +715,8 @@ async def create_fahrplan_weekday(routeName,
     varTestService = pd.DataFrame(inputVarService).set_index('weekdayOption')
 
     # conditions for searching in dfs
-    cond_FahrplanWeekDays = '''
-                select dfTrips.trip_id, dfStops.stop_name, dfStopTimes.stop_sequence, dfStopTimes.arrival_time, dfTrips.service_id, dfStops.stop_id
-                from dfStopTimes 
-                left join dfTrips on dfStopTimes.trip_id = dfTrips.trip_id
-                left join dfStops on dfStopTimes.stop_id = dfStops.stop_id
-                left join dfRoutes on dfRoutes.route_id  = dfTrips.route_id
-                left join dfWeek on  dfWeek.service_id = dfTrips.service_id
-                left join varTest
-                left join varTestAgency
-                where dfRoutes.route_short_name = varTest.route_short_name -- in this case the bus line number
-                  and dfRoutes.agency_id = varTestAgency.agency_id -- in this case the bus line number
-                  and  ( dfWeek.monday=1 
-                     and dfWeek.tuesday=1
-                     and dfWeek.wednesday=1
-                     and dfWeek.thursday=1
-                     and dfWeek.friday=1
-                      )     
-                and dfTrips.direction_id = 0 -- shows the direction of the line 
-                order by dfTrips.trip_id;
-               '''
-
-    cond_Fahrplan_calendar_dates = '''
+    #todo Beispiel service-id 744 -> auch Samstage und andere Tage
+    cond_Fahrplan_calendar_weekdays = '''
                 select  dfDates.date,
                         (select st_dfStopTimes.arrival_time 
                                 from dfStopTimes st_dfStopTimes
@@ -750,19 +740,21 @@ async def create_fahrplan_weekday(routeName,
                 left join varTestAgency
                 where dfRoutes.route_short_name = varTest.route_short_name -- in this case the bus line number
                   and dfRoutes.agency_id = varTestAgency.agency_id -- in this case the bus line number
-                  and  ( dfWeek.monday   = weekcond_df.Monday
-                     or dfWeek.tuesday  = weekcond_df.Tuesday
-                     or dfWeek.wednesday= weekcond_df.Wednesday
-                     or dfWeek.thursday = weekcond_df.Thursday
-                     or dfWeek.friday   = weekcond_df.Friday
-                     or dfWeek.saturday = weekcond_df.Saturday
-                     or dfWeek.sunday   = weekcond_df.Sunday
+                  and  (( dfWeek.monday    = weekcond_df.Monday    and dfWeek.monday    = 1)
+                     or ( dfWeek.tuesday   = weekcond_df.Tuesday   and dfWeek.tuesday   = 1)
+                     or ( dfWeek.wednesday = weekcond_df.Wednesday and dfWeek.wednesday = 1)
+                     or ( dfWeek.thursday  = weekcond_df.Thursday  and dfWeek.thursday  = 1)
+                     or ( dfWeek.friday    = weekcond_df.Friday    and dfWeek.friday    = 1)
+                     or ( dfWeek.saturday  = weekcond_df.Saturday  and dfWeek.saturday  = 1)
+                     or ( dfWeek.sunday    = weekcond_df.Sunday    and dfWeek.sunday    = 1)
                       ) 
                   and dfTrips.direction_id = 0 -- shows the direction of the line 
                 order by dfStopTimes.stop_sequence, dfStopTimes.arrival_time;
                '''
 
-    fahrplan_calendar_weeks = sqldf(cond_Fahrplan_calendar_dates, locals())
+    fahrplan_calendar_weeks = sqldf(cond_Fahrplan_calendar_weekdays, locals())
+    #delete which are not that weekday requested but in service_id
+
     # print (fahrplan_calendar_weeks)
     # creating a pivot table
     fahrplan_calendar_weeks_pivot = fahrplan_calendar_weeks.pivot(index=['date', 'stop_sequence', 'stop_name'],

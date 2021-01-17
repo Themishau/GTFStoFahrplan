@@ -239,19 +239,20 @@ class Model:
             completed, pending = await asyncio.wait(tasks)
             results = [task.result() for task in completed]
             create_output_fahrplan(routeName[0][0], 'dates_',results[0][1], results[0][2], self.output_path)
-
+        else:
+            messagebox.showerror('Error in Create Fahrplan', 'Wrong data! Check input data and output path!')
+            return
     async def createFahrplan_weekday(self):
         print('fahrplan creating...')
         selected_weekday_option = self.selected_weekday
         routeName = [self.selectedRoute]
         print(self.selectedRoute)
-        selected_weekday = 0
         if (self.dataLoadedAndAvailable() and self.selectedRoute != None and self.options[
             self.selected_option] == 'Weekday'):
             print(selected_weekday_option)
             tasks_weekday = [create_fahrplan_weekday(name[0],
                                                      self.selectedAgency[0],
-                                                     selected_weekday,
+                                                     selected_weekday_option,
                                                      self.stopsdict,
                                                      self.stopTimesdict,
                                                      self.tripdict,
@@ -271,7 +272,7 @@ class Model:
 
             messagebox.showinfo('create fahrplan:', 'Done!')
         else:
-            messagebox.showerror('Error in Create Fahrplan', 'Missing data! Check input data and output path!')
+            messagebox.showerror('Error in Create Fahrplan', 'Wrong data! Check input data and output path!')
             return
 
 
@@ -447,7 +448,7 @@ class Controller():
             requested_dates = self.view.main.dates.get()
             self.model.selected_dates = self.view.main.dates.get()
             if (selected_route == None or requested_dates == None):
-                print("error no route / dates ")
+                print("error no route / wrong dates format ")
                 return False
             return True
         except:
