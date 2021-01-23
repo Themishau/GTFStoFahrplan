@@ -49,7 +49,7 @@ class Main(tk.Frame):
         # entry input_path
         self.input_path = tk.Entry(self.mainFrame, width=80)
         self.input_path.insert(0,
-                               'E:/OneDrive/1_Daten_Dokumente_Backup/1_Laptop_Backup_PC/Programmieren_Python/GTFSFahrplan/GTFS_TESTDATA/GTFS.zip')
+                               'C:/Temp/GTFS.zip')
         self.input_path.grid(row=1, column=0, sticky=tk.N, pady=2, columnspan=4)
 
         # label output_path
@@ -59,7 +59,7 @@ class Main(tk.Frame):
         # entry output_path
         self.output_path = tk.Entry(self.mainFrame, width=80)
         self.output_path.insert(0,
-                                'E:/OneDrive/1_Daten_Dokumente_Backup/1_Laptop_Backup_PC/Programmieren_Python/GTFSFahrplan/CSV/')
+                                'C:/Temp/ <--- Dont forget the slash at the end')
         self.output_path.grid(row=3, column=0, sticky=tk.N, pady=2, columnspan=4)
 
         # entry output_path
