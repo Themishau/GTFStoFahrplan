@@ -59,7 +59,7 @@ class Main(tk.Frame):
         # entry output_path
         self.output_path = tk.Entry(self.mainFrame, width=80)
         self.output_path.insert(0,
-                                'C:/Temp/ <--- Dont forget the slash at the end')
+                                'C:/Temp/')
         self.output_path.grid(row=3, column=0, sticky=tk.N, pady=2, columnspan=4)
 
         # entry output_path
@@ -240,6 +240,7 @@ class Model:
             results = [task.result() for task in completed]
             self.time = "time: {} ".format(results[0][0])
             create_output_fahrplan(routeName[0][0], 'dates_',results[0][1], results[0][2], self.output_path)
+            messagebox.showinfo('create fahrplan:', 'Done!')
         else:
             messagebox.showerror('Error in Create Fahrplan', 'Wrong data! Check input data and output path!')
             return
