@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import tkinter as tk
-from datetime import datetime
 from tkinter import messagebox
+import asyncio
+import threading
 from analyzeGTFS import *
 
 delimiter = " "
@@ -81,8 +82,12 @@ class Main(tk.Frame):
         self.LoadGTFSButton.grid(row=7, column=0, sticky=tk.N, pady=0)
 
         # state button date pr weekday
-        self.toogle_btn = tk.Button(text="WeekDay", width=12)
-        self.toogle_btn.grid(row=6, column=0, sticky=tk.N, pady=4, columnspan=4)
+        self.toogle_btn_DateWeek = tk.Button(text="WeekDay", width=12)
+        self.toogle_btn_DateWeek.grid(row=6, column=0, sticky=tk.N, pady=4, columnspan=4)
+
+        # state button direction
+        self.toogle_btn_direction = tk.Button(text="Direction 0", width=12)
+        self.toogle_btn_direction.grid(row=7, column=0, sticky=tk.N, pady=4, columnspan=4)
 
         """ Listbox """
         # lists of weekdays
@@ -121,8 +126,9 @@ class Model:
 
         self.input_path = None
         self.output_path = None
-        self.options = ['Dates', 'Weekday']
-        self.selected_option = 1
+        self.options_dates_weekday = ['Dates', 'Weekday']
+        self.selected_option_dates_weekday = 1
+        self.selected_Direction = 0
         self.time = None
 
         """ dicts for create and listbox """
@@ -150,24 +156,25 @@ class Model:
 
         self.weekDayOptions = {0: [0, 'Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday'],
                                1: [1, 'Monday, Tuesday, Wednesday, Thursday, Friday'],
-                               2: [1, 'Monday'],
-                               3: [1, 'Tuesday'],
-                               4: [1, 'Wednesday'],
-                               5: [1, 'Thursday'],
-                               6: [1, 'Friday'],
-                               7: [1, 'Saturday'],
-                               8: [1, 'Sunday'],
+                               2: [2, 'Monday'],
+                               3: [3, 'Tuesday'],
+                               4: [4, 'Wednesday'],
+                               5: [5, 'Thursday'],
+                               6: [6, 'Friday'],
+                               7: [7, 'Saturday'],
+                               8: [8, 'Sunday'],
                                }
 
     # checks if all data is avalibale before creation
     def dataLoadedAndAvailable(self):
-        if (self.stopsdict == None
-                or self.stopTimesdict == None
-                or self.tripdict == None
-                or self.calendarWeekdict == None
-                or self.calendarDatesdict == None
-                or self.routesFahrtdict == None
-                or self.selectedRoute == None):
+        if ( self.stopsdict == None
+          or self.stopTimesdict == None
+          or self.tripdict == None
+          or self.calendarWeekdict == None
+          or self.calendarDatesdict == None
+          or self.routesFahrtdict == None
+          or self.selectedRoute == None
+          or self.selected_Direction == None):
             return False
         else:
             return True
@@ -218,14 +225,14 @@ class Model:
         print('fahrplan creating...')
         selected_dates_option = self.selected_dates
         routeName = [self.selectedRoute]
-        print(self.selectedRoute)
-        print(self.selected_dates)
-        if (self.dataLoadedAndAvailable() and self.selectedRoute != None and self.selected_dates != None and
-                self.options[self.selected_option] == 'Dates'):
-
-            tasks = [create_fahrplan_dates(name[0],
+        if (self.dataLoadedAndAvailable()
+         and self.selectedRoute != None
+         and self.selected_dates != None
+         and self.options_dates_weekday[self.selected_option_dates_weekday] == 'Dates'):
+            tasks_date = [create_fahrplan_dates(name[0],
                                            self.selectedAgency[0],
                                            self.selected_dates,
+                                           self.selected_Direction,
                                            self.stopsdict,
                                            self.stopTimesdict,
                                            self.tripdict,
@@ -236,10 +243,11 @@ class Model:
                                            self.output_path) for name in routeName]
 
             #stores results and some information
-            completed, pending = await asyncio.wait(tasks)
+            completed, pending = await asyncio.wait(tasks_date)
             results = [task.result() for task in completed]
             self.time = "time: {} ".format(results[0][0])
-            create_output_fahrplan(routeName[0][0], 'dates_',results[0][1], results[0][2], self.output_path)
+            create_output_fahrplan(routeName[0][0], 'dates_'+ str(results[0][1]) ,results[0][2], results[0][3], self.output_path)
+            messagebox.showinfo('create fahrplan:', 'Done!')
             messagebox.showinfo('create fahrplan:', 'Done!')
         else:
             messagebox.showerror('Error in Create Fahrplan', 'Wrong data! Check input data and output path!')
@@ -248,13 +256,13 @@ class Model:
         print('fahrplan creating...')
         selected_weekday_option = self.selected_weekday
         routeName = [self.selectedRoute]
-        print(self.selectedRoute)
-        if (self.dataLoadedAndAvailable() and self.selectedRoute != None and self.options[
-            self.selected_option] == 'Weekday'):
-            print(selected_weekday_option)
+        if (self.dataLoadedAndAvailable()
+            and self.selectedRoute != None
+            and self.options_dates_weekday[self.selected_option_dates_weekday] == 'Weekday'):
             tasks_weekday = [create_fahrplan_weekday(name[0],
                                                      self.selectedAgency[0],
                                                      selected_weekday_option,
+                                                     self.selected_Direction,
                                                      self.stopsdict,
                                                      self.stopTimesdict,
                                                      self.tripdict,
@@ -269,7 +277,7 @@ class Model:
             results_weekday = [task.result() for task in completed]
             self.time = "time: {} ".format(results_weekday[0][0])
 
-            create_output_fahrplan(routeName[0][0], 'weekday_', results_weekday[0][1], results_weekday[0][2], self.output_path)
+            create_output_fahrplan(routeName[0][0], 'weekday_' + str(results_weekday[0][1]), results_weekday[0][2], results_weekday[0][3], self.output_path)
 
             messagebox.showinfo('create fahrplan:', 'Done!')
         else:
@@ -307,7 +315,8 @@ class Controller():
         self.view.main.LoadGTFSButton.bind("<Button>", self.load_gtfsdata_event)
         self.view.main.quitButton.bind("<Button>", self.close_program)
 
-        self.view.main.toogle_btn.bind("<Button>", self.select_option_button)
+        self.view.main.toogle_btn_DateWeek.bind("<Button>", self.select_option_button_date_week)
+        self.view.main.toogle_btn_direction.bind("<Button>", self.select_option_button_direction)
 
     async def info(self, message, title="ShowInfo"):
         root = tk.Tk()
@@ -338,9 +347,35 @@ class Controller():
         except:
             messagebox.showerror('Error show_instance_attribute', 'contact developer')
 
-    def toggle_button_event(self, option):
+    def toggle_button_direction_event(self, option):
+        if (option == 0):
+            try:
+              self.view.main.toogle_btn_direction.config(text='Direction 0')
+            except:
+                messagebox.showerror('Error toggle', 'contact developer')
+
+        elif (option == 1):
+            try:
+              self.view.main.toogle_btn_direction.config(text='Direction 1')
+            except:
+                messagebox.showerror('Error toggle', 'contact developer')
+
+
+    def select_option_button_direction(self, event):
+        if self.model.selectedRoute != None:
+            try:
+                selected_option = self.model.selected_Direction
+                if selected_option == 1:
+                    self.model.selected_Direction = 0
+                elif selected_option == 0:
+                    self.model.selected_Direction = 1
+                self.toggle_button_direction_event(self.model.selected_Direction)
+            except:
+                messagebox.showerror('Error SELECT ROUTE', 'Nothing Selected!')
+
+    def toggle_button_date_week_event(self, option):
         if (option == 'Dates'):
-            self.view.main.toogle_btn.config(text='Dates')
+            self.view.main.toogle_btn_DateWeek.config(text='Dates')
             try:
                 self.hide_instance_attribute(self.view.main.weekday_list, 'self.view.main.weekday_list')
                 self.show_instance_attribute('self.view.main.dates')
@@ -348,21 +383,22 @@ class Controller():
                 messagebox.showerror('Error toggle', 'contact developer')
             self.update_weekday_list()
         elif (option == 'Weekday'):
-            self.view.main.toogle_btn.config(text='Weekday')
+            self.view.main.toogle_btn_DateWeek.config(text='Weekday')
             self.hide_instance_attribute(self.view.main.dates, 'self.view.main.dates')
             self.show_instance_attribute('self.view.main.weekday_list')
             self.update_weekday_list()
 
-    def select_option_button(self, event):
+
+    def select_option_button_date_week(self, event):
         if self.model.selectedRoute != None:
             try:
-                options = len(self.model.options)
-                selected_option = self.model.selected_option
+                options = len(self.model.options_dates_weekday)
+                selected_option = self.model.selected_option_dates_weekday
                 if selected_option == (options - 1):
-                    self.model.selected_option = 0
+                    self.model.selected_option_dates_weekday = 0
                 else:
-                    self.model.selected_option = self.model.selected_option = + 1
-                self.toggle_button_event(self.model.options[self.model.selected_option])
+                    self.model.selected_option_dates_weekday = self.model.selected_option_dates_weekday = + 1
+                self.toggle_button_date_week_event(self.model.options_dates_weekday[self.model.selected_option_dates_weekday])
             except:
                 messagebox.showerror('Error SELECT ROUTE', 'Nothing Selected!')
 
@@ -406,7 +442,7 @@ class Controller():
 
     def update_weekday_list(self):
         self.write_gui_log("updating weekdays list...")
-        if (self.model.options[self.model.selected_option] == 'Weekday'):
+        if (self.model.options_dates_weekday[self.model.selected_option_dates_weekday] == 'Weekday'):
             if (self.view.main.weekday_list != None):
                 self.view.main.weekday_list.delete(0, 'end')
                 self.view.main.weekday_list.insert("end", str(self.model.weekDayOptions[0][1]))
@@ -420,7 +456,7 @@ class Controller():
                 self.view.main.weekday_list.insert("end", str(self.model.weekDayOptions[8][1]))
                 # self.view.main.agency_List.grid(row=0, column=0, columnspan=1)
             self.write_gui_log("weekdays list updated")
-        elif (self.model.options[self.model.selected_option] == 'Dates'):
+        elif (self.model.options_dates_weekday[self.model.selected_option_dates_weekday] == 'Dates'):
             if (self.view.main.weekday_list != None):
                 self.view.main.weekday_list.delete(0, 'end')
 
@@ -508,12 +544,12 @@ class Controller():
         if (self.runningAsync > 0):
             messagebox.showerror('Error', 'Program is already running')
             return
-        print('selection:' + self.model.options[self.model.selected_option])
+        print('selection:' + self.model.options_dates_weekday[self.model.selected_option_dates_weekday])
         # checks and sets the selected route for fahrplan
-        if (self.model.options[self.model.selected_option] == 'Weekday'):
+        if (self.model.options_dates_weekday[self.model.selected_option_dates_weekday] == 'Weekday'):
             if (self.get_selected_weekday()):
                 self.write_gui_log("creating...: " + self.model.selectedAgency[1] + delimiter + self.model.selectedRoute[
-                    0] + delimiter + str(self.model.selected_weekday))
+                    0] + delimiter + str(self.model.selected_weekday) + delimiter + str(self.model.selected_Direction))
                 loop = asyncio.new_event_loop()
                 self.runningAsync = self.runningAsync + 1
                 loop.run_until_complete(self.model.createFahrplan_weekday())
@@ -523,10 +559,10 @@ class Controller():
             else:
                 messagebox.showerror('Error', 'no route/weekday')
 
-        elif(self.model.options[self.model.selected_option] == 'Dates'):
+        elif(self.model.options_dates_weekday[self.model.selected_option_dates_weekday] == 'Dates'):
             if (self.get_requested_dates()):
                 self.write_gui_log("creating...: " + self.model.selectedAgency[1] + delimiter + self.model.selectedRoute[
-                    0] + delimiter + str(self.model.selected_weekday))
+                    0] + delimiter + str(self.model.selected_dates) + delimiter + str(self.model.selected_Direction))
                 loop = asyncio.new_event_loop()
                 self.runningAsync = self.runningAsync + 1
                 loop.run_until_complete(self.model.createFahrplan_dates())

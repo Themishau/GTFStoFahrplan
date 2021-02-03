@@ -2,10 +2,9 @@
 import time
 import pandas as pd
 from pandasql import sqldf
-import asyncio
-import threading
 import zipfile
 import io
+from datetime import datetime
 
 import re
 
@@ -15,9 +14,9 @@ def time_in_string(time):
     pattern = re.findall('^\d{1}:\d{2}:\d{2}$', time)
 
     if (pattern):
-        return '0' + time
+        return '0' + time[:-3]
     else:
-        return time
+        return time[:-3]
 
 def check_dates_input(dates):
     pattern1 = re.findall('^\d{8}(?:\d{8})*(?:,\d{8})*$', dates)
@@ -356,6 +355,7 @@ async def read_gtfs_agencies(agencies_dict):
 async def create_fahrplan_dates(routeName,
                                 agencyName,
                                 dates,
+                                selected_direction,
                                 stopsdict,
                                 stopTimesdict,
                                 tripdict,
@@ -364,10 +364,10 @@ async def create_fahrplan_dates(routeName,
                                 routesFahrtdict,
                                 agencyFahrtdict,
                                 output_path):
-    print("get_fahrt_ofroute_fahrplan start")
-    print(routeName)
-    print(agencyName)
-    print(dates)
+    print('Route: '         + routeName)
+    print('Agency: '        + agencyName)
+    print('Dates: '         + dates)
+    print('Direction: '     + str(selected_direction))
     last_time = time.time()
 
     if not check_dates_input(dates):
@@ -450,6 +450,9 @@ async def create_fahrplan_dates(routeName,
     requested_datesdf = pd.DataFrame.from_dict(requested_dates)
     requested_datesdf['date'] = pd.to_datetime(requested_datesdf['date'], format='%Y%m%d')
 
+    requested_direction = {'direction_id': [selected_direction]}
+    requested_directiondf = pd.DataFrame.from_dict(requested_direction)
+
     inputVar = [{'route_short_name': routeName}]
     route_short_namedf = pd.DataFrame(inputVar).set_index('route_short_name')
 
@@ -477,9 +480,10 @@ async def create_fahrplan_dates(routeName,
                 inner join dfRoutes on dfRoutes.route_id  = dfTrips.route_id
                 inner join route_short_namedf on dfRoutes.route_short_name = route_short_namedf.route_short_name
                 inner join varTestAgency on dfRoutes.agency_id = varTestAgency.agency_id
+                inner join requested_directiondf on dfTrips.direction_id = requested_directiondf.direction_id
                 where dfRoutes.route_short_name = route_short_namedf.route_short_name -- in this case the bus line number
                   and dfRoutes.agency_id = varTestAgency.agency_id -- in this case the bus line number
-                  and dfTrips.direction_id = 0 -- shows the direction of the line 
+                  and dfTrips.direction_id = requested_directiondf.direction_id -- shows the direction of the line 
                 order by dfTrips.service_id;
                '''
 
@@ -548,9 +552,10 @@ async def create_fahrplan_dates(routeName,
                 inner join dfRoutes on dfRoutes.route_id  = dfTrips.route_id
                 inner join route_short_namedf on dfRoutes.route_short_name = route_short_namedf.route_short_name
                 inner join varTestAgency on dfRoutes.agency_id = varTestAgency.agency_id
+                inner join requested_directiondf on dfTrips.direction_id = requested_directiondf.direction_id
                 where dfRoutes.route_short_name = route_short_namedf.route_short_name -- in this case the bus line number
                   and dfRoutes.agency_id = varTestAgency.agency_id -- in this case the bus line number
-                  and dfTrips.direction_id = 0 -- shows the direction of the line 
+                  and dfTrips.direction_id = requested_directiondf.direction_id -- shows the direction of the line 
                 order by dfStopTimes.stop_sequence, start_time;
                '''
 
@@ -645,12 +650,15 @@ async def create_fahrplan_dates(routeName,
     dfWeek = None
     zeit = time.time() - last_time
     print("time: {} ".format(zeit))
-    return zeit, dfheader_for_export_data, fahrplan_calendar_filter_days_pivot
+    now = datetime.now()
+    now = now.strftime("%Y_%m_%d_%H_%M_%S")
+    return zeit, now, dfheader_for_export_data, fahrplan_calendar_filter_days_pivot
 
 
 async def create_fahrplan_weekday(routeName,
                                   agencyName,
                                   selected_weekdayOption,
+                                  selected_direction,
                                   stopsdict,
                                   stopTimesdict,
                                   tripdict,
@@ -659,9 +667,10 @@ async def create_fahrplan_weekday(routeName,
                                   routesFahrtdict,
                                   agencyFahrtdict,
                                   output_path):
-    print(routeName)
-    print(agencyName)
-    print(selected_weekdayOption)
+    print('Route: '         + routeName)
+    print('Agency: '        + agencyName)
+    print('WeekdayOption: ' + str(selected_weekdayOption))
+    print('Direction: '     + str(selected_direction))
     last_time = time.time()
 
     header_for_export_data = {'Agency': [agencyName],
@@ -761,9 +770,9 @@ async def create_fahrplan_weekday(routeName,
 
     weekcond_df = weekDayOptionList[selected_weekdayOption]
     dummy_direction = 0
-    direction = [{'direction_id': dummy_direction}
-                 ]
-    dfdirection = pd.DataFrame(direction)
+
+    requested_direction = {'direction_id': [selected_direction]}
+    requested_directiondf = pd.DataFrame.from_dict(requested_direction)
 
     # dataframe with the (bus) lines
     inputVar = [{'route_short_name': routeName}]
@@ -795,9 +804,10 @@ async def create_fahrplan_weekday(routeName,
                 inner join dfRoutes on dfRoutes.route_id  = dfTrips.route_id
                 inner join route_short_namedf on dfRoutes.route_short_name = route_short_namedf.route_short_name
                 inner join varTestAgency on dfRoutes.agency_id = varTestAgency.agency_id
+                inner join requested_directiondf on dfTrips.direction_id = requested_directiondf.direction_id                
                 where dfRoutes.route_short_name = route_short_namedf.route_short_name -- in this case the bus line number
                   and dfRoutes.agency_id = varTestAgency.agency_id -- in this case the bus line number
-                  and dfTrips.direction_id = 0 -- shows the direction of the line 
+                  and dfTrips.direction_id = requested_directiondf.direction_id -- shows the direction of the line 
                 order by dfTrips.service_id;
                '''
 
@@ -870,9 +880,10 @@ async def create_fahrplan_weekday(routeName,
                 inner join dfRoutes on dfRoutes.route_id  = dfTrips.route_id
                 inner join route_short_namedf on dfRoutes.route_short_name = route_short_namedf.route_short_name
                 inner join varTestAgency on dfRoutes.agency_id = varTestAgency.agency_id
+                inner join requested_directiondf on dfTrips.direction_id = requested_directiondf.direction_id 
                 where dfRoutes.route_short_name = route_short_namedf.route_short_name -- in this case the bus line number
                   and dfRoutes.agency_id = varTestAgency.agency_id -- in this case the bus line number
-                  and dfTrips.direction_id = 0 -- shows the direction of the line 
+                  and dfTrips.direction_id = requested_directiondf.direction_id -- shows the direction of the line 
                 order by dfStopTimes.stop_sequence, start_time;
                '''
 
@@ -969,7 +980,9 @@ async def create_fahrplan_weekday(routeName,
     dfWeek = None
     zeit = time.time() - last_time
     print("time: {} ".format(zeit))
-    return zeit, dfheader_for_export_data, fahrplan_calendar_filter_days_pivot
+    now = datetime.now()
+    now = now.strftime("%Y_%m_%d_%H_%M_%S")
+    return zeit, now, dfheader_for_export_data, fahrplan_calendar_filter_days_pivot
 
 
 def create_output_fahrplan(routeName,
