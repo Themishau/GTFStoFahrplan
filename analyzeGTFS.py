@@ -18,14 +18,16 @@ def time_in_string(time):
     else:
         return time[:-3]
 
+
 def check_dates_input(dates):
     pattern1 = re.findall('^\d{8}(?:\d{8})*(?:,\d{8})*$', dates)
     print(dates)
-    print (pattern1)
+    print(pattern1)
     if (pattern1):
         return True
     else:
         return False
+
 
 async def read_gtfs_data(path):
     try:
@@ -364,10 +366,10 @@ async def create_fahrplan_dates(routeName,
                                 routesFahrtdict,
                                 agencyFahrtdict,
                                 output_path):
-    print('Route: '         + routeName)
-    print('Agency: '        + agencyName)
-    print('Dates: '         + dates)
-    print('Direction: '     + str(selected_direction))
+    print('Route: ' + routeName)
+    print('Agency: ' + agencyName)
+    print('Dates: ' + dates)
+    print('Direction: ' + str(selected_direction))
     last_time = time.time()
 
     if not check_dates_input(dates):
@@ -458,7 +460,6 @@ async def create_fahrplan_dates(routeName,
 
     inputVarAgency = [{'agency_id': agencyName}]
     varTestAgency = pd.DataFrame(inputVarAgency).set_index('agency_id')
-
 
     # conditions for searching in dfs
     cond_select_dates_for_date_range = '''
@@ -577,7 +578,7 @@ async def create_fahrplan_dates(routeName,
     # get dates for start and end dates for date range function
     fahrplan_dates = sqldf(cond_select_dates_for_date_range, locals())
     fahrplan_dates['start_date'] = pd.to_datetime(fahrplan_dates['start_date'], format='%Y%m%d')
-    fahrplan_dates['end_date']   = pd.to_datetime(fahrplan_dates['end_date'], format='%Y%m%d')
+    fahrplan_dates['end_date'] = pd.to_datetime(fahrplan_dates['end_date'], format='%Y%m%d')
     # add date column for every date in date range
     fahrplan_dates_all_dates = pd.concat([pd.DataFrame({'date': pd.date_range(row.start_date, row.end_date, freq='D'),
                                                         'trip_id': row.trip_id,
@@ -594,7 +595,7 @@ async def create_fahrplan_dates(routeName,
                                                         'sunday': row.sunday
                                                         }
                                                        )
-               for i, row in fahrplan_dates.iterrows()], ignore_index=True)
+                                          for i, row in fahrplan_dates.iterrows()], ignore_index=True)
     # I need to convert the date after every sqldf for some reason
     fahrplan_dates = None
     fahrplan_dates_all_dates['date'] = pd.to_datetime(fahrplan_dates_all_dates['date'], format='%Y%m%d')
@@ -621,24 +622,27 @@ async def create_fahrplan_dates(routeName,
     # delete exceptions = 2 or add exceptions = 1
     fahrplan_dates_all_dates = sqldf(cond_select_dates_delete_exception_2, locals())
     fahrplan_dates_all_dates['date'] = pd.to_datetime(fahrplan_dates_all_dates['date'], format='%Y-%m-%d %H:%M:%S.%f')
-    fahrplan_dates_all_dates['start_date'] = pd.to_datetime(fahrplan_dates_all_dates['start_date'], format='%Y-%m-%d %H:%M:%S.%f')
-    fahrplan_dates_all_dates['end_date'] = pd.to_datetime(fahrplan_dates_all_dates['end_date'], format='%Y-%m-%d %H:%M:%S.%f')
-    #fahrplan_dates_all_dates = fahrplan_dates_all_dates.set_index('trip_id')
+    fahrplan_dates_all_dates['start_date'] = pd.to_datetime(fahrplan_dates_all_dates['start_date'],
+                                                            format='%Y-%m-%d %H:%M:%S.%f')
+    fahrplan_dates_all_dates['end_date'] = pd.to_datetime(fahrplan_dates_all_dates['end_date'],
+                                                          format='%Y-%m-%d %H:%M:%S.%f')
+    # fahrplan_dates_all_dates = fahrplan_dates_all_dates.set_index('trip_id')
 
     # get all stop_times and stops for every stop of one route
     fahrplan_calendar_weeks = sqldf(cond_select_stops_for_trips, locals())
-    #fahrplan_calendar_weeks = fahrplan_calendar_weeks.set_index('trip_id')
+    # fahrplan_calendar_weeks = fahrplan_calendar_weeks.set_index('trip_id')
 
     # combine dates and trips to get a df with trips for every date
     fahrplan_calendar_weeks = sqldf(cond_select_for_every_date_trips_stops, locals())
-    fahrplan_calendar_weeks['date']         = pd.to_datetime(fahrplan_calendar_weeks['date'], format='%Y-%m-%d %H:%M:%S.%f')
-    fahrplan_calendar_weeks['trip_id']      = fahrplan_calendar_weeks['trip_id'].astype(int)
+    fahrplan_calendar_weeks['date'] = pd.to_datetime(fahrplan_calendar_weeks['date'], format='%Y-%m-%d %H:%M:%S.%f')
+    fahrplan_calendar_weeks['trip_id'] = fahrplan_calendar_weeks['trip_id'].astype(int)
     fahrplan_calendar_weeks['arrival_time'] = fahrplan_calendar_weeks['arrival_time'].apply(str)
-    fahrplan_calendar_weeks['start_time']   = fahrplan_calendar_weeks['start_time'].apply(str)
+    fahrplan_calendar_weeks['start_time'] = fahrplan_calendar_weeks['start_time'].apply(str)
     # creating a pivot table
-    fahrplan_calendar_filter_days_pivot = fahrplan_calendar_weeks.pivot(index=['date', 'day', 'stop_sequence', 'stop_name'],columns=['start_time', 'trip_id'],values='arrival_time')
+    fahrplan_calendar_filter_days_pivot = fahrplan_calendar_weeks.pivot(
+        index=['date', 'day', 'stop_sequence', 'stop_name'], columns=['start_time', 'trip_id'], values='arrival_time')
 
-    #fahrplan_calendar_filter_days_pivot['date'] = pd.to_datetime(fahrplan_calendar_filter_days_pivot['date'], format='%Y-%m-%d %H:%M:%S.%f')
+    # fahrplan_calendar_filter_days_pivot['date'] = pd.to_datetime(fahrplan_calendar_filter_days_pivot['date'], format='%Y-%m-%d %H:%M:%S.%f')
     fahrplan_calendar_filter_days_pivot = fahrplan_calendar_filter_days_pivot.sort_index(axis=1)
     fahrplan_calendar_filter_days_pivot = fahrplan_calendar_filter_days_pivot.sort_index(axis=0)
 
@@ -667,10 +671,10 @@ async def create_fahrplan_weekday(routeName,
                                   routesFahrtdict,
                                   agencyFahrtdict,
                                   output_path):
-    print('Route: '         + routeName)
-    print('Agency: '        + agencyName)
+    print('Route: ' + routeName)
+    print('Agency: ' + agencyName)
     print('WeekdayOption: ' + str(selected_weekdayOption))
-    print('Direction: '     + str(selected_direction))
+    print('Direction: ' + str(selected_direction))
     last_time = time.time()
 
     header_for_export_data = {'Agency': [agencyName],
@@ -738,15 +742,15 @@ async def create_fahrplan_weekday(routeName,
     # DataFrame with every agency
     df_agency = pd.DataFrame.from_dict(agencyFahrtdict).set_index('agency_id')
 
-    weekDayOption_1         = {'day': ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']}
-    weekDayOption_2         = {'day': ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']}
-    weekDayOption_monday    = {'day': ['Monday']}
-    weekDayOption_tuesday   = {'day': ['Tuesday']}
+    weekDayOption_1 = {'day': ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']}
+    weekDayOption_2 = {'day': ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']}
+    weekDayOption_monday = {'day': ['Monday']}
+    weekDayOption_tuesday = {'day': ['Tuesday']}
     weekDayOption_wednesday = {'day': ['Wednesday']}
-    weekDayOption_thursday  = {'day': ['Thursday']}
-    weekDayOption_friday    = {'day': ['Friday']}
-    weekDayOption_saturday  = {'day': ['Saturday']}
-    weekDayOption_sunday    = {'day': ['Sunday']}
+    weekDayOption_thursday = {'day': ['Thursday']}
+    weekDayOption_friday = {'day': ['Friday']}
+    weekDayOption_saturday = {'day': ['Saturday']}
+    weekDayOption_sunday = {'day': ['Sunday']}
 
     weekDay_1_df = pd.DataFrame.from_dict(weekDayOption_1).set_index('day')
     weekDay_2_df = pd.DataFrame.from_dict(weekDayOption_2).set_index('day')
@@ -810,7 +814,6 @@ async def create_fahrplan_weekday(routeName,
                   and dfTrips.direction_id = requested_directiondf.direction_id -- shows the direction of the line 
                 order by dfTrips.service_id;
                '''
-
 
     cond_select_dates_delete_exception_2 = '''
                 select  
@@ -905,7 +908,7 @@ async def create_fahrplan_weekday(routeName,
     # get dates for start and end dates for date range function
     fahrplan_dates = sqldf(cond_select_dates_for_date_range, locals())
     fahrplan_dates['start_date'] = pd.to_datetime(fahrplan_dates['start_date'], format='%Y%m%d')
-    fahrplan_dates['end_date']   = pd.to_datetime(fahrplan_dates['end_date'], format='%Y%m%d')
+    fahrplan_dates['end_date'] = pd.to_datetime(fahrplan_dates['end_date'], format='%Y%m%d')
     # add date column for every date in date range
     fahrplan_dates_all_dates = pd.concat([pd.DataFrame({'date': pd.date_range(row.start_date, row.end_date, freq='D'),
                                                         'trip_id': row.trip_id,
@@ -922,7 +925,7 @@ async def create_fahrplan_weekday(routeName,
                                                         'sunday': row.sunday
                                                         }
                                                        )
-               for i, row in fahrplan_dates.iterrows()], ignore_index=True)
+                                          for i, row in fahrplan_dates.iterrows()], ignore_index=True)
     # I need to convert the date after every sqldf for some reason
     fahrplan_dates = None
     fahrplan_dates_all_dates['date'] = pd.to_datetime(fahrplan_dates_all_dates['date'], format='%Y%m%d')
@@ -948,8 +951,10 @@ async def create_fahrplan_weekday(routeName,
     # delete exceptions = 2 or add exceptions = 1
     fahrplan_dates_all_dates = sqldf(cond_select_dates_delete_exception_2, locals())
     fahrplan_dates_all_dates['date'] = pd.to_datetime(fahrplan_dates_all_dates['date'], format='%Y-%m-%d %H:%M:%S.%f')
-    fahrplan_dates_all_dates['start_date'] = pd.to_datetime(fahrplan_dates_all_dates['start_date'], format='%Y-%m-%d %H:%M:%S.%f')
-    fahrplan_dates_all_dates['end_date'] = pd.to_datetime(fahrplan_dates_all_dates['end_date'], format='%Y-%m-%d %H:%M:%S.%f')
+    fahrplan_dates_all_dates['start_date'] = pd.to_datetime(fahrplan_dates_all_dates['start_date'],
+                                                            format='%Y-%m-%d %H:%M:%S.%f')
+    fahrplan_dates_all_dates['end_date'] = pd.to_datetime(fahrplan_dates_all_dates['end_date'],
+                                                          format='%Y-%m-%d %H:%M:%S.%f')
     # fahrplan_dates_all_dates = fahrplan_dates_all_dates.set_index('trip_id')
 
     # get all stop_times and stops for every stop of one route
@@ -965,12 +970,11 @@ async def create_fahrplan_weekday(routeName,
     fahrplan_calendar_weeks['start_time'] = fahrplan_calendar_weeks['start_time'].apply(str)
 
     # creating a pivot table
-    fahrplan_calendar_filter_days_pivot = fahrplan_calendar_weeks.pivot(index=['date', 'day', 'stop_sequence', 'stop_name'],columns=['start_time', 'trip_id'],values='arrival_time')
+    fahrplan_calendar_filter_days_pivot = fahrplan_calendar_weeks.pivot(
+        index=['date', 'day', 'stop_sequence', 'stop_name'], columns=['start_time', 'trip_id'], values='arrival_time')
     fahrplan_calendar_weeks = None
     fahrplan_calendar_filter_days_pivot = fahrplan_calendar_filter_days_pivot.sort_index(axis=1)
     fahrplan_calendar_filter_days_pivot = fahrplan_calendar_filter_days_pivot.sort_index(axis=0)
-
-
 
     # releae some memory
     dfTrips = None

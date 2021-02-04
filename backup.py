@@ -1626,3 +1626,14 @@ async def create_fahrplan_dates(routeName,
         zeit = time.time() - last_time
         print("time: {} ".format(zeit))
         return zeit, dfheader_for_export_data, fahrplan_calendar_filter_days_pivot
+
+    self.view.main.weekday_list.delete(0, 'end')
+    self.view.main.weekday_list.insert("end", str(self.model.weekDayOptions[0][1]))
+    self.view.main.weekday_list.insert("end", str(self.model.weekDayOptions[1][1]))
+    self.view.main.weekday_list.insert("end", str(self.model.weekDayOptions[2][1]))
+    self.view.main.weekday_list.insert("end", str(self.model.weekDayOptions[3][1]))
+    self.view.main.weekday_list.insert("end", str(self.model.weekDayOptions[4][1]))
+    self.view.main.weekday_list.insert("end", str(self.model.weekDayOptions[5][1]))
+    self.view.main.weekday_list.insert("end", str(self.model.weekDayOptions[6][1]))
+    self.view.main.weekday_list.insert("end", str(self.model.weekDayOptions[7][1]))
+    self.view.main.weekday_list.insert("end", str(self.model.weekDayOptions[8][1]))
