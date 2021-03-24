@@ -65,7 +65,7 @@ class Main(tk.Frame):
 
         # entry output_path
         self.dates = tk.Entry(self.main_frame, width=80)
-        self.dates.insert(0, 'example: 20201112')
+        self.dates.insert(0, '20210324')
         self.dates.grid(row=6, column=0, sticky=tk.N, pady=4, columnspan=4)
 
         """ Button """
@@ -242,13 +242,16 @@ class Model:
                                                 self.output_path) for name in route_name]
 
             # stores results and some information
+            # try:
             completed, pending = await asyncio.wait(tasks_date)
             results = [task.result() for task in completed]
             self.time = "time: {} ".format(results[0][0])
             create_output_fahrplan(route_name[0][0], 'dates_' + str(results[0][1]), results[0][2], results[0][3],
                                    self.output_path)
             messagebox.showinfo('create fahrplan:', 'Done!')
-            messagebox.showinfo('create fahrplan:', 'Done!')
+            # except ValueError as e:
+            #     print(ValueError)
+            #     messagebox.showerror('Error in Create Fahrplan', 'Wrong data! Check input data and output path!')
         else:
             messagebox.showerror('Error in Create Fahrplan', 'Wrong data! Check input data and output path!')
             return
@@ -446,7 +449,7 @@ class Controller:
         if self.model.options_dates_weekday[self.model.selected_option_dates_weekday] == 'Weekday':
             if self.view.main.weekday_list is not None:
                 self.view.main.weekday_list.delete(0, 'end')
-                for x in range(0, 8):
+                for x in range(0, 9):
                     self.view.main.weekday_list.insert("end", str(self.model.weekDayOptions[x][1]))
                 # self.view.main.agency_List.grid(row=0, column=0, columnspan=1)
             self.write_gui_log("weekdays list updated")
@@ -580,7 +583,7 @@ class Controller:
         self.view.sidePanel.log.insert("end", str(time_now) + ': ' + text)
         self.view.sidePanel.log.yview("end")
 
-    def start(self):
+    def start(self, event):
         self.write_gui_log("start: create fahrplan...")
         button = "loadFahrplan"
         self.do_tasks(button)
