@@ -29,6 +29,9 @@ def findDuplicatesAndReplace(data):
 
     return temp
 
+def sortbyStopName(data):
+    return
+
 
 def dictForEntry(temp, stop_name):
     for stop_name_k in temp["stop_name"]:
@@ -615,6 +618,7 @@ async def create_fahrplan_dates(routeName,
                 order by fahrplan_calendar_weeks.date, fahrplan_calendar_weeks.stop_sequence;
                '''
 
+-> hier groupen oder so?
     cond_stop_name_sorted_trips_with_dates = '''
                 select  fahrplan_calendar_weeks.date,
                         fahrplan_calendar_weeks.day,
@@ -627,7 +631,7 @@ async def create_fahrplan_dates(routeName,
                         fahrplan_calendar_weeks.service_id, 
                         fahrplan_calendar_weeks.stop_id                        
                 from fahrplan_calendar_weeks 
-                left join df_deleted_dupl_stop_names on fahrplan_calendar_weeks.stop_name = df_deleted_dupl_stop_names.stop_name             
+                left join df_deleted_dupl_stop_names on fahrplan_calendar_weeks.stop_name = df_deleted_dupl_stop_names.stop_name     
                 order by fahrplan_calendar_weeks.date, fahrplan_calendar_weeks.stop_sequence, fahrplan_calendar_weeks.start_time, fahrplan_calendar_weeks.trip_id;
                '''
 
@@ -733,10 +737,6 @@ async def create_fahrplan_dates(routeName,
 
     # group stop_sequence and stop_names, so every stop_name appears only once
     fahrplan_sorted_stops = sqldf(cond_select_stop_sequence_stop_name_sorted_, locals())
-    sorted_stop_dict = {
-        "stop_sequence": [],
-        "stop_name": []
-    }
     deleted_dupl_stop_names = findDuplicatesAndReplace(fahrplan_sorted_stops)
     df_deleted_dupl_stop_names = pd.DataFrame.from_dict(deleted_dupl_stop_names)
     df_deleted_dupl_stop_names["stop_name"] = df_deleted_dupl_stop_names["stop_name"].apply(str)
@@ -744,12 +744,13 @@ async def create_fahrplan_dates(routeName,
     df_deleted_dupl_stop_names = df_deleted_dupl_stop_names.set_index("stop_sequence")
     df_deleted_dupl_stop_names = df_deleted_dupl_stop_names.sort_index(axis=0)
     fahrplan_calendar_weeks = sqldf(cond_stop_name_sorted_trips_with_dates, locals())
-    print(np.where(df_deleted_dupl_stop_names.index.duplicated()))
-    print(np.where(fahrplan_calendar_weeks.index.duplicated()))
+    # print(np.where(df_deleted_dupl_stop_names.index.duplicated()))
+    # print(np.where(fahrplan_calendar_weeks.index.duplicated()))
     create_output_fahrplan(routeName, 'dates_STOPS', dfheader_for_export_data, fahrplan_calendar_weeks,
                            'C:/Temp/')
 
     ###########################
+    # stop_name_sorted_dict = sortbyStopName(fahrplan_calendar_weeks)
     fahrplan_calendar_weeks['date'] = pd.to_datetime(fahrplan_calendar_weeks['date'], format='%Y-%m-%d %H:%M:%S.%f')
     fahrplan_calendar_weeks['trip_id'] = fahrplan_calendar_weeks['trip_id'].astype(int)
     fahrplan_calendar_weeks['arrival_time'] = fahrplan_calendar_weeks['arrival_time'].apply(str)
@@ -757,7 +758,8 @@ async def create_fahrplan_dates(routeName,
 
     # creating a pivot table
     fahrplan_calendar_filter_days_pivot = fahrplan_calendar_weeks.reset_index().pivot(
-        index=['date', 'day', 'stop_sequence', 'stop_sequence_sorted', 'stop_name'], columns=['start_time', 'trip_id'], values='arrival_time')
+        # index=['date', 'day', 'stop_sequence_sorted', 'stop_name'], columns=['start_time', 'trip_id'], values='arrival_time')
+       index=['date', 'day', 'stop_sequence_sorted', 'stop_sequence', 'stop_name'], columns=['start_time', 'trip_id'], values='arrival_time')
     #   index=['date', 'day', 'stop_sequence', 'stop_name'], columns=['start_time', 'trip_id'], values='arrival_time')
 
     # fahrplan_calendar_filter_days_pivot['date'] = pd.to_datetime(fahrplan_calendar_filter_days_pivot['date'], format='%Y-%m-%d %H:%M:%S.%f')
