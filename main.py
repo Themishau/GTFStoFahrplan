@@ -5,5 +5,5 @@ from gui import *
 
 if __name__ == '__main__':
     print("start")
-    gtfsMenu = Controller()
+    gtfsMenu = Controller(['update_process', 'toggle_button_direction_event', 'toggle_button_date_week_event'], 'controller')
     gtfsMenu.run()

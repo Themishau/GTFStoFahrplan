@@ -4,6 +4,7 @@ from tkinter import messagebox
 import asyncio
 import threading
 from analyzeGTFS import *
+from observer import Publisher, Subscriber
 
 delimiter = " "
 
@@ -112,24 +113,186 @@ class Main(tk.Frame):
         self.agency_List.grid(row=4, column=0, sticky=tk.N, pady=4, columnspan=4)
 
 
-class View:
-    def __init__(self, parent):
+class View(Publisher, Subscriber):
+    def __init__(self, parent, model, events, name):
+        Publisher.__init__(self, events)
+        Subscriber.__init__(self, name)
+
+        self.model = model
+
         self.frame = tk.Frame(parent)
         self.main = Main(parent)
         self.sidePanel = InfoBottomPanel(parent)
         self.statusbar = Statusbar(parent)
         self.navbar = Navbar(parent)
 
+        self.process = "initilizing"
 
-class Model:
-    def __init__(self):
 
+        # hidden and shown widgets
+        self.hiddenwidgets = {}
+
+        # bind events to lists
+        self.main.routes_List.bind('<<ListboxSelect>>', self.select_route)
+        self.main.agency_List.bind('<<ListboxSelect>>', self.select_agency)
+        self.hide_instance_attribute(self.main.dates, 'self.main.dates')
+
+        # bind events to buttons
+        self.main.mainStartButton.bind("<Button>", self.start)
+        self.main.LoadGTFSButton.bind("<Button>", self.load_gtfsdata_event)
+        self.main.quitButton.bind("<Button>", self.close_program)
+
+        self.main.toogle_btn_DateWeek.bind("<Button>", self.select_option_button_date_week)
+        self.main.toogle_btn_direction.bind("<Button>", self.select_option_button_direction)
+
+    def select_route(self, event):
+        self.dispatch("select_route", "select_route routine started! Notify subscriber!")
+
+    def select_agency(self, event):
+        self.dispatch("select_agency", "select_agency routine started! Notify subscriber!")
+
+    def start(self, event):
+        self.dispatch("start", "start routine started! Notify subscriber!")
+
+    def load_gtfsdata_event(self, event):
+        self.dispatch("load_gtfsdata_event", "load_gtfsdata_event routine started! Notify subscriber!")
+
+    def select_option_button_date_week(self, event):
+        self.dispatch("select_option_button_date_week", "select_option_button_date_week routine started! Notify subscriber!")
+
+    def select_option_button_direction(self, event):
+        self.dispatch("select_option_button_direction", "select_option_button_direction routine started! Notify subscriber!")
+
+    def close_program(self, event):
+        self.dispatch("close_program", "close_program routine started! Notify subscriber!")
+
+    def hide_instance_attribute(self, instance_attribute, widget_variablename):
+        print(instance_attribute)
+        self.hiddenwidgets[widget_variablename] = instance_attribute.grid_info()
+        instance_attribute.grid_remove()
+
+    def show_instance_attribute(self, widget_variablename):
+        try:
+            # gets the information stored in
+            widget_grid_information = self.hiddenwidgets[widget_variablename]
+            print(widget_grid_information)
+            # gets variable and sets grid
+            eval(widget_variablename).grid(row=widget_grid_information['row'], column=widget_grid_information['column'],
+                                           sticky=widget_grid_information['sticky'],
+                                           pady=widget_grid_information['pady'],
+                                           columnspan=widget_grid_information['columnspan'])
+        except TypeError:
+            messagebox.showerror('Error show_instance_attribute', 'contact developer')
+
+
+    def bind_selection_to_Listbox(self):
+        # bind list selections
+        self.main.routes_List.bind('<<ListboxSelect>>', self.select_route)
+        self.main.agency_List.bind('<<ListboxSelect>>', self.select_agency)
+        # self.view.main.agency_List.unbind_all(self)
+
+    def update_weekday_list(self):
+        self.set_process("updating weekdays list...")
+        if self.model.options_dates_weekday[self.model.selected_option_dates_weekday] == 'Weekday':
+            if self.main.weekday_list is not None:
+                self.main.weekday_list.delete(0, 'end')
+                for x in range(0, 9):
+                    self.main.weekday_list.insert("end", str(self.model.weekDayOptions[x][1]))
+                # self.view.main.agency_List.grid(row=0, column=0, columnspan=1)
+            self.set_process("weekdays list updated")
+        elif self.model.options_dates_weekday[self.model.selected_option_dates_weekday] == 'Dates':
+            if self.main.weekday_list is not None:
+                self.main.weekday_list.delete(0, 'end')
+
+    def update_routes_List(self):
+        self.set_process("updating routes list...")
+        if self.main.routes_List is not None:
+            self.main.routes_List.delete(0, 'end')
+        for routes in self.model.routesList:
+            self.main.routes_List.insert("end", routes[0])
+            # self.view.main.agency_List.grid(row=0, column=0, columnspan=1)
+        self.set_process("routes list updated")
+
+    def update_agency_List(self):
+        self.set_process("updating agencies list...")
+        for agency in self.model.agenciesList:
+            # printAgency = agency[0] + ", " + agency[1]
+            self.main.agency_List.insert("end", agency[1])
+            # self.view.main.agency_List.grid(row=0, column=0, columnspan=1)
+        self.set_process("agencies list updated")
+
+    # update write_log
+    def update(self, event, message):
+
+        if event == "data_changed":
+            self.write_gui_log("{}".format(message))
+        elif event == "update_process":
+            self.write_gui_log("{}".format(message))
+        elif event == "toggle_button_direction_event":
+            self.toggle_button_direction_event()
+        elif event == "toggle_button_date_week_event":
+            self.toggle_button_date_week_event()
+        elif event == "update_routes_List":
+            self.update_routes_List()
+        elif event == "update_weekday_list":
+            self.update_weekday_list()
+        elif event == "update_agency_List":
+            self.update_agency_List()
+
+    def set_process(self, task):
+        self.update("update_process", "{} started".format(task))
+        self.process = task
+
+    def delete_process(self):
+        self.update("update_process", "{} finished".format(self.process))
+        self.process = None
+
+    def toggle_button_direction_event(self):
+        option = self.model.selected_Direction
+        if option == 0:
+            try:
+                self.main.toogle_btn_direction.config(text='Direction 0')
+            except TypeError:
+                messagebox.showerror('Error toggle', 'contact developer')
+
+        elif option == 1:
+            try:
+                self.main.toogle_btn_direction.config(text='Direction 1')
+            except TypeError:
+                messagebox.showerror('Error toggle', 'contact developer')
+
+    def write_gui_log(self, text):
+        time_now = datetime.now().strftime("%d-%b-%Y (%H:%M:%S)")
+        self.sidePanel.log.insert("end", str(time_now) + ': ' + text)
+        self.sidePanel.log.yview("end")
+
+    def toggle_button_date_week_event(self):
+        option = self.model.options_dates_weekday[self.model.selected_option_dates_weekday]
+        if option == 'Dates':
+            self.main.toogle_btn_DateWeek.config(text='Dates')
+            try:
+                self.hide_instance_attribute(self.main.weekday_list, 'self.main.weekday_list')
+                self.show_instance_attribute('self.main.dates')
+            except TypeError:
+                messagebox.showerror('Error toggle', 'contact developer')
+            self.update_weekday_list()
+        elif  option == 'Weekday':
+            self.main.toogle_btn_DateWeek.config(text='Weekday')
+            self.hide_instance_attribute(self.main.dates, 'self.main.dates')
+            self.show_instance_attribute('self.main.weekday_list')
+            self.update_weekday_list()
+
+class Model(Publisher, Subscriber):
+    def __init__(self, events, name):
+        Publisher.__init__(self, events)
+        Subscriber.__init__(self, name)
         self.input_path = None
         self.output_path = None
         self.options_dates_weekday = ['Dates', 'Weekday']
         self.selected_option_dates_weekday = 1
         self.selected_Direction = 0
         self.time = None
+        self.processing = None
 
         """ dicts for create and listbox """
         self.stopsdict = None
@@ -188,6 +351,7 @@ class Model:
 
     # import routine and
     async def import_gtfs(self):
+        self.processing = "loading"
         await self.read_gfts()
 
         if self.GTFSData == -1:
@@ -196,6 +360,10 @@ class Model:
 
         await self.get_gtfs()
         self.agenciesList = await read_gtfs_agencies(self.agencyFahrtdict)
+        print("self.agenciesList = await read_gtfs_agencies(self.agencyFahrtdict)")
+        self.dispatch("update_agency_List",
+                      "update_agency_List routine started! Notify subscriber!")
+        self.processing = None
 
     # gets the data out of GTFSData and releases some memory
     async def get_gtfs(self):
@@ -211,18 +379,19 @@ class Model:
         self.GTFSData = None
 
     def get_routes_of_agency(self, agency):
-        print('agencies loading...')
         self.selectedAgency = agency
         self.routesList = select_gtfs_routes_from_agancy(agency, self.routesFahrtdict)
-        print("routes of agencies loaded")
+        self.dispatch("update_routes_List",
+                      "update_routes_List routine started! Notify subscriber!")
 
     def set_routes(self, route):
-        print('route loading...')
         self.selectedRoute = route
-        print("routes loaded")
+        self.dispatch("update_weekday_list",
+                      "update_weekday_list routine started! Notify subscriber!")
+
 
     async def createFahrplan_dates(self):
-        print('fahrplan creating...')
+        self.processing = "creating"
         route_name = [self.selectedRoute]
         if (self.data_loaded_and_available()
                 and self.selectedRoute is not None
@@ -248,16 +417,18 @@ class Model:
             self.time = "time: {} ".format(results[0][0])
             create_output_fahrplan(route_name[0][0], 'dates_' + str(results[0][1]), results[0][2], results[0][3],
                                    self.output_path)
+            self.processing = None
             messagebox.showinfo('create fahrplan:', 'Done!')
             # except ValueError as e:
             #     print(ValueError)
             #     messagebox.showerror('Error in Create Fahrplan', 'Wrong data! Check input data and output path!')
         else:
             messagebox.showerror('Error in Create Fahrplan', 'Wrong data! Check input data and output path!')
+            self.processing = None
             return
 
     async def createFahrplan_weekday(self):
-        print('fahrplan creating...')
+        self.processing = "creating"
         selected_weekday_option = self.selected_weekday
         route_name = [self.selectedRoute]
         if (self.data_loaded_and_available()
@@ -283,15 +454,26 @@ class Model:
 
             create_output_fahrplan(route_name[0][0], 'weekday_' + str(results_weekday[0][1]), results_weekday[0][2],
                                    results_weekday[0][3], self.output_path)
-
+            self.processing = None
             messagebox.showinfo('create fahrplan:', 'Done!')
+
         else:
             messagebox.showerror('Error in Create Fahrplan', 'Wrong data! Check input data and output path!')
+            self.processing = None
             return
 
+    def set_process(self, task):
+        self.dispatch("data_changed", "{} started".format(task))
+        self.processing = task
 
-class Controller:
-    def __init__(self):
+    def delete_process(self):
+        self.dispatch("data_changed", "{} finished".format(self.processing))
+        self.processing = None
+
+class Controller(Publisher, Subscriber):
+    def __init__(self, events, name):
+        Publisher.__init__(self, events)
+        Subscriber.__init__(self, name)
 
         # init tk
         self.root = tk.Tk()
@@ -303,25 +485,63 @@ class Controller:
         # counts running threads
         self.runningAsync = 0
 
-        # init model and viewer
-        self.model = Model()
-        self.view = View(self.root)
+        self.process = "initializing"
+        #init model and viewer with publisher
+        self.model = Model(['update_weekday_list',
+                            'update_routes_List',
+                            'update_agency_List',
+                            'data_changed'], 'model')
+        self.view = View(self.root, self.model, ['select_route',
+                                                 'select_agency',
+                                                 'start',
+                                                 'load_gtfsdata_event',
+                                                 'close_program',
+                                                 'select_option_button_date_week',
+                                                 'select_option_button_direction'
+                                                ], 'viewer')
 
-        # hidden and shown widgets
-        self.hiddenwidgets = {}
+        #init Observer viewer -> controller
+        self.view.register('select_route', self)  # Achtung, sich selbst angeben und nicht self.controller
+        self.view.register('select_agency', self)  # Achtung, sich selbst angeben und nicht self.controller
+        self.view.register('start', self)  # Achtung, sich selbst angeben und nicht self.controller
+        self.view.register('load_gtfsdata_event', self)
+        self.view.register('select_option_button_date_week', self)
+        self.view.register('select_option_button_direction', self)
+        self.view.register('close_program', self)
 
-        # bind events to lists
-        self.view.main.routes_List.bind('<<ListboxSelect>>', self.select_route)
-        self.view.main.agency_List.bind('<<ListboxSelect>>', self.select_agency)
-        self.hide_instance_attribute(self.view.main.dates, 'self.view.main.dates')
+        #init Observer controller -> viewer
+        self.register("update_process", self.view)
+        self.register('toggle_button_direction_event', self.view)
+        self.register('toggle_button_date_week_event', self.view)
+        # init Observer model -> viewer
+        self.model.register('update_routes_List', self.view)  # Achtung, sich selbst angeben und nicht self.controller
+        self.model.register('update_weekday_list', self.view)
+        self.model.register('update_agency_List', self.view)
+        self.model.register('data_changed', self.view)
 
-        # bind events to buttons
-        self.view.main.mainStartButton.bind("<Button>", self.start)
-        self.view.main.LoadGTFSButton.bind("<Button>", self.load_gtfsdata_event)
-        self.view.main.quitButton.bind("<Button>", self.close_program)
+    def update(self, event, message):
+        if event == "select_route":
+            self.select_route()
 
-        self.view.main.toogle_btn_DateWeek.bind("<Button>", self.select_option_button_date_week)
-        self.view.main.toogle_btn_direction.bind("<Button>", self.select_option_button_direction)
+        elif event == "select_agency":
+            self.select_agency()
+
+        elif event == "select_option_button_date_week":
+            self.select_option_button_date_week()
+
+        elif event == "select_option_button_direction":
+            self.select_option_button_direction()
+
+        elif event == "start":
+            self.start()
+
+        elif event == "load_gtfsdata_event":
+            self.load_gtfsdata_event()
+
+        elif event == 'close_program':
+            self.destroy_info(event)
+
+        self.do_tasks(event)
 
     async def info(self, message, title="ShowInfo"):
         root = tk.Tk()
@@ -333,67 +553,22 @@ class Controller:
     async def destroy_info(self, root):
         root.destroy()
 
-    def hide_instance_attribute(self, instance_attribute, widget_variablename):
-        print(instance_attribute)
-        self.hiddenwidgets[widget_variablename] = instance_attribute.grid_info()
-
-        instance_attribute.grid_remove()
-
-    def show_instance_attribute(self, widget_variablename):
-        try:
-            # gets the information stored in
-            widget_grid_information = self.hiddenwidgets[widget_variablename]
-            print(widget_grid_information)
-            # gets variable and sets grid
-            eval(widget_variablename).grid(row=widget_grid_information['row'], column=widget_grid_information['column'],
-                                           sticky=widget_grid_information['sticky'],
-                                           pady=widget_grid_information['pady'],
-                                           columnspan=widget_grid_information['columnspan'])
-        except:
-            messagebox.showerror('Error show_instance_attribute', 'contact developer')
-
-    def toggle_button_direction_event(self, option):
-        if option == 0:
-            try:
-                self.view.main.toogle_btn_direction.config(text='Direction 0')
-            except:
-                messagebox.showerror('Error toggle', 'contact developer')
-
-        elif option == 1:
-            try:
-                self.view.main.toogle_btn_direction.config(text='Direction 1')
-            except:
-                messagebox.showerror('Error toggle', 'contact developer')
-
-    def select_option_button_direction(self, event):
-        if self.model.selectedRoute != None:
+    def select_option_button_direction(self):
+        if self.model.selectedRoute is not None:
             try:
                 selected_option = self.model.selected_Direction
                 if selected_option == 1:
                     self.model.selected_Direction = 0
                 elif selected_option == 0:
                     self.model.selected_Direction = 1
-                self.toggle_button_direction_event(self.model.selected_Direction)
-            except:
+                self.dispatch("toggle_button_direction_event",
+                              "toggle_button_direction_event routine started! Notify subscriber!")
+
+            except TypeError:
                 messagebox.showerror('Error SELECT ROUTE', 'Nothing Selected!')
 
-    def toggle_button_date_week_event(self, option):
-        if option == 'Dates':
-            self.view.main.toogle_btn_DateWeek.config(text='Dates')
-            try:
-                self.hide_instance_attribute(self.view.main.weekday_list, 'self.view.main.weekday_list')
-                self.show_instance_attribute('self.view.main.dates')
-            except:
-                messagebox.showerror('Error toggle', 'contact developer')
-            self.update_weekday_list()
-        elif option == 'Weekday':
-            self.view.main.toogle_btn_DateWeek.config(text='Weekday')
-            self.hide_instance_attribute(self.view.main.dates, 'self.view.main.dates')
-            self.show_instance_attribute('self.view.main.weekday_list')
-            self.update_weekday_list()
-
-    def select_option_button_date_week(self, event):
-        if self.model.selectedRoute != None:
+    def select_option_button_date_week(self):
+        if self.model.selectedRoute is not None:
             try:
                 options = len(self.model.options_dates_weekday)
                 selected_option = self.model.selected_option_dates_weekday
@@ -401,30 +576,29 @@ class Controller:
                     self.model.selected_option_dates_weekday = 0
                 else:
                     self.model.selected_option_dates_weekday = self.model.selected_option_dates_weekday = + 1
-                self.toggle_button_date_week_event(
-                    self.model.options_dates_weekday[self.model.selected_option_dates_weekday])
-            except:
+
+                self.dispatch("toggle_button_date_week_event",
+                              "toggle_button_date_week_event routine started! Notify subscriber!")
+            except TypeError:
                 messagebox.showerror('Error SELECT ROUTE', 'Nothing Selected!')
 
     # loads and updates weekdays list based on selected route
-    def select_route(self, event):
+    def select_route(self):
         try:
             selection_route = None
             for route in self.model.routesList:
-                if (route[0] == self.view.main.routes_List.selection_get()):
+                if route[0] == self.view.main.routes_List.selection_get():
                     print(self.view.main.routes_List.selection_get())
                     selection_route = route
-            if selection_route == None:
+            if selection_route is None:
                 return
             # loads weekdays
             self.model.set_routes(selection_route)
-            self.model.selectedRoute = selection_route
-            self.update_weekday_list()
 
-        except:
+        except TypeError:
             messagebox.showerror('Error SELECT ROUTE', 'Nothing Selected!')
 
-    def select_agency(self, event):
+    def select_agency(self):
         try:
             selected_agency = None
             for agency in self.model.agenciesList:
@@ -434,45 +608,8 @@ class Controller:
             if selected_agency is None:
                 return
             self.model.get_routes_of_agency(selected_agency)
-            self.update_routes_List()
-        except:
+        except TypeError:
             messagebox.showerror('Error SELECT AGENCY', 'Nothing Selected!')
-
-    def bind_selection_to_Listbox(self):
-        # bind list selections
-        self.view.main.routes_List.bind('<<ListboxSelect>>', self.select_route)
-        self.view.main.agency_List.bind('<<ListboxSelect>>', self.select_agency)
-        # self.view.main.agency_List.unbind_all(self)
-
-    def update_weekday_list(self):
-        self.write_gui_log("updating weekdays list...")
-        if self.model.options_dates_weekday[self.model.selected_option_dates_weekday] == 'Weekday':
-            if self.view.main.weekday_list is not None:
-                self.view.main.weekday_list.delete(0, 'end')
-                for x in range(0, 9):
-                    self.view.main.weekday_list.insert("end", str(self.model.weekDayOptions[x][1]))
-                # self.view.main.agency_List.grid(row=0, column=0, columnspan=1)
-            self.write_gui_log("weekdays list updated")
-        elif self.model.options_dates_weekday[self.model.selected_option_dates_weekday] == 'Dates':
-            if self.view.main.weekday_list is not None:
-                self.view.main.weekday_list.delete(0, 'end')
-
-    def update_routes_List(self):
-        self.write_gui_log("updating routes list...")
-        if self.view.main.routes_List is not None:
-            self.view.main.routes_List.delete(0, 'end')
-        for routes in self.model.routesList:
-            self.view.main.routes_List.insert("end", routes[0])
-            # self.view.main.agency_List.grid(row=0, column=0, columnspan=1)
-        self.write_gui_log("routes list updated")
-
-    def update_agency_List(self):
-        self.write_gui_log("updating agencies list...")
-        for agency in self.model.agenciesList:
-            # printAgency = agency[0] + ", " + agency[1]
-            self.view.main.agency_List.insert("end", agency[1])
-            # self.view.main.agency_List.grid(row=0, column=0, columnspan=1)
-        self.write_gui_log("agencies list updated")
 
     def get_requested_dates(self):
         try:
@@ -485,7 +622,7 @@ class Controller:
                 print("error no route / wrong dates format ")
                 return False
             return True
-        except:
+        except TypeError:
             messagebox.showerror('Error', 'Something went wrong!')
 
     def get_selected_weekday(self):
@@ -499,7 +636,7 @@ class Controller:
                 print("error no route / weekdays selected")
                 return False
             return True
-        except:
+        except TypeError:
             messagebox.showerror('Error', 'Something went wrong!')
 
     def do_tasks(self, button):
@@ -509,9 +646,19 @@ class Controller:
             print('start creating fahrplan')
             threading.Thread(target=self.async_task_create_Fahrplan, args=()).start()
 
+    async def task(self, task):
+        # create an generic method call
+        # self.model_grey -> model_grey
+        # self       -> controller
+        visit_task = getattr(self.model, task, self.generic_task)
+        return await visit_task(task)
+
+    async def generic_task(self, name):
+        raise Exception('No model_grey.{} method'.format(name))
+
     # loads data from zip
     def async_task_load_GTFS_data(self):
-        self.write_gui_log("loading GTFS data...")
+        self.set_process("loading GTFS data...")
 
         # clear list
         if self.view.main.agency_List is not None:
@@ -526,11 +673,9 @@ class Controller:
         loop = asyncio.new_event_loop()
         self.runningAsync = self.runningAsync + 1
         loop.run_until_complete(self.model.import_gtfs())
-        self.update_agency_List()
         loop.close()
-
         self.runningAsync = self.runningAsync - 1
-        self.write_gui_log("GTFS data loaded")
+        self.set_process("GTFS data loaded")
 
     # routine to create fahrplan
     def async_task_create_Fahrplan(self):
@@ -541,7 +686,7 @@ class Controller:
         # checks and sets the selected route for fahrplan
         if self.model.options_dates_weekday[self.model.selected_option_dates_weekday] == 'Weekday':
             if self.get_selected_weekday():
-                self.write_gui_log(
+                self.set_process(
                     "creating...: " + self.model.selectedAgency[1] + delimiter + self.model.selectedRoute[
                         0] + delimiter + str(self.model.selected_weekday) + delimiter + str(
                         self.model.selected_Direction))
@@ -550,13 +695,13 @@ class Controller:
                 loop.run_until_complete(self.model.createFahrplan_weekday())
                 loop.close()
                 self.runningAsync = self.runningAsync - 1
-                self.write_gui_log("created,  " + str(self.model.time) + " seconds")
+                self.set_process("created,  " + str(self.model.time) + " seconds")
             else:
                 messagebox.showerror('Error', 'no route/weekday')
 
         elif self.model.options_dates_weekday[self.model.selected_option_dates_weekday] == 'Dates':
             if self.get_requested_dates():
-                self.write_gui_log(
+                self.set_process(
                     "creating...: " + self.model.selectedAgency[1] + delimiter + self.model.selectedRoute[
                         0] + delimiter + str(self.model.selected_dates) + delimiter + str(
                         self.model.selected_Direction))
@@ -565,31 +710,38 @@ class Controller:
                 loop.run_until_complete(self.model.createFahrplan_dates())
                 loop.close()
                 self.runningAsync = self.runningAsync - 1
-                self.write_gui_log("created,  " + str(self.model.time) + " seconds")
+                self.set_process("created,  " + str(self.model.time) + " seconds")
             else:
                 messagebox.showerror('Error', 'no route/dates')
 
-    def load_gtfsdata_event(self, event):
+    def load_gtfsdata_event(self):
         try:
             self.model.input_path = self.view.main.input_path.get()
             self.model.output_path = self.view.main.output_path.get()
-        except:
+        except TypeError:
             messagebox.showerror('Error', 'check path')
         button = "loadGTFS"
         self.do_tasks(button)
 
-    def write_gui_log(self, text):
-        time_now = datetime.now().strftime("%d-%b-%Y (%H:%M:%S)")
-        self.view.sidePanel.log.insert("end", str(time_now) + ': ' + text)
-        self.view.sidePanel.log.yview("end")
-
-    def start(self, event):
-        self.write_gui_log("start: create fahrplan...")
+    def start(self):
+        self.set_process("start: create fahrplan...")
         button = "loadFahrplan"
         self.do_tasks(button)
 
     def close_program(self):
         self.root.destroy()
+
+    def set_process(self, task):
+        self.dispatch("update_process", "{} started".format(task))
+        self.process = task
+
+    def update_log(self, task):
+        self.dispatch("update_process", "{}".format(task))
+        self.process = task
+
+    def delete_process(self):
+        self.dispatch("update_process", "{} finished".format(self.process))
+        self.process = None
 
     def run(self):
         self.root.title("GTFS to Fahrplan")

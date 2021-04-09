@@ -11,7 +11,8 @@ import re
 def findDuplicatesAndReplace(data):
     temp = {
         "stop_sequence": [],
-        "stop_name": []
+        "stop_name": [],
+        "stop_id": []
     }
     # for row_i in new_fahrplan_sorted_stops.itertuples():
     #     for row_j in new_fahrplan_sorted_stops.itertuples():
@@ -22,10 +23,28 @@ def findDuplicatesAndReplace(data):
         if not dictForEntry(temp, stop_name_i.stop_name):
             temp["stop_name"].append(stop_name_i.stop_name)
             temp["stop_sequence"].append(stop_name_i.stop_sequence)
+            temp["stop_id"].append(stop_name_i.stop_id)
             for stop_name_j in data.itertuples():
                 if stop_name_i.stop_name == stop_name_j.stop_name \
-                 and stop_name_i.stop_sequence < stop_name_j.stop_sequence:
+                    and stop_name_i.stop_id == stop_name_j.stop_id \
+                    and stop_name_i.stop_sequence < stop_name_j.stop_sequence:
                     temp["stop_sequence"][len(temp["stop_sequence"]) - 1] = stop_name_j.stop_sequence
+                    # try:
+                    #     # we check the stop before and set it to - 1
+                    #     stop_name_check = temp["stop_name"][len(temp["stop_name"]) - 2]
+                    #     stop_sequence_check = temp["stop_sequence"][len(temp["stop_sequence"]) - 2]
+                    #     stop_id_check = temp["stop_id"][len(temp["stop_id"]) - 2]
+                    #     print("stop_name_check {} stop_sequence_check {} stop_id_check {} stop_name_j.stop_sequence {}".format(stop_name_check, stop_sequence_check, stop_id_check, stop_name_j.stop_sequence))
+                    #     if stop_sequence_check < stop_name_j.stop_sequence:
+                    #         temp["stop_sequence"][len(temp["stop_sequence"]) - 2] = stop_name_j.stop_sequence - 1
+                    #
+                    # except ValueError:
+                    #     pass
+
+    # i = 0
+    # for sequence in range(0, len(temp["stop_sequence"])):
+    #     i += 1
+    #     temp["stop_sequence"][sequence] = i
 
     return temp
 
@@ -51,8 +70,6 @@ def time_in_string(time):
 
 def check_dates_input(dates):
     pattern1 = re.findall('^\d{8}(?:\d{8})*(?:,\d{8})*$', dates)
-    print(dates)
-    print(pattern1)
     if (pattern1):
         return True
     else:
@@ -92,7 +109,6 @@ async def read_gtfs_data(path):
 
 
 async def get_gtfs_trip(inputgtfsData):
-    print("get_gtfs_trip start")
     tripdict = {
         "route_id": [],
         "service_id": [],
@@ -121,13 +137,10 @@ async def get_gtfs_trip(inputgtfsData):
         tripdict["wheelchair_accessible"].append(data[8])
         tripdict["bikes_allowed"].append(data[9])
     tripsList = None
-    print(tripdict['route_id'][1])
-    print("get_gtfs_trip loaded")
     return tripdict
 
 
 async def get_gtfs_stop(inputgtfsData):
-    print("get_gtfs_stop start")
     stopsdict = {
         "stop_id": [],
         "stop_code": [],
@@ -158,12 +171,10 @@ async def get_gtfs_stop(inputgtfsData):
         stopsdict["platform_code"].append(stopData[9])
         stopsdict["zone_id"].append(stopData[10])
     stopsList = None
-    print("get_gtfs_stop loaded")
     return stopsdict
 
 
 async def get_gtfs_stoptime(inputgtfsData):
-    print("get_gtfs_stoptime start")
     stopTimesdict = {
         "trip_id": [],
         "arrival_time": [],
@@ -188,12 +199,10 @@ async def get_gtfs_stoptime(inputgtfsData):
         stopTimesdict["drop_off_type"].append(stopTimeData[6])
         stopTimesdict["stop_headsign"].append(stopTimeData[7])
     stopTimesList = None
-    print("get_gtfs_stoptime loaded")
     return stopTimesdict
 
 
 async def get_gtfs_calendarWeek(inputgtfsData):
-    print("get_gtfs_calendarWeek start")
     calendarWeekdict = {
         "service_id": [],
         "monday": [],
@@ -222,12 +231,10 @@ async def get_gtfs_calendarWeek(inputgtfsData):
         calendarWeekdict["start_date"].append(calendarData[8])
         calendarWeekdict["end_date"].append(calendarData[9])
     calendarList = None
-    print("get_gtfs_calendarWeek loaded")
     return calendarWeekdict
 
 
 async def get_gtfs_calendarDates(inputgtfsData):
-    print("get_gtfs_calendarDates start")
     calendarDatesdict = {
         "service_id": [],
         "date": [],
@@ -242,12 +249,10 @@ async def get_gtfs_calendarDates(inputgtfsData):
         calendarDatesdict["date"].append(calendarDatesData[1])
         calendarDatesdict["exception_type"].append(calendarDatesData[2])
     calendar_datesList = None
-    print("get_gtfs_calendarDates loaded")
     return calendarDatesdict
 
 
 async def get_gtfs_routes(inputgtfsData):
-    print("get_gtfs_routes start")
     routesFahrtdict = {
         "route_id": [],
         "agency_id": [],
@@ -272,12 +277,10 @@ async def get_gtfs_routes(inputgtfsData):
         routesFahrtdict["route_text_color"].append(routesData[6])
         routesFahrtdict["route_desc"].append(routesData[7])
     routesList = None
-    print("get_gtfs_routes loaded")
     return routesFahrtdict
 
 
 async def get_gtfs_agencies(inputgtfsData):
-    print("get_gtfs_agencies start")
     agencyFahrtdict = {
         "agency_id": [],
         "agency_name": [],
@@ -298,7 +301,6 @@ async def get_gtfs_agencies(inputgtfsData):
         agencyFahrtdict["agency_lang"].append(agencyData[4])
         agencyFahrtdict["agency_phone"].append(agencyData[5])
     routesList = None
-    print("get_gtfs_agencies loaded")
     return agencyFahrtdict
 
 
@@ -612,13 +614,14 @@ async def create_fahrplan_dates(routeName,
                 select  fahrplan_calendar_weeks.date,
                         fahrplan_calendar_weeks.day,
                         fahrplan_calendar_weeks.stop_name,
-                        fahrplan_calendar_weeks.stop_sequence                  
+                        fahrplan_calendar_weeks.stop_sequence,
+                        fahrplan_calendar_weeks.stop_id                  
                 from fahrplan_calendar_weeks 
-                group by fahrplan_calendar_weeks.stop_sequence, fahrplan_calendar_weeks.stop_name      
+                group by fahrplan_calendar_weeks.stop_sequence, fahrplan_calendar_weeks.stop_name, fahrplan_calendar_weeks.stop_id      
                 order by fahrplan_calendar_weeks.date, fahrplan_calendar_weeks.stop_sequence;
                '''
 
--> hier groupen oder so?
+
     cond_stop_name_sorted_trips_with_dates = '''
                 select  fahrplan_calendar_weeks.date,
                         fahrplan_calendar_weeks.day,
@@ -631,8 +634,20 @@ async def create_fahrplan_dates(routeName,
                         fahrplan_calendar_weeks.service_id, 
                         fahrplan_calendar_weeks.stop_id                        
                 from fahrplan_calendar_weeks 
-                left join df_deleted_dupl_stop_names on fahrplan_calendar_weeks.stop_name = df_deleted_dupl_stop_names.stop_name     
-                order by fahrplan_calendar_weeks.date, fahrplan_calendar_weeks.stop_sequence, fahrplan_calendar_weeks.start_time, fahrplan_calendar_weeks.trip_id;
+                left join df_deleted_dupl_stop_names on fahrplan_calendar_weeks.stop_name = df_deleted_dupl_stop_names.stop_name  
+                group by fahrplan_calendar_weeks.date,
+                         fahrplan_calendar_weeks.day,
+                         fahrplan_calendar_weeks.start_time, 
+                         fahrplan_calendar_weeks.trip_id,
+                         df_deleted_dupl_stop_names.stop_name,
+                         stop_sequence_sorted,
+                         fahrplan_calendar_weeks.stop_sequence,
+                         fahrplan_calendar_weeks.service_id
+
+                order by fahrplan_calendar_weeks.date,
+                         fahrplan_calendar_weeks.stop_sequence,
+                         fahrplan_calendar_weeks.start_time,
+                         fahrplan_calendar_weeks.trip_id;
                '''
 
     # get dates for start and end dates for date range function
@@ -758,8 +773,8 @@ async def create_fahrplan_dates(routeName,
 
     # creating a pivot table
     fahrplan_calendar_filter_days_pivot = fahrplan_calendar_weeks.reset_index().pivot(
-        # index=['date', 'day', 'stop_sequence_sorted', 'stop_name'], columns=['start_time', 'trip_id'], values='arrival_time')
-       index=['date', 'day', 'stop_sequence_sorted', 'stop_sequence', 'stop_name'], columns=['start_time', 'trip_id'], values='arrival_time')
+        # index=['date', 'day', 'stop_sequence', 'stop_id', 'stop_name'], columns=['start_time', 'trip_id'], values='arrival_time')
+        index=['date', 'day', 'stop_sequence_sorted', 'stop_sequence',  'stop_name'], columns=['start_time', 'trip_id'], values='arrival_time')
     #   index=['date', 'day', 'stop_sequence', 'stop_name'], columns=['start_time', 'trip_id'], values='arrival_time')
 
     # fahrplan_calendar_filter_days_pivot['date'] = pd.to_datetime(fahrplan_calendar_filter_days_pivot['date'], format='%Y-%m-%d %H:%M:%S.%f')
