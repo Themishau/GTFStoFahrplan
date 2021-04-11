@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from gui import *
+from gui import Controller
 
 
 if __name__ == '__main__':
