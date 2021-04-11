@@ -422,7 +422,7 @@ async def create_fahrplan_dates(routeName,
 
     try:
         # dfTrips['trip_id'] = pd.to_numeric(dfTrips['trip_id'])
-        dfTrips['trip_id'] = dfTrips['trip_id'].astype(int)
+        dfTrips['trip_id'] = dfTrips['trip_id'].astype('int32')
     except KeyError:
         print("can not convert dfTrips: trip_id into int")
 
@@ -430,22 +430,22 @@ async def create_fahrplan_dates(routeName,
     dfStopTimes = pd.DataFrame.from_dict(stopTimesdict)
     try:
         dfStopTimes['arrival_time'] = dfStopTimes['arrival_time'].apply(lambda x: time_in_string(x))
-        dfStopTimes['arrival_time'] = dfStopTimes['arrival_time'].apply(str)
+        dfStopTimes['arrival_time'] = dfStopTimes['arrival_time'].astype('string')
     except KeyError:
         print("can not convert dfStopTimes: arrival_time into string and change time")
 
     try:
-        dfStopTimes['stop_sequence'] = dfStopTimes['stop_sequence'].astype(int)
+        dfStopTimes['stop_sequence'] = dfStopTimes['stop_sequence'].astype('int32')
     except KeyError:
         print("can not convert dfStopTimes: stop_sequence into int")
     try:
-        dfStopTimes['stop_id'] = dfStopTimes['stop_id'].astype(int)
+        dfStopTimes['stop_id'] = dfStopTimes['stop_id'].astype('int32')
     except KeyError:
         print("can not convert dfStopTimes: stop_id into int")
     except OverflowError:
         print("can not convert dfStopTimes: stop_id into int")
     try:
-        dfStopTimes['trip_id'] = dfStopTimes['trip_id'].astype(int)
+        dfStopTimes['trip_id'] = dfStopTimes['trip_id'].astype('int32')
 
     except KeyError:
         print("can not convert dfStopTimes: trip_id into int")
@@ -453,7 +453,7 @@ async def create_fahrplan_dates(routeName,
     # DataFrame with every stop
     dfStops = pd.DataFrame.from_dict(stopsdict).set_index('stop_id')
     try:
-        dfStops['stop_id'] = dfStops['stop_id'].astype(int)
+        dfStops['stop_id'] = dfStops['stop_id'].astype('int32')
     except KeyError:
         print("can not convert dfStops: stop_id into int ")
 
@@ -470,7 +470,7 @@ async def create_fahrplan_dates(routeName,
 
     # DataFrame with every service dates
     dfDates = pd.DataFrame.from_dict(calendarDatesdict).set_index('service_id')
-    dfDates['exception_type'] = dfDates['exception_type'].astype(int)
+    dfDates['exception_type'] = dfDates['exception_type'].astype('int32')
     dfDates['date'] = pd.to_datetime(dfDates['date'], format='%Y%m%d')
 
     # DataFrame with every agency
@@ -754,28 +754,50 @@ async def create_fahrplan_dates(routeName,
     fahrplan_sorted_stops = sqldf(cond_select_stop_sequence_stop_name_sorted_, locals())
     deleted_dupl_stop_names = findDuplicatesAndReplace(fahrplan_sorted_stops)
     df_deleted_dupl_stop_names = pd.DataFrame.from_dict(deleted_dupl_stop_names)
-    df_deleted_dupl_stop_names["stop_name"] = df_deleted_dupl_stop_names["stop_name"].apply(str)
-    df_deleted_dupl_stop_names["stop_sequence"] = df_deleted_dupl_stop_names["stop_sequence"].apply(int)
+    df_deleted_dupl_stop_names["stop_name"] = df_deleted_dupl_stop_names["stop_name"].astype('string')
+    df_deleted_dupl_stop_names["stop_sequence"] = df_deleted_dupl_stop_names["stop_sequence"].astype('int32')
     df_deleted_dupl_stop_names = df_deleted_dupl_stop_names.set_index("stop_sequence")
     df_deleted_dupl_stop_names = df_deleted_dupl_stop_names.sort_index(axis=0)
     fahrplan_calendar_weeks = sqldf(cond_stop_name_sorted_trips_with_dates, locals())
-    # print(np.where(df_deleted_dupl_stop_names.index.duplicated()))
-    # print(np.where(fahrplan_calendar_weeks.index.duplicated()))
-    create_output_fahrplan(routeName, 'dates_STOPS', dfheader_for_export_data, fahrplan_calendar_weeks,
-                           'C:/Temp/')
+
 
     ###########################
     # stop_name_sorted_dict = sortbyStopName(fahrplan_calendar_weeks)
     fahrplan_calendar_weeks['date'] = pd.to_datetime(fahrplan_calendar_weeks['date'], format='%Y-%m-%d %H:%M:%S.%f')
-    fahrplan_calendar_weeks['trip_id'] = fahrplan_calendar_weeks['trip_id'].astype(int)
-    fahrplan_calendar_weeks['arrival_time'] = fahrplan_calendar_weeks['arrival_time'].apply(str)
-    fahrplan_calendar_weeks['start_time'] = fahrplan_calendar_weeks['start_time'].apply(str)
+    fahrplan_calendar_weeks['trip_id'] = fahrplan_calendar_weeks['trip_id'].astype('int32')
+    fahrplan_calendar_weeks['arrival_time'] = fahrplan_calendar_weeks['arrival_time'].astype('string')
+    fahrplan_calendar_weeks['start_time'] = fahrplan_calendar_weeks['start_time'].astype('string')
+    # fahrplan_calendar_weeks_test = fahrplan_calendar_weeks.set_index(['date', 'day', 'stop_sequence_sorted', 'stop_name', 'start_time', 'trip_id'])
+    # fahrplan_calendar_weeks_test = fahrplan_calendar_weeks.groupby(
+    #     ['date', 'day', 'stop_sequence_sorted', 'stop_name', 'start_time', 'trip_id'])
+    fahrplan_calendar_weeks = fahrplan_calendar_weeks.drop(columns=['stop_sequence', 'service_id', 'stop_id'])
+    fahrplan_calendar_weeks = fahrplan_calendar_weeks.groupby(
+        ['date', 'day', 'stop_sequence_sorted', 'stop_name', 'start_time', 'trip_id']).first().reset_index()
+    # fahrplan_calendar_weeks_test = fahrplan_calendar_weeks.unstack(level=['start_time', 'trip_id'], fill_value='')
+    # fahrplan_calendar_weeks_test = fahrplan_calendar_weeks_test.sort_index(axis=1)
+    # fahrplan_calendar_weeks_test = fahrplan_calendar_weeks_test.sort_index(axis=0)
+    # create_output_fahrplan(routeName, 'dates_STOPS_before', dfheader_for_export_data, fahrplan_calendar_weeks,
+    #                        'C:/Temp/')
+
+    # fahrplan_calendar_weeks_test = fahrplan_calendar_weeks.drop_duplicates(subset=['date', 'day', 'stop_sequence_sorted', 'stop_name', 'start_time', 'trip_id'])
+    # fahrplan_calendar_weeks_test = fahrplan_calendar_weeks.drop_duplicates(subset=['date', 'day', 'stop_sequence_sorted', 'stop_name', 'start_time', 'trip_id', 'arrival_time'])
+    # fahrplan_calendar_weeks_test = fahrplan_calendar_weeks.set_index(
+    #     ['date', 'day', 'stop_sequence_sorted', 'stop_name', 'start_time', 'trip_id'])
+    # create_output_fahrplan(routeName, 'dates_STOPS_dropped', dfheader_for_export_data, fahrplan_calendar_weeks_test,
+    #                        'C:/Temp/')
+
+    fahrplan_calendar_weeks['date'] = pd.to_datetime(fahrplan_calendar_weeks['date'], format='%Y-%m-%d')
+    fahrplan_calendar_weeks['trip_id'] = fahrplan_calendar_weeks['trip_id'].astype('int32')
+    fahrplan_calendar_weeks['arrival_time'] = fahrplan_calendar_weeks['arrival_time'].astype('string')
+    fahrplan_calendar_weeks['start_time'] = fahrplan_calendar_weeks['start_time'].astype('string')
 
     # creating a pivot table
-    fahrplan_calendar_filter_days_pivot = fahrplan_calendar_weeks.reset_index().pivot(
-        # index=['date', 'day', 'stop_sequence', 'stop_id', 'stop_name'], columns=['start_time', 'trip_id'], values='arrival_time')
-        index=['date', 'day', 'stop_sequence_sorted', 'stop_sequence',  'stop_name'], columns=['start_time', 'trip_id'], values='arrival_time')
-    #   index=['date', 'day', 'stop_sequence', 'stop_name'], columns=['start_time', 'trip_id'], values='arrival_time')
+    # fahrplan_calendar_weeks = fahrplan_calendar_weeks.drop_duplicates(
+    #     subset=['date', 'day', 'stop_sequence_sorted', 'stop_name', 'start_time', 'trip_id', 'arrival_time'])
+
+    fahrplan_calendar_filter_days_pivot = fahrplan_calendar_weeks.pivot(
+        index=['date', 'day', 'stop_sequence_sorted', 'stop_name'], columns=['start_time', 'trip_id'], values='arrival_time')
+
 
     # fahrplan_calendar_filter_days_pivot['date'] = pd.to_datetime(fahrplan_calendar_filter_days_pivot['date'], format='%Y-%m-%d %H:%M:%S.%f')
     fahrplan_calendar_filter_days_pivot = fahrplan_calendar_filter_days_pivot.sort_index(axis=1)

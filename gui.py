@@ -282,6 +282,7 @@ class View(Publisher, Subscriber):
             self.show_instance_attribute('self.main.weekday_list')
             self.update_weekday_list()
 
+
 class Model(Publisher, Subscriber):
     def __init__(self, events, name):
         Publisher.__init__(self, events)
@@ -470,6 +471,7 @@ class Model(Publisher, Subscriber):
         self.dispatch("data_changed", "{} finished".format(self.processing))
         self.processing = None
 
+
 class Controller(Publisher, Subscriber):
     def __init__(self, events, name):
         Publisher.__init__(self, events)
@@ -486,11 +488,13 @@ class Controller(Publisher, Subscriber):
         self.runningAsync = 0
 
         self.process = "initializing"
-        #init model and viewer with publisher
+
+        # init model and viewer with publisher
         self.model = Model(['update_weekday_list',
                             'update_routes_List',
                             'update_agency_List',
                             'data_changed'], 'model')
+
         self.view = View(self.root, self.model, ['select_route',
                                                  'select_agency',
                                                  'start',
@@ -500,7 +504,7 @@ class Controller(Publisher, Subscriber):
                                                  'select_option_button_direction'
                                                 ], 'viewer')
 
-        #init Observer viewer -> controller
+        # init Observer viewer -> controller
         self.view.register('select_route', self)  # Achtung, sich selbst angeben und nicht self.controller
         self.view.register('select_agency', self)  # Achtung, sich selbst angeben und nicht self.controller
         self.view.register('start', self)  # Achtung, sich selbst angeben und nicht self.controller
@@ -509,7 +513,7 @@ class Controller(Publisher, Subscriber):
         self.view.register('select_option_button_direction', self)
         self.view.register('close_program', self)
 
-        #init Observer controller -> viewer
+        # init Observer controller -> viewer
         self.register("update_process", self.view)
         self.register('toggle_button_direction_event', self.view)
         self.register('toggle_button_date_week_event', self.view)
