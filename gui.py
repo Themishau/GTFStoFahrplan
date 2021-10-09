@@ -5,6 +5,8 @@ import asyncio
 import threading
 from analyzeGTFS import *
 from observer import Publisher, Subscriber
+import datetime as dt
+import time
 
 delimiter = " "
 
@@ -146,9 +148,11 @@ class View(Publisher, Subscriber):
         self.main.toogle_btn_direction.bind("<Button>", self.select_option_button_direction)
 
     def select_route(self, event):
+        print("dispatch select_route")
         self.dispatch("select_route", "select_route routine started! Notify subscriber!")
 
     def select_agency(self, event):
+        print("dispatch select_agency")
         self.dispatch("select_agency", "select_agency routine started! Notify subscriber!")
 
     def start(self, event):
@@ -183,7 +187,6 @@ class View(Publisher, Subscriber):
                                            columnspan=widget_grid_information['columnspan'])
         except TypeError:
             messagebox.showerror('Error show_instance_attribute', 'contact developer')
-
 
     def bind_selection_to_Listbox(self):
         # bind list selections
@@ -517,11 +520,14 @@ class Controller(Publisher, Subscriber):
         self.register("update_process", self.view)
         self.register('toggle_button_direction_event', self.view)
         self.register('toggle_button_date_week_event', self.view)
+
         # init Observer model -> viewer
         self.model.register('update_routes_List', self.view)  # Achtung, sich selbst angeben und nicht self.controller
         self.model.register('update_weekday_list', self.view)
         self.model.register('update_agency_List', self.view)
         self.model.register('data_changed', self.view)
+
+        self.refresh_time = self.get_current_time()
 
     def update(self, event, message):
         if event == "select_route":
@@ -590,12 +596,15 @@ class Controller(Publisher, Subscriber):
     def select_route(self):
         try:
             selection_route = None
+            if self.model.routesList is None:
+                return
             for route in self.model.routesList:
                 if route[0] == self.view.main.routes_List.selection_get():
                     print(self.view.main.routes_List.selection_get())
                     selection_route = route
             if selection_route is None:
                 return
+
             # loads weekdays
             self.model.set_routes(selection_route)
 
@@ -605,6 +614,8 @@ class Controller(Publisher, Subscriber):
     def select_agency(self):
         try:
             selected_agency = None
+            if self.model.agenciesList is None:
+                return
             for agency in self.model.agenciesList:
                 if agency[1] == self.view.main.agency_List.selection_get():
                     print(self.view.main.agency_List.selection_get())
@@ -746,6 +757,20 @@ class Controller(Publisher, Subscriber):
     def delete_process(self):
         self.dispatch("update_process", "{} finished".format(self.process))
         self.process = None
+
+    def get_current_time(self):
+        """ Helper function to get the current time in seconds. """
+
+        now = dt.datetime.now()
+        total_time = (now.hour * 3600) + (now.minute * 60) + now.second
+        return total_time
+
+    def refresh_data(self):
+        if (self.get_current_time() - self.refresh_time) > 10:
+            time.sleep(1)
+            self.refresh_time = self.get_current_time()
+        self.update_log(("still processing. Please wait...", "{} finished".format(self.process)))
+
 
     def run(self):
         self.root.title("GTFS to Fahrplan")
