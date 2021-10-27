@@ -774,6 +774,8 @@ class Controller(Publisher, Subscriber):
 
     def run(self):
         self.root.title("GTFS to Fahrplan")
+
         # sets the window in focus
         self.root.deiconify()
+
         self.root.mainloop()

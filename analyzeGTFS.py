@@ -4,59 +4,179 @@ import pandas as pd
 from pandasql import sqldf
 import zipfile
 import io
-from datetime import datetime
-import numpy as np
+from datetime import datetime, timedelta
 import re
-import random
 
-def findDuplicatesAndReplace(data):
-    temp = {
+def SortStopSequence(data):
+    stopsequence = {}
+    sorted_stopsequence = {
+        "stop_id": [],
         "stop_sequence": [],
-        "stop_name": [],
-        "stop_id": []
+        "start_time": []
     }
-    # for row_i in new_fahrplan_sorted_stops.itertuples():
-    #     for row_j in new_fahrplan_sorted_stops.itertuples():
-    #         if row_i.stop_name == row_j.stop_name:
-    #             if row_j.stop_sequence > row_j.stop_sequence:
+
 
     for stop_name_i in data.itertuples():
-        if not dictForEntry(temp, stop_name_i.stop_name):
-            temp["stop_name"].append(stop_name_i.stop_name)
-            temp["stop_sequence"].append(stop_name_i.stop_sequence)
-            temp["stop_id"].append(stop_name_i.stop_id)
-            for stop_name_j in data.itertuples():
-                if stop_name_i.stop_name == stop_name_j.stop_name \
-                    and stop_name_i.stop_id == stop_name_j.stop_id \
-                    and stop_name_i.stop_sequence < stop_name_j.stop_sequence:
-                    temp["stop_sequence"][len(temp["stop_sequence"]) - 1] = stop_name_j.stop_sequence
-                    # try:
-                    #     # we check the stop before and set it to - 1
-                    #     stop_name_check = temp["stop_name"][len(temp["stop_name"]) - 2]
-                    #     stop_sequence_check = temp["stop_sequence"][len(temp["stop_sequence"]) - 2]
-                    #     stop_id_check = temp["stop_id"][len(temp["stop_id"]) - 2]
-                    #     print("stop_name_check {} stop_sequence_check {} stop_id_check {} stop_name_j.stop_sequence {}".format(stop_name_check, stop_sequence_check, stop_id_check, stop_name_j.stop_sequence))
-                    #     if stop_sequence_check < stop_name_j.stop_sequence:
-                    #         temp["stop_sequence"][len(temp["stop_sequence"]) - 2] = stop_name_j.stop_sequence - 1
-                    #
-                    # except ValueError:
-                    #     pass
+        # check for stop_id not for stop_name!
+        if not dictForEntry(stopsequence, "stop_id", stop_name_i.stop_id):
+            temp = {"stop_sequence": -1, "stop_name": '', "trip_id": '', "start_time": '', "arrival_time": ''}
+            temp["stop_sequence"] = stop_name_i.stop_sequence
+            temp["stop_name"] = stop_name_i.stop_name
+            temp["trip_id"] = stop_name_i.trip_id
 
+            if check_hour_24(stop_name_i.start_time):
+                comparetime_i = str((datetime.strptime(stop_name_i.date, '%Y-%m-%d %H:%M:%S.%f').strftime('%Y-%m-%d'))) + ' 0' + str(int(stop_name_i.start_time.split(':')[0]) - 24) + ':' + \
+                                stop_name_i.start_time.split(':')[1]
+                time_i = datetime.strptime(comparetime_i, '%Y-%m-%d %H:%M')
+                time_i = time_i + timedelta(days=1)
+            else:
+                comparetime_i = str((datetime.strptime(stop_name_i.date, '%Y-%m-%d %H:%M:%S.%f').strftime('%Y-%m-%d'))) + ' ' + stop_name_i.start_time
+                time_i = datetime.strptime(comparetime_i, '%Y-%m-%d %H:%M')
+
+            if check_hour_24(stop_name_i.arrival_time):
+                time_arrival_i = str((datetime.strptime(stop_name_i.date, '%Y-%m-%d %H:%M:%S.%f').strftime('%Y-%m-%d'))) + ' 0' + str(int(stop_name_i.arrival_time.split(':')[0]) - 24) + ':' + \
+                                 stop_name_i.arrival_time.split(':')[1]
+                time_arrival_i = datetime.strptime(time_arrival_i, '%Y-%m-%d %H:%M')
+                time_arrival_i = time_arrival_i + timedelta(days=1)
+            else:
+                time_arrival_i = str((datetime.strptime(stop_name_i.date, '%Y-%m-%d %H:%M:%S.%f').strftime('%Y-%m-%d'))) + ' ' + stop_name_i.arrival_time
+                time_arrival_i = datetime.strptime(time_arrival_i, '%Y-%m-%d %H:%M')
+
+
+            temp["start_time"] = time_i
+            temp["arrival_time"] = time_arrival_i
+
+            # search in data and compare the ids
+            for stop_name_j in data.itertuples():
+                # if ids match continue comparison
+                if stop_name_i.stop_id == stop_name_j.stop_id:
+
+                    if check_hour_24(stop_name_j.start_time):
+                        comparetime_j = str((datetime.strptime(stop_name_j.date, '%Y-%m-%d %H:%M:%S.%f').strftime('%Y-%m-%d'))) + ' 0' + str(int(stop_name_j.start_time.split(':')[0]) - 24) + ':' + \
+                                        stop_name_j.start_time.split(':')[1]
+                        time_j = datetime.strptime(comparetime_j, '%Y-%m-%d %H:%M')
+                        time_j = time_j + timedelta(days=1)
+                    else:
+                        comparetime_j = str((datetime.strptime(stop_name_j.date, '%Y-%m-%d %H:%M:%S.%f').strftime('%Y-%m-%d'))) + ' ' + stop_name_j.start_time
+                        time_j = datetime.strptime(comparetime_j, '%Y-%m-%d %H:%M')
+
+                    time_temp = temp["start_time"]
+
+                    if check_hour_24(stop_name_j.arrival_time):
+                        time_arrival_j = str((datetime.strptime(stop_name_j.date, '%Y-%m-%d %H:%M:%S.%f').strftime('%Y-%m-%d'))) + ' 0' + str(int(stop_name_j.arrival_time.split(':')[0]) - 24) + ':' + \
+                                         stop_name_j.arrival_time.split(':')[1]
+                        time_arrival_j = datetime.strptime(time_arrival_j, '%Y-%m-%d %H:%M')
+                        time_arrival_j = time_arrival_j + timedelta(days=1)
+                    else:
+                        time_arrival_j = str((datetime.strptime(stop_name_j.date, '%Y-%m-%d %H:%M:%S.%f').strftime('%Y-%m-%d'))) + ' ' + stop_name_j.arrival_time
+                        time_arrival_j = datetime.strptime(time_arrival_j, '%Y-%m-%d %H:%M')
+
+                    arrival_time_temp = temp["arrival_time"]
+
+
+                    if stop_name_j.stop_id == '070101000952':
+                        print()
+                    # if time_j < time_i \
+                    # and time_j < time_temp \
+                    # and time_arrival_j < time_arrival_i \
+                    # and time_arrival_j < arrival_time_temp\
+                    # and stop_name_j.stop_sequence > stop_name_i.stop_sequence:
+
+                    if time_j < time_i \
+                    and time_j < time_temp \
+                    and stop_name_j.stop_sequence > stop_name_i.stop_sequence \
+                    and stop_name_j.stop_sequence > temp["stop_sequence"]:
+                        temp["start_time"] = time_j
+                        temp["arrival_time"] = time_arrival_j
+                        # temp["arrival_time"] = stop_name_j.arrival_time
+                        temp["stop_sequence"] = stop_name_j.stop_sequence
+
+            stopsequence[stop_name_i.stop_id] = temp
+
+
+
+    new_stopsequence = sortStopSequence(stopsequence)
+
+
+    for stop_sequence in new_stopsequence.keys():
+        sorted_stopsequence['stop_id'].append(new_stopsequence[stop_sequence]['stop_id'])
+        sorted_stopsequence['stop_sequence'].append(stop_sequence)
+        sorted_stopsequence['start_time'].append(new_stopsequence[stop_sequence]['start_time'])
+
+    print (new_stopsequence)
+    #
+    # print('len stop_sequences {}'.format(sequence_count))
+    # for stop_id in stopsequence.keys():
+    #     if stop_id in new_stopsequence \
+    #         and stopsequence[stop_id]['start_time'] < new_stopsequence[stop_id]['start_time'] \
+    #         and stopsequence[stop_id]['arrival_time'] < new_stopsequence[stop_id]['arrival_time']:
+    #         pass
+    #     else:
+    #         temp = {"stop_sequence": -1, "stop_name": '', "trip_id": '', "start_time": '', "arrival_time": ''}
+    #         temp["start_time"] = stopsequence[stop_id]['start_time']
+    #         temp["arrival_time"] = stopsequence[stop_id]['arrival_time']
+    #         temp["stop_sequence"] = sequence_count - 1
+    #         new_stopsequence[stop_id] = temp
+    #
+    #
+    #
+    #
+    #
+    #
+    # print(stopsequence)
     # i = 0
     # for sequence in range(0, len(temp["stop_sequence"])):
     #     i += 1
     #     temp["stop_sequence"][sequence] = i
 
-    return temp
-
-def sortbyStopName(data):
-    return
+    return sorted_stopsequence
 
 
-def dictForEntry(temp, stop_name):
-    for stop_name_k in temp["stop_name"]:
-        if stop_name_k == stop_name:
-            return True
+def sortStopSequence(stopsequence):
+    sequence_count = len(stopsequence)
+
+    d = {}
+    for k in range(sequence_count):
+        d[str(k)] = {"start_time": datetime.strptime('1901-01-01 23:59', '%Y-%m-%d %H:%M').time(),
+                     "arrival_time": datetime.strptime('1901-01-01 23:59', '%Y-%m-%d %H:%M').time(),
+                     "stop_name": '',
+                     "stop_id": ''
+                    }
+
+    # fill new dict
+    for k, j in enumerate(stopsequence):
+        if d[str(k)]["stop_id"] == '':
+            d[str(k)]["stop_id"] = j
+            d[str(k)]["start_time"] = stopsequence[j]['start_time']
+            d[str(k)]["arrival_time"] = stopsequence[j]['arrival_time']
+            d[str(k)]["stop_sequence"] = stopsequence[j]['stop_sequence']
+            d[str(k)]["stop_name"] = stopsequence[j]['stop_name']
+    # bubble sort
+    # for i in range(sequence_count - 1):
+    #     for j in range(0,sequence_count-i-1):
+    #         if d[str(j)]["start_time"] > d[str(j + 1)]["start_time"] \
+    #         and d[str(j)]["stop_sequence"] > d[str(j + 1)]["stop_sequence"]:
+    #             d[str(j)], d[str(j + 1)] = d[str(j + 1)], d[str(j)]
+
+    for i in range(sequence_count - 1):
+        for j in range(0,sequence_count-i-1):
+
+            if  d[str(j)]["stop_sequence"] > d[str(j + 1)]["stop_sequence"]:
+                d[str(j)], d[str(j + 1)] = d[str(j + 1)], d[str(j)]
+
+            elif d[str(j)]["stop_sequence"] == d[str(j + 1)]["stop_sequence"]:
+                if d[str(j)]["start_time"] > d[str(j + 1)]["start_time"]:
+                    d[str(j)], d[str(j + 1)] = d[str(j + 1)], d[str(j)]
+
+    return d
+
+
+
+def dictForEntry(temp, key, key_value):
+    if key_value in temp:
+        return True
+    else:
+        return False
 
 
 # the is the one way to add a 0 to the time hh:mm:ss, if 0 is missing like in 6:44:33
@@ -76,6 +196,12 @@ def check_dates_input(dates):
     else:
         return False
 
+def check_hour_24(time):
+    pattern1 = re.findall('^2{1}[4-9]{1}:[0-9]{2}', time)
+    if (pattern1):
+        return True
+    else:
+        return False
 
 async def read_gtfs_data(path):
     try:
@@ -341,7 +467,6 @@ def select_gtfs_routes_from_agancy(agency, routesFahrtdict):
                '''
     routes_list = sqldf(cond_routes_of_agency, locals())
     routes_list.values.tolist()
-    # print (agency_list.values.tolist())
     return routes_list.values.tolist()
 
 
@@ -350,10 +475,10 @@ def select_gtfs_services_from_routes(route, tripdict, calendarWeekdict):
     inputVar = [{'route_id': route[1]}]
     varTest = pd.DataFrame(inputVar).set_index('route_id')
 
-    dfTrips = pd.DataFrame.from_dict(tripdict)
+    dfTrips = pd.DataFrame.from_dict(tripdict).set_index('trip_id')
 
     # DataFrame with every service weekly
-    dfWeek = pd.DataFrame.from_dict(calendarWeekdict)
+    dfWeek = pd.DataFrame.from_dict(calendarWeekdict).set_index('service_id')
     try:
         dfWeek['service_id'] = dfWeek['service_id'].astype(int)
     except:
@@ -416,10 +541,10 @@ async def create_fahrplan_dates(routeName,
     dfheader_for_export_data = pd.DataFrame.from_dict(header_for_export_data)
 
     # DataFrame for every route
-    dfRoutes = pd.DataFrame.from_dict(routesFahrtdict).set_index('route_id')
+    dfRoutes = pd.DataFrame.from_dict(routesFahrtdict).set_index(['route_id','agency_id'])
 
     # DataFrame with every trip
-    dfTrips = pd.DataFrame.from_dict(tripdict)
+    dfTrips = pd.DataFrame.from_dict(tripdict).set_index('trip_id')
 
     try:
         # dfTrips['trip_id'] = pd.to_numeric(dfTrips['trip_id'])
@@ -427,8 +552,10 @@ async def create_fahrplan_dates(routeName,
     except KeyError:
         print("can not convert dfTrips: trip_id into int")
 
+
+
     # DataFrame with every stop (time)
-    dfStopTimes = pd.DataFrame.from_dict(stopTimesdict)
+    dfStopTimes = pd.DataFrame.from_dict(stopTimesdict).set_index(['trip_id', 'stop_id'])
     try:
         dfStopTimes['arrival_time'] = dfStopTimes['arrival_time'].apply(lambda x: time_in_string(x))
         dfStopTimes['arrival_time'] = dfStopTimes['arrival_time'].astype('string')
@@ -447,7 +574,6 @@ async def create_fahrplan_dates(routeName,
         print("can not convert dfStopTimes: stop_id into int")
     try:
         dfStopTimes['trip_id'] = dfStopTimes['trip_id'].astype('int32')
-
     except KeyError:
         print("can not convert dfStopTimes: trip_id into int")
 
@@ -458,13 +584,6 @@ async def create_fahrplan_dates(routeName,
     except KeyError:
         print("can not convert dfStops: stop_id into int ")
 
-    # try to set some more indeces
-    try:
-        dfTrips = dfTrips.set_index('trip_id')
-        dfStopTimes = dfStopTimes.set_index(['trip_id', 'stop_id'])
-        dfStops = dfStops.set_index('stop_id')
-    except KeyError:
-        print("can not set index: stop_id into int ")
 
     # DataFrame with every service weekly
     dfWeek = pd.DataFrame.from_dict(calendarWeekdict).set_index('service_id')
@@ -550,7 +669,7 @@ async def create_fahrplan_dates(routeName,
                                                               from requested_datesdf                                                            
                                                                 where fahrplan_dates_all_dates.date = requested_datesdf.date
                                                             )
-                 and (  (    fahrplan_dates_all_dates.day = fahrplan_dates_all_dates.monday
+                 and (   (   fahrplan_dates_all_dates.day = fahrplan_dates_all_dates.monday
                           or fahrplan_dates_all_dates.day = fahrplan_dates_all_dates.tuesday
                           or fahrplan_dates_all_dates.day = fahrplan_dates_all_dates.wednesday
                           or fahrplan_dates_all_dates.day = fahrplan_dates_all_dates.thursday
@@ -610,16 +729,29 @@ async def create_fahrplan_dates(routeName,
                 order by fahrplan_dates_all_dates.date, fahrplan_calendar_weeks.stop_sequence, fahrplan_calendar_weeks.start_time, fahrplan_calendar_weeks.trip_id;
                '''
 
+    # cond_select_stop_sequence_stop_name_sorted_ = '''
+    #             select  fahrplan_calendar_weeks.date,
+    #                     fahrplan_calendar_weeks.day,
+    #                     fahrplan_calendar_weeks.start_time,
+    #                     fahrplan_calendar_weeks.stop_name,
+    #                     fahrplan_calendar_weeks.stop_sequence,
+    #                     fahrplan_calendar_weeks.stop_id
+    #             from fahrplan_calendar_weeks
+    #             group by fahrplan_calendar_weeks.stop_sequence, fahrplan_calendar_weeks.stop_name, fahrplan_calendar_weeks.stop_id, fahrplan_calendar_weeks.trip_id
+    #             order by fahrplan_calendar_weeks.trip_id, fahrplan_calendar_weeks.date, fahrplan_calendar_weeks.stop_sequence;
+    #            '''
 
     cond_select_stop_sequence_stop_name_sorted_ = '''
                 select  fahrplan_calendar_weeks.date,
                         fahrplan_calendar_weeks.day,
+                        fahrplan_calendar_weeks.start_time,
+                        fahrplan_calendar_weeks.arrival_time,
                         fahrplan_calendar_weeks.stop_name,
                         fahrplan_calendar_weeks.stop_sequence,
-                        fahrplan_calendar_weeks.stop_id                  
-                from fahrplan_calendar_weeks 
-                group by fahrplan_calendar_weeks.stop_sequence, fahrplan_calendar_weeks.stop_name, fahrplan_calendar_weeks.stop_id      
-                order by fahrplan_calendar_weeks.date, fahrplan_calendar_weeks.stop_sequence;
+                        fahrplan_calendar_weeks.stop_id,
+                        fahrplan_calendar_weeks.trip_id             
+                from fahrplan_calendar_weeks     
+                order by fahrplan_calendar_weeks.trip_id, fahrplan_calendar_weeks.date, fahrplan_calendar_weeks.stop_sequence;
                '''
 
 
@@ -628,22 +760,24 @@ async def create_fahrplan_dates(routeName,
                         fahrplan_calendar_weeks.day,
                         fahrplan_calendar_weeks.start_time, 
                         fahrplan_calendar_weeks.trip_id,
-                        df_deleted_dupl_stop_names.stop_name,
+                        fahrplan_calendar_weeks.stop_name,
                         df_deleted_dupl_stop_names.stop_sequence as stop_sequence_sorted,
                         fahrplan_calendar_weeks.stop_sequence,
                         fahrplan_calendar_weeks.arrival_time, 
                         fahrplan_calendar_weeks.service_id, 
                         fahrplan_calendar_weeks.stop_id                        
                 from fahrplan_calendar_weeks 
-                left join df_deleted_dupl_stop_names on fahrplan_calendar_weeks.stop_name = df_deleted_dupl_stop_names.stop_name  
+                left join df_deleted_dupl_stop_names on fahrplan_calendar_weeks.stop_id = df_deleted_dupl_stop_names.stop_id  
                 group by fahrplan_calendar_weeks.date,
                          fahrplan_calendar_weeks.day,
-                         fahrplan_calendar_weeks.start_time, 
+                         fahrplan_calendar_weeks.start_time,
+                         fahrplan_calendar_weeks.arrival_time, 
                          fahrplan_calendar_weeks.trip_id,
-                         df_deleted_dupl_stop_names.stop_name,
+                         fahrplan_calendar_weeks.stop_name,
                          stop_sequence_sorted,
                          fahrplan_calendar_weeks.stop_sequence,
-                         fahrplan_calendar_weeks.service_id
+                         fahrplan_calendar_weeks.service_id,
+                         fahrplan_calendar_weeks.stop_id
 
                 order by fahrplan_calendar_weeks.date,
                          fahrplan_calendar_weeks.stop_sequence,
@@ -740,11 +874,10 @@ async def create_fahrplan_dates(routeName,
                                                             format='%Y-%m-%d %H:%M:%S.%f')
     fahrplan_dates_all_dates['end_date'] = pd.to_datetime(fahrplan_dates_all_dates['end_date'],
                                                           format='%Y-%m-%d %H:%M:%S.%f')
-    # fahrplan_dates_all_dates = fahrplan_dates_all_dates.set_index('trip_id')
 
     # get all stop_times and stops for every stop of one route
     fahrplan_calendar_weeks = sqldf(cond_select_stops_for_trips, locals())
-    # fahrplan_calendar_weeks = fahrplan_calendar_weeks.set_index('trip_id')
+
 
     # combine dates and trips to get a df with trips for every date
     fahrplan_calendar_weeks = sqldf(cond_select_for_every_date_trips_stops, locals())
@@ -753,51 +886,40 @@ async def create_fahrplan_dates(routeName,
 
     # group stop_sequence and stop_names, so every stop_name appears only once
     fahrplan_sorted_stops = sqldf(cond_select_stop_sequence_stop_name_sorted_, locals())
-    deleted_dupl_stop_names = findDuplicatesAndReplace(fahrplan_sorted_stops)
+
+    # fahrplan_sorted_stops.to_csv('C:Temp/' + 'routeName' + 'nameprefix' + 'pivot_table.csv', header=True, quotechar=' ',
+    #                       index=True, sep=';', mode='a', encoding='utf8')
+
+    deleted_dupl_stop_names = SortStopSequence(fahrplan_sorted_stops)
     df_deleted_dupl_stop_names = pd.DataFrame.from_dict(deleted_dupl_stop_names)
-    df_deleted_dupl_stop_names["stop_name"] = df_deleted_dupl_stop_names["stop_name"].astype('string')
+    # df_deleted_dupl_stop_names["stop_name"] = df_deleted_dupl_stop_names["stop_name"].astype('string')
     df_deleted_dupl_stop_names["stop_sequence"] = df_deleted_dupl_stop_names["stop_sequence"].astype('int32')
     df_deleted_dupl_stop_names = df_deleted_dupl_stop_names.set_index("stop_sequence")
     df_deleted_dupl_stop_names = df_deleted_dupl_stop_names.sort_index(axis=0)
     fahrplan_calendar_weeks = sqldf(cond_stop_name_sorted_trips_with_dates, locals())
 
-
     ###########################
-    # stop_name_sorted_dict = sortbyStopName(fahrplan_calendar_weeks)
+
+
     fahrplan_calendar_weeks['date'] = pd.to_datetime(fahrplan_calendar_weeks['date'], format='%Y-%m-%d %H:%M:%S.%f')
     fahrplan_calendar_weeks['trip_id'] = fahrplan_calendar_weeks['trip_id'].astype('int32')
     fahrplan_calendar_weeks['arrival_time'] = fahrplan_calendar_weeks['arrival_time'].astype('string')
     fahrplan_calendar_weeks['start_time'] = fahrplan_calendar_weeks['start_time'].astype('string')
-    # fahrplan_calendar_weeks_test = fahrplan_calendar_weeks.set_index(['date', 'day', 'stop_sequence_sorted', 'stop_name', 'start_time', 'trip_id'])
-    # fahrplan_calendar_weeks_test = fahrplan_calendar_weeks.groupby(
-    #     ['date', 'day', 'stop_sequence_sorted', 'stop_name', 'start_time', 'trip_id'])
-    fahrplan_calendar_weeks = fahrplan_calendar_weeks.drop(columns=['stop_sequence', 'service_id', 'stop_id'])
-    fahrplan_calendar_weeks = fahrplan_calendar_weeks.groupby(
-        ['date', 'day', 'stop_sequence_sorted', 'stop_name', 'start_time', 'trip_id']).first().reset_index()
-    # fahrplan_calendar_weeks_test = fahrplan_calendar_weeks.unstack(level=['start_time', 'trip_id'], fill_value='')
-    # fahrplan_calendar_weeks_test = fahrplan_calendar_weeks_test.sort_index(axis=1)
-    # fahrplan_calendar_weeks_test = fahrplan_calendar_weeks_test.sort_index(axis=0)
-    # create_output_fahrplan(routeName, 'dates_STOPS_before', dfheader_for_export_data, fahrplan_calendar_weeks,
-    #                        'C:/Temp/')
 
-    # fahrplan_calendar_weeks_test = fahrplan_calendar_weeks.drop_duplicates(subset=['date', 'day', 'stop_sequence_sorted', 'stop_name', 'start_time', 'trip_id'])
-    # fahrplan_calendar_weeks_test = fahrplan_calendar_weeks.drop_duplicates(subset=['date', 'day', 'stop_sequence_sorted', 'stop_name', 'start_time', 'trip_id', 'arrival_time'])
-    # fahrplan_calendar_weeks_test = fahrplan_calendar_weeks.set_index(
-    #     ['date', 'day', 'stop_sequence_sorted', 'stop_name', 'start_time', 'trip_id'])
-    # create_output_fahrplan(routeName, 'dates_STOPS_dropped', dfheader_for_export_data, fahrplan_calendar_weeks_test,
-    #                        'C:/Temp/')
+    # fahrplan_calendar_weeks = fahrplan_calendar_weeks.drop(columns=['stop_sequence', 'service_id', 'stop_id'])
+    fahrplan_calendar_weeks = fahrplan_calendar_weeks.drop(columns=['stop_sequence', 'service_id'])
+    fahrplan_calendar_weeks = fahrplan_calendar_weeks.groupby(
+        ['date', 'day', 'stop_sequence_sorted', 'stop_name', 'stop_id', 'start_time', 'trip_id']).first().reset_index()
+
 
     fahrplan_calendar_weeks['date'] = pd.to_datetime(fahrplan_calendar_weeks['date'], format='%Y-%m-%d')
     fahrplan_calendar_weeks['trip_id'] = fahrplan_calendar_weeks['trip_id'].astype('int32')
     fahrplan_calendar_weeks['arrival_time'] = fahrplan_calendar_weeks['arrival_time'].astype('string')
     fahrplan_calendar_weeks['start_time'] = fahrplan_calendar_weeks['start_time'].astype('string')
 
-    # creating a pivot table
-    # fahrplan_calendar_weeks = fahrplan_calendar_weeks.drop_duplicates(
-    #     subset=['date', 'day', 'stop_sequence_sorted', 'stop_name', 'start_time', 'trip_id', 'arrival_time'])
 
     fahrplan_calendar_filter_days_pivot = fahrplan_calendar_weeks.pivot(
-        index=['date', 'day', 'stop_sequence_sorted', 'stop_name'], columns=['start_time', 'trip_id'], values='arrival_time')
+        index=['date', 'day', 'stop_sequence_sorted', 'stop_name', 'stop_id'], columns=['start_time', 'trip_id'], values='arrival_time')
 
 
     # fahrplan_calendar_filter_days_pivot['date'] = pd.to_datetime(fahrplan_calendar_filter_days_pivot['date'], format='%Y-%m-%d %H:%M:%S.%f')

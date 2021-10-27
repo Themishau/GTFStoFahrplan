@@ -2,18 +2,18 @@
 # https://www.protechtraining.com/blog/post/tutorial-the-observer-pattern-in-python-879
 
 
-class Subscriber:
-    def __init__(self, name):
+class Subscriber(object):
+    def __init__(self, name, *args, **kwargs):
         self.name = name
         print("Subscriber name {}".format(self.name))
 
-    def update(self, event, message):
+    def notify_model(self, event, message):
         print("no override")
-        print('{} got message "{}"'.format(self.name, message))
+        print('{}'.format(self.name))
 
 
-class Publisher:
-    def __init__(self, events):
+class Publisher(object):
+    def __init__(self, events, *args, **kwargs):
         # maps event names to subscribers
         # str -> dict
         self.events = {event: dict()
