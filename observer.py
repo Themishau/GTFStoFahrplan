@@ -11,6 +11,8 @@ class Subscriber(object):
         print("no override")
         print('{}'.format(self.name))
 
+    def print_me(self):
+        print(self.name)
 
 class Publisher(object):
     def __init__(self, events, *args, **kwargs):
@@ -20,18 +22,22 @@ class Publisher(object):
                        for event in events}
         print("Publisher events {}".format(self.events))
 
+    def print_me(self):
+        print(self.events)
+
     def get_subscribers(self, event):
         return self.events[event]
 
     def register(self, event, who, callback=None):
         if callback is None:
-            callback = getattr(who, 'update')
+            callback = getattr(who, 'notify_model')
         self.get_subscribers(event)[who] = callback
 
     def unregister(self, event, who):
         del self.get_subscribers(event)[who]
 
     def dispatch(self, event, message):
-        # print("{} {} dispatch(self, event, message) {} {} ".format(self ,self.get_subscribers(event).items(), event, message))
+        print("{} {} dispatch(self, event, message) {} {} ".format(self ,self.get_subscribers(event).items(), event, message))
         for subscriber, callback in self.get_subscribers(event).items():
+            print(subscriber, callback)
             callback(event, message)

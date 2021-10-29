@@ -1,15 +1,17 @@
 import asyncio
 import threading
 
-from analyzeGTFS import *
+from gtfs import gtfs
 from observer import Publisher, Subscriber
 import datetime as dt
 import time
 import sys
+from datetime import datetime, timedelta
 from PyQt5 import uic, QtGui, QtCore
 from PyQt5.Qt import *
-from PyQt5.QtGui import QCursor
+from PyQt5.QtGui import QCursor, QPixmap
 from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtWidgets import QLabel
 
 delimiter = " "
 
@@ -17,36 +19,8 @@ class Model(Publisher, Subscriber):
     def __init__(self, events, name):
         Publisher.__init__(self, events)
         Subscriber.__init__(self, name)
-        self.input_path = None
-        self.output_path = None
-        self.options_dates_weekday = ['Dates', 'Weekday']
-        self.selected_option_dates_weekday = 1
-        self.selected_Direction = 0
-        self.time = None
-        self.processing = None
+        self.gtfs = gtfs()
 
-        """ dicts for create and listbox """
-        self.stopsdict = None
-        self.stopTimesdict = None
-        self.tripdict = None
-        self.calendarWeekdict = None
-        self.calendarDatesdict = None
-        self.routesFahrtdict = None
-        self.agencyFahrtdict = None
-
-        """ loaded GTFSData """
-        self.GTFSData = None
-
-        """ loaded data for listbox """
-        self.agenciesList = None
-        self.routesList = None
-        self.weekdayList = None
-
-        """ loaded data for create """
-        self.selectedAgency = None
-        self.selectedRoute = None
-        self.selected_weekday = None
-        self.selected_dates = None
 
         self.weekDayOptions = {0: [0, 'Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday'],
                                1: [1, 'Monday, Tuesday, Wednesday, Thursday, Friday'],
@@ -59,59 +33,38 @@ class Model(Publisher, Subscriber):
                                8: [8, 'Sunday'],
                                }
 
-    # checks if all data is avalibale before creation
-    def data_loaded_and_available(self):
-        if (self.stopsdict is None
-                or self.stopTimesdict is None
-                or self.tripdict is None
-                or self.calendarWeekdict is None
-                or self.calendarDatesdict is None
-                or self.routesFahrtdict is None
-                or self.selectedRoute is None
-                or self.selected_Direction is None):
-            return False
-        else:
-            return True
+
+    def set_paths(self, input_path, output_path):
+        try:
+            self.gtfs.set_paths(input_path, output_path)
+        except:
+            print('error setting paths')
 
     # reads the files
     async def read_gfts(self):
-        if self.input_path is None:
-            self.dispatch('message','Error. No input path!')
+        if self.gtfs.input_path is None\
+                or self.gtfs.output_path is None:
+            self.dispatch('message','Error. Check Paths!')
             return
-        self.GTFSData = await read_gtfs_data(self.input_path)
+        await self.gtfs.read_gtfs_data()
 
     # import routine and
     async def import_gtfs(self):
         self.processing = "loading"
         await self.read_gfts()
+        await self.gtfs.get_gtfs()
 
-        if self.GTFSData == -1:
-            self.dispatch('message','Error in read_gtfs_data. Wrong path!')
-            return -1
-
-        await self.get_gtfs()
-        self.agenciesList = await read_gtfs_agencies(self.agencyFahrtdict)
+        self.agenciesList = await self.gtfs.read_gtfs_agencies()
         print("self.agenciesList = await read_gtfs_agencies(self.agencyFahrtdict)")
         self.dispatch("update_agency_List",
                       "update_agency_List routine started! Notify subscriber!")
         self.processing = None
 
-    # gets the data out of GTFSData and releases some memory
-    async def get_gtfs(self):
-        self.stopsdict, \
-        self.stopTimesdict, \
-        self.tripdict, \
-        self.calendarWeekdict, \
-        self.calendarDatesdict, \
-        self.routesFahrtdict, \
-        self.agencyFahrtdict = await get_gtfs(self.GTFSData)
 
-        # clear some variables not needed anymore
-        self.GTFSData = None
 
     def get_routes_of_agency(self, agency):
         self.selectedAgency = agency
-        self.routesList = select_gtfs_routes_from_agancy(agency, self.routesFahrtdict)
+        self.routesList = self.gtfs.select_gtfs_routes_from_agancy(agency)
         self.dispatch("update_routes_List",
                       "update_routes_List routine started! Notify subscriber!")
 
@@ -119,79 +72,6 @@ class Model(Publisher, Subscriber):
         self.selectedRoute = route
         self.dispatch("update_weekday_list",
                       "update_weekday_list routine started! Notify subscriber!")
-
-
-    async def createFahrplan_dates(self):
-        self.processing = "creating"
-        route_name = [self.selectedRoute]
-        if (self.data_loaded_and_available()
-                and self.selectedRoute is not None
-                and self.selected_dates is not None
-                and self.options_dates_weekday[self.selected_option_dates_weekday] == 'Dates'):
-            tasks_date = [create_fahrplan_dates(name[0],
-                                                self.selectedAgency[0],
-                                                self.selected_dates,
-                                                self.selected_Direction,
-                                                self.stopsdict,
-                                                self.stopTimesdict,
-                                                self.tripdict,
-                                                self.calendarWeekdict,
-                                                self.calendarDatesdict,
-                                                self.routesFahrtdict,
-                                                self.agencyFahrtdict,
-                                                self.output_path) for name in route_name]
-
-            # stores results and some information
-            # try:
-            completed, pending = await asyncio.wait(tasks_date)
-            results = [task.result() for task in completed]
-            self.time = "time: {} ".format(results[0][0])
-            create_output_fahrplan(route_name[0][0], 'dates_' + str(results[0][1]), results[0][2], results[0][3],
-                                   self.output_path)
-            self.processing = None
-            self.dispatch('message','create fahrplan: Done!')
-            # except ValueError as e:
-            #     print(ValueError)
-            #     messagebox.showerror('Error in Create Fahrplan', 'Wrong data! Check input data and output path!')
-        else:
-            self.dispatch('message','Error in Create Fahrplan. Wrong data! Check input data and output path!')
-            self.processing = None
-            return
-
-    async def createFahrplan_weekday(self):
-        self.processing = "creating"
-        selected_weekday_option = self.selected_weekday
-        route_name = [self.selectedRoute]
-        if (self.data_loaded_and_available()
-                and self.selectedRoute is not None
-                and self.options_dates_weekday[self.selected_option_dates_weekday] == 'Weekday'):
-            tasks_weekday = [create_fahrplan_weekday(name[0],
-                                                     self.selectedAgency[0],
-                                                     selected_weekday_option,
-                                                     self.selected_Direction,
-                                                     self.stopsdict,
-                                                     self.stopTimesdict,
-                                                     self.tripdict,
-                                                     self.calendarWeekdict,
-                                                     self.calendarDatesdict,
-                                                     self.routesFahrtdict,
-                                                     self.agencyFahrtdict,
-                                                     self.output_path) for name in route_name]
-
-            # stores results and some information
-            completed, pending = await asyncio.wait(tasks_weekday)
-            results_weekday = [task.result() for task in completed]
-            self.time = "time: {} ".format(results_weekday[0][0])
-
-            create_output_fahrplan(route_name[0][0], 'weekday_' + str(results_weekday[0][1]), results_weekday[0][2],
-                                   results_weekday[0][3], self.output_path)
-            self.processing = None
-            self.dispatch('message', 'Done')
-
-        else:
-            self.dispatch('message', 'Error in Create Fahrplan. Check input data and output path!')
-            self.processing = None
-            return
 
     def set_process(self, task):
         self.dispatch("data_changed", "{} started".format(task))
@@ -201,24 +81,40 @@ class Model(Publisher, Subscriber):
         self.dispatch("data_changed", "{} finished".format(self.processing))
         self.processing = None
 
+    def notify_model(self, event, message):
+        print(event)
+        if event == 'message_test':
+            self.message_test('message event')
+
+    def message_test(self, message):
+        if message is None:
+            print(message)
+        else:
+            print('empty message')
+        self.dispatch('message', message)
+
 
 class Gui(QWidget, Publisher, Subscriber):
     def __init__(self, events, name, *args, **kwargs):
-        print(*args)
-        print('hi')
-        print(events)
-        print('hi')
-        print(name)
-        print('hi')
         super().__init__(events=events, name=name)
-        # Publisher.__init__(self, events)
-        # Subscriber.__init__(self, name)
-        # QWidget.__init__(self)
+        uic.loadUi("GTFSQT5Q.ui", self)
+
+        # self.setStyleSheet("background: #ebecff;")
+
+
+        self.setFixedSize(910, 703)
+
+        pixmap = QPixmap('assets/5282.jpg')
+        self.label.setPixmap(pixmap)
+        self.resize(pixmap.width(), pixmap.height())
+        self.setWindowFlags(Qt.FramelessWindowHint)
+        self.center()
+        self.oldPos = self.pos()
+
 
         self.messageBox_model = QMessageBox()
 
-        uic.loadUi("GTFSQT5Q.ui", self)
-        self.setStyleSheet("background: #161219;")
+        self.btnImport.clicked.connect(self.load_gtfsdata_event)
 
         # init model and viewer with publisher
         self.model = Model(['update_weekday',
@@ -235,12 +131,15 @@ class Gui(QWidget, Publisher, Subscriber):
         self.model.register('message', self)
         self.model.register('data_changed', self)
 
+        self.register('message_test', self.model)
+
 
         self.refresh_time = self.get_current_time()
 
+        self.print_me()
 
-
-        self.show()
+    def btn_test(self, event):
+        print('clicked: {}'.format(event))
 
 
     def notify_model(self, event, message):
@@ -261,51 +160,46 @@ class Gui(QWidget, Publisher, Subscriber):
         elif event == "update_agency_List":
             self.update_agency_List()
 
+    def center(self):
+        qr = self.frameGeometry()
+        cp = QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
 
+    def mousePressEvent(self, event):
+        self.oldPos = event.globalPos()
+
+    def mouseMoveEvent(self, event):
+        delta = QPoint (event.globalPos() - self.oldPos)
+        self.move(self.x() + delta.x(), self.y() + delta.y())
+        self.oldPos = event.globalPos()
 
     def send_message_box(self, text):
         self.messageBox_model.setText(text)
 
-    def update(self, *args):
-        print(*args)
-
-        # hidden and shown widgets
-        self.hiddenwidgets = {}
-
-        # bind events to lists
-        self.main.routes_List.bind('<<ListboxSelect>>', self.select_route)
-        self.main.agency_List.bind('<<ListboxSelect>>', self.select_agency)
-        self.hide_instance_attribute(self.main.dates, 'self.main.dates')
-
-        # bind events to buttons
-        self.main.mainStartButton.bind("<Button>", self.start)
-        self.main.LoadGTFSButton.bind("<Button>", self.load_gtfsdata_event)
-        self.main.quitButton.bind("<Button>", self.close_program)
-
-        self.main.toogle_btn_DateWeek.bind("<Button>", self.select_option_button_date_week)
-        self.main.toogle_btn_direction.bind("<Button>", self.select_option_button_direction)
-
-    def select_route(self, event):
+    def select_route(self):
         print("dispatch select_route")
         self.dispatch("select_route", "select_route routine started! Notify subscriber!")
 
-    def select_agency(self, event):
+    def select_agency(self):
         print("dispatch select_agency")
         self.dispatch("select_agency", "select_agency routine started! Notify subscriber!")
 
-    def start(self, event):
+    def start(self):
         self.dispatch("start", "start routine started! Notify subscriber!")
 
-    def load_gtfsdata_event(self, event):
-        self.dispatch("load_gtfsdata_event", "load_gtfsdata_event routine started! Notify subscriber!")
+    def load_gtfsdata_event(self):
+        print('loading data!')
+        self.dispatch("message_test", "load_gtfsdata_event routine started! Notify subscriber!")
+        # threading.Thread(target=self.async_task_load_GTFS_data, args=()).start()
 
-    def select_option_button_date_week(self, event):
+    def select_option_button_date_week(self):
         self.dispatch("select_option_button_date_week", "select_option_button_date_week routine started! Notify subscriber!")
 
-    def select_option_button_direction(self, event):
+    def select_option_button_direction(self):
         self.dispatch("select_option_button_direction", "select_option_button_direction routine started! Notify subscriber!")
 
-    def close_program(self, event):
+    def close_program(self):
         self.dispatch("close_program", "close_program routine started! Notify subscriber!")
 
     def hide_instance_attribute(self, instance_attribute, widget_variablename):
@@ -331,6 +225,27 @@ class Gui(QWidget, Publisher, Subscriber):
         self.main.routes_List.bind('<<ListboxSelect>>', self.select_route)
         self.main.agency_List.bind('<<ListboxSelect>>', self.select_agency)
         # self.view.main.agency_List.unbind_all(self)
+
+    # loads data from zip
+    def async_task_load_GTFS_data(self):
+        self.set_process("loading GTFS data...")
+
+        # clear list
+        if self.view.main.agency_List is not None:
+            self.view.main.agency_List.delete(0, 'end')
+            self.view.main.routes_List.delete(0, 'end')
+
+        # check if program is already running
+        if self.runningAsync > 0:
+            return
+
+        loop = asyncio.new_event_loop()
+        self.runningAsync = self.runningAsync + 1
+        loop.run_until_complete(self.model.import_gtfs())
+        loop.close()
+        self.runningAsync = self.runningAsync - 1
+        self.set_process("GTFS data loaded")
+
 
     def update_weekday_list(self):
         self.set_process("updating weekdays list...")
