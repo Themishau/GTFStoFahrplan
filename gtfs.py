@@ -619,7 +619,7 @@ class gtfs:
         return services_list.values.tolist()
 
 
-    async def read_gtfs_agencies(self, agencies_dict):
+    async def read_gtfs_agencies(self):
         df_agency = pd.DataFrame(agencies_dict).set_index('agency_id')
         cond_agencies = '''
                     select df_agency.agency_id, df_agency.agency_name
