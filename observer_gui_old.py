@@ -2,35 +2,30 @@
 # https://www.protechtraining.com/blog/post/tutorial-the-observer-pattern-in-python-879
 
 
-class Subscriber(object):
-    def __init__(self, name, *args, **kwargs):
+class Subscriber:
+    def __init__(self, name):
         self.name = name
         print("Subscriber name {}".format(self.name))
 
-    def notify_subscriber(self, event, message):
+    def update(self, event, message):
         print("no override")
-        print('{}'.format(self.name))
+        print('{} got message "{}"'.format(self.name, message))
 
-    def print_me(self):
-        print(self.name)
 
-class Publisher(object):
-    def __init__(self, events, *args, **kwargs):
+class Publisher:
+    def __init__(self, events):
         # maps event names to subscribers
         # str -> dict
         self.events = {event: dict()
                        for event in events}
         print("Publisher events {}".format(self.events))
 
-    def print_me(self):
-        print(self.events)
-
     def get_subscribers(self, event):
         return self.events[event]
 
     def register(self, event, who, callback=None):
         if callback is None:
-            callback = getattr(who, 'notify_subscriber')
+            callback = getattr(who, 'update')
         self.get_subscribers(event)[who] = callback
 
     def unregister(self, event, who):

@@ -74,8 +74,8 @@ def SortStopSequence(data):
                     arrival_time_temp = temp["arrival_time"]
 
 
-                    if stop_name_j.stop_id == '070101000952':
-                        print()
+                    # if stop_name_j.stop_id == '070101000952':
+                    #     print()
                     # if time_j < time_i \
                     # and time_j < time_temp \
                     # and time_arrival_j < time_arrival_i \
@@ -92,8 +92,6 @@ def SortStopSequence(data):
                         temp["stop_sequence"] = stop_name_j.stop_sequence
 
             stopsequence[stop_name_i.stop_id] = temp
-
-
 
     new_stopsequence = sortStopSequence(stopsequence)
 
@@ -500,9 +498,9 @@ def select_gtfs_services_from_routes(route, tripdict, calendarWeekdict):
 async def read_gtfs_agencies(agencies_dict):
     df_agency = pd.DataFrame(agencies_dict).set_index('agency_id')
     cond_agencies = '''
-                select df_agency.agency_id, df_agency.agency_name
-                from df_agency 
-                order by df_agency.agency_id;
+                select dfagency.agency_id, dfagency.agency_name
+                from dfagency 
+                order by dfagency.agency_id;
                '''
     agency_list = sqldf(cond_agencies, locals())
     agency_list.values.tolist()
@@ -1278,6 +1276,6 @@ def create_output_fahrplan(routeName,
                            output_path):
     # save as csv
     dfheader_for_export_data.to_csv(output_path + routeName + nameprefix + 'pivot_table.csv', header=True,
-                                    quotechar=' ', sep=';', mode='w', encoding='utf8')
+                                    quotechar=' ', sep=';', mode='w', encoding='west1252')
     fahrplan_pivot.to_csv(output_path + routeName + nameprefix + 'pivot_table.csv', header=True, quotechar=' ',
-                          index=True, sep=';', mode='a', encoding='utf8')
+                          index=True, sep=';', mode='a', encoding='west1252')

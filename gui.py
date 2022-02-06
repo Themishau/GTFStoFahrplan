@@ -4,7 +4,7 @@ from tkinter import messagebox
 import asyncio
 import threading
 from analyzeGTFS import *
-from observer import Publisher, Subscriber
+from observer_gui_old import Publisher, Subscriber
 import datetime as dt
 import time
 
@@ -53,7 +53,7 @@ class Main(tk.Frame):
         # entry input_path
         self.input_path = tk.Entry(self.main_frame, width=80)
         self.input_path.insert(0,
-                               'C:/Temp/GTFS.zip')
+                               'C:/Tmp/GTFS.zip')
         self.input_path.grid(row=1, column=0, sticky=tk.N, pady=2, columnspan=4)
 
         # label output_path
@@ -63,7 +63,7 @@ class Main(tk.Frame):
         # entry output_path
         self.output_path = tk.Entry(self.main_frame, width=80)
         self.output_path.insert(0,
-                                'C:/Temp/')
+                                'C:/Tmp/')
         self.output_path.grid(row=3, column=0, sticky=tk.N, pady=2, columnspan=4)
 
         # entry output_path
@@ -307,7 +307,16 @@ class Model(Publisher, Subscriber):
         self.routesFahrtdict = None
         self.agencyFahrtdict = None
 
-        """ loaded GTFSData """
+        """ dataframes """
+        self.dfstops = None
+        self.dfstopTimes = None
+        self.dftrip = None
+        self.dfcalendarWeek = None
+        self.dfcalendarDates = None
+        self.dfroutesFahrt = None
+        self.dfagencyFahrt = None
+
+        """ loaded raw_gtfs_data """
         self.GTFSData = None
 
         """ loaded data for listbox """
@@ -369,7 +378,7 @@ class Model(Publisher, Subscriber):
                       "update_agency_List routine started! Notify subscriber!")
         self.processing = None
 
-    # gets the data out of GTFSData and releases some memory
+    # gets the data out of raw_gtfs_data and releases some memory
     async def get_gtfs(self):
         self.stopsdict, \
         self.stopTimesdict, \
