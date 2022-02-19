@@ -20,7 +20,6 @@ class Publisher(object):
         # str -> dict
         self.events = {event: dict()
                        for event in events}
-        print("Publisher events {}".format(self.events))
 
     def print_me(self):
         print(self.events)

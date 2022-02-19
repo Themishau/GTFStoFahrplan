@@ -3,6 +3,7 @@ from observer import Publisher, Subscriber
 import datetime as dt
 import time
 import sys
+import os
 from datetime import datetime, timedelta
 from PyQt5 import uic, QtGui, QtCore
 from PyQt5.Qt import *
@@ -23,7 +24,6 @@ class ImportGTFSDataWorker(QThread):
         self.gtfs = gtfs
 
     def run(self):
-        print('ImportGTFSDataWorker here')
         self.gtfs.update_agency_list()
         self.importedGTFS.emit(20)
         self.finished.emit()
@@ -245,32 +245,27 @@ class Model(Publisher, Subscriber):
         self.gtfs.processing = None
 
     def notify_set_progressbar(self, val):
-        print(val)
         self.gtfs.progress = val
         return self.dispatch("update_progress_bar",
                              "update_progress_bar routine started! Notify subscriber!")
 
     def finished_create_table(self):
-        self.notify_set_progressbar(0)
-        self.notify_delete_process()
+        self.notify_finished()
         print('fertig')
 
     def update_agency_list(self):
         self.gtfs.read_gtfs_agencies()
         self.notify_update_agency_List()
         self.worker = None
-        self.notify_delete_process()
 
     def update_routes_list(self):
         self.notify_update_routes_List()
         self.worker = None
         # self.update_weekdate_options()
-        self.notify_delete_process()
 
     def update_weekdate_options(self):
         self.notify_update_weekdate_option()
         self.worker = None
-        self.notify_delete_process()
 
     def notify_set_process(self, task):
         self.dispatch("data_changed", "{}".format(task))
@@ -292,6 +287,10 @@ class Model(Publisher, Subscriber):
     def notify_update_weekdate_option(self):
         return self.dispatch("update_weekdate_option",
                       "update_weekdate_option routine started! Notify subscriber!")
+
+    def notify_finished(self):
+        return self.dispatch("message",
+                      "Table created!")
 
     def notify_subscriber(self, event, message):
         print('model: {}'.format(event))
@@ -338,10 +337,11 @@ class Model(Publisher, Subscriber):
 class Gui(QWidget, Publisher, Subscriber):
     def __init__(self, events, name, *args, **kwargs):
         super().__init__(events=events, name=name)
-
-        uic.loadUi("GTFSQT5Q.ui", self)
+        # uic.loadUi(self.resource_path('add_files\\GTFSQT5Q.ui'), self)
+        # pixmap = QPixmap(self.resource_path('add_files\\5282.jpg'))
+        uic.loadUi('add_files\\GTFSQT5Q.ui', self)
+        pixmap = QPixmap('add_files\\5282.jpg')
         self.setFixedSize(910, 703)
-        pixmap = QPixmap('assets/5282.jpg')
         self.label.setPixmap(pixmap)
         self.resize(pixmap.width(), pixmap.height())
         self.setWindowFlags(Qt.FramelessWindowHint)
@@ -357,6 +357,7 @@ class Gui(QWidget, Publisher, Subscriber):
         self.listRoutes.clicked.connect(self.notify_select_route)
         self.listDatesWeekday.clicked.connect(self.notify_select_weekday_option)
         self.comboBox.activated[str].connect(self.onChanged)
+        self.comboBox_sort.activated[str].connect(self.onChangedSortMode)
         self.lineend = '\n'
         self.textBrowserText = ''
 
@@ -397,6 +398,16 @@ class Gui(QWidget, Publisher, Subscriber):
 
         self.print_me()
 
+    def resource_path(self, relative_path):
+        """ Get absolute path to resource, works for dev and for PyInstaller """
+        try:
+            # PyInstaller creates a temp folder and stores path in _MEIPASS
+            base_path = sys._MEIPASS
+        except Exception:
+            base_path = os.path.abspath(".")
+
+        return os.path.join(base_path, relative_path)
+
     def center(self):
         qr = self.frameGeometry()
         cp = QDesktopWidget().availableGeometry().center()
@@ -412,7 +423,6 @@ class Gui(QWidget, Publisher, Subscriber):
         self.oldPos = event.globalPos()
 
     def onChanged(self, text):
-        print(text)
         if text == 'date':
             self.listDatesWeekday.clear()
             self.lineDateInput.setEnabled(True)
@@ -425,8 +435,16 @@ class Gui(QWidget, Publisher, Subscriber):
             self.listDatesWeekday.setEnabled(True)
             self.model.gtfs.selected_dates = None
 
+    def onChangedSortMode(self, text):
+        if text == 'sort mode 1':
+            self.model.gtfs.sortmode = 1
+        elif text == 'sort mode 2':
+            self.model.gtfs.sortmode = 2
+
     def send_message_box(self, text):
+        self.messageBox_model.setStandardButtons(QMessageBox.Ok)
         self.messageBox_model.setText(text)
+        self.messageBox_model.exec_()
 
     def btn_test(self, event):
         print('clicked: {}'.format(event))
@@ -434,7 +452,7 @@ class Gui(QWidget, Publisher, Subscriber):
     # based on linked event subscriber are going to be notified
     def notify_subscriber(self, event, message):
         if event == "message":
-            self.sub_messageBox_model.setText(message)
+            self.send_message_box(message)
         elif event == "data_changed":
             self.sub_write_gui_log("{}".format(message))
         elif event == "update_process":
@@ -455,7 +473,6 @@ class Gui(QWidget, Publisher, Subscriber):
         if self.model.gtfs.routesList is None:
             return False
         self.model.gtfs.selectedRoute = self.listRoutes.currentItem().text().split(',')[1]
-        print(self.model.gtfs.selectedRoute)
         self.dispatch("select_route", "select_route routine started! Notify subscriber!")
         self.sub_update_weekdate_option()
 
@@ -464,7 +481,6 @@ class Gui(QWidget, Publisher, Subscriber):
         if self.model.gtfs.weekDayOptionsList is None:
             return False
         self.model.gtfs.selected_weekday = self.listDatesWeekday.currentItem().text().split(',')[0]
-        print(self.model.gtfs.selected_weekday)
         self.dispatch("select_weekday", "select_weekday routine started! Notify subscriber!")
 
     def notify_select_agency(self):
@@ -472,8 +488,6 @@ class Gui(QWidget, Publisher, Subscriber):
             if self.model.gtfs.agenciesList is None:
                 return False
             self.model.gtfs.selectedAgency = self.listAgencies.currentItem().text().split(',')[0]
-            print(self.model.gtfs.selectedAgency)
-            print("dispatch select_agency")
             self.reset_weekdayDate()
             self.dispatch("select_agency", "select_agency routine started! Notify subscriber!")
 
@@ -483,12 +497,12 @@ class Gui(QWidget, Publisher, Subscriber):
     def notify_create_table(self):
         if self.model.gtfs.selected_weekday is None:
             self.model.gtfs.selected_dates = self.lineDateInput.text()
-        print(self.lineDateInput.text())
         self.dispatch("start_create_table", "start_create_table routine started! Notify subscriber!")
 
     def sub_update_weekdate_option(self):
         print('in sub_update_weekdate_option')
         self.comboBox.setEnabled(True)
+        self.comboBox_sort.setEnabled(True)
         self.listDatesWeekday.setEnabled(True)
         self.sub_update_weekday_list()
         self.btnStart.setEnabled(True)
@@ -496,6 +510,7 @@ class Gui(QWidget, Publisher, Subscriber):
 
     def reset_weekdayDate(self):
         self.comboBox.setEnabled(False)
+        self.comboBox_sort.setEnabled(False)
         self.lineDateInput.setEnabled(False)
         self.listDatesWeekday.clear()
 
@@ -506,6 +521,7 @@ class Gui(QWidget, Publisher, Subscriber):
         self.btnStart.setEnabled(False)
         self.btnStop.setEnabled(False)
         self.comboBox.setEnabled(False)
+        self.comboBox_sort.setEnabled(False)
         self.listAgencies.clear()
         self.listRoutes.clear()
         self.listDatesWeekday.clear()

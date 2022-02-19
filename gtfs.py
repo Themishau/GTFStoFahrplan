@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import asyncio
-
 import time
 import pandas as pd
 from pandasql import sqldf
@@ -47,6 +45,7 @@ class gtfs:
 
         self.selected_option_dates_weekday = 1
         self.selected_Direction = 0
+        self.sortmode = 1
         self.time = None
         self.processing = None
         self.runningAsync = 0
@@ -141,7 +140,7 @@ class gtfs:
 
     def set_routes(self, route):
         self.selectedRoute = route
-        print("update_weekday_list auslösen")
+
 
     def create_dfs(self):
 
@@ -303,19 +302,28 @@ class gtfs:
                         # and time_arrival_j < time_arrival_i \
                         # and time_arrival_j < arrival_time_temp\
                         # and stop_name_j.stop_sequence > stop_name_i.stop_sequence:
-
-                        if time_j < time_i \
-                        and time_j < time_temp \
-                        and stop_name_j.stop_sequence > stop_name_i.stop_sequence \
-                        and stop_name_j.stop_sequence > temp["stop_sequence"]:
-                            temp["start_time"] = time_j
-                            temp["arrival_time"] = time_arrival_j
-                            # temp["arrival_time"] = stop_name_j.arrival_time
-                            temp["stop_sequence"] = stop_name_j.stop_sequence
-
+                        if self.sortmode == 1:
+                            if time_j < time_i \
+                            and time_j < time_temp \
+                            and stop_name_j.stop_sequence > stop_name_i.stop_sequence \
+                            and stop_name_j.stop_sequence > temp["stop_sequence"]:
+                                temp["start_time"] = time_j
+                                temp["arrival_time"] = time_arrival_j
+                                # temp["arrival_time"] = stop_name_j.arrival_time
+                                temp["stop_sequence"] = stop_name_j.stop_sequence
+                        else:
+                            if time_j < time_i \
+                            and time_j < time_temp \
+                            and time_arrival_j < time_arrival_i \
+                            and time_arrival_j < arrival_time_temp\
+                            and stop_name_j.stop_sequence > stop_name_i.stop_sequence:
+                                temp["start_time"] = time_j
+                                temp["arrival_time"] = time_arrival_j
+                                # temp["arrival_time"] = stop_name_j.arrival_time
+                                temp["stop_sequence"] = stop_name_j.stop_sequence
                 stopsequence[stop_name_i.stop_id] = temp
 
-
+        print(self.sortmode)
 
         new_stopsequence = self.sortStopSequence(stopsequence)
 
@@ -325,7 +333,6 @@ class gtfs:
             sorted_stopsequence['stop_sequence'].append(stop_sequence)
             sorted_stopsequence['start_time'].append(new_stopsequence[stop_sequence]['start_time'])
 
-        print (new_stopsequence)
         #
         # print('len stop_sequences {}'.format(sequence_count))
         # for stop_id in stopsequence.keys():
@@ -376,15 +383,29 @@ class gtfs:
                 d[str(k)]["stop_sequence"] = stopsequence[j]['stop_sequence']
                 d[str(k)]["stop_name"] = stopsequence[j]['stop_name']
 
-        # bubble sort
-        for i in range(sequence_count - 1):
-            for j in range(0,sequence_count-i-1):
-                if  d[str(j)]["stop_sequence"] > d[str(j + 1)]["stop_sequence"]:
-                    d[str(j)], d[str(j + 1)] = d[str(j + 1)], d[str(j)]
-                elif d[str(j)]["stop_sequence"] == d[str(j + 1)]["stop_sequence"]:
-                    if d[str(j)]["start_time"] > d[str(j + 1)]["start_time"]:
+        if self.sortmode == 1:
+            # bubble sort
+            for i in range(sequence_count - 1):
+                for j in range(0,sequence_count-i-1):
+                    if  d[str(j)]["stop_sequence"] > d[str(j + 1)]["stop_sequence"]:
                         d[str(j)], d[str(j + 1)] = d[str(j + 1)], d[str(j)]
+                    elif d[str(j)]["stop_sequence"] == d[str(j + 1)]["stop_sequence"]:
+                        if d[str(j)]["start_time"] > d[str(j + 1)]["start_time"]:
+                            d[str(j)], d[str(j + 1)] = d[str(j + 1)], d[str(j)]
 
+        else:
+            # bubble sort
+            for i in range(sequence_count - 1):
+                for j in range(0,sequence_count-i-1):
+                    if  d[str(j)]["arrival_time"] > d[str(j + 1)]["arrival_time"]:
+                        d[str(j)], d[str(j + 1)] = d[str(j + 1)], d[str(j)]
+                    elif d[str(j)]["stop_sequence"] > d[str(j + 1)]["stop_sequence"]\
+                     and d[str(j)]["start_time"] > d[str(j + 1)]["start_time"]:
+                        d[str(j)], d[str(j + 1)] = d[str(j + 1)], d[str(j)]
+                    elif d[str(j)]["stop_sequence"] == d[str(j + 1)]["stop_sequence"]:
+                        if  d[str(j)]["start_time"] > d[str(j + 1)]["start_time"]\
+                        and d[str(j)]["arrival_time"] > d[str(j + 1)]["arrival_time"]:
+                            d[str(j)], d[str(j + 1)] = d[str(j + 1)], d[str(j)]
         return d
 
     # checks if in dictonary
@@ -412,12 +433,15 @@ class gtfs:
             return False
 
     # checks if time-string exceeds 24 hour
-    def check_hour_24(self, time):
-        pattern1 = re.findall('^2{1}[4-9]{1}:[0-9]{2}', time)
-        if (pattern1):
-            return True
-        else:
-            return False
+    def check_hour_24(self, time):       
+        try:
+            pattern1 = re.findall('^2{1}[4-9]{1}:[0-9]{2}', time)
+            if (pattern1):
+                return True
+            else:
+                return False
+        except:
+            print(time)
 
     # read zip-data
     def read_gtfs_data(self):
@@ -460,16 +484,29 @@ class gtfs:
             trip = trip.replace('"', "")
             trip = trip.replace('\n', "")
             data = trip.split(",")
-            tripdict["route_id"].append(data[0])
-            tripdict["service_id"].append(data[1])
-            tripdict["trip_id"].append(data[2])
-            tripdict["trip_headsign"].append(data[3])
-            tripdict["trip_short_name"].append(data[4])
-            tripdict["direction_id"].append(data[5])
-            tripdict["block_id"].append(data[6])
-            tripdict["shape_id"].append(data[7])
-            tripdict["wheelchair_accessible"].append(data[8])
-            tripdict["bikes_allowed"].append(data[9])
+            idata = len(data)
+            if idata > 9:
+                tripdict["route_id"].append(data[0])
+                tripdict["service_id"].append(data[1])
+                tripdict["trip_id"].append(data[2])
+                tripdict["trip_headsign"].append(data[3])
+                tripdict["trip_short_name"].append(data[4])
+                tripdict["direction_id"].append(data[5])
+                tripdict["block_id"].append(data[6])
+                tripdict["shape_id"].append(data[7])
+                tripdict["wheelchair_accessible"].append(data[8])
+                tripdict["bikes_allowed"].append(data[9])
+            else:
+                tripdict["route_id"].append(data[0])
+                tripdict["service_id"].append(data[1])
+                tripdict["trip_id"].append(data[2])
+                tripdict["shape_id"].append(data[3])
+                tripdict["trip_headsign"].append(data[4])
+                tripdict["trip_short_name"].append(data[5])
+                tripdict["direction_id"].append(data[6])
+                tripdict["wheelchair_accessible"].append(data[7])
+                tripdict["block_id"].append('')
+                tripdict["bikes_allowed"].append('')
         self.tripdict = tripdict
         return True
 
@@ -494,6 +531,8 @@ class gtfs:
             haltestellen = haltestellen.replace('"', "")
             haltestellen = haltestellen.replace('\n', "")
             stopData = haltestellen.split(",")
+            istopDate = len(stopData)
+
             stopsdict["stop_id"].append(stopData[0])
             stopsdict["stop_code"].append(stopData[1])
             stopsdict["stop_name"].append(stopData[2])
@@ -504,7 +543,10 @@ class gtfs:
             stopsdict["parent_station"].append(stopData[7])
             stopsdict["wheelchair_accessible"].append(stopData[8])
             stopsdict["platform_code"].append(stopData[9])
-            stopsdict["zone_id"].append(stopData[10])
+            if istopDate > 10:
+                stopsdict["zone_id"].append(stopData[10])
+            else:
+                stopsdict["zone_id"].append('')
 
         self.stopsdict = stopsdict
         return True
@@ -518,21 +560,36 @@ class gtfs:
             "stop_sequence": [],
             "pickup_type": [],
             "drop_off_type": [],
-            "stop_headsign": []
+            "stop_headsign": [],
+            "shape_dist_traveled": []
         }
         for stopTime in self.raw_gtfs_data[1]:
             stopTime = stopTime.replace(", ", " ")
             stopTime = stopTime.replace('"', "")
             stopTime = stopTime.replace('\n', "")
             stopTimeData = stopTime.split(",")
-            stopTimesdict["trip_id"].append(stopTimeData[0])
-            stopTimesdict["arrival_time"].append(stopTimeData[1])
-            stopTimesdict["departure_time"].append(stopTimeData[2])
-            stopTimesdict["stop_id"].append(stopTimeData[3])
-            stopTimesdict["stop_sequence"].append(stopTimeData[4])
-            stopTimesdict["pickup_type"].append(stopTimeData[5])
-            stopTimesdict["drop_off_type"].append(stopTimeData[6])
-            stopTimesdict["stop_headsign"].append(stopTimeData[7])
+            istopTimeData = len(stopTimeData)
+            if istopTimeData == 8:
+                stopTimesdict["trip_id"].append(stopTimeData[0])
+                stopTimesdict["arrival_time"].append(stopTimeData[1])
+                stopTimesdict["departure_time"].append(stopTimeData[2])
+                stopTimesdict["stop_id"].append(stopTimeData[3])
+                stopTimesdict["stop_sequence"].append(stopTimeData[4])
+                stopTimesdict["pickup_type"].append(stopTimeData[5])
+                stopTimesdict["drop_off_type"].append(stopTimeData[6])
+                stopTimesdict["stop_headsign"].append(stopTimeData[7])
+                stopTimesdict["shape_dist_traveled"].append('')
+            else:
+                stopTimesdict["trip_id"].append(stopTimeData[0])
+                stopTimesdict["arrival_time"].append(stopTimeData[1])
+                stopTimesdict["departure_time"].append(stopTimeData[2])
+                stopTimesdict["stop_id"].append(stopTimeData[3])
+                stopTimesdict["stop_sequence"].append(str(int(stopTimeData[4]) - 1))
+                stopTimesdict["stop_headsign"].append(stopTimeData[5])
+                stopTimesdict["pickup_type"].append(stopTimeData[6])
+                stopTimesdict["drop_off_type"].append(stopTimeData[7])
+                stopTimesdict["shape_dist_traveled"].append(stopTimeData[8])
+
 
         self.stopTimesdict = stopTimesdict
         return True
@@ -603,14 +660,25 @@ class gtfs:
             routes = routes.replace('"', "")
             routes = routes.replace('\n', "")
             routesData = routes.split(",")
-            routesFahrtdict["route_id"].append(routesData[0])
-            routesFahrtdict["agency_id"].append(routesData[1])
-            routesFahrtdict["route_short_name"].append(routesData[2])
-            routesFahrtdict["route_long_name"].append(routesData[3])
-            routesFahrtdict["route_type"].append(routesData[4])
-            routesFahrtdict["route_color"].append(routesData[5])
-            routesFahrtdict["route_text_color"].append(routesData[6])
-            routesFahrtdict["route_desc"].append(routesData[7])
+            iroutesDate = len(routesData)
+            if iroutesDate > 7:
+                routesFahrtdict["route_id"].append(routesData[0])
+                routesFahrtdict["agency_id"].append(routesData[1])
+                routesFahrtdict["route_short_name"].append(routesData[2])
+                routesFahrtdict["route_long_name"].append(routesData[3])
+                routesFahrtdict["route_type"].append(routesData[4])
+                routesFahrtdict["route_color"].append(routesData[5])
+                routesFahrtdict["route_text_color"].append(routesData[6])
+                routesFahrtdict["route_desc"].append(routesData[7])
+            else:
+                routesFahrtdict["route_id"].append(routesData[0])
+                routesFahrtdict["agency_id"].append(routesData[1])
+                routesFahrtdict["route_short_name"].append(routesData[2])
+                routesFahrtdict["route_long_name"].append(routesData[3])
+                routesFahrtdict["route_type"].append(routesData[4])
+                routesFahrtdict["route_color"].append(routesData[5])
+                routesFahrtdict["route_text_color"].append(routesData[6])
+                routesFahrtdict["route_desc"].append('')
 
         self.routesFahrtdict = routesFahrtdict
         return True
@@ -623,19 +691,34 @@ class gtfs:
             "agency_url": [],
             "agency_timezone": [],
             "agency_lang": [],
-            "agency_phone": []
+            "agency_phone": [],
+            "agency_fare_url": [],
+            "agency_email": []
         }
         for agency in self.raw_gtfs_data[6]:
             agency = agency.replace(", ", " ")
             agency = agency.replace('"', "")
             agency = agency.replace('\n', "")
             agencyData = agency.split(",")
-            agencyFahrtdict["agency_id"].append(agencyData[0])
-            agencyFahrtdict["agency_name"].append(agencyData[1])
-            agencyFahrtdict["agency_url"].append(agencyData[2])
-            agencyFahrtdict["agency_timezone"].append(agencyData[3])
-            agencyFahrtdict["agency_lang"].append(agencyData[4])
-            agencyFahrtdict["agency_phone"].append(agencyData[5])
+            iagencyData = len(agencyData)
+            if iagencyData == 6:
+                agencyFahrtdict["agency_id"].append(agencyData[0])
+                agencyFahrtdict["agency_name"].append(agencyData[1])
+                agencyFahrtdict["agency_url"].append(agencyData[2])
+                agencyFahrtdict["agency_timezone"].append(agencyData[3])
+                agencyFahrtdict["agency_lang"].append(agencyData[4])
+                agencyFahrtdict["agency_phone"].append(agencyData[5])
+                agencyFahrtdict["agency_fare_url"].append('')
+                agencyFahrtdict["agency_email"].append('')
+            else:
+                agencyFahrtdict["agency_id"].append(agencyData[0])
+                agencyFahrtdict["agency_name"].append(agencyData[1])
+                agencyFahrtdict["agency_url"].append(agencyData[2])
+                agencyFahrtdict["agency_timezone"].append(agencyData[3])
+                agencyFahrtdict["agency_lang"].append(agencyData[4])
+                agencyFahrtdict["agency_phone"].append(agencyData[5])
+                agencyFahrtdict["agency_fare_url"].append(agencyData[6])
+                agencyFahrtdict["agency_email"].append(agencyData[7])
 
         self.agencyFahrtdict = agencyFahrtdict
         return True
@@ -650,18 +733,16 @@ class gtfs:
                 get_gtfs_routes(inputgtfsData[5])
 
         """
-        try:
-            self.get_gtfs_stop()
-            self.get_gtfs_stoptime()
-            self.get_gtfs_trip()
-            self.get_gtfs_calendarWeek()
-            self.get_gtfs_calendarDates()
-            self.get_gtfs_routes()
-            self.get_gtfs_agencies()
-            self.raw_gtfs_data = None
-            return True
-        except:
-            return False
+
+        self.get_gtfs_stop()
+        self.get_gtfs_stoptime()
+        self.get_gtfs_trip()
+        self.get_gtfs_calendarWeek()
+        self.get_gtfs_calendarDates()
+        self.get_gtfs_routes()
+        self.get_gtfs_agencies()
+        self.raw_gtfs_data = None
+        return True
 
     def select_gtfs_routes_from_agency(self):
         dfRoutes = self.dfRoutes
@@ -683,7 +764,6 @@ class gtfs:
         return True
 
     def select_gtfs_services_from_routes(self, route, tripdict, calendarWeekdict):
-        print('looking for services')
         inputVar = [{'route_id': route[1]}]
         varTest = pd.DataFrame(inputVar).set_index('route_id')
 
@@ -781,7 +861,6 @@ class gtfs:
                              weekDayOption_saturday_df,
                              weekDayOption_sunday_df]
 
-        print(self.selected_weekday)
         self.weekcond_df = weekDayOptionList[int(self.selected_weekday)]
         dummy_direction = 0
 
@@ -1271,7 +1350,7 @@ class gtfs:
         ###########################
 
         fahrplan_calendar_weeks['date'] = pd.to_datetime(fahrplan_calendar_weeks['date'], format='%Y-%m-%d %H:%M:%S.%f')
-        fahrplan_calendar_weeks['trip_id'] = fahrplan_calendar_weeks['trip_id'].astype('int32')
+        # fahrplan_calendar_weeks['trip_id'] = fahrplan_calendar_weeks['trip_id'].astype('int32')
         fahrplan_calendar_weeks['arrival_time'] = fahrplan_calendar_weeks['arrival_time'].astype('string')
         fahrplan_calendar_weeks['start_time'] = fahrplan_calendar_weeks['start_time'].astype('string')
 
@@ -1281,7 +1360,7 @@ class gtfs:
             ['date', 'day', 'stop_sequence_sorted', 'stop_name', 'stop_id', 'start_time', 'trip_id']).first().reset_index()
 
         fahrplan_calendar_weeks['date'] = pd.to_datetime(fahrplan_calendar_weeks['date'], format='%Y-%m-%d')
-        fahrplan_calendar_weeks['trip_id'] = fahrplan_calendar_weeks['trip_id'].astype('int32')
+        # fahrplan_calendar_weeks['trip_id'] = fahrplan_calendar_weeks['trip_id'].astype('int32')
         fahrplan_calendar_weeks['arrival_time'] = fahrplan_calendar_weeks['arrival_time'].astype('string')
         fahrplan_calendar_weeks['start_time'] = fahrplan_calendar_weeks['start_time'].astype('string')
 
@@ -1295,11 +1374,6 @@ class gtfs:
 
 
         # releae some memory
-        self.dfTrips = None
-        self.dfStopTimes = None
-        self.dfStops = None
-        self.dfRoutes = None
-        self.dfWeek = None
         self.zeit = time.time() - self.last_time
         print("time: {} ".format(self.zeit))
         now = datetime.now()
@@ -1307,7 +1381,6 @@ class gtfs:
 
     def datesWeekday_create_output_fahrplan(self):
         # save as csv
-        print(self.output_path + str(self.route_short_namedf.route_short_name[0]) + '_dates_' +  str(self.now) + 'pivot_table.csv')
         self.dfheader_for_export_data.to_csv(self.output_path + str(self.route_short_namedf.route_short_name[0]) + 'dates_' +  str(self.now) + 'pivot_table.csv', header=True,
                                         quotechar=' ', sep=';', mode='w', encoding='utf8')
         self.fahrplan_calendar_filter_days_pivot.to_csv(self.output_path + str(self.route_short_namedf.route_short_name[0]) + 'dates_' +  str(self.now) + 'pivot_table.csv', header=True, quotechar=' ',
