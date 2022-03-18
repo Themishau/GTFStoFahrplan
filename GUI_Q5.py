@@ -4,14 +4,12 @@ import datetime as dt
 import time
 import sys
 import os
-from datetime import datetime, timedelta
-from PyQt5 import uic, QtGui, QtCore
-from PyQt5.Qt import *
-from PyQt5.QtGui import QCursor, QPixmap
-from PyQt5.QtCore import QSize, Qt
-from PyQt5.QtWidgets import QLabel
-from PyQt5.QtCore import QObject, QThread, pyqtSignal
-
+from datetime import datetime
+from PyQt5 import uic
+from PyQt5.Qt import QPoint, QMutex, QWidget, QMessageBox, QDesktopWidget, QApplication
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtCore import Qt
+from PyQt5.QtCore import QThread, pyqtSignal
 
 delimiter = " "
 
@@ -358,6 +356,7 @@ class Gui(QWidget, Publisher, Subscriber):
         self.listDatesWeekday.clicked.connect(self.notify_select_weekday_option)
         self.comboBox.activated[str].connect(self.onChanged)
         self.comboBox_sort.activated[str].connect(self.onChangedSortMode)
+        self.comboBox_direction.activated[str].connect(self.onChangedDirectionMode)
         self.lineend = '\n'
         self.textBrowserText = ''
 
@@ -441,6 +440,13 @@ class Gui(QWidget, Publisher, Subscriber):
         elif text == 'sort mode 2':
             self.model.gtfs.sortmode = 2
 
+    def onChangedDirectionMode(self, text):
+        if text == 'direction 1':
+            self.model.gtfs.selected_direction = 0
+        elif text == 'direction 2':
+            self.model.gtfs.selected_direction = 1
+
+
     def send_message_box(self, text):
         self.messageBox_model.setStandardButtons(QMessageBox.Ok)
         self.messageBox_model.setText(text)
@@ -503,6 +509,7 @@ class Gui(QWidget, Publisher, Subscriber):
         print('in sub_update_weekdate_option')
         self.comboBox.setEnabled(True)
         self.comboBox_sort.setEnabled(True)
+        self.comboBox_direction.setEnabled(True)
         self.listDatesWeekday.setEnabled(True)
         self.sub_update_weekday_list()
         self.btnStart.setEnabled(True)
@@ -511,6 +518,7 @@ class Gui(QWidget, Publisher, Subscriber):
     def reset_weekdayDate(self):
         self.comboBox.setEnabled(False)
         self.comboBox_sort.setEnabled(False)
+        self.comboBox_direction.setEnabled(False)
         self.lineDateInput.setEnabled(False)
         self.listDatesWeekday.clear()
 
@@ -522,6 +530,7 @@ class Gui(QWidget, Publisher, Subscriber):
         self.btnStop.setEnabled(False)
         self.comboBox.setEnabled(False)
         self.comboBox_sort.setEnabled(False)
+        self.comboBox_direction.setEnabled(False)
         self.listAgencies.clear()
         self.listRoutes.clear()
         self.listDatesWeekday.clear()
