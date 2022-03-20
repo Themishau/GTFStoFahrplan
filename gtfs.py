@@ -44,7 +44,7 @@ class gtfs:
                                    '8,Sunday']
 
         self.selected_option_dates_weekday = 1
-        self.selected_direction = 1
+        self.selected_direction = 0
         self.sortmode = 1
         self.time = None
         self.processing = None
