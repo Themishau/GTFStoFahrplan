@@ -360,7 +360,8 @@ class Gui(QWidget, Publisher, Subscriber):
         self.lineend = '\n'
         self.textBrowserText = ''
 
-        # initilize subscriptions and publisher
+        # init subs and publisher
+
         # init model with publisher
         self.model = Model(['update_weekday_list',
                             'update_routes_list',
@@ -380,7 +381,6 @@ class Gui(QWidget, Publisher, Subscriber):
         self.model.register('message', self)
         self.model.register('error_message', self)
         self.model.register('data_changed', self)
-
         self.model.register('update_progress_bar', self)
 
         # init Observer controller -> model
@@ -392,9 +392,7 @@ class Gui(QWidget, Publisher, Subscriber):
         self.register('reset_gtfs', self.model)
         self.register('start_create_table', self.model)
 
-
         self.refresh_time = get_current_time()
-
         self.print_me()
 
     def resource_path(self, relative_path):
