@@ -10,6 +10,7 @@ from PyQt5.Qt import QPoint, QMutex, QWidget, QMessageBox, QDesktopWidget, QAppl
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtWidgets import QFileDialog
 
 delimiter = " "
 
@@ -351,9 +352,12 @@ class Gui(QWidget, Publisher, Subscriber):
         self.btnImport.clicked.connect(self.notify_load_gtfsdata_event)
         self.btnRestart.clicked.connect(self.notify_restart)
         self.btnStart.clicked.connect(self.notify_create_table)
+        self.btnGetFile.clicked.connect(self.getFilePath)
+        self.btnGetDir.clicked.connect(self.getDirPath)
         self.listAgencies.clicked.connect(self.notify_select_agency)
         self.listRoutes.clicked.connect(self.notify_select_route)
         self.listDatesWeekday.clicked.connect(self.notify_select_weekday_option)
+
         self.comboBox.activated[str].connect(self.onChanged)
         self.comboBox_sort.activated[str].connect(self.onChangedSortMode)
         self.comboBox_direction.activated[str].connect(self.onChangedDirectionMode)
@@ -573,6 +577,27 @@ class Gui(QWidget, Publisher, Subscriber):
     def set_process(self, task):
         self.sub_write_gui_log("{} started".format(task))
         self.model.gtfs.gtfs_process = task
+
+    def getFilePath(self):
+        try:
+            filePath = QFileDialog.getOpenFileName(parent=self,
+                                        caption='Select GTFS Zip File',
+                                        directory='C:\Tmp',
+                                        filter='Zip File (*.zip)',
+                                        initialFilter='Zip File (*.zip)')
+
+        except:
+            filePath = QFileDialog.getOpenFileName(parent=self,
+                                                   caption='Select GTFS Zip File',
+                                                   directory=os.getcwd(),
+                                                   filter='Zip File (*.zip)',
+                                                   initialFilter='Zip File (*.zip)')
+        self.lineInputPath.setText(filePath[0])
+
+    def getDirPath(self):
+        filePath = QFileDialog.getExistingDirectory(self,
+                                    caption='Select GTFS Zip File',)
+        self.GTFSInputPath.setText(filePath)
 
     def delete_process(self):
         self.sub_write_gui_log("{} finished".format(self.process))

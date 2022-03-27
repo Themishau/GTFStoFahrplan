@@ -497,7 +497,7 @@ font: 75 8pt &quot;72&quot;;</string>
    <property name="geometry">
     <rect>
      <x>820</x>
-     <y>690</y>
+     <y>680</y>
      <width>161</width>
      <height>16</height>
     </rect>
@@ -510,7 +510,7 @@ font: 75 8pt &quot;72&quot;;</string>
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Version 0.60&lt;br /&gt;&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Version 0.62&lt;br /&gt;&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </widget>
   <widget class="QPushButton" name="btnRestart">
@@ -720,19 +720,6 @@ padding: 4px;</string>
     </property>
    </item>
   </widget>
-  <widget class="QToolButton" name="toolButton">
-   <property name="geometry">
-    <rect>
-     <x>800</x>
-     <y>450</y>
-     <width>25</width>
-     <height>19</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>...</string>
-   </property>
-  </widget>
   <widget class="QListWidget" name="listGTFSDATA">
    <property name="geometry">
     <rect>
@@ -789,6 +776,54 @@ padding: 1px;</string>
     <string>C:/Tmp/</string>
    </property>
   </widget>
+  <widget class="QPushButton" name="btnGetFile">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>800</x>
+     <y>450</y>
+     <width>31</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: orange;
+border-style: outset;
+border-width: 0px;
+border-radius: 15px;
+border-color: black;
+padding: 4px;</string>
+   </property>
+   <property name="text">
+    <string>...</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btnGetDir">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>780</x>
+     <y>120</y>
+     <width>31</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: orange;
+border-style: outset;
+border-width: 0px;
+border-radius: 15px;
+border-color: black;
+padding: 4px;</string>
+   </property>
+   <property name="text">
+    <string>...</string>
+   </property>
+  </widget>
   <zorder>label</zorder>
   <zorder>middlelabel</zorder>
   <zorder>lineOutputPath</zorder>
@@ -819,10 +854,11 @@ padding: 1px;</string>
   <zorder>comboBox_sort</zorder>
   <zorder>label_14</zorder>
   <zorder>comboBox_direction</zorder>
-  <zorder>toolButton</zorder>
   <zorder>listGTFSDATA</zorder>
   <zorder>label_15</zorder>
   <zorder>GTFSInputPath</zorder>
+  <zorder>btnGetFile</zorder>
+  <zorder>btnGetDir</zorder>
  </widget>
  <resources/>
  <connections>
