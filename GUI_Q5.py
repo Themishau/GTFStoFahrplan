@@ -354,6 +354,7 @@ class Gui(QWidget, Publisher, Subscriber):
         self.btnStart.clicked.connect(self.notify_create_table)
         self.btnGetFile.clicked.connect(self.getFilePath)
         self.btnGetDir.clicked.connect(self.getDirPath)
+        self.btnGetOutputDir.clicked.connect(self.getOutputDirPath)
         self.listAgencies.clicked.connect(self.notify_select_agency)
         self.listRoutes.clicked.connect(self.notify_select_route)
         self.listDatesWeekday.clicked.connect(self.notify_select_weekday_option)
@@ -598,6 +599,12 @@ class Gui(QWidget, Publisher, Subscriber):
         filePath = QFileDialog.getExistingDirectory(self,
                                     caption='Select GTFS Zip File',)
         self.GTFSInputPath.setText(filePath)
+
+    def getOutputDirPath(self):
+        filePath = QFileDialog.getExistingDirectory(self,
+                                    caption='Select GTFS Zip File',
+                                    directory='C:\Tmp',)
+        self.lineOutputPath.setText(f'{filePath}/' )
 
     def delete_process(self):
         self.sub_write_gui_log("{} finished".format(self.process))
