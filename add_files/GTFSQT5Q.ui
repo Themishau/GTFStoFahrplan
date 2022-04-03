@@ -791,7 +791,10 @@ border-radius: 0px;</string>
     <enum>QTabWidget::Triangular</enum>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>0</number>
+   </property>
+   <property name="usesScrollButtons">
+    <bool>true</bool>
    </property>
    <widget class="QWidget" name="tabDownloadGTFS">
     <attribute name="title">
@@ -803,7 +806,7 @@ border-radius: 0px;</string>
        <x>10</x>
        <y>100</y>
        <width>391</width>
-       <height>141</height>
+       <height>151</height>
       </rect>
      </property>
      <property name="styleSheet">
@@ -948,6 +951,37 @@ padding: 4px;</string>
      <property name="text">
       <string>Download Selected Data</string>
      </property>
+    </widget>
+    <widget class="QComboBox" name="comboBox_online">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>130</x>
+       <y>40</y>
+       <width>191</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color:  #ff9740;
+border-style: outset;
+border-width:0px;
+border-radius: 15px;
+border-color: black;
+padding: 4px;</string>
+     </property>
+     <item>
+      <property name="text">
+       <string>opendata.ruhr</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>opendata.vbb</string>
+      </property>
+     </item>
     </widget>
    </widget>
    <widget class="QWidget" name="tabDefineSorting">
