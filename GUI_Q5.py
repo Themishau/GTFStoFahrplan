@@ -10,16 +10,18 @@ from PyQt5.Qt import QPoint, QMutex, QWidget, QMessageBox, QDesktopWidget, QAppl
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtWidgets import QFileDialog
 
 delimiter = " "
 
 
+# noinspection PyUnresolvedReferences
 class ImportGTFSDataWorker(QThread):
     importedGTFS = pyqtSignal(int)
 
-    def __init__(self, gtfs):
+    def __init__(self, worker_gtfs):
         super().__init__()
-        self.gtfs = gtfs
+        self.gtfs = worker_gtfs
 
     def run(self):
         self.gtfs.update_agency_list()
@@ -27,10 +29,11 @@ class ImportGTFSDataWorker(QThread):
         self.finished.emit()
 
 
+# noinspection PyUnresolvedReferences
 class GTFSWorker(QThread, Publisher, Subscriber):
     importedGTFS = pyqtSignal(int)
 
-    def __init__(self, events, name, process, *args, **kwargs):
+    def __init__(self, events, name, process):
         super().__init__(events=events, name=name)
         self.process = process
 
@@ -97,6 +100,7 @@ class GTFSWorker(QThread, Publisher, Subscriber):
         self.finished.emit()
 
 
+# noinspection PyUnresolvedReferences
 class Model(Publisher, Subscriber):
     def __init__(self, events, name):
         Publisher.__init__(self, events)
@@ -112,13 +116,14 @@ class Model(Publisher, Subscriber):
     def set_paths(self, input_path, output_path):
         try:
             self.gtfs.set_paths(input_path, output_path)
-        except:
+        except FileNotFoundError:
             print('error setting paths')
+            return False
 
     def sub_load_gtfsdata_event(self):
         self.gtfs.processing = "loading data"
         self.notify_set_process("loading GTFS data...")
-        # worker = ImportGTFSDataWorker(self.gtfs)
+        # worker = ImportGTFSDataWorker(self.worker_gtfs)
 
         self.worker = GTFSWorker(['sub_worker_load_gtfsdata'], 'Worker', 'ImportGTFS')
         self.worker.register('sub_worker_load_gtfsdata', self)
@@ -165,14 +170,13 @@ class Model(Publisher, Subscriber):
     def sub_worker_create_fahrplan_dates(self):
         self.gtfs.datesWeekday_create_fahrplan()
 
-
     def sub_worker_create_output_fahrplan(self):
         self.gtfs.datesWeekday_create_output_fahrplan()
 
     def sub_select_agency_event(self):
         self.gtfs.processing = "load routes list"
         self.notify_set_process("loading load routes list...")
-        # worker = ImportGTFSDataWorker(self.gtfs)
+        # worker = ImportGTFSDataWorker(self.worker_gtfs)
 
         self.worker = GTFSWorker(['sub_worker_update_routes_list'], 'Worker', 'fill_agency_list')
         self.worker.register('sub_worker_update_routes_list', self)
@@ -196,7 +200,7 @@ class Model(Publisher, Subscriber):
     def sub_start_create_table(self):
         self.gtfs.processing = "create table"
         self.notify_set_process("create table data...")
-        # worker = ImportGTFSDataWorker(self.gtfs)
+        # worker = ImportGTFSDataWorker(self.worker_gtfs)
 
         if self.gtfs.selected_weekday is None:
             self.worker = GTFSWorker(['sub_worker_prepare_data_fahrplan',
@@ -276,19 +280,19 @@ class Model(Publisher, Subscriber):
 
     def notify_update_agency_List(self):
         return self.dispatch("update_agency_list",
-                      "update_agency_list routine started! Notify subscriber!")
+                             "update_agency_list routine started! Notify subscriber!")
 
     def notify_update_routes_List(self):
         return self.dispatch("update_routes_list",
-                      "update_routes_list routine started! Notify subscriber!")
+                             "update_routes_list routine started! Notify subscriber!")
 
     def notify_update_weekdate_option(self):
         return self.dispatch("update_weekdate_option",
-                      "update_weekdate_option routine started! Notify subscriber!")
+                             "update_weekdate_option routine started! Notify subscriber!")
 
     def notify_finished(self):
         return self.dispatch("message",
-                      "Table created!")
+                             "Table created!")
 
     def notify_subscriber(self, event, message):
         print('model: {}'.format(event))
@@ -333,7 +337,7 @@ class Model(Publisher, Subscriber):
 
 
 class Gui(QWidget, Publisher, Subscriber):
-    def __init__(self, events, name, *args, **kwargs):
+    def __init__(self, events, name):
         super().__init__(events=events, name=name)
         # uic.loadUi(self.resource_path('add_files\\GTFSQT5Q.ui'), self)
         # pixmap = QPixmap(self.resource_path('add_files\\5282.jpg'))
@@ -351,9 +355,13 @@ class Gui(QWidget, Publisher, Subscriber):
         self.btnImport.clicked.connect(self.notify_load_gtfsdata_event)
         self.btnRestart.clicked.connect(self.notify_restart)
         self.btnStart.clicked.connect(self.notify_create_table)
+        self.btnGetFile.clicked.connect(self.getFilePath)
+        self.btnGetDir.clicked.connect(self.getDirPath)
+        self.btnGetOutputDir.clicked.connect(self.getOutputDirPath)
         self.listAgencies.clicked.connect(self.notify_select_agency)
         self.listRoutes.clicked.connect(self.notify_select_route)
         self.listDatesWeekday.clicked.connect(self.notify_select_weekday_option)
+
         self.comboBox.activated[str].connect(self.onChanged)
         self.comboBox_sort.activated[str].connect(self.onChangedSortMode)
         self.comboBox_direction.activated[str].connect(self.onChangedDirectionMode)
@@ -395,7 +403,9 @@ class Gui(QWidget, Publisher, Subscriber):
         self.refresh_time = get_current_time()
         self.print_me()
 
-    def resource_path(self, relative_path):
+    # noinspection PyUnresolvedReferences
+    @staticmethod
+    def resource_path(relative_path):
         """ Get absolute path to resource, works for dev and for PyInstaller """
         try:
             # PyInstaller creates a temp folder and stores path in _MEIPASS
@@ -415,7 +425,7 @@ class Gui(QWidget, Publisher, Subscriber):
         self.oldPos = event.globalPos()
 
     def mouseMoveEvent(self, event):
-        delta = QPoint (event.globalPos() - self.oldPos)
+        delta = QPoint(event.globalPos() - self.oldPos)
         self.move(self.x() + delta.x(), self.y() + delta.y())
         self.oldPos = event.globalPos()
 
@@ -444,14 +454,10 @@ class Gui(QWidget, Publisher, Subscriber):
         elif text == 'direction 2':
             self.model.gtfs.selected_direction = 1
 
-
     def send_message_box(self, text):
         self.messageBox_model.setStandardButtons(QMessageBox.Ok)
         self.messageBox_model.setText(text)
         self.messageBox_model.exec_()
-
-    def btn_test(self, event):
-        print('clicked: {}'.format(event))
 
     # based on linked event subscriber are going to be notified
     def notify_subscriber(self, event, message):
@@ -538,11 +544,14 @@ class Gui(QWidget, Publisher, Subscriber):
     def notify_load_gtfsdata_event(self):
         self.btnImport.setEnabled(False)
         self.btnRestart.setEnabled(True)
-        self.model.set_paths(self.lineInputPath.text(), self.lineOutputPath.text())
-        return self.dispatch("load_gtfsdata_event", "load_gtfsdata_event routine started! Notify subscriber!")
+        if self.model.set_paths(self.lineInputPath.text(), self.lineOutputPath.text()):
+            return self.dispatch("load_gtfsdata_event", "load_gtfsdata_event routine started! Notify subscriber!")
+        else:
+            self.send_message_box('Error. Could not find Files.')
 
     def notify_select_option_button_direction(self):
-        return self.dispatch("select_option_button_direction", "select_option_button_direction routine started! Notify subscriber!")
+        return self.dispatch("select_option_button_direction",
+                             "select_option_button_direction routine started! Notify subscriber!")
 
     def notify_close_program(self):
         return self.dispatch("close_program", "close_program routine started! Notify subscriber!")
@@ -559,9 +568,6 @@ class Gui(QWidget, Publisher, Subscriber):
         self.listAgencies.clear()
         self.listAgencies.addItems(self.model.gtfs.agenciesList)
 
-    def sub_update_DatesWeekday_list(self):
-        print('test')
-
     def sub_update_progress_bar(self):
         self.progressBar.setValue(self.model.gtfs.progress)
 
@@ -573,6 +579,36 @@ class Gui(QWidget, Publisher, Subscriber):
     def set_process(self, task):
         self.sub_write_gui_log("{} started".format(task))
         self.model.gtfs.gtfs_process = task
+
+    def getFilePath(self):
+        try:
+            file_path = QFileDialog.getOpenFileName(parent=self,
+                                                    caption='Select GTFS Zip File',
+                                                    directory='C:/Tmp',
+                                                    filter='Zip File (*.zip)',
+                                                    initialFilter='Zip File (*.zip)')
+
+        except:
+            file_path = QFileDialog.getOpenFileName(parent=self,
+                                                    caption='Select GTFS Zip File',
+                                                    directory=os.getcwd(),
+                                                    filter='Zip File (*.zip)',
+                                                    initialFilter='Zip File (*.zip)')
+        if file_path[0] > '':
+            self.lineInputPath.setText(file_path[0])
+
+    def getDirPath(self):
+        file_path = QFileDialog.getExistingDirectory(self,
+                                                     caption='Select GTFS Zip File', )
+        if file_path > '':
+            self.GTFSInputPath.setText(file_path)
+
+    def getOutputDirPath(self):
+        file_path = QFileDialog.getExistingDirectory(self,
+                                                     caption='Select GTFS Zip File',
+                                                     directory='C:/Tmp')
+        if file_path > '':
+            self.lineOutputPath.setText(f'{file_path}/')
 
     def delete_process(self):
         self.sub_write_gui_log("{} finished".format(self.process))
@@ -592,14 +628,16 @@ def get_current_time():
     total_time = (now.hour * 3600) + (now.minute * 60) + now.second
     return total_time
 
+
 def main(events, name):
-    app = QApplication(sys.argv)
-    window = Gui(events=events, name=name)
-    window.show()
-    app.exec_()
+    gtfs_app = QApplication(sys.argv)
+    application_window = Gui(events=events, name=name)
+    application_window.show()
+    gtfs_app.exec_()
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = Gui(events=['update_process', 'toggle_button_direction_event', 'toggle_button_date_week_event'], name='controller')
+    window = Gui(events=['update_process', 'toggle_button_direction_event', 'toggle_button_date_week_event'],
+                 name='controller')
     app.exec_()
