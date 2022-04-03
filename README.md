@@ -11,8 +11,6 @@ GTFS to fahrplan
 - add add_files
 - mainq5.py as script
 
-=======
-Img by <a href="https://de.freepik.com/vektoren/menschen">Menschen Vektor erstellt von pch.vector - de.freepik.com</a>
 
 
 - VBB - Verkehrsverbund Berlin-Brandenburg GmbH
@@ -21,3 +19,5 @@ https://daten.berlin.de/datensaetze/vbb-fahrplandaten-gtfs
 - Open Data Portal Metropole Ruhr
 https://opendata.ruhr/
 
+
+Img by <a href="https://de.freepik.com/vektoren/menschen">Menschen Vektor erstellt von pch.vector - de.freepik.com</a>
