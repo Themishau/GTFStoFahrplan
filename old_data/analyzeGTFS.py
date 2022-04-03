@@ -355,7 +355,6 @@ async def get_gtfs_calendarWeek(inputgtfsData):
         calendarWeekdict["sunday"].append(calendarData[7])
         calendarWeekdict["start_date"].append(calendarData[8])
         calendarWeekdict["end_date"].append(calendarData[9])
-    calendarList = None
     return calendarWeekdict
 
 

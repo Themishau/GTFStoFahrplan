@@ -116,6 +116,7 @@ class Model(Publisher, Subscriber):
     def set_paths(self, input_path, output_path):
         try:
             self.gtfs.set_paths(input_path, output_path)
+            return True
         except FileNotFoundError:
             print('error setting paths')
             return False

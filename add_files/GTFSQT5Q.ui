@@ -974,6 +974,22 @@ padding: 4px;</string>
     </widget>
    </widget>
   </widget>
+  <widget class="QLabel" name="label_2">
+   <property name="geometry">
+    <rect>
+     <x>260</x>
+     <y>460</y>
+     <width>141</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color:  #ffcbc0;</string>
+   </property>
+   <property name="text">
+    <string>example: 20211212</string>
+   </property>
+  </widget>
   <zorder>label</zorder>
   <zorder>middlelabel</zorder>
   <zorder>lineOutputPath</zorder>
@@ -1007,6 +1023,7 @@ padding: 4px;</string>
   <zorder>btnGetFile</zorder>
   <zorder>btnGetOutputDir</zorder>
   <zorder>tabWidget</zorder>
+  <zorder>label_2</zorder>
  </widget>
  <resources/>
  <connections>
