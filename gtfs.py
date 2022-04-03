@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 import re
 
 
+# noinspection SqlResolve
 class gtfs:
     input_path: str
     output_path: str
@@ -122,11 +123,11 @@ class gtfs:
         print('import_gtfs')
         if self.read_paths() is True:
             if self.read_gtfs_data() is True:
-                self.noError =  self.read_gtfs_data_from_path()
+                self.noError = self.read_gtfs_data_from_path()
         if self.noError is True:
-            self.noError =  self.create_dfs()
+            self.noError = self.create_dfs()
         if self.noError is True:
-            self.noError =  self.cleandicts()
+            self.noError = self.cleandicts()
         return self.noError
 
     def set_paths(self, input_path, output_path):
@@ -140,11 +141,10 @@ class gtfs:
     def set_routes(self, route):
         self.selectedRoute = route
 
-
     def create_dfs(self):
 
         # DataFrame for every route
-        self.dfRoutes = pd.DataFrame.from_dict(self.routesFahrtdict).set_index(['route_id','agency_id'])
+        self.dfRoutes = pd.DataFrame.from_dict(self.routesFahrtdict).set_index(['route_id', 'agency_id'])
 
         # DataFrame with every trip
         self.dfTrips = pd.DataFrame.from_dict(self.tripdict).set_index('trip_id')
@@ -185,7 +185,6 @@ class gtfs:
         except KeyError:
             print("can not convert dfStops: stop_id into int ")
 
-
         # DataFrame with every service weekly
         self.dfWeek = pd.DataFrame.from_dict(self.calendarWeekdict).set_index('service_id')
 
@@ -201,7 +200,7 @@ class gtfs:
 
     # reads the files
     def read_paths(self):
-        if self.input_path is None\
+        if self.input_path is None \
                 or self.output_path is None:
             return False
         return True
@@ -247,23 +246,26 @@ class gtfs:
                 temp["trip_id"] = stop_name_i.trip_id
 
                 if self.check_hour_24(stop_name_i.start_time):
-                    comparetime_i = str((datetime.strptime(stop_name_i.date, '%Y-%m-%d %H:%M:%S.%f').strftime('%Y-%m-%d'))) + ' 0' + str(int(stop_name_i.start_time.split(':')[0]) - 24) + ':' + \
+                    comparetime_i = str((datetime.strptime(stop_name_i.date, '%Y-%m-%d %H:%M:%S.%f').strftime(
+                        '%Y-%m-%d'))) + ' 0' + str(int(stop_name_i.start_time.split(':')[0]) - 24) + ':' + \
                                     stop_name_i.start_time.split(':')[1]
                     time_i = datetime.strptime(comparetime_i, '%Y-%m-%d %H:%M')
                     time_i = time_i + timedelta(days=1)
                 else:
-                    comparetime_i = str((datetime.strptime(stop_name_i.date, '%Y-%m-%d %H:%M:%S.%f').strftime('%Y-%m-%d'))) + ' ' + stop_name_i.start_time
+                    comparetime_i = str((datetime.strptime(stop_name_i.date, '%Y-%m-%d %H:%M:%S.%f').strftime(
+                        '%Y-%m-%d'))) + ' ' + stop_name_i.start_time
                     time_i = datetime.strptime(comparetime_i, '%Y-%m-%d %H:%M')
 
                 if self.check_hour_24(stop_name_i.arrival_time):
-                    time_arrival_i = str((datetime.strptime(stop_name_i.date, '%Y-%m-%d %H:%M:%S.%f').strftime('%Y-%m-%d'))) + ' 0' + str(int(stop_name_i.arrival_time.split(':')[0]) - 24) + ':' + \
+                    time_arrival_i = str((datetime.strptime(stop_name_i.date, '%Y-%m-%d %H:%M:%S.%f').strftime(
+                        '%Y-%m-%d'))) + ' 0' + str(int(stop_name_i.arrival_time.split(':')[0]) - 24) + ':' + \
                                      stop_name_i.arrival_time.split(':')[1]
                     time_arrival_i = datetime.strptime(time_arrival_i, '%Y-%m-%d %H:%M')
                     time_arrival_i = time_arrival_i + timedelta(days=1)
                 else:
-                    time_arrival_i = str((datetime.strptime(stop_name_i.date, '%Y-%m-%d %H:%M:%S.%f').strftime('%Y-%m-%d'))) + ' ' + stop_name_i.arrival_time
+                    time_arrival_i = str((datetime.strptime(stop_name_i.date, '%Y-%m-%d %H:%M:%S.%f').strftime(
+                        '%Y-%m-%d'))) + ' ' + stop_name_i.arrival_time
                     time_arrival_i = datetime.strptime(time_arrival_i, '%Y-%m-%d %H:%M')
-
 
                 temp["start_time"] = time_i
                 temp["arrival_time"] = time_arrival_i
@@ -275,27 +277,34 @@ class gtfs:
                         if stop_name_i.stop_id == stop_name_j.stop_id:
 
                             if self.check_hour_24(stop_name_j.start_time):
-                                comparetime_j = str((datetime.strptime(stop_name_j.date, '%Y-%m-%d %H:%M:%S.%f').strftime('%Y-%m-%d'))) + ' 0' + str(int(stop_name_j.start_time.split(':')[0]) - 24) + ':' + \
+                                comparetime_j = str((datetime.strptime(stop_name_j.date,
+                                                                       '%Y-%m-%d %H:%M:%S.%f').strftime(
+                                    '%Y-%m-%d'))) + ' 0' + str(int(stop_name_j.start_time.split(':')[0]) - 24) + ':' + \
                                                 stop_name_j.start_time.split(':')[1]
                                 time_j = datetime.strptime(comparetime_j, '%Y-%m-%d %H:%M')
                                 time_j = time_j + timedelta(days=1)
                             else:
-                                comparetime_j = str((datetime.strptime(stop_name_j.date, '%Y-%m-%d %H:%M:%S.%f').strftime('%Y-%m-%d'))) + ' ' + stop_name_j.start_time
+                                comparetime_j = str((datetime.strptime(stop_name_j.date,
+                                                                       '%Y-%m-%d %H:%M:%S.%f').strftime(
+                                    '%Y-%m-%d'))) + ' ' + stop_name_j.start_time
                                 time_j = datetime.strptime(comparetime_j, '%Y-%m-%d %H:%M')
 
                             time_temp = temp["start_time"]
 
                             if self.check_hour_24(stop_name_j.arrival_time):
-                                time_arrival_j = str((datetime.strptime(stop_name_j.date, '%Y-%m-%d %H:%M:%S.%f').strftime('%Y-%m-%d'))) + ' 0' + str(int(stop_name_j.arrival_time.split(':')[0]) - 24) + ':' + \
+                                time_arrival_j = str((datetime.strptime(stop_name_j.date,
+                                                                        '%Y-%m-%d %H:%M:%S.%f').strftime(
+                                    '%Y-%m-%d'))) + ' 0' + str(int(stop_name_j.arrival_time.split(':')[0]) - 24) + ':' + \
                                                  stop_name_j.arrival_time.split(':')[1]
                                 time_arrival_j = datetime.strptime(time_arrival_j, '%Y-%m-%d %H:%M')
                                 time_arrival_j = time_arrival_j + timedelta(days=1)
                             else:
-                                time_arrival_j = str((datetime.strptime(stop_name_j.date, '%Y-%m-%d %H:%M:%S.%f').strftime('%Y-%m-%d'))) + ' ' + stop_name_j.arrival_time
+                                time_arrival_j = str((datetime.strptime(stop_name_j.date,
+                                                                        '%Y-%m-%d %H:%M:%S.%f').strftime(
+                                    '%Y-%m-%d'))) + ' ' + stop_name_j.arrival_time
                                 time_arrival_j = datetime.strptime(time_arrival_j, '%Y-%m-%d %H:%M')
 
                             arrival_time_temp = temp["arrival_time"]
-
 
                             # if time_j < time_i \
                             # and time_j < time_temp \
@@ -303,16 +312,16 @@ class gtfs:
                             # and time_arrival_j < arrival_time_temp\
                             # and stop_name_j.stop_sequence > stop_name_i.stop_sequence:
                             if time_j < time_i \
-                            and time_j < time_temp \
-                            and stop_name_j.stop_sequence > stop_name_i.stop_sequence \
-                            and stop_name_j.stop_sequence > temp["stop_sequence"]:
+                                    and time_j < time_temp \
+                                    and stop_name_j.stop_sequence > stop_name_i.stop_sequence \
+                                    and stop_name_j.stop_sequence > temp["stop_sequence"]:
                                 temp["start_time"] = time_j
                                 temp["arrival_time"] = time_arrival_j
                                 # temp["arrival_time"] = stop_name_j.arrival_time
                                 temp["stop_sequence"] = stop_name_j.stop_sequence
                     else:
-                        if stop_name_i.stop_id == stop_name_j.stop_id\
-                        and stop_name_i.trip_id == stop_name_j.trip_id:
+                        if stop_name_i.stop_id == stop_name_j.stop_id \
+                                and stop_name_i.trip_id == stop_name_j.trip_id:
 
                             if self.check_hour_24(stop_name_j.start_time):
                                 comparetime_j = str((datetime.strptime(stop_name_j.date,
@@ -346,11 +355,10 @@ class gtfs:
 
                             arrival_time_temp = temp["arrival_time"]
 
-
                             if time_j < time_i \
-                            and time_j < time_temp \
-                            and stop_name_j.stop_sequence > stop_name_i.stop_sequence \
-                            and stop_name_j.stop_sequence > temp["stop_sequence"]:
+                                    and time_j < time_temp \
+                                    and stop_name_j.stop_sequence > stop_name_i.stop_sequence \
+                                    and stop_name_j.stop_sequence > temp["stop_sequence"]:
                                 temp["start_time"] = time_j
                                 temp["arrival_time"] = time_arrival_j
                                 # temp["arrival_time"] = stop_name_j.arrival_time
@@ -371,7 +379,6 @@ class gtfs:
         print(self.sortmode)
 
         new_stopsequence = self.sortStopSequence(stopsequence)
-
 
         for stop_sequence in new_stopsequence.keys():
             sorted_stopsequence['stop_id'].append(new_stopsequence[stop_sequence]['stop_id'])
@@ -417,7 +424,7 @@ class gtfs:
                          "arrival_time": datetime.strptime('1901-01-01 23:59', '%Y-%m-%d %H:%M').time(),
                          "stop_name": '',
                          "stop_id": ''
-                        }
+                         }
 
         # fill new dict
         for k, j in enumerate(stopsequence):
@@ -431,8 +438,8 @@ class gtfs:
         if self.sortmode == 1:
             # bubble sort
             for i in range(sequence_count - 1):
-                for j in range(0,sequence_count-i-1):
-                    if  d[str(j)]["stop_sequence"] > d[str(j + 1)]["stop_sequence"]:
+                for j in range(0, sequence_count - i - 1):
+                    if d[str(j)]["stop_sequence"] > d[str(j + 1)]["stop_sequence"]:
                         d[str(j)], d[str(j + 1)] = d[str(j + 1)], d[str(j)]
                     elif d[str(j)]["stop_sequence"] == d[str(j + 1)]["stop_sequence"]:
                         if d[str(j)]["start_time"] > d[str(j + 1)]["start_time"]:
@@ -441,15 +448,15 @@ class gtfs:
         else:
             # bubble sort
             for i in range(sequence_count - 1):
-                for j in range(0,sequence_count-i-1):
-                    if  d[str(j)]["arrival_time"] > d[str(j + 1)]["arrival_time"]:
+                for j in range(0, sequence_count - i - 1):
+                    if d[str(j)]["arrival_time"] > d[str(j + 1)]["arrival_time"]:
                         d[str(j)], d[str(j + 1)] = d[str(j + 1)], d[str(j)]
-                    elif d[str(j)]["stop_sequence"] > d[str(j + 1)]["stop_sequence"]\
-                     and d[str(j)]["start_time"] > d[str(j + 1)]["start_time"]:
+                    elif d[str(j)]["stop_sequence"] > d[str(j + 1)]["stop_sequence"] \
+                            and d[str(j)]["start_time"] > d[str(j + 1)]["start_time"]:
                         d[str(j)], d[str(j + 1)] = d[str(j + 1)], d[str(j)]
                     elif d[str(j)]["stop_sequence"] == d[str(j + 1)]["stop_sequence"]:
-                        if  d[str(j)]["start_time"] > d[str(j + 1)]["start_time"]\
-                        and d[str(j)]["arrival_time"] > d[str(j + 1)]["arrival_time"]:
+                        if d[str(j)]["start_time"] > d[str(j + 1)]["start_time"] \
+                                and d[str(j)]["arrival_time"] > d[str(j + 1)]["arrival_time"]:
                             d[str(j)], d[str(j + 1)] = d[str(j + 1)], d[str(j)]
         return d
 
@@ -478,7 +485,7 @@ class gtfs:
             return False
 
     # checks if time-string exceeds 24 hour
-    def check_hour_24(self, time):       
+    def check_hour_24(self, time):
         try:
             pattern1 = re.findall('^2{1}[4-9]{1}:[0-9]{2}', time)
             if (pattern1):
@@ -508,7 +515,8 @@ class gtfs:
                     agencyList = agency.readlines()[1:]
         except:
             return False
-        self.raw_gtfs_data = [stopsList, stopTimesList, tripsList, calendarList, calendar_datesList, routesList, agencyList]
+        self.raw_gtfs_data = [stopsList, stopTimesList, tripsList, calendarList, calendar_datesList, routesList,
+                              agencyList]
         return True
 
     def get_gtfs_trip(self):
@@ -556,7 +564,6 @@ class gtfs:
         return True
 
     def get_gtfs_stop(self):
-
 
         stopsdict = {
             "stop_id": [],
@@ -634,7 +641,6 @@ class gtfs:
                 stopTimesdict["pickup_type"].append(stopTimeData[6])
                 stopTimesdict["drop_off_type"].append(stopTimeData[7])
                 stopTimesdict["shape_dist_traveled"].append(stopTimeData[8])
-
 
         self.stopTimesdict = stopTimesdict
         return True
@@ -833,7 +839,6 @@ class gtfs:
         self.serviceslist = services_list.values.tolist()
         return True
 
-
     def read_gtfs_agencies(self):
         dfagency = self.dfagency
         cond_agencies = '''
@@ -856,16 +861,15 @@ class gtfs:
 
         # DataFrame for header information
         self.header_for_export_data = {'Agency': [self.selectedAgency],
-                                  'Route': [self.selectedRoute],
-                                  'WeekdayOption': [self.selected_weekday]
-                                  }
+                                       'Route': [self.selectedRoute],
+                                       'WeekdayOption': [self.selected_weekday]
+                                       }
         self.dfheader_for_export_data = pd.DataFrame.from_dict(self.header_for_export_data)
 
         dummy_direction = 0
         direction = [{'direction_id': dummy_direction}
                      ]
         self.dfdirection = pd.DataFrame(direction)
-
 
         self.requested_direction = {'direction_id': [self.selected_direction]}
         self.requested_directiondf = pd.DataFrame.from_dict(self.requested_direction)
@@ -921,9 +925,9 @@ class gtfs:
 
         # DataFrame for header information
         self.header_for_export_data = {'Agency': [self.selectedAgency],
-                                  'Route': [self.selectedRoute],
-                                  'Dates': [self.selected_dates]
-                                  }
+                                       'Route': [self.selectedRoute],
+                                       'Dates': [self.selected_dates]
+                                       }
         self.dfheader_for_export_data = pd.DataFrame.from_dict(self.header_for_export_data)
 
         dummy_direction = 0
@@ -944,7 +948,6 @@ class gtfs:
 
         inputVarAgency = [{'agency_id': self.selectedAgency}]
         self.varTestAgency = pd.DataFrame(inputVarAgency)
-
 
     def datesWeekday_select_dates_for_date_range(self):
         # conditions for searching in dfs
@@ -997,7 +1000,6 @@ class gtfs:
         dfWeek.sunday
         """
 
-
         self.fahrplan_dates = sqldf(cond_select_dates_for_date_range, locals())
 
         # change format
@@ -1020,7 +1022,7 @@ class gtfs:
                             fahrplan_dates_all_dates.day,
                             fahrplan_dates_all_dates.trip_id,
                             fahrplan_dates_all_dates.service_id,
-                            fahrplan_dates_all_dates.route_id, 
+                            route_id, 
                             fahrplan_dates_all_dates.start_date,
                             fahrplan_dates_all_dates.end_date,
                             fahrplan_dates_all_dates.monday,
@@ -1133,7 +1135,6 @@ class gtfs:
         fahrplan_dates_all_dates['end_date'] = pd.to_datetime(fahrplan_dates_all_dates['end_date'],
                                                               format='%Y-%m-%d %H:%M:%S.%f')
         self.fahrplan_dates_all_dates = fahrplan_dates_all_dates
-
 
     def dates_select_dates_delete_exception_2(self):
         dfDates = self.dfDates
@@ -1301,7 +1302,6 @@ class gtfs:
         # get all stop_times and stops for every stop of one route
         self.fahrplan_calendar_weeks = sqldf(cond_select_stops_for_trips, locals())
 
-
     def datesWeekday_select_for_every_date_trips_stops(self):
 
         fahrplan_calendar_weeks = self.fahrplan_calendar_weeks
@@ -1325,7 +1325,6 @@ class gtfs:
         self.fahrplan_calendar_weeks = sqldf(cond_select_for_every_date_trips_stops, locals())
 
         #########################
-
 
     def datesWeekday_select_stop_sequence_stop_name_sorted(self):
 
@@ -1403,7 +1402,8 @@ class gtfs:
         # fahrplan_calendar_weeks = fahrplan_calendar_weeks.drop(columns=['stop_sequence', 'service_id', 'stop_id'])
         fahrplan_calendar_weeks = fahrplan_calendar_weeks.drop(columns=['stop_sequence', 'service_id'])
         fahrplan_calendar_weeks = fahrplan_calendar_weeks.groupby(
-            ['date', 'day', 'stop_sequence_sorted', 'stop_name', 'stop_id', 'start_time', 'trip_id']).first().reset_index()
+            ['date', 'day', 'stop_sequence_sorted', 'stop_name', 'stop_id', 'start_time',
+             'trip_id']).first().reset_index()
 
         fahrplan_calendar_weeks['date'] = pd.to_datetime(fahrplan_calendar_weeks['date'], format='%Y-%m-%d')
         # fahrplan_calendar_weeks['trip_id'] = fahrplan_calendar_weeks['trip_id'].astype('int32')
@@ -1411,13 +1411,12 @@ class gtfs:
         fahrplan_calendar_weeks['start_time'] = fahrplan_calendar_weeks['start_time'].astype('string')
 
         self.fahrplan_calendar_filter_days_pivot = fahrplan_calendar_weeks.pivot(
-            index=['date', 'day', 'stop_sequence_sorted', 'stop_name', 'stop_id'], columns=['start_time', 'trip_id'], values='arrival_time')
-
+            index=['date', 'day', 'stop_sequence_sorted', 'stop_name', 'stop_id'], columns=['start_time', 'trip_id'],
+            values='arrival_time')
 
         # fahrplan_calendar_filter_days_pivot['date'] = pd.to_datetime(fahrplan_calendar_filter_days_pivot['date'], format='%Y-%m-%d %H:%M:%S.%f')
         self.fahrplan_calendar_filter_days_pivot = self.fahrplan_calendar_filter_days_pivot.sort_index(axis=1)
         self.fahrplan_calendar_filter_days_pivot = self.fahrplan_calendar_filter_days_pivot.sort_index(axis=0)
-
 
         # releae some memory
         self.zeit = time.time() - self.last_time
@@ -1427,7 +1426,11 @@ class gtfs:
 
     def datesWeekday_create_output_fahrplan(self):
         # save as csv
-        self.dfheader_for_export_data.to_csv(self.output_path + str(self.route_short_namedf.route_short_name[0]) + 'dates_' +  str(self.now) + 'pivot_table.csv', header=True,
-                                        quotechar=' ', sep=';', mode='w', encoding='utf8')
-        self.fahrplan_calendar_filter_days_pivot.to_csv(self.output_path + str(self.route_short_namedf.route_short_name[0]) + 'dates_' +  str(self.now) + 'pivot_table.csv', header=True, quotechar=' ',
-                              index=True, sep=';', mode='a', encoding='utf8')
+        self.dfheader_for_export_data.to_csv(
+            self.output_path + str(self.route_short_namedf.route_short_name[0]) + 'dates_' + str(
+                self.now) + 'pivot_table.csv', header=True,
+            quotechar=' ', sep=';', mode='w', encoding='utf8')
+        self.fahrplan_calendar_filter_days_pivot.to_csv(
+            self.output_path + str(self.route_short_namedf.route_short_name[0]) + 'dates_' + str(
+                self.now) + 'pivot_table.csv', header=True, quotechar=' ',
+            index=True, sep=';', mode='a', encoding='utf8')
