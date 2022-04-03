@@ -14,6 +14,7 @@ class Subscriber(object):
     def print_me(self):
         print(self.name)
 
+
 class Publisher(object):
     def __init__(self, events, *args, **kwargs):
         # maps event names to subscribers
