@@ -118,7 +118,7 @@ class gtfs:
         self.import_gtfs()
 
     # import routine and
-    def import_gtfs(self):
+    def import_gtfs(self) -> bool:
         self.processing = "import_gtfs started"
         print('import_gtfs')
         if self.read_paths() is True:
@@ -134,11 +134,11 @@ class gtfs:
         self.input_path = input_path
         self.output_path = output_path
 
-    def get_routes_of_agency(self):
+    def get_routes_of_agency(self) -> None:
         if self.selectedAgency is not None:
             self.select_gtfs_routes_from_agency()
 
-    def set_routes(self, route):
+    def set_routes(self, route) -> None:
         self.selectedRoute = route
 
     def create_dfs(self):
@@ -205,7 +205,7 @@ class gtfs:
             return False
         return True
 
-    def cleandicts(self):
+    def cleandicts(self) -> bool:
         self.stopsdict = None
         self.stopTimesdict = None
         self.tripdict = None
@@ -216,7 +216,7 @@ class gtfs:
         return True
 
     # checks if all data is avalibale before creation
-    def data_loaded_and_available(self):
+    def data_loaded_and_available(self) -> bool:
         if (self.stopsdict is None
                 or self.stopTimesdict is None
                 or self.tripdict is None

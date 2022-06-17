@@ -402,7 +402,6 @@ class Gui(QWidget, Publisher, Subscriber):
         self.register('start_create_table', self.model)
 
         self.refresh_time = get_current_time()
-        self.print_me()
 
     # noinspection PyUnresolvedReferences
     @staticmethod
