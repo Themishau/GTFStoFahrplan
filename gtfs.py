@@ -114,8 +114,8 @@ class gtfs:
         self.fahrplan_calendar_filter_days_pivot = None
 
     # loads data from zip
-    def async_task_load_GTFS_data(self):
-        self.import_gtfs()
+    def async_task_load_GTFS_data(self) -> bool:
+        return self.import_gtfs()
 
     # import routine and
     def import_gtfs(self) -> bool:
@@ -134,6 +134,8 @@ class gtfs:
         self.input_path = input_path
         self.output_path = output_path
 
+
+
     def get_routes_of_agency(self) -> None:
         if self.selectedAgency is not None:
             self.select_gtfs_routes_from_agency()
@@ -142,6 +144,8 @@ class gtfs:
         self.selectedRoute = route
 
     def create_dfs(self):
+
+        last_time = time.time()
 
         # DataFrame for every route
         self.dfRoutes = pd.DataFrame.from_dict(self.routesFahrtdict).set_index(['route_id', 'agency_id'])
@@ -195,6 +199,9 @@ class gtfs:
 
         # DataFrame with every agency
         self.dfagency = pd.DataFrame.from_dict(self.agencyFahrtdict).set_index('agency_id')
+
+        zeit = time.time() - last_time
+        print("time: {} ".format(zeit))
 
         return True
 
@@ -471,7 +478,7 @@ class gtfs:
     def time_in_string(self, time):
         pattern = re.findall('^\d{1}:\d{2}:\d{2}$', time)
 
-        if (pattern):
+        if pattern:
             return '0' + time[:-3]
         else:
             return time[:-3]
@@ -479,7 +486,7 @@ class gtfs:
     # checks if date string
     def check_dates_input(self, dates):
         pattern1 = re.findall('^\d{8}(?:\d{8})*(?:,\d{8})*$', dates)
-        if (pattern1):
+        if pattern1:
             return True
         else:
             return False
@@ -488,7 +495,7 @@ class gtfs:
     def check_hour_24(self, time):
         try:
             pattern1 = re.findall('^2{1}[4-9]{1}:[0-9]{2}', time)
-            if (pattern1):
+            if pattern1:
                 return True
             else:
                 return False
@@ -1134,6 +1141,7 @@ class gtfs:
                                                                 format='%Y-%m-%d %H:%M:%S.%f')
         fahrplan_dates_all_dates['end_date'] = pd.to_datetime(fahrplan_dates_all_dates['end_date'],
                                                               format='%Y-%m-%d %H:%M:%S.%f')
+
         self.fahrplan_dates_all_dates = fahrplan_dates_all_dates
 
     def dates_select_dates_delete_exception_2(self):
@@ -1212,6 +1220,7 @@ class gtfs:
         fahrplan_dates_all_dates.saturday,
         fahrplan_dates_all_dates.sunday
         """
+        last_time = time.time()
 
         fahrplan_dates_all_dates = pd.concat(
             [pd.DataFrame
@@ -1229,6 +1238,10 @@ class gtfs:
                'saturday': row.saturday,
                'sunday': row.sunday
                }) for i, row in self.fahrplan_dates.iterrows()], ignore_index=True)
+
+        zeit = time.time() - last_time
+        print("time: {} ".format(zeit))
+        last_time = time.time()
 
         # need to convert the date after using iterows (itertuples might be faster)
         self.fahrplan_dates = None
@@ -1254,6 +1267,10 @@ class gtfs:
             lambda x: 'Sunday' if x == '1' else '-')
         fahrplan_dates_all_dates = fahrplan_dates_all_dates.set_index('date')
 
+        zeit = time.time() - last_time
+        print("time: {} ".format(zeit))
+        last_time = time.time()
+
         # delete exceptions = 2 or add exceptions = 1
         fahrplan_dates_all_dates = sqldf(cond_select_dates_delete_exception_2, locals())
         fahrplan_dates_all_dates['date'] = pd.to_datetime(fahrplan_dates_all_dates['date'],
@@ -1262,6 +1279,11 @@ class gtfs:
                                                                 format='%Y-%m-%d %H:%M:%S.%f')
         fahrplan_dates_all_dates['end_date'] = pd.to_datetime(fahrplan_dates_all_dates['end_date'],
                                                               format='%Y-%m-%d %H:%M:%S.%f')
+        zeit = time.time() - last_time
+        print("time: {} ".format(zeit))
+
+        last_time = time.time()
+
         self.fahrplan_dates_all_dates = fahrplan_dates_all_dates
 
     def datesWeekday_select_stops_for_trips(self):
@@ -1288,10 +1310,11 @@ class gtfs:
                     where dfRoutes.route_short_name = route_short_namedf.route_short_name -- in this case the bus line number
                       and dfRoutes.agency_id = varTestAgency.agency_id -- in this case the bus line number
                       and dfTrips.direction_id = requested_directiondf.direction_id -- shows the direction of the line 
-                    order by dfStopTimes.stop_sequence, start_time;
+                    ;
                    '''
+
+
         dfTrips = self.dfTrips
-        dfWeek = self.dfWeek
         dfRoutes = self.dfRoutes
         dfStops = self.dfStops
         dfStopTimes = self.dfStopTimes
@@ -1299,8 +1322,14 @@ class gtfs:
         varTestAgency = self.varTestAgency
         requested_directiondf = self.requested_directiondf
 
+        last_time = time.time()
         # get all stop_times and stops for every stop of one route
         self.fahrplan_calendar_weeks = sqldf(cond_select_stops_for_trips, locals())
+
+        zeit = time.time() - last_time
+        print("time: {} ".format(zeit))
+        last_time = time.time()
+
 
     def datesWeekday_select_for_every_date_trips_stops(self):
 

@@ -111,12 +111,20 @@ class Model(Publisher, Subscriber):
 
     def sub_reset_gtfs(self):
         self.gtfs = gtfs()
-        self.worker = None
 
-    def set_paths(self, input_path, output_path):
+    def find(self, name, path):
+
+        for root, dirs, files in os.walk(path):
+            print(files)
+            if name in files:
+                return True
+
+    def set_paths(self, input_path, output_path) -> bool:
+        print(input_path.replace(input_path.split('/')[-1], ''))
+        print(input_path.split('/')[-1])
         try:
             self.gtfs.set_paths(input_path, output_path)
-            return True
+            return self.find(input_path.split('/')[-1], input_path.replace(input_path.split('/')[-1], ''))
         except FileNotFoundError:
             print('error setting paths')
             return False
@@ -131,9 +139,13 @@ class Model(Publisher, Subscriber):
 
         self.worker.importedGTFS.connect(lambda: self.notify_set_process("GTFS still loading..."))
         self.worker.start()
-
         self.worker.finished.connect(self.update_agency_list)
+
         self.gtfs.processing = None
+
+    def error_reset_model(self):
+        self.dispatch("restart",
+                      "restart routine started! Notify subscriber!")
 
     def sub_worker_load_gtfsdata(self):
         self.gtfs.async_task_load_GTFS_data()
@@ -257,9 +269,12 @@ class Model(Publisher, Subscriber):
         print('fertig')
 
     def update_agency_list(self):
-        self.gtfs.read_gtfs_agencies()
-        self.notify_update_agency_List()
-        self.worker = None
+        if self.gtfs.noError:
+            self.gtfs.read_gtfs_agencies()
+            self.notify_update_agency_List()
+            self.worker = None
+
+
 
     def update_routes_list(self):
         self.notify_update_routes_List()
@@ -380,7 +395,8 @@ class Gui(QWidget, Publisher, Subscriber):
                             'error_message',
                             'message',
                             'data_changed',
-                            'update_progress_bar'], 'model')
+                            'update_progress_bar',
+                            'restart'], 'model')
 
         # init Observer model -> controller
         self.model.register('update_routes_list', self)  # Achtung, sich selbst angeben und nicht self.controller
@@ -391,6 +407,7 @@ class Gui(QWidget, Publisher, Subscriber):
         self.model.register('error_message', self)
         self.model.register('data_changed', self)
         self.model.register('update_progress_bar', self)
+        self.model.register('restart', self)
 
         # init Observer controller -> model
         self.register('message_test', self.model)
@@ -475,6 +492,8 @@ class Gui(QWidget, Publisher, Subscriber):
             self.sub_update_agency_list()
         elif event == "update_progress_bar":
             self.sub_update_progress_bar()
+        elif event == "restart":
+            self.notify_restart()
         else:
             print('event not found in class gui: {}'.format(event))
 
@@ -547,7 +566,8 @@ class Gui(QWidget, Publisher, Subscriber):
         if self.model.set_paths(self.lineInputPath.text(), self.lineOutputPath.text()):
             return self.dispatch("load_gtfsdata_event", "load_gtfsdata_event routine started! Notify subscriber!")
         else:
-            self.send_message_box('Error. Could not find Files.')
+            self.notify_restart()
+            self.send_message_box('Error. Could not find GTFS Data.')
 
     def notify_select_option_button_direction(self):
         return self.dispatch("select_option_button_direction",
