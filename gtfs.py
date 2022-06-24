@@ -1116,21 +1116,28 @@ class gtfs:
         fahrplan_dates_all_dates['end_date'] = pd.to_datetime(fahrplan_dates_all_dates['end_date'], format='%Y%m%d')
         fahrplan_dates_all_dates['day'] = fahrplan_dates_all_dates['date'].dt.day_name()
 
+        fahrplan_dates_all_dates['monday'] = ['Monday' if x == '1' else '-' for x in fahrplan_dates_all_dates['monday']]
+        fahrplan_dates_all_dates['tuesday'] = ['Tuesday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['tuesday']]
+        fahrplan_dates_all_dates['wednesday'] = ['Wednesday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['wednesday']]
+        fahrplan_dates_all_dates['thursday'] = ['Thursday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['thursday']]
+        fahrplan_dates_all_dates['friday'] = ['Friday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['friday']]
+        fahrplan_dates_all_dates['saturday'] = ['Saturday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['saturday']]
+        fahrplan_dates_all_dates['sunday'] = ['Sunday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['sunday']]
         # set value in column to day if 1 and and compare with day
-        fahrplan_dates_all_dates['monday'] = fahrplan_dates_all_dates['monday'].apply(
-            lambda x: 'Monday' if x == '1' else '-')
-        fahrplan_dates_all_dates['tuesday'] = fahrplan_dates_all_dates['tuesday'].apply(
-            lambda x: 'Tuesday' if x == '1' else '-')
-        fahrplan_dates_all_dates['wednesday'] = fahrplan_dates_all_dates['wednesday'].apply(
-            lambda x: 'Wednesday' if x == '1' else '-')
-        fahrplan_dates_all_dates['thursday'] = fahrplan_dates_all_dates['thursday'].apply(
-            lambda x: 'Thursday' if x == '1' else '-')
-        fahrplan_dates_all_dates['friday'] = fahrplan_dates_all_dates['friday'].apply(
-            lambda x: 'Friday' if x == '1' else '-')
-        fahrplan_dates_all_dates['saturday'] = fahrplan_dates_all_dates['saturday'].apply(
-            lambda x: 'Saturday' if x == '1' else '-')
-        fahrplan_dates_all_dates['sunday'] = fahrplan_dates_all_dates['sunday'].apply(
-            lambda x: 'Sunday' if x == '1' else '-')
+        # fahrplan_dates_all_dates['monday'] = fahrplan_dates_all_dates['monday'].apply(
+        #     lambda x: 'Monday' if x == '1' else '-')
+        # fahrplan_dates_all_dates['tuesday'] = fahrplan_dates_all_dates['tuesday'].apply(
+        #     lambda x: 'Tuesday' if x == '1' else '-')
+        # fahrplan_dates_all_dates['wednesday'] = fahrplan_dates_all_dates['wednesday'].apply(
+        #     lambda x: 'Wednesday' if x == '1' else '-')
+        # fahrplan_dates_all_dates['thursday'] = fahrplan_dates_all_dates['thursday'].apply(
+        #     lambda x: 'Thursday' if x == '1' else '-')
+        # fahrplan_dates_all_dates['friday'] = fahrplan_dates_all_dates['friday'].apply(
+        #     lambda x: 'Friday' if x == '1' else '-')
+        # fahrplan_dates_all_dates['saturday'] = fahrplan_dates_all_dates['saturday'].apply(
+        #     lambda x: 'Saturday' if x == '1' else '-')
+        # fahrplan_dates_all_dates['sunday'] = fahrplan_dates_all_dates['sunday'].apply(
+        #     lambda x: 'Sunday' if x == '1' else '-')
         fahrplan_dates_all_dates = fahrplan_dates_all_dates.set_index('date')
 
         # delete exceptions = 2 or add exceptions = 1
@@ -1250,23 +1257,33 @@ class gtfs:
         fahrplan_dates_all_dates['end_date'] = pd.to_datetime(fahrplan_dates_all_dates['end_date'], format='%Y%m%d')
         fahrplan_dates_all_dates['day'] = fahrplan_dates_all_dates['date'].dt.day_name()
 
+        fahrplan_dates_all_dates['monday'] = ['Monday' if x == '1' else '-' for x in fahrplan_dates_all_dates['monday']]
+        fahrplan_dates_all_dates['tuesday'] = ['Tuesday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['tuesday']]
+        fahrplan_dates_all_dates['wednesday'] = ['Wednesday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['wednesday']]
+        fahrplan_dates_all_dates['thursday'] = ['Thursday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['thursday']]
+        fahrplan_dates_all_dates['friday'] = ['Friday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['friday']]
+        fahrplan_dates_all_dates['saturday'] = ['Saturday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['saturday']]
+        fahrplan_dates_all_dates['sunday'] = ['Sunday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['sunday']]
+
+
         # set value in column to day if 1 and and compare with day
-        fahrplan_dates_all_dates['monday'] = fahrplan_dates_all_dates['monday'].apply(
-            lambda x: 'Monday' if x == '1' else '-')
-        fahrplan_dates_all_dates['tuesday'] = fahrplan_dates_all_dates['tuesday'].apply(
-            lambda x: 'Tuesday' if x == '1' else '-')
-        fahrplan_dates_all_dates['wednesday'] = fahrplan_dates_all_dates['wednesday'].apply(
-            lambda x: 'Wednesday' if x == '1' else '-')
-        fahrplan_dates_all_dates['thursday'] = fahrplan_dates_all_dates['thursday'].apply(
-            lambda x: 'Thursday' if x == '1' else '-')
-        fahrplan_dates_all_dates['friday'] = fahrplan_dates_all_dates['friday'].apply(
-            lambda x: 'Friday' if x == '1' else '-')
-        fahrplan_dates_all_dates['saturday'] = fahrplan_dates_all_dates['saturday'].apply(
-            lambda x: 'Saturday' if x == '1' else '-')
-        fahrplan_dates_all_dates['sunday'] = fahrplan_dates_all_dates['sunday'].apply(
-            lambda x: 'Sunday' if x == '1' else '-')
+        # fahrplan_dates_all_dates['monday'] = fahrplan_dates_all_dates['monday'].apply(
+        #     lambda x: 'Monday' if x == '1' else '-')
+        # fahrplan_dates_all_dates['tuesday'] = fahrplan_dates_all_dates['tuesday'].apply(
+        #     lambda x: 'Tuesday' if x == '1' else '-')
+        # fahrplan_dates_all_dates['wednesday'] = fahrplan_dates_all_dates['wednesday'].apply(
+        #     lambda x: 'Wednesday' if x == '1' else '-')
+        # fahrplan_dates_all_dates['thursday'] = fahrplan_dates_all_dates['thursday'].apply(
+        #     lambda x: 'Thursday' if x == '1' else '-')
+        # fahrplan_dates_all_dates['friday'] = fahrplan_dates_all_dates['friday'].apply(
+        #     lambda x: 'Friday' if x == '1' else '-')
+        # fahrplan_dates_all_dates['saturday'] = fahrplan_dates_all_dates['saturday'].apply(
+        #     lambda x: 'Saturday' if x == '1' else '-')
+        # fahrplan_dates_all_dates['sunday'] = fahrplan_dates_all_dates['sunday'].apply(
+        #     lambda x: 'Sunday' if x == '1' else '-')
         fahrplan_dates_all_dates = fahrplan_dates_all_dates.set_index('date')
 
+        print(fahrplan_dates_all_dates['monday'])
         zeit = time.time() - last_time
         print("time: {} ".format(zeit))
         last_time = time.time()

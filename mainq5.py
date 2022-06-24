@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 from GUI_Q5 import main
 
 if __name__ == '__main__':

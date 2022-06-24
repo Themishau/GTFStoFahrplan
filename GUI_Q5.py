@@ -383,6 +383,16 @@ class Gui(QWidget, Publisher, Subscriber):
         self.comboBox_direction.activated[str].connect(self.onChangedDirectionMode)
         self.lineend = '\n'
         self.textBrowserText = ''
+        self.notify_functions = {'update_routes_list': [self.sub_update_routes_list, False],
+                                'update_weekday_list': [self.sub_update_weekdate_option, False],
+                                'update_agency_list': [self.sub_update_agency_list, False],
+                                'update_weekdate_option': [self.sub_update_weekdate_option, False],
+                                'message': [self.sub_write_gui_log, True],
+                                'error_message': [self.sub_write_gui_log, True],
+                                'data_changed': [self.sub_write_gui_log, True],
+                                'update_progress_bar': [self.sub_update_progress_bar, False],
+                                'restart': [self.notify_restart, False]
+                               }
 
         # init subs and publisher
 
@@ -478,23 +488,14 @@ class Gui(QWidget, Publisher, Subscriber):
 
     # based on linked event subscriber are going to be notified
     def notify_subscriber(self, event, message):
-        if event == "message":
-            self.send_message_box(message)
-        elif event == "data_changed":
-            self.sub_write_gui_log("{}".format(message))
-        elif event == "update_process":
-            self.sub_write_gui_log("{}".format(message))
-        elif event == "update_routes_list":
-            self.sub_update_routes_list()
-        elif event == "update_weekdate_option":
-            self.sub_update_weekdate_option()
-        elif event == "update_agency_list":
-            self.sub_update_agency_list()
-        elif event == "update_progress_bar":
-            self.sub_update_progress_bar()
-        elif event == "restart":
-            self.notify_restart()
+        notify_function, parameters = self.notify_functions.get(event, self.notify_not_function)
+        if not parameters:
+            notify_function()
         else:
+            notify_function(message)
+
+
+    def notify_not_function(self, event):
             print('event not found in class gui: {}'.format(event))
 
     # activity on gui will trigger notify events
