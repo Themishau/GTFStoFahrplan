@@ -148,7 +148,8 @@ class gtfs:
         last_time = time.time()
 
         # DataFrame for every route
-        self.dfRoutes = pd.DataFrame.from_dict(self.routesFahrtdict).set_index(['route_id', 'agency_id'])
+        #  self.dfRoutes = pd.DataFrame.from_dict(self.routesFahrtdict).set_index('route_id')
+        self.dfRoutes = pd.DataFrame.from_dict(self.routesFahrtdict)
 
         # DataFrame with every trip
         self.dfTrips = pd.DataFrame.from_dict(self.tripdict).set_index('trip_id')
@@ -156,11 +157,12 @@ class gtfs:
         try:
             # dfTrips['trip_id'] = pd.to_numeric(dfTrips['trip_id'])
             self.dfTrips['trip_id'] = self.dfTrips['trip_id'].astype('int32')
+            self.dfTrips['direction_id'] = self.dfTrips['direction_id'].astype('int64')
         except KeyError:
             print("can not convert dfTrips: trip_id into int")
 
         # DataFrame with every stop (time)
-        self.dfStopTimes = pd.DataFrame.from_dict(self.stopTimesdict).set_index(['trip_id', 'stop_id'])
+        self.dfStopTimes = pd.DataFrame.from_dict(self.stopTimesdict).set_index('stop_id')
         try:
             self.dfStopTimes['arrival_time'] = self.dfStopTimes['arrival_time'].apply(lambda x: self.time_in_string(x))
             self.dfStopTimes['arrival_time'] = self.dfStopTimes['arrival_time'].astype('string')
@@ -966,6 +968,7 @@ class gtfs:
         requested_directiondf = self.requested_directiondf
         cond_select_dates_for_date_range = '''
                     select  
+                
                             dfTrips.trip_id,
                             dfTrips.service_id,
                             dfTrips.route_id, 
@@ -1116,6 +1119,7 @@ class gtfs:
         fahrplan_dates_all_dates['end_date'] = pd.to_datetime(fahrplan_dates_all_dates['end_date'], format='%Y%m%d')
         fahrplan_dates_all_dates['day'] = fahrplan_dates_all_dates['date'].dt.day_name()
 
+        # set value in column to day if 1 and and compare with day
         fahrplan_dates_all_dates['monday'] = ['Monday' if x == '1' else '-' for x in fahrplan_dates_all_dates['monday']]
         fahrplan_dates_all_dates['tuesday'] = ['Tuesday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['tuesday']]
         fahrplan_dates_all_dates['wednesday'] = ['Wednesday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['wednesday']]
@@ -1123,21 +1127,8 @@ class gtfs:
         fahrplan_dates_all_dates['friday'] = ['Friday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['friday']]
         fahrplan_dates_all_dates['saturday'] = ['Saturday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['saturday']]
         fahrplan_dates_all_dates['sunday'] = ['Sunday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['sunday']]
-        # set value in column to day if 1 and and compare with day
-        # fahrplan_dates_all_dates['monday'] = fahrplan_dates_all_dates['monday'].apply(
-        #     lambda x: 'Monday' if x == '1' else '-')
-        # fahrplan_dates_all_dates['tuesday'] = fahrplan_dates_all_dates['tuesday'].apply(
-        #     lambda x: 'Tuesday' if x == '1' else '-')
-        # fahrplan_dates_all_dates['wednesday'] = fahrplan_dates_all_dates['wednesday'].apply(
-        #     lambda x: 'Wednesday' if x == '1' else '-')
-        # fahrplan_dates_all_dates['thursday'] = fahrplan_dates_all_dates['thursday'].apply(
-        #     lambda x: 'Thursday' if x == '1' else '-')
-        # fahrplan_dates_all_dates['friday'] = fahrplan_dates_all_dates['friday'].apply(
-        #     lambda x: 'Friday' if x == '1' else '-')
-        # fahrplan_dates_all_dates['saturday'] = fahrplan_dates_all_dates['saturday'].apply(
-        #     lambda x: 'Saturday' if x == '1' else '-')
-        # fahrplan_dates_all_dates['sunday'] = fahrplan_dates_all_dates['sunday'].apply(
-        #     lambda x: 'Sunday' if x == '1' else '-')
+
+
         fahrplan_dates_all_dates = fahrplan_dates_all_dates.set_index('date')
 
         # delete exceptions = 2 or add exceptions = 1
@@ -1257,6 +1248,7 @@ class gtfs:
         fahrplan_dates_all_dates['end_date'] = pd.to_datetime(fahrplan_dates_all_dates['end_date'], format='%Y%m%d')
         fahrplan_dates_all_dates['day'] = fahrplan_dates_all_dates['date'].dt.day_name()
 
+        # set value in column to day if 1 and and compare with day
         fahrplan_dates_all_dates['monday'] = ['Monday' if x == '1' else '-' for x in fahrplan_dates_all_dates['monday']]
         fahrplan_dates_all_dates['tuesday'] = ['Tuesday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['tuesday']]
         fahrplan_dates_all_dates['wednesday'] = ['Wednesday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['wednesday']]
@@ -1265,22 +1257,6 @@ class gtfs:
         fahrplan_dates_all_dates['saturday'] = ['Saturday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['saturday']]
         fahrplan_dates_all_dates['sunday'] = ['Sunday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['sunday']]
 
-
-        # set value in column to day if 1 and and compare with day
-        # fahrplan_dates_all_dates['monday'] = fahrplan_dates_all_dates['monday'].apply(
-        #     lambda x: 'Monday' if x == '1' else '-')
-        # fahrplan_dates_all_dates['tuesday'] = fahrplan_dates_all_dates['tuesday'].apply(
-        #     lambda x: 'Tuesday' if x == '1' else '-')
-        # fahrplan_dates_all_dates['wednesday'] = fahrplan_dates_all_dates['wednesday'].apply(
-        #     lambda x: 'Wednesday' if x == '1' else '-')
-        # fahrplan_dates_all_dates['thursday'] = fahrplan_dates_all_dates['thursday'].apply(
-        #     lambda x: 'Thursday' if x == '1' else '-')
-        # fahrplan_dates_all_dates['friday'] = fahrplan_dates_all_dates['friday'].apply(
-        #     lambda x: 'Friday' if x == '1' else '-')
-        # fahrplan_dates_all_dates['saturday'] = fahrplan_dates_all_dates['saturday'].apply(
-        #     lambda x: 'Saturday' if x == '1' else '-')
-        # fahrplan_dates_all_dates['sunday'] = fahrplan_dates_all_dates['sunday'].apply(
-        #     lambda x: 'Sunday' if x == '1' else '-')
         fahrplan_dates_all_dates = fahrplan_dates_all_dates.set_index('date')
 
         print(fahrplan_dates_all_dates['monday'])
@@ -1305,12 +1281,13 @@ class gtfs:
 
     def datesWeekday_select_stops_for_trips(self):
 
+
         cond_select_stops_for_trips = '''
-                    select  
+                    select 
                             (select st_dfStopTimes.arrival_time 
-                                    from dfStopTimes st_dfStopTimes
-                                    where st_dfStopTimes.stop_sequence = 0
-                                      and dfStopTimes.trip_id = st_dfStopTimes.trip_id) as start_time, 
+                                from dfStopTimes st_dfStopTimes
+                                where st_dfStopTimes.stop_sequence = 0
+                                  and dfStopTimes.trip_id = st_dfStopTimes.trip_id) as start_time,                         
                             dfTrips.trip_id,
                             dfStops.stop_name,
                             dfStopTimes.stop_sequence, 
@@ -1325,26 +1302,59 @@ class gtfs:
                     inner join varTestAgency on dfRoutes.agency_id = varTestAgency.agency_id
                     inner join requested_directiondf on dfTrips.direction_id = requested_directiondf.direction_id
                     where dfRoutes.route_short_name = route_short_namedf.route_short_name -- in this case the bus line number
-                      and dfRoutes.agency_id = varTestAgency.agency_id -- in this case the bus line number
+                      and dfRoutes.agency_id = varTestAgency.agency_id -- in this case the agency
                       and dfTrips.direction_id = requested_directiondf.direction_id -- shows the direction of the line 
                     ;
                    '''
 
+        cond_select_stops_for_trips = '''
+                    select 
+                            (select st_dfStopTimes.arrival_time 
+                                from dfStopTimes st_dfStopTimes
+                                where st_dfStopTimes.stop_sequence = 0
+                                  and dfStopTimes.trip_id = st_dfStopTimes.trip_id) as start_time,                         
+                            dfTrips.trip_id,
+                            dfStops.stop_name,
+                            dfStopTimes.stop_sequence, 
+                            dfStopTimes.arrival_time, 
+                            dfTrips.service_id, 
+                            dfStops.stop_id                        
+                    from dfStopTimes 
+                    inner join dfTrips on dfStopTimes.trip_id = dfTrips.trip_id
+                    inner join dfStops on dfStopTimes.stop_id = dfStops.stop_id
+                    ;
+                   '''
 
-        dfTrips = self.dfTrips
-        dfRoutes = self.dfRoutes
-        dfStops = self.dfStops
-        dfStopTimes = self.dfStopTimes
         route_short_namedf = self.route_short_namedf
         varTestAgency = self.varTestAgency
         requested_directiondf = self.requested_directiondf
+        requested_directiondf['direction_id'] = requested_directiondf['direction_id'].astype('string')
 
+
+        dfRoutes = self.dfRoutes
+        dfRoutes = pd.merge(left=dfRoutes, right=route_short_namedf, how='inner', on='route_short_name')
+        dfRoutes = pd.merge(left=dfRoutes, right=varTestAgency, how='inner', on='agency_id')
+        dfTrips = self.dfTrips
+        dfTrips['direction_id'] = dfTrips['direction_id'].astype('string')
+
+        dfTrips['trip_id'] = dfTrips.index
+        dfTrips = dfTrips.reset_index(drop=True)
+        dfTrips['trip_id'] = dfTrips['trip_id'].astype('string')
+        dfTrips = pd.merge(left=dfTrips, right=requested_directiondf, how='inner', on='direction_id')
+        # pd.concat([self.dfTrips, self.requested_directiondf], join='inner', keys='direction_id')
+        dfTrips = pd.merge(left=dfTrips, right=dfRoutes, how='inner', on='route_id')
+        dfStopTimes = self.dfStopTimes
+        dfStopTimes['stop_id'] = dfStopTimes.index
+        dfStopTimes = dfStopTimes.reset_index(drop=True)
+        dfStopTimes['trip_id'] = dfStopTimes['trip_id'].astype('string')
+        dfStopTimes = pd.merge(left=dfStopTimes, right=dfTrips, how='inner', on='trip_id')
+        dfStops = self.dfStops
         last_time = time.time()
         # get all stop_times and stops for every stop of one route
         self.fahrplan_calendar_weeks = sqldf(cond_select_stops_for_trips, locals())
 
         zeit = time.time() - last_time
-        print("time: {} ".format(zeit))
+        print(" select stops time: {} ".format(zeit))
         last_time = time.time()
 
 
