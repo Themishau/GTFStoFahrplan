@@ -157,7 +157,7 @@ class gtfs:
         try:
             # dfTrips['trip_id'] = pd.to_numeric(dfTrips['trip_id'])
             self.dfTrips['trip_id'] = self.dfTrips['trip_id'].astype('int32')
-            self.dfTrips['direction_id'] = self.dfTrips['direction_id'].astype('int64')
+            self.dfTrips['direction_id'] = self.dfTrips['direction_id'].astype('int32')
         except KeyError:
             print("can not convert dfTrips: trip_id into int")
 
@@ -1009,7 +1009,7 @@ class gtfs:
         dfWeek.saturday,
         dfWeek.sunday
         """
-
+        self.fahrplan_dates = None
         self.fahrplan_dates = sqldf(cond_select_dates_for_date_range, locals())
 
         # change format
@@ -1032,7 +1032,7 @@ class gtfs:
                             fahrplan_dates_all_dates.day,
                             fahrplan_dates_all_dates.trip_id,
                             fahrplan_dates_all_dates.service_id,
-                            route_id, 
+                            fahrplan_dates_all_dates.route_id, 
                             fahrplan_dates_all_dates.start_date,
                             fahrplan_dates_all_dates.end_date,
                             fahrplan_dates_all_dates.monday,
@@ -1288,7 +1288,7 @@ class gtfs:
                                 from dfStopTimes st_dfStopTimes
                                 where st_dfStopTimes.stop_sequence = 0
                                   and dfStopTimes.trip_id = st_dfStopTimes.trip_id) as start_time,                         
-                            dfTrips.trip_id,
+                            dfStopTimes.trip_id,
                             dfStops.stop_name,
                             dfStopTimes.stop_sequence, 
                             dfStopTimes.arrival_time, 
@@ -1313,14 +1313,14 @@ class gtfs:
                                 from dfStopTimes st_dfStopTimes
                                 where st_dfStopTimes.stop_sequence = 0
                                   and dfStopTimes.trip_id = st_dfStopTimes.trip_id) as start_time,                         
-                            dfTrips.trip_id,
+                            dfStopTimes.trip_id,
                             dfStops.stop_name,
                             dfStopTimes.stop_sequence, 
                             dfStopTimes.arrival_time, 
-                            dfTrips.service_id, 
+                            dfTrip.service_id, 
                             dfStops.stop_id                        
                     from dfStopTimes 
-                    inner join dfTrips on dfStopTimes.trip_id = dfTrips.trip_id
+                    inner join dfTrip on dfStopTimes.trip_id = dfTrip.trip_id_dup
                     inner join dfStops on dfStopTimes.stop_id = dfStops.stop_id
                     ;
                    '''
@@ -1334,25 +1334,25 @@ class gtfs:
         dfRoutes = self.dfRoutes
         dfRoutes = pd.merge(left=dfRoutes, right=route_short_namedf, how='inner', on='route_short_name')
         dfRoutes = pd.merge(left=dfRoutes, right=varTestAgency, how='inner', on='agency_id')
-        dfTrips = self.dfTrips
-        dfTrips['direction_id'] = dfTrips['direction_id'].astype('string')
+        dfTrip = self.dfTrips
+        dfTrip['direction_id'] = dfTrip['direction_id'].astype('string')
 
-        dfTrips['trip_id'] = dfTrips.index
-        dfTrips = dfTrips.reset_index(drop=True)
-        dfTrips['trip_id'] = dfTrips['trip_id'].astype('string')
-        dfTrips = pd.merge(left=dfTrips, right=requested_directiondf, how='inner', on='direction_id')
+        dfTrip['trip_id_dup'] = dfTrip.index
+        dfTrip = dfTrip.reset_index(drop=True)
+        dfTrip['trip_id_dup'] = dfTrip['trip_id_dup'].astype('string')
+        dfTrip = pd.merge(left=dfTrip, right=requested_directiondf, how='inner', on='direction_id')
         # pd.concat([self.dfTrips, self.requested_directiondf], join='inner', keys='direction_id')
-        dfTrips = pd.merge(left=dfTrips, right=dfRoutes, how='inner', on='route_id')
+        dfTrip = pd.merge(left=dfTrip, right=dfRoutes, how='inner', on='route_id')
         dfStopTimes = self.dfStopTimes
         dfStopTimes['stop_id'] = dfStopTimes.index
         dfStopTimes = dfStopTimes.reset_index(drop=True)
         dfStopTimes['trip_id'] = dfStopTimes['trip_id'].astype('string')
-        dfStopTimes = pd.merge(left=dfStopTimes, right=dfTrips, how='inner', on='trip_id')
+        dfStopTimes = pd.merge(left=dfStopTimes, right=dfTrip, how='inner', left_on='trip_id', right_on='trip_id_dup')
         dfStops = self.dfStops
         last_time = time.time()
         # get all stop_times and stops for every stop of one route
         self.fahrplan_calendar_weeks = sqldf(cond_select_stops_for_trips, locals())
-
+        dfTrip = dfTrip.drop('trip_id_dup', axis=1)
         zeit = time.time() - last_time
         print(" select stops time: {} ".format(zeit))
         last_time = time.time()

@@ -68,8 +68,8 @@ padding: 1px;</string>
    </property>
    <property name="geometry">
     <rect>
-     <x>820</x>
-     <y>590</y>
+     <x>460</x>
+     <y>440</y>
      <width>75</width>
      <height>23</height>
     </rect>
@@ -234,7 +234,7 @@ padding: 1px;</string>
   <widget class="QPushButton" name="btnExit">
    <property name="geometry">
     <rect>
-     <x>820</x>
+     <x>830</x>
      <y>650</y>
      <width>75</width>
      <height>23</height>
@@ -258,8 +258,8 @@ padding: 4px;</string>
    </property>
    <property name="geometry">
     <rect>
-     <x>820</x>
-     <y>620</y>
+     <x>460</x>
+     <y>470</y>
      <width>75</width>
      <height>23</height>
     </rect>
@@ -452,10 +452,10 @@ font: 75 8pt &quot;72&quot;;</string>
   <widget class="QTextBrowser" name="textBrowser_2">
    <property name="geometry">
     <rect>
-     <x>560</x>
-     <y>560</y>
-     <width>221</width>
-     <height>141</height>
+     <x>510</x>
+     <y>570</y>
+     <width>311</width>
+     <height>131</height>
     </rect>
    </property>
    <property name="styleSheet">
@@ -496,7 +496,7 @@ font: 75 8pt &quot;72&quot;;</string>
   <widget class="QTextBrowser" name="textBrowser_3">
    <property name="geometry">
     <rect>
-     <x>820</x>
+     <x>830</x>
      <y>680</y>
      <width>161</width>
      <height>16</height>
