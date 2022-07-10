@@ -120,7 +120,7 @@ class gtfs:
     # import routine and
     def import_gtfs(self) -> bool:
         self.processing = "import_gtfs started"
-        print('import_gtfs')
+
         if self.read_paths() is True:
             if self.read_gtfs_data() is True:
                 self.noError = self.read_gtfs_data_from_path()
@@ -385,7 +385,6 @@ class gtfs:
 
                 stopsequence[stop_name_i.stop_id] = temp
 
-        print(self.sortmode)
 
         new_stopsequence = self.sortStopSequence(stopsequence)
 
@@ -1151,7 +1150,7 @@ class gtfs:
         varTestAgency = self.varTestAgency
         requested_directiondf = self.requested_directiondf
         requested_datesdf = self.requested_datesdf
-        print(f'requested_directiondf: {requested_directiondf}')
+
 
         cond_select_dates_delete_exception_2 = '''
                     select  
@@ -1238,7 +1237,7 @@ class gtfs:
                }) for i, row in self.fahrplan_dates.iterrows()], ignore_index=True)
 
         zeit = time.time() - last_time
-        print("time: {} ".format(zeit))
+
         last_time = time.time()
 
         # need to convert the date after using iterows (itertuples might be faster)
@@ -1259,9 +1258,8 @@ class gtfs:
 
         fahrplan_dates_all_dates = fahrplan_dates_all_dates.set_index('date')
 
-        print(fahrplan_dates_all_dates['monday'])
         zeit = time.time() - last_time
-        print("time: {} ".format(zeit))
+
         last_time = time.time()
 
         # delete exceptions = 2 or add exceptions = 1
@@ -1273,7 +1271,6 @@ class gtfs:
         fahrplan_dates_all_dates['end_date'] = pd.to_datetime(fahrplan_dates_all_dates['end_date'],
                                                               format='%Y-%m-%d %H:%M:%S.%f')
         zeit = time.time() - last_time
-        print("time: {} ".format(zeit))
 
         last_time = time.time()
 
@@ -1354,7 +1351,6 @@ class gtfs:
         self.fahrplan_calendar_weeks = sqldf(cond_select_stops_for_trips, locals())
         dfTrip = dfTrip.drop('trip_id_dup', axis=1)
         zeit = time.time() - last_time
-        print(" select stops time: {} ".format(zeit))
         last_time = time.time()
 
 
@@ -1476,7 +1472,6 @@ class gtfs:
 
         # releae some memory
         self.zeit = time.time() - self.last_time
-        print("time: {} ".format(self.zeit))
         now = datetime.now()
         self.now = now.strftime("%Y_%m_%d_%H_%M_%S")
 
