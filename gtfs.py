@@ -156,10 +156,10 @@ class gtfs:
 
         try:
             # dfTrips['trip_id'] = pd.to_numeric(dfTrips['trip_id'])
-            self.dfTrips['trip_id'] = self.dfTrips['trip_id'].astype('int32')
+            self.dfTrips['trip_id'] = self.dfTrips['trip_id'].astype('string')
             self.dfTrips['direction_id'] = self.dfTrips['direction_id'].astype('int32')
         except KeyError:
-            print("can not convert dfTrips: trip_id into int")
+            print("can not convert dfTrips: trip_id into string")
 
         # DataFrame with every stop (time)
         self.dfStopTimes = pd.DataFrame.from_dict(self.stopTimesdict).set_index('stop_id')
@@ -180,9 +180,9 @@ class gtfs:
         except OverflowError:
             print("can not convert dfStopTimes: stop_id into int")
         try:
-            self.dfStopTimes['trip_id'] = self.dfStopTimes['trip_id'].astype('int32')
+            self.dfStopTimes['trip_id'] = self.dfStopTimes['trip_id'].astype('string')
         except KeyError:
-            print("can not convert dfStopTimes: trip_id into int")
+            print("can not convert dfStopTimes: trip_id into string")
 
         # DataFrame with every stop
         self.dfStops = pd.DataFrame.from_dict(self.stopsdict).set_index('stop_id')
@@ -329,8 +329,10 @@ class gtfs:
                                 # temp["arrival_time"] = stop_name_j.arrival_time
                                 temp["stop_sequence"] = stop_name_j.stop_sequence
                     else:
-                        if stop_name_i.stop_id == stop_name_j.stop_id \
-                                and stop_name_i.trip_id == stop_name_j.trip_id:
+                        if stop_name_i.stop_id == stop_name_j.stop_id:
+                                # 23072022
+                                # and stop_name_i.trip_id == stop_name_j.trip_id\
+
 
                             if self.check_hour_24(stop_name_j.start_time):
                                 comparetime_j = str((datetime.strptime(stop_name_j.date,
@@ -457,15 +459,24 @@ class gtfs:
             # bubble sort
             for i in range(sequence_count - 1):
                 for j in range(0, sequence_count - i - 1):
-                    if d[str(j)]["arrival_time"] > d[str(j + 1)]["arrival_time"]:
-                        d[str(j)], d[str(j + 1)] = d[str(j + 1)], d[str(j)]
-                    elif d[str(j)]["stop_sequence"] > d[str(j + 1)]["stop_sequence"] \
-                            and d[str(j)]["start_time"] > d[str(j + 1)]["start_time"]:
+                    if d[str(j)]["stop_sequence"] > d[str(j + 1)]["stop_sequence"]:
                         d[str(j)], d[str(j + 1)] = d[str(j + 1)], d[str(j)]
                     elif d[str(j)]["stop_sequence"] == d[str(j + 1)]["stop_sequence"]:
-                        if d[str(j)]["start_time"] > d[str(j + 1)]["start_time"] \
-                                and d[str(j)]["arrival_time"] > d[str(j + 1)]["arrival_time"]:
+                        if d[str(j)]["start_time"] > d[str(j + 1)]["start_time"]:
                             d[str(j)], d[str(j + 1)] = d[str(j + 1)], d[str(j)]
+            # -> hier ist etwas komisch!
+            # for i in range(sequence_count - 1):
+            #     for j in range(0, sequence_count - i - 1):
+            #         # 23072022
+            #         # if d[str(j)]["arrival_time"] > d[str(j + 1)]["arrival_time"]:
+            #         #     d[str(j)], d[str(j + 1)] = d[str(j + 1)], d[str(j)]
+            #         if d[str(j)]["stop_sequence"] > d[str(j + 1)]["stop_sequence"] \
+            #                 and d[str(j)]["start_time"] > d[str(j + 1)]["start_time"]:
+            #             d[str(j)], d[str(j + 1)] = d[str(j + 1)], d[str(j)]
+            #         elif d[str(j)]["stop_sequence"] == d[str(j + 1)]["stop_sequence"]:
+            #             if d[str(j)]["start_time"] > d[str(j + 1)]["start_time"] \
+            #                     and d[str(j)]["arrival_time"] > d[str(j + 1)]["arrival_time"]:
+            #                 d[str(j)], d[str(j + 1)] = d[str(j + 1)], d[str(j)]
         return d
 
     # checks if in dictonary
