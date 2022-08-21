@@ -359,7 +359,7 @@ class Gui(QWidget, Publisher, Subscriber):
         # pixmap = QPixmap(self.resource_path('add_files\\5282.jpg'))
         uic.loadUi('add_files\\GTFSQT5Q.ui', self)
         pixmap = QPixmap('add_files\\5282.jpg')
-        self.setFixedSize(910, 703)
+        self.setFixedSize(1244, 889)
         self.label.setPixmap(pixmap)
         self.resize(pixmap.width(), pixmap.height())
         self.setWindowFlags(Qt.FramelessWindowHint)
@@ -379,7 +379,7 @@ class Gui(QWidget, Publisher, Subscriber):
         self.listDatesWeekday.clicked.connect(self.notify_select_weekday_option)
 
         self.comboBox.activated[str].connect(self.onChanged)
-        self.comboBox_sort.activated[str].connect(self.onChangedSortMode)
+        self.comboBox_display.activated[str].connect(self.onChangedTimeFormatMode)
         self.comboBox_direction.activated[str].connect(self.onChangedDirectionMode)
         self.lineend = '\n'
         self.textBrowserText = ''
@@ -469,11 +469,11 @@ class Gui(QWidget, Publisher, Subscriber):
             self.listDatesWeekday.setEnabled(True)
             self.model.gtfs.selected_dates = None
 
-    def onChangedSortMode(self, text):
-        if text == 'sort mode 1':
-            self.model.gtfs.sortmode = 1
-        elif text == 'sort mode 2':
-            self.model.gtfs.sortmode = 2
+    def onChangedTimeFormatMode(self, text):
+        if text == 'time format 1':
+            self.model.gtfs.timeformat = 1
+        elif text == 'time format 2':
+            self.model.gtfs.timeformat = 2
 
     def onChangedDirectionMode(self, text):
         if text == 'direction 1':
@@ -532,7 +532,7 @@ class Gui(QWidget, Publisher, Subscriber):
     def sub_update_weekdate_option(self):
         print('in sub_update_weekdate_option')
         self.comboBox.setEnabled(True)
-        self.comboBox_sort.setEnabled(True)
+        self.comboBox_display.setEnabled(True)
         self.comboBox_direction.setEnabled(True)
         self.listDatesWeekday.setEnabled(True)
         self.sub_update_weekday_list()
@@ -541,7 +541,7 @@ class Gui(QWidget, Publisher, Subscriber):
 
     def reset_weekdayDate(self):
         self.comboBox.setEnabled(False)
-        self.comboBox_sort.setEnabled(False)
+        self.comboBox_display.setEnabled(False)
         self.comboBox_direction.setEnabled(False)
         self.lineDateInput.setEnabled(False)
         self.listDatesWeekday.clear()
@@ -553,7 +553,7 @@ class Gui(QWidget, Publisher, Subscriber):
         self.btnStart.setEnabled(False)
         self.btnStop.setEnabled(False)
         self.comboBox.setEnabled(False)
-        self.comboBox_sort.setEnabled(False)
+        self.comboBox_display.setEnabled(False)
         self.comboBox_direction.setEnabled(False)
         self.listAgencies.clear()
         self.listRoutes.clear()

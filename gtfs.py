@@ -47,6 +47,10 @@ class gtfs:
         self.selected_option_dates_weekday = 1
         self.selected_direction = 0
         self.sortmode = 1
+        self.timeformat = 1
+        self.dfdateRangeInGTFSData = None
+        self.STRdateRangeInGTFSData = None
+
         self.time = None
         self.processing = None
         self.runningAsync = 0
@@ -193,6 +197,8 @@ class gtfs:
 
         # DataFrame with every service weekly
         self.dfWeek = pd.DataFrame.from_dict(self.calendarWeekdict).set_index('service_id')
+        self.dfWeek['start_date'] = pd.to_datetime(self.dfWeek['start_date'], format='%Y%m%d')
+        self.dfWeek['end_date'] =  pd.to_datetime(self.dfWeek['end_date'], format='%Y%m%d')
 
         # DataFrame with every service dates
         self.dfDates = pd.DataFrame.from_dict(self.calendarDatesdict).set_index('service_id')
@@ -202,6 +208,7 @@ class gtfs:
         # DataFrame with every agency
         self.dfagency = pd.DataFrame.from_dict(self.agencyFahrtdict).set_index('agency_id')
 
+        self.analyzeDateRangeInGTFSData()
         zeit = time.time() - last_time
         print("time: {} ".format(zeit))
 
@@ -968,6 +975,14 @@ class gtfs:
         inputVarAgency = [{'agency_id': self.selectedAgency}]
         self.varTestAgency = pd.DataFrame(inputVarAgency)
 
+    def analyzeDateRangeInGTFSData(self):
+        if self.dfWeek is not None:
+            self.dfdateRangeInGTFSData = self.dfWeek.groupby(['start_date', 'end_date']).size().reset_index()
+        print(self.dfdateRangeInGTFSData)
+
+
+
+
     def datesWeekday_select_dates_for_date_range(self):
         # conditions for searching in dfs
         dfTrips = self.dfTrips
@@ -978,7 +993,6 @@ class gtfs:
         requested_directiondf = self.requested_directiondf
         cond_select_dates_for_date_range = '''
                     select  
-                
                             dfTrips.trip_id,
                             dfTrips.service_id,
                             dfTrips.route_id, 
