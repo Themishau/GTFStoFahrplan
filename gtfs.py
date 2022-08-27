@@ -168,7 +168,8 @@ class gtfs:
         # DataFrame with every stop (time)
         self.dfStopTimes = pd.DataFrame.from_dict(self.stopTimesdict).set_index('stop_id')
         try:
-            self.dfStopTimes['arrival_time'] = self.dfStopTimes['arrival_time'].apply(lambda x: self.time_in_string(x))
+            if self.timeformat == 1:
+                self.dfStopTimes['arrival_time'] = self.dfStopTimes['arrival_time'].apply(lambda x: self.time_in_string(x))
             self.dfStopTimes['arrival_time'] = self.dfStopTimes['arrival_time'].astype('string')
         except KeyError:
             print("can not convert dfStopTimes: arrival_time into string and change time")
@@ -197,8 +198,10 @@ class gtfs:
 
         # DataFrame with every service weekly
         self.dfWeek = pd.DataFrame.from_dict(self.calendarWeekdict).set_index('service_id')
-        self.dfWeek['start_date'] = pd.to_datetime(self.dfWeek['start_date'], format='%Y%m%d')
-        self.dfWeek['end_date'] =  pd.to_datetime(self.dfWeek['end_date'], format='%Y%m%d')
+        # self.dfWeek['start_date'] = pd.to_datetime(self.dfWeek['start_date'], format='%Y%m%d')
+        # self.dfWeek['end_date'] = pd.to_datetime(self.dfWeek['end_date'], format='%Y%m%d')
+        self.dfWeek['start_date'] = self.dfWeek['start_date'].astype('string')
+        self.dfWeek['end_date'] = self.dfWeek['end_date'].astype('string')
 
         # DataFrame with every service dates
         self.dfDates = pd.DataFrame.from_dict(self.calendarDatesdict).set_index('service_id')
@@ -979,8 +982,6 @@ class gtfs:
         if self.dfWeek is not None:
             self.dfdateRangeInGTFSData = self.dfWeek.groupby(['start_date', 'end_date']).size().reset_index()
         print(self.dfdateRangeInGTFSData)
-
-
 
 
     def datesWeekday_select_dates_for_date_range(self):
