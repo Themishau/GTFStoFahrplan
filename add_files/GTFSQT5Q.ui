@@ -171,7 +171,7 @@ padding: 4px;</string>
    </property>
    <property name="geometry">
     <rect>
-     <x>730</x>
+     <x>840</x>
      <y>120</y>
      <width>110</width>
      <height>40</height>
@@ -581,7 +581,7 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="geometry">
     <rect>
-     <x>730</x>
+     <x>840</x>
      <y>170</y>
      <width>111</width>
      <height>41</height>
@@ -739,12 +739,12 @@ font: 75 8pt &quot;72&quot;;</string>
   </widget>
   <widget class="QComboBox" name="comboBox_display">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>610</y>
+     <x>690</x>
+     <y>150</y>
      <width>121</width>
      <height>31</height>
     </rect>

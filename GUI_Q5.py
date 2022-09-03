@@ -38,66 +38,70 @@ class GTFSWorker(QThread, Publisher, Subscriber):
         self.process = process
 
     def run(self):
+        # try:
+            if self.process == 'ImportGTFS':
+                self.dispatch("sub_worker_load_gtfsdata",
+                              "sub_worker_load_gtfsdata routine started! Notify subscriber!")
+            elif self.process == 'fill_agency_list':
+                self.dispatch("sub_worker_update_routes_list",
+                              "sub_worker_update_routes_list routine started! Notify subscriber!")
+            elif self.process == 'create_table_date':
+                self.importedGTFS.emit(5)
+                self.dispatch("sub_worker_prepare_data_fahrplan",
+                              "sub_worker_prepare_data_fahrplan routine started! Notify subscriber!")
+                self.importedGTFS.emit(15)
+                self.dispatch("sub_worker_select_dates_for_date_range",
+                              "sub_worker_select_dates_for_date_range routine started! Notify subscriber!")
+                self.importedGTFS.emit(20)
+                self.dispatch("sub_worker_select_dates_delete_exception_2",
+                              "sub_worker_select_dates_delete_exception_2 routine started! Notify subscriber!")
+                self.importedGTFS.emit(30)
+                self.dispatch("sub_worker_select_stops_for_trips",
+                              "sub_worker_select_stops_for_trips routine started! Notify subscriber!")
+                self.importedGTFS.emit(40)
+                self.dispatch("sub_worker_select_for_every_date_trips_stops",
+                              "sub_worker_select_for_every_date_trips_stops routine started! Notify subscriber!")
+                self.importedGTFS.emit(50)
+                self.dispatch("sub_worker_select_stop_sequence_stop_name_sorted",
+                              "sub_worker_select_stop_sequence_stop_name_sorted routine started! Notify subscriber!")
+                self.importedGTFS.emit(70)
+                self.dispatch("sub_worker_create_fahrplan_dates",
+                              "sub_worker_create_fahrplan_dates routine started! Notify subscriber!")
+                self.importedGTFS.emit(90)
+                self.dispatch("sub_worker_create_output_fahrplan",
+                              "sub_worker_create_output_fahrplan routine started! Notify subscriber!")
+                self.importedGTFS.emit(100)
+            elif self.process == 'create_table_weekday':
+                self.importedGTFS.emit(5)
+                self.dispatch("sub_worker_weekday_prepare_data_fahrplan",
+                              "sub_worker_weekday_prepare_data_fahrplan routine started! Notify subscriber!")
+                self.importedGTFS.emit(15)
+                self.dispatch("sub_worker_select_dates_for_date_range",
+                              "sub_worker_select_dates_for_date_range routine started! Notify subscriber!")
+                self.importedGTFS.emit(20)
+                self.dispatch("sub_worker_weekday_select_weekday_exception_2",
+                              "sub_worker_weekday_select_weekday_exception_2 routine started! Notify subscriber!")
+                self.importedGTFS.emit(30)
+                self.dispatch("sub_worker_select_stops_for_trips",
+                              "sub_worker_select_stops_for_trips routine started! Notify subscriber!")
+                self.importedGTFS.emit(40)
+                self.dispatch("sub_worker_select_for_every_date_trips_stops",
+                              "sub_worker_select_for_every_date_trips_stops routine started! Notify subscriber!")
+                self.importedGTFS.emit(50)
+                self.dispatch("sub_worker_select_stop_sequence_stop_name_sorted",
+                              "sub_worker_select_stop_sequence_stop_name_sorted routine started! Notify subscriber!")
+                self.importedGTFS.emit(70)
+                self.dispatch("sub_worker_create_fahrplan_dates",
+                              "sub_worker_create_fahrplan_dates routine started! Notify subscriber!")
+                self.importedGTFS.emit(90)
+                self.dispatch("sub_worker_create_output_fahrplan",
+                              "sub_worker_create_output_fahrplan routine started! Notify subscriber!")
+                self.importedGTFS.emit(100)
+            self.finished.emit()
+        # except:
+        #     print('Error in creating table!')
+        #     self.finished.emit()
 
-        if self.process == 'ImportGTFS':
-            self.dispatch("sub_worker_load_gtfsdata",
-                          "sub_worker_load_gtfsdata routine started! Notify subscriber!")
-        elif self.process == 'fill_agency_list':
-            self.dispatch("sub_worker_update_routes_list",
-                          "sub_worker_update_routes_list routine started! Notify subscriber!")
-        elif self.process == 'create_table_date':
-            self.importedGTFS.emit(5)
-            self.dispatch("sub_worker_prepare_data_fahrplan",
-                          "sub_worker_prepare_data_fahrplan routine started! Notify subscriber!")
-            self.importedGTFS.emit(15)
-            self.dispatch("sub_worker_select_dates_for_date_range",
-                          "sub_worker_select_dates_for_date_range routine started! Notify subscriber!")
-            self.importedGTFS.emit(20)
-            self.dispatch("sub_worker_select_dates_delete_exception_2",
-                          "sub_worker_select_dates_delete_exception_2 routine started! Notify subscriber!")
-            self.importedGTFS.emit(30)
-            self.dispatch("sub_worker_select_stops_for_trips",
-                          "sub_worker_select_stops_for_trips routine started! Notify subscriber!")
-            self.importedGTFS.emit(40)
-            self.dispatch("sub_worker_select_for_every_date_trips_stops",
-                          "sub_worker_select_for_every_date_trips_stops routine started! Notify subscriber!")
-            self.importedGTFS.emit(50)
-            self.dispatch("sub_worker_select_stop_sequence_stop_name_sorted",
-                          "sub_worker_select_stop_sequence_stop_name_sorted routine started! Notify subscriber!")
-            self.importedGTFS.emit(70)
-            self.dispatch("sub_worker_create_fahrplan_dates",
-                          "sub_worker_create_fahrplan_dates routine started! Notify subscriber!")
-            self.importedGTFS.emit(90)
-            self.dispatch("sub_worker_create_output_fahrplan",
-                          "sub_worker_create_output_fahrplan routine started! Notify subscriber!")
-            self.importedGTFS.emit(100)
-        elif self.process == 'create_table_weekday':
-            self.importedGTFS.emit(5)
-            self.dispatch("sub_worker_weekday_prepare_data_fahrplan",
-                          "sub_worker_weekday_prepare_data_fahrplan routine started! Notify subscriber!")
-            self.importedGTFS.emit(15)
-            self.dispatch("sub_worker_select_dates_for_date_range",
-                          "sub_worker_select_dates_for_date_range routine started! Notify subscriber!")
-            self.importedGTFS.emit(20)
-            self.dispatch("sub_worker_weekday_select_weekday_exception_2",
-                          "sub_worker_weekday_select_weekday_exception_2 routine started! Notify subscriber!")
-            self.importedGTFS.emit(30)
-            self.dispatch("sub_worker_select_stops_for_trips",
-                          "sub_worker_select_stops_for_trips routine started! Notify subscriber!")
-            self.importedGTFS.emit(40)
-            self.dispatch("sub_worker_select_for_every_date_trips_stops",
-                          "sub_worker_select_for_every_date_trips_stops routine started! Notify subscriber!")
-            self.importedGTFS.emit(50)
-            self.dispatch("sub_worker_select_stop_sequence_stop_name_sorted",
-                          "sub_worker_select_stop_sequence_stop_name_sorted routine started! Notify subscriber!")
-            self.importedGTFS.emit(70)
-            self.dispatch("sub_worker_create_fahrplan_dates",
-                          "sub_worker_create_fahrplan_dates routine started! Notify subscriber!")
-            self.importedGTFS.emit(90)
-            self.dispatch("sub_worker_create_output_fahrplan",
-                          "sub_worker_create_output_fahrplan routine started! Notify subscriber!")
-            self.importedGTFS.emit(100)
-        self.finished.emit()
 
 
 # noinspection PyUnresolvedReferences
@@ -541,7 +545,7 @@ class Gui(QWidget, Publisher, Subscriber):
 
     def reset_weekdayDate(self):
         self.comboBox.setEnabled(False)
-        self.comboBox_display.setEnabled(False)
+        self.comboBox_display.setEnabled(True)
         self.comboBox_direction.setEnabled(False)
         self.lineDateInput.setEnabled(False)
         self.listDatesWeekday.clear()
@@ -553,7 +557,7 @@ class Gui(QWidget, Publisher, Subscriber):
         self.btnStart.setEnabled(False)
         self.btnStop.setEnabled(False)
         self.comboBox.setEnabled(False)
-        self.comboBox_display.setEnabled(False)
+        self.comboBox_display.setEnabled(True)
         self.comboBox_direction.setEnabled(False)
         self.listAgencies.clear()
         self.listRoutes.clear()

@@ -100,7 +100,8 @@ class gtfs:
         self.dfheader_for_export_data = None
         self.last_time = time.time()
         self.dfdirection = None
-        # dataframe with requested data
+
+        # dataframe with requested data (options)
         self.requested_dates = None
         self.requested_datesdf = None
         self.requested_direction = None
@@ -255,44 +256,43 @@ class gtfs:
             "stop_sequence": [],
             "start_time": []
         }
+        if self.timeformat == 1:
+            for stop_name_i in data.itertuples():
+                # check for stop_id not for stop_name!
+                if not self.dictForEntry(stopsequence, "stop_id", stop_name_i.stop_id):
+                    temp = {"stop_sequence": -1, "stop_name": '', "trip_id": '', "start_time": '', "arrival_time": ''}
+                    temp["stop_sequence"] = stop_name_i.stop_sequence
+                    temp["stop_name"] = stop_name_i.stop_name
+                    temp["trip_id"] = stop_name_i.trip_id
 
-        for stop_name_i in data.itertuples():
-            # check for stop_id not for stop_name!
-            if not self.dictForEntry(stopsequence, "stop_id", stop_name_i.stop_id):
-                temp = {"stop_sequence": -1, "stop_name": '', "trip_id": '', "start_time": '', "arrival_time": ''}
-                temp["stop_sequence"] = stop_name_i.stop_sequence
-                temp["stop_name"] = stop_name_i.stop_name
-                temp["trip_id"] = stop_name_i.trip_id
+                    if self.check_hour_24(stop_name_i.start_time):
+                        comparetime_i = str((datetime.strptime(stop_name_i.date, '%Y-%m-%d %H:%M:%S.%f').strftime(
+                            '%Y-%m-%d'))) + ' 0' + str(int(stop_name_i.start_time.split(':')[0]) - 24) + ':' + \
+                                        stop_name_i.start_time.split(':')[1]
+                        time_i = datetime.strptime(comparetime_i, '%Y-%m-%d %H:%M')
+                        time_i = time_i + timedelta(days=1)
+                    else:
+                        comparetime_i = str((datetime.strptime(stop_name_i.date, '%Y-%m-%d %H:%M:%S.%f').strftime(
+                            '%Y-%m-%d'))) + ' ' + stop_name_i.start_time
+                        time_i = datetime.strptime(comparetime_i, '%Y-%m-%d %H:%M')
 
-                if self.check_hour_24(stop_name_i.start_time):
-                    comparetime_i = str((datetime.strptime(stop_name_i.date, '%Y-%m-%d %H:%M:%S.%f').strftime(
-                        '%Y-%m-%d'))) + ' 0' + str(int(stop_name_i.start_time.split(':')[0]) - 24) + ':' + \
-                                    stop_name_i.start_time.split(':')[1]
-                    time_i = datetime.strptime(comparetime_i, '%Y-%m-%d %H:%M')
-                    time_i = time_i + timedelta(days=1)
-                else:
-                    comparetime_i = str((datetime.strptime(stop_name_i.date, '%Y-%m-%d %H:%M:%S.%f').strftime(
-                        '%Y-%m-%d'))) + ' ' + stop_name_i.start_time
-                    time_i = datetime.strptime(comparetime_i, '%Y-%m-%d %H:%M')
+                    if self.check_hour_24(stop_name_i.arrival_time):
+                        time_arrival_i = str((datetime.strptime(stop_name_i.date, '%Y-%m-%d %H:%M:%S.%f').strftime(
+                            '%Y-%m-%d'))) + ' 0' + str(int(stop_name_i.arrival_time.split(':')[0]) - 24) + ':' + \
+                                         stop_name_i.arrival_time.split(':')[1]
+                        time_arrival_i = datetime.strptime(time_arrival_i, '%Y-%m-%d %H:%M')
+                        time_arrival_i = time_arrival_i + timedelta(days=1)
+                    else:
+                        time_arrival_i = str((datetime.strptime(stop_name_i.date, '%Y-%m-%d %H:%M:%S.%f').strftime(
+                            '%Y-%m-%d'))) + ' ' + stop_name_i.arrival_time
+                        time_arrival_i = datetime.strptime(time_arrival_i, '%Y-%m-%d %H:%M')
 
-                if self.check_hour_24(stop_name_i.arrival_time):
-                    time_arrival_i = str((datetime.strptime(stop_name_i.date, '%Y-%m-%d %H:%M:%S.%f').strftime(
-                        '%Y-%m-%d'))) + ' 0' + str(int(stop_name_i.arrival_time.split(':')[0]) - 24) + ':' + \
-                                     stop_name_i.arrival_time.split(':')[1]
-                    time_arrival_i = datetime.strptime(time_arrival_i, '%Y-%m-%d %H:%M')
-                    time_arrival_i = time_arrival_i + timedelta(days=1)
-                else:
-                    time_arrival_i = str((datetime.strptime(stop_name_i.date, '%Y-%m-%d %H:%M:%S.%f').strftime(
-                        '%Y-%m-%d'))) + ' ' + stop_name_i.arrival_time
-                    time_arrival_i = datetime.strptime(time_arrival_i, '%Y-%m-%d %H:%M')
+                    temp["start_time"] = time_i
+                    temp["arrival_time"] = time_arrival_i
 
-                temp["start_time"] = time_i
-                temp["arrival_time"] = time_arrival_i
-
-                # search in data and compare the ids
-                for stop_name_j in data.itertuples():
-                    # if ids match continue comparison
-                    if self.sortmode == 1:
+                    # search in data and compare the ids
+                    for stop_name_j in data.itertuples():
+                        # if ids match continue comparison
                         if stop_name_i.stop_id == stop_name_j.stop_id:
 
                             if self.check_hour_24(stop_name_j.start_time):
@@ -338,25 +338,64 @@ class gtfs:
                                 temp["arrival_time"] = time_arrival_j
                                 # temp["arrival_time"] = stop_name_j.arrival_time
                                 temp["stop_sequence"] = stop_name_j.stop_sequence
+
+        else:
+            for stop_name_i in data.itertuples():
+                # check for stop_id not for stop_name!
+                if not self.dictForEntry(stopsequence, "stop_id", stop_name_i.stop_id):
+                    temp = {"stop_sequence": -1, "stop_name": '', "trip_id": '', "start_time": '', "arrival_time": ''}
+                    temp["stop_sequence"] = stop_name_i.stop_sequence
+                    temp["stop_name"] = stop_name_i.stop_name
+                    temp["trip_id"] = stop_name_i.trip_id
+
+                    if self.check_hour_24(stop_name_i.start_time):
+                        comparetime_i = str((datetime.strptime(stop_name_i.date, '%Y-%m-%d %H:%M:%S.%f').strftime(
+                            '%Y-%m-%d'))) + ' 0' + str(int(stop_name_i.start_time.split(':')[0]) - 24) + ':' + \
+                                        stop_name_i.start_time.split(':')[1] + ':' + \
+                                        stop_name_i.start_time.split(':')[2]
+                        time_i = datetime.strptime(comparetime_i, '%Y-%m-%d %H:%M:%S')
+                        time_i = time_i + timedelta(days=1)
                     else:
+                        comparetime_i = str((datetime.strptime(stop_name_i.date, '%Y-%m-%d %H:%M:%S.%f').strftime(
+                            '%Y-%m-%d'))) + ' ' + stop_name_i.start_time
+                        time_i = datetime.strptime(comparetime_i, '%Y-%m-%d %H:%M:%S')
+
+                    if self.check_hour_24(stop_name_i.arrival_time):
+                        time_arrival_i = str((datetime.strptime(stop_name_i.date, '%Y-%m-%d %H:%M:%S.%f').strftime(
+                            '%Y-%m-%d'))) + ' 0' + str(int(stop_name_i.arrival_time.split(':')[0]) - 24) + ':' + \
+                                         stop_name_i.arrival_time.split(':')[1] + ':' + \
+                                         stop_name_i.arrival_time.split(':')[2]
+                        time_arrival_i = datetime.strptime(time_arrival_i, '%Y-%m-%d %H:%M:%S')
+                        time_arrival_i = time_arrival_i + timedelta(days=1)
+                    else:
+                        time_arrival_i = str((datetime.strptime(stop_name_i.date, '%Y-%m-%d %H:%M:%S.%f').strftime(
+                            '%Y-%m-%d'))) + ' ' + stop_name_i.arrival_time
+                        time_arrival_i = datetime.strptime(time_arrival_i, '%Y-%m-%d %H:%M:%S')
+
+                    temp["start_time"] = time_i
+                    temp["arrival_time"] = time_arrival_i
+
+                    # search in data and compare the ids
+                    for stop_name_j in data.itertuples():
+                        # if ids match continue comparison
                         if stop_name_i.stop_id == stop_name_j.stop_id:
                                 # 23072022
                                 # and stop_name_i.trip_id == stop_name_j.trip_id\
-
-
                             if self.check_hour_24(stop_name_j.start_time):
                                 comparetime_j = str((datetime.strptime(stop_name_j.date,
                                                                        '%Y-%m-%d %H:%M:%S.%f').strftime(
                                     '%Y-%m-%d'))) + ' 0' + str(
                                     int(stop_name_j.start_time.split(':')[0]) - 24) + ':' + \
-                                                stop_name_j.start_time.split(':')[1]
-                                time_j = datetime.strptime(comparetime_j, '%Y-%m-%d %H:%M')
+                                                stop_name_j.start_time.split(':')[1] + ':' + \
+                                                stop_name_j.start_time.split(':')[2]
+
+                                time_j = datetime.strptime(comparetime_j, '%Y-%m-%d %H:%M:%S')
                                 time_j = time_j + timedelta(days=1)
                             else:
                                 comparetime_j = str((datetime.strptime(stop_name_j.date,
                                                                        '%Y-%m-%d %H:%M:%S.%f').strftime(
                                     '%Y-%m-%d'))) + ' ' + stop_name_j.start_time
-                                time_j = datetime.strptime(comparetime_j, '%Y-%m-%d %H:%M')
+                                time_j = datetime.strptime(comparetime_j, '%Y-%m-%d %H:%M:%S')
 
                             time_temp = temp["start_time"]
 
@@ -365,14 +404,15 @@ class gtfs:
                                                                         '%Y-%m-%d %H:%M:%S.%f').strftime(
                                     '%Y-%m-%d'))) + ' 0' + str(
                                     int(stop_name_j.arrival_time.split(':')[0]) - 24) + ':' + \
-                                                 stop_name_j.arrival_time.split(':')[1]
-                                time_arrival_j = datetime.strptime(time_arrival_j, '%Y-%m-%d %H:%M')
+                                                 stop_name_j.arrival_time.split(':')[1] + ':' + \
+                                                 stop_name_j.arrival_time.split(':')[2]
+                                time_arrival_j = datetime.strptime(time_arrival_j, '%Y-%m-%d %H:%M:%S')
                                 time_arrival_j = time_arrival_j + timedelta(days=1)
                             else:
                                 time_arrival_j = str((datetime.strptime(stop_name_j.date,
                                                                         '%Y-%m-%d %H:%M:%S.%f').strftime(
                                     '%Y-%m-%d'))) + ' ' + stop_name_j.arrival_time
-                                time_arrival_j = datetime.strptime(time_arrival_j, '%Y-%m-%d %H:%M')
+                                time_arrival_j = datetime.strptime(time_arrival_j, '%Y-%m-%d %H:%M:%S')
 
                             arrival_time_temp = temp["arrival_time"]
 
@@ -395,7 +435,7 @@ class gtfs:
                             #     # temp["arrival_time"] = stop_name_j.arrival_time
                             #     temp["stop_sequence"] = stop_name_j.stop_sequence
 
-                stopsequence[stop_name_i.stop_id] = temp
+                    stopsequence[stop_name_i.stop_id] = temp
 
 
         new_stopsequence = self.sortStopSequence(stopsequence)
@@ -440,8 +480,8 @@ class gtfs:
         # init data structure
         d = {}
         for k in range(sequence_count):
-            d[str(k)] = {"start_time": datetime.strptime('1901-01-01 23:59', '%Y-%m-%d %H:%M').time(),
-                         "arrival_time": datetime.strptime('1901-01-01 23:59', '%Y-%m-%d %H:%M').time(),
+            d[str(k)] = {"start_time": datetime.strptime('1901-01-01 23:59:00', '%Y-%m-%d %H:%M:%S').time(),
+                         "arrival_time": datetime.strptime('1901-01-01 23:59:00', '%Y-%m-%d %H:%M:%S').time(),
                          "stop_name": '',
                          "stop_id": ''
                          }
