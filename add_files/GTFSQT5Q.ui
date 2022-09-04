@@ -73,7 +73,7 @@ padding: 1px;</string>
    </property>
    <property name="geometry">
     <rect>
-     <x>330</x>
+     <x>460</x>
      <y>710</y>
      <width>110</width>
      <height>40</height>
@@ -110,10 +110,6 @@ padding: 4px;</string>
    </property>
    <property name="styleSheet">
     <string notr="true">background-color:  #ffcbc0;
-border-style: outset;
-border-width: 1px;
-border-radius: 15px;
-border-color: black;
 padding: 1 px;</string>
    </property>
    <property name="value">
@@ -288,7 +284,7 @@ padding: 4px;</string>
    </property>
    <property name="geometry">
     <rect>
-     <x>450</x>
+     <x>580</x>
      <y>710</y>
      <width>110</width>
      <height>40</height>
@@ -1189,6 +1185,95 @@ padding: 4px;</string>
     </widget>
    </widget>
   </widget>
+  <widget class="QLabel" name="label_16">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>700</y>
+     <width>80</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>72</family>
+     <pointsize>8</pointsize>
+     <weight>9</weight>
+     <italic>false</italic>
+     <bold>false</bold>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color:  #ffcbc0;
+font: 75 8pt &quot;72&quot;;</string>
+   </property>
+   <property name="text">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Selection&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="line_Selection_agency">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>720</y>
+     <width>301</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color:  #ff9740;
+border-style: outset;
+border-width: 0px;
+border-radius: 15px;
+border-color: black;
+padding: 4px;</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="line_Selection_trips">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>750</y>
+     <width>301</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color:  #ff9740;
+border-style: outset;
+border-width: 0px;
+border-radius: 15px;
+border-color: black;
+padding: 4px;</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="line_Selection_format">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>780</y>
+     <width>301</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color:  #ff9740;
+border-style: outset;
+border-width: 0px;
+border-radius: 15px;
+border-color: black;
+padding: 4px;</string>
+   </property>
+  </widget>
   <zorder>label</zorder>
   <zorder>middlelabel</zorder>
   <zorder>lineOutputPath</zorder>
@@ -1223,6 +1308,10 @@ padding: 4px;</string>
   <zorder>btnGetOutputDir</zorder>
   <zorder>label_2</zorder>
   <zorder>tabWidget</zorder>
+  <zorder>label_16</zorder>
+  <zorder>line_Selection_agency</zorder>
+  <zorder>line_Selection_trips</zorder>
+  <zorder>line_Selection_format</zorder>
  </widget>
  <resources/>
  <connections>

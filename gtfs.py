@@ -169,9 +169,9 @@ class gtfs:
         # DataFrame with every stop (time)
         self.dfStopTimes = pd.DataFrame.from_dict(self.stopTimesdict).set_index('stop_id')
         try:
-            if self.timeformat == 1:
-                self.dfStopTimes['arrival_time'] = self.dfStopTimes['arrival_time'].apply(lambda x: self.time_in_string(x))
-            self.dfStopTimes['arrival_time'] = self.dfStopTimes['arrival_time'].astype('string')
+
+            self.dfStopTimes['arrival_time'] = self.dfStopTimes['arrival_time'].apply(lambda x: self.time_in_string(x))
+
         except KeyError:
             print("can not convert dfStopTimes: arrival_time into string and change time")
 
@@ -338,7 +338,7 @@ class gtfs:
                                 temp["arrival_time"] = time_arrival_j
                                 # temp["arrival_time"] = stop_name_j.arrival_time
                                 temp["stop_sequence"] = stop_name_j.stop_sequence
-
+                    stopsequence[stop_name_i.stop_id] = temp
         else:
             for stop_name_i in data.itertuples():
                 # check for stop_id not for stop_name!
@@ -540,10 +540,14 @@ class gtfs:
     def time_in_string(self, time):
         pattern = re.findall('^\d{1}:\d{2}:\d{2}$', time)
 
+        # if pattern:
+        #     return '0' + time[:-3]
+        # else:
+        #     return time[:-3]
         if pattern:
-            return '0' + time[:-3]
+            return '0' + time
         else:
-            return time[:-3]
+            return time
 
     # checks if date string
     def check_dates_input(self, dates):
@@ -1460,6 +1464,7 @@ class gtfs:
                     order by fahrplan_calendar_weeks.trip_id, fahrplan_calendar_weeks.date, fahrplan_calendar_weeks.stop_sequence;
                    '''
         # group stop_sequence and stop_names, so every stop_name appears only once
+        self.fahrplan_sorted_stops = None
         self.fahrplan_sorted_stops = sqldf(cond_select_stop_sequence_stop_name_sorted_, locals())
 
         # fahrplan_sorted_stops.to_csv('C:Temp/' + 'routeName' + 'nameprefix' + 'pivot_table.csv', header=True, quotechar=' ',
