@@ -391,7 +391,7 @@ padding: 4px;</string>
   <widget class="QLabel" name="label_9">
    <property name="geometry">
     <rect>
-     <x>370</x>
+     <x>10</x>
      <y>0</y>
      <width>141</width>
      <height>21</height>
@@ -1218,7 +1218,7 @@ font: 75 8pt &quot;72&quot;;</string>
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>720</y>
+     <y>740</y>
      <width>301</width>
      <height>20</height>
     </rect>
@@ -1239,7 +1239,7 @@ padding: 4px;</string>
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>750</y>
+     <y>760</y>
      <width>301</width>
      <height>20</height>
     </rect>
@@ -1260,7 +1260,54 @@ padding: 4px;</string>
    <property name="geometry">
     <rect>
      <x>10</x>
+     <y>720</y>
+     <width>301</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color:  #ff9740;
+border-style: outset;
+border-width: 0px;
+border-radius: 15px;
+border-color: black;
+padding: 4px;</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_17">
+   <property name="geometry">
+    <rect>
+     <x>80</x>
      <y>780</y>
+     <width>171</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>72</family>
+     <pointsize>8</pointsize>
+     <weight>9</weight>
+     <italic>false</italic>
+     <bold>false</bold>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color:  #ffcbc0;
+font: 75 8pt &quot;72&quot;;</string>
+   </property>
+   <property name="text">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;detected date range&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="line_Selection_date_range">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>800</y>
      <width>301</width>
      <height>20</height>
     </rect>
@@ -1312,6 +1359,8 @@ padding: 4px;</string>
   <zorder>line_Selection_agency</zorder>
   <zorder>line_Selection_trips</zorder>
   <zorder>line_Selection_format</zorder>
+  <zorder>label_17</zorder>
+  <zorder>line_Selection_date_range</zorder>
  </widget>
  <resources/>
  <connections>

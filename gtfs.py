@@ -22,6 +22,7 @@ class gtfs:
         self.noError = False
         self.input_path = ""
         self.output_path = ""
+        self.date_range = ""
         self.progress = 0
         self.options_dates_weekday = ['Dates', 'Weekday']
         self.weekDayOptions = {0: [0, 'Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday'],
@@ -64,6 +65,8 @@ class gtfs:
         self.routesFahrtdict = None
         self.agencyFahrtdict = None
 
+        self.feed_infodict = None
+
         """ loaded raw_gtfs_data """
         self.raw_gtfs_data = None
 
@@ -75,6 +78,7 @@ class gtfs:
         self.dfDates = None
         self.dfRoutes = None
         self.dfagency = None
+        self.dffeed_info = None
         self.now = None
 
         # self.stops_df = None
@@ -212,11 +216,21 @@ class gtfs:
         # DataFrame with every agency
         self.dfagency = pd.DataFrame.from_dict(self.agencyFahrtdict).set_index('agency_id')
 
-        self.analyzeDateRangeInGTFSData()
+        if self.feed_infodict is not None:
+            self.dffeed_info = pd.DataFrame.from_dict(self.feed_infodict)
+
         zeit = time.time() - last_time
         print("time: {} ".format(zeit))
 
         return True
+
+    def getDateRange(self):
+        if self.dffeed_info is not None:
+            print('not none lol')
+            self.date_range = str(self.dffeed_info.iloc[0].feed_start_date) + '-' + str(self.dffeed_info.iloc[0].feed_end_date)
+        else:
+            print('no detected lol')
+            self.date_range = self.analyzeDateRangeInGTFSData()
 
     # reads the files
     def read_paths(self):
@@ -474,6 +488,13 @@ class gtfs:
             return True
         else:
             return False
+hhh
+    def check_KommaInText(self, dates):
+        pattern1 = re.findall('".*,.*"', dates)
+        if pattern1:
+            return True
+        else:
+            return False
 
     # checks if time-string exceeds 24 hour
     def check_hour_24(self, time):
@@ -505,262 +526,238 @@ class gtfs:
                 with io.TextIOWrapper(zf.open("agency.txt"), encoding="utf-8") as agency:
                     agencyList = agency.readlines()[1:]
         except:
+            print('Error in Unzipping data ')
             return False
-        self.raw_gtfs_data = [stopsList, stopTimesList, tripsList, calendarList, calendar_datesList, routesList,
-                              agencyList]
+
+        try:
+            with zipfile.ZipFile(self.input_path) as zf:
+                with io.TextIOWrapper(zf.open("stops.txt"), encoding="utf-8") as stops:
+                    stopsHeader = stops.readlines()[0].rstrip()
+                with io.TextIOWrapper(zf.open("stop_times.txt"), encoding="utf-8") as stop_times:
+                    stop_timesHeader = stop_times.readlines()[0].rstrip()
+                with io.TextIOWrapper(zf.open("trips.txt"), encoding="utf-8") as trips:
+                    tripsHeader = trips.readlines()[0]
+                with io.TextIOWrapper(zf.open("calendar.txt"), encoding="utf-8") as calendar:
+                    calendarHeader = calendar.readlines()[0].rstrip()
+                with io.TextIOWrapper(zf.open("calendar_dates.txt"), encoding="utf-8") as calendar_dates:
+                    calendar_datesHeader = calendar_dates.readlines()[0].rstrip()
+                with io.TextIOWrapper(zf.open("routes.txt"), encoding="utf-8") as routes:
+                    routesHeader = routes.readlines()[0].rstrip()
+                with io.TextIOWrapper(zf.open("agency.txt"), encoding="utf-8") as agency:
+                    agencyHeader = agency.readlines()[0].rstrip()
+        except:
+            print('Error in Unzipping headers')
+            return False
+
+        try:
+            with zipfile.ZipFile(self.input_path) as zf:
+                with io.TextIOWrapper(zf.open("feed_info.txt"), encoding="utf-8") as feed_info:
+                    feed_infoHeader = feed_info.readlines()[0].rstrip()
+        except:
+            print('no feed info')
+            feed_infoHeader = None
+
+        try:
+            with zipfile.ZipFile(self.input_path) as zf:
+                with io.TextIOWrapper(zf.open("feed_info.txt"), encoding="utf-8") as feed_info:
+                    feed_infoList = feed_info.readlines()[1:]
+        except:
+            print('no feed info')
+            feed_infoList = None
+
+        self.printAllHeaders(stopsHeader, stop_timesHeader, tripsHeader, calendarHeader, calendar_datesHeader, routesHeader, agencyHeader, feed_infoHeader)
+        self.raw_gtfs_data = [[stopsHeader,stopsList], [stop_timesHeader,stopTimesList], [tripsHeader,tripsList], [calendarHeader,calendarList], [calendar_datesHeader,calendar_datesList], [routesHeader,routesList],[agencyHeader,agencyList], [feed_infoHeader,feed_infoList]]
         return True
+
+    def printAllHeaders(self, stopsHeader, stop_timesHeader, tripsHeader, calendarHeader, calendar_datesHeader, routesHeader, agencyHeader, feed_infoHeader):
+        print('stopsHeader          = {} \n '
+              'stop_timesHeader     = {} \n '
+              'tripsHeader          = {} \n '
+              'calendarHeader       = {} \n '
+              'calendar_datesHeader = {} \n '
+              'routesHeader         = {} \n '
+              'agencyHeader         = {} \n '
+              'feed_infoHeader      = {} '.format(stopsHeader, stop_timesHeader, tripsHeader, calendarHeader, calendar_datesHeader, routesHeader, agencyHeader, feed_infoHeader))
+
 
     def get_gtfs_trip(self):
         tripdict = {
-            "route_id": [],
-            "service_id": [],
-            "trip_id": [],
-            "trip_headsign": [],
-            "trip_short_name": [],
-            "direction_id": [],
-            "block_id": [],
-            "shape_id": [],
-            "wheelchair_accessible": [],
-            "bikes_allowed": []
         }
-        for trip in self.raw_gtfs_data[2]:
-            trip = trip.replace(", ", " ")
-            trip = trip.replace('"', "")
-            trip = trip.replace('\n', "")
-            data = trip.split(",")
-            idata = len(data)
-            if idata > 9:
-                tripdict["route_id"].append(data[0])
-                tripdict["service_id"].append(data[1])
-                tripdict["trip_id"].append(data[2])
-                tripdict["trip_headsign"].append(data[3])
-                tripdict["trip_short_name"].append(data[4])
-                tripdict["direction_id"].append(data[5])
-                tripdict["block_id"].append(data[6])
-                tripdict["shape_id"].append(data[7])
-                tripdict["wheelchair_accessible"].append(data[8])
-                tripdict["bikes_allowed"].append(data[9])
-            else:
-                tripdict["route_id"].append(data[0])
-                tripdict["service_id"].append(data[1])
-                tripdict["trip_id"].append(data[2])
-                tripdict["shape_id"].append(data[3])
-                tripdict["trip_headsign"].append(data[4])
-                tripdict["trip_short_name"].append(data[5])
-                tripdict["direction_id"].append(data[6])
-                tripdict["wheelchair_accessible"].append(data[7])
-                tripdict["block_id"].append('')
-                tripdict["bikes_allowed"].append('')
+
+        headers = self.raw_gtfs_data[2][0].split(",")
+        header_names = []
+        for haltestellen_header in headers:
+            tripdict[haltestellen_header] = []
+            header_names.append(haltestellen_header)
+
+        for data in self.raw_gtfs_data[2][1]:
+            data = data.replace(", ", " ")
+            data = data.replace('"', "")
+            data = data.replace('\n', "")
+            tripDate = data.split(",")
+            itripDate = len(tripDate)
+            for idx in range(itripDate):
+                tripdict[header_names[idx]].append(tripDate[idx])
+
         self.tripdict = tripdict
         return True
 
     def get_gtfs_stop(self):
 
         stopsdict = {
-            "stop_id": [],
-            "stop_code": [],
-            "stop_name": [],
-            "stop_desc": [],
-            "stop_lat": [],
-            "stop_lon": [],
-            "location_type": [],
-            "parent_station": [],
-            "wheelchair_accessible": [],
-            "platform_code": [],
-            "zone_id": []
         }
-        for haltestellen in self.raw_gtfs_data[0]:
+        headers = self.raw_gtfs_data[0][0].split(",")
+        header_names = []
+        for haltestellen_header in headers:
+            stopsdict[haltestellen_header] = []
+            header_names.append(haltestellen_header)
+
+        for haltestellen in self.raw_gtfs_data[0][1]:
             haltestellen = haltestellen.replace(", ", " ")
             haltestellen = haltestellen.replace('"', "")
             haltestellen = haltestellen.replace('\n', "")
             stopData = haltestellen.split(",")
             istopDate = len(stopData)
+            for idx in range(istopDate):
+                stopsdict[header_names[idx]].append(stopData[idx])
 
-            stopsdict["stop_id"].append(stopData[0])
-            stopsdict["stop_code"].append(stopData[1])
-            stopsdict["stop_name"].append(stopData[2])
-            stopsdict["stop_desc"].append(stopData[3])
-            stopsdict["stop_lat"].append(stopData[4])
-            stopsdict["stop_lon"].append(stopData[5])
-            stopsdict["location_type"].append(stopData[6])
-            stopsdict["parent_station"].append(stopData[7])
-            stopsdict["wheelchair_accessible"].append(stopData[8])
-            stopsdict["platform_code"].append(stopData[9])
-            if istopDate > 10:
-                stopsdict["zone_id"].append(stopData[10])
-            else:
-                stopsdict["zone_id"].append('')
 
         self.stopsdict = stopsdict
         return True
 
     def get_gtfs_stoptime(self):
         stopTimesdict = {
-            "trip_id": [],
-            "arrival_time": [],
-            "departure_time": [],
-            "stop_id": [],
-            "stop_sequence": [],
-            "pickup_type": [],
-            "drop_off_type": [],
-            "stop_headsign": [],
-            "shape_dist_traveled": []
         }
-        for stopTime in self.raw_gtfs_data[1]:
-            stopTime = stopTime.replace(", ", " ")
-            stopTime = stopTime.replace('"', "")
-            stopTime = stopTime.replace('\n', "")
-            stopTimeData = stopTime.split(",")
+
+        headers = self.raw_gtfs_data[1][0].split(",")
+        header_names = []
+        for haltestellen_header in headers:
+            stopTimesdict[haltestellen_header] = []
+            header_names.append(haltestellen_header)
+
+        for data in self.raw_gtfs_data[1][1]:
+            data = data.replace(", ", " ")
+            data = data.replace('"', "")
+            data = data.replace('\n', "")
+            stopTimeData = data.split(",")
             istopTimeData = len(stopTimeData)
-            if istopTimeData == 8:
-                stopTimesdict["trip_id"].append(stopTimeData[0])
-                stopTimesdict["arrival_time"].append(stopTimeData[1])
-                stopTimesdict["departure_time"].append(stopTimeData[2])
-                stopTimesdict["stop_id"].append(stopTimeData[3])
-                stopTimesdict["stop_sequence"].append(stopTimeData[4])
-                stopTimesdict["pickup_type"].append(stopTimeData[5])
-                stopTimesdict["drop_off_type"].append(stopTimeData[6])
-                stopTimesdict["stop_headsign"].append(stopTimeData[7])
-                stopTimesdict["shape_dist_traveled"].append('')
-            else:
-                stopTimesdict["trip_id"].append(stopTimeData[0])
-                stopTimesdict["arrival_time"].append(stopTimeData[1])
-                stopTimesdict["departure_time"].append(stopTimeData[2])
-                stopTimesdict["stop_id"].append(stopTimeData[3])
-                stopTimesdict["stop_sequence"].append(str(int(stopTimeData[4]) - 1))
-                stopTimesdict["stop_headsign"].append(stopTimeData[5])
-                stopTimesdict["pickup_type"].append(stopTimeData[6])
-                stopTimesdict["drop_off_type"].append(stopTimeData[7])
-                stopTimesdict["shape_dist_traveled"].append(stopTimeData[8])
+            if istopTimeData > 8:
+                print('bigger')
+            for idx in range(istopTimeData):
+                stopTimesdict[header_names[idx]].append(stopTimeData[idx])
 
         self.stopTimesdict = stopTimesdict
         return True
 
     def get_gtfs_calendarWeek(self):
         calendarWeekdict = {
-            "service_id": [],
-            "monday": [],
-            "tuesday": [],
-            "wednesday": [],
-            "thursday": [],
-            "friday": [],
-            "saturday": [],
-            "sunday": [],
-            "start_date": [],
-            "end_date": []
         }
-        for calendarDate in self.raw_gtfs_data[3]:
-            calendarDate = calendarDate.replace(", ", " ")
-            calendarDate = calendarDate.replace('"', "")
-            calendarDate = calendarDate.replace('\n', "")
-            calendarData = calendarDate.split(",")
-            calendarWeekdict["service_id"].append(calendarData[0])
-            calendarWeekdict["monday"].append(calendarData[1])
-            calendarWeekdict["tuesday"].append(calendarData[2])
-            calendarWeekdict["wednesday"].append(calendarData[3])
-            calendarWeekdict["thursday"].append(calendarData[4])
-            calendarWeekdict["friday"].append(calendarData[5])
-            calendarWeekdict["saturday"].append(calendarData[6])
-            calendarWeekdict["sunday"].append(calendarData[7])
-            calendarWeekdict["start_date"].append(calendarData[8])
-            calendarWeekdict["end_date"].append(calendarData[9])
+
+        headers = self.raw_gtfs_data[3][0].split(",")
+        header_names = []
+        for haltestellen_header in headers:
+            calendarWeekdict[haltestellen_header] = []
+            header_names.append(haltestellen_header)
+
+        for data in self.raw_gtfs_data[3][1]:
+            data = data.replace(", ", " ")
+            data = data.replace('"', "")
+            data = data.replace('\n', "")
+            calendarDate = data.split(",")
+            icalendarDate = len(calendarDate)
+            for idx in range(icalendarDate):
+                calendarWeekdict[header_names[idx]].append(calendarDate[idx])
 
         self.calendarWeekdict = calendarWeekdict
         return True
 
     def get_gtfs_calendarDates(self):
         calendarDatesdict = {
-            "service_id": [],
-            "date": [],
-            "exception_type": [],
         }
-        for calendarDate in self.raw_gtfs_data[4]:
-            calendarDate = calendarDate.replace(", ", " ")
-            calendarDate = calendarDate.replace('"', "")
-            calendarDate = calendarDate.replace('\n', "")
-            calendarDatesData = calendarDate.split(",")
-            calendarDatesdict["service_id"].append(calendarDatesData[0])
-            calendarDatesdict["date"].append(calendarDatesData[1])
-            calendarDatesdict["exception_type"].append(calendarDatesData[2])
+
+        headers = self.raw_gtfs_data[4][0].split(",")
+        header_names = []
+        for haltestellen_header in headers:
+            calendarDatesdict[haltestellen_header] = []
+            header_names.append(haltestellen_header)
+
+        for data in self.raw_gtfs_data[4][1]:
+            data = data.replace(", ", " ")
+            data = data.replace('"', "")
+            data = data.replace('\n', "")
+            calendarDatesDate = data.split(",")
+            icalendarDate = len(calendarDatesDate)
+            for idx in range(icalendarDate):
+                calendarDatesdict[header_names[idx]].append(calendarDatesDate[idx])
+
 
         self.calendarDatesdict = calendarDatesdict
         return True
 
     def get_gtfs_routes(self):
         routesFahrtdict = {
-            "route_id": [],
-            "agency_id": [],
-            "route_short_name": [],
-            "route_long_name": [],
-            "route_type": [],
-            "route_color": [],
-            "route_text_color": [],
-            "route_desc": []
         }
-        for routes in self.raw_gtfs_data[5]:
-            routes = routes.replace(", ", " ")
-            routes = routes.replace('"', "")
-            routes = routes.replace('\n', "")
-            routesData = routes.split(",")
-            iroutesDate = len(routesData)
-            if iroutesDate > 7:
-                routesFahrtdict["route_id"].append(routesData[0])
-                routesFahrtdict["agency_id"].append(routesData[1])
-                routesFahrtdict["route_short_name"].append(routesData[2])
-                routesFahrtdict["route_long_name"].append(routesData[3])
-                routesFahrtdict["route_type"].append(routesData[4])
-                routesFahrtdict["route_color"].append(routesData[5])
-                routesFahrtdict["route_text_color"].append(routesData[6])
-                routesFahrtdict["route_desc"].append(routesData[7])
-            else:
-                routesFahrtdict["route_id"].append(routesData[0])
-                routesFahrtdict["agency_id"].append(routesData[1])
-                routesFahrtdict["route_short_name"].append(routesData[2])
-                routesFahrtdict["route_long_name"].append(routesData[3])
-                routesFahrtdict["route_type"].append(routesData[4])
-                routesFahrtdict["route_color"].append(routesData[5])
-                routesFahrtdict["route_text_color"].append(routesData[6])
-                routesFahrtdict["route_desc"].append('')
+
+        headers = self.raw_gtfs_data[5][0].split(",")
+        header_names = []
+        for haltestellen_header in headers:
+            routesFahrtdict[haltestellen_header] = []
+            header_names.append(haltestellen_header)
+
+        for data in self.raw_gtfs_data[5][1]:
+            data = data.replace(", ", " ")
+            data = data.replace('"', "")
+            data = data.replace('\n', "")
+            routesFahrtData = data.split(",")
+            iroutesFahrt = len(routesFahrtData)
+            for idx in range(iroutesFahrt):
+                routesFahrtdict[header_names[idx]].append(routesFahrtData[idx])
 
         self.routesFahrtdict = routesFahrtdict
+        return True
+
+    def get_gtfs_feed_info(self):
+        feed_infodict = {
+        }
+
+        headers = self.raw_gtfs_data[7][0].split(",")
+        header_names = []
+        for haltestellen_header in headers:
+            feed_infodict[haltestellen_header] = []
+            header_names.append(haltestellen_header)
+
+        for data in self.raw_gtfs_data[7][1]:
+            data = data.replace(", ", " ")
+            data = data.replace('"', "")
+            data = data.replace('\n', "")
+            feed_infodictData = data.split(",")
+            ifeed_infodict = len(feed_infodictData)
+            for idx in range(ifeed_infodict):
+                feed_infodict[header_names[idx]].append(feed_infodictData[idx])
+
+        self.feed_infodict = feed_infodict
         return True
 
     def get_gtfs_agencies(self):
 
         agencyFahrtdict = {
-            "agency_id": [],
-            "agency_name": [],
-            "agency_url": [],
-            "agency_timezone": [],
-            "agency_lang": [],
-            "agency_phone": [],
-            "agency_fare_url": [],
-            "agency_email": []
         }
-        for agency in self.raw_gtfs_data[6]:
-            agency = agency.replace(", ", " ")
-            agency = agency.replace('"', "")
-            agency = agency.replace('\n', "")
-            agencyData = agency.split(",")
+
+        headers = self.raw_gtfs_data[6][0].split(",")
+        header_names = []
+        for haltestellen_header in headers:
+            agencyFahrtdict[haltestellen_header] = []
+            header_names.append(haltestellen_header)
+
+        for data in self.raw_gtfs_data[6][1]:
+            data = data.replace(", ", " ")
+            data = data.replace('"', "")
+            data = data.replace('\n', "")
+            agencyData = data.split(",")
             iagencyData = len(agencyData)
-            if iagencyData == 6:
-                agencyFahrtdict["agency_id"].append(agencyData[0])
-                agencyFahrtdict["agency_name"].append(agencyData[1])
-                agencyFahrtdict["agency_url"].append(agencyData[2])
-                agencyFahrtdict["agency_timezone"].append(agencyData[3])
-                agencyFahrtdict["agency_lang"].append(agencyData[4])
-                agencyFahrtdict["agency_phone"].append(agencyData[5])
-                agencyFahrtdict["agency_fare_url"].append('')
-                agencyFahrtdict["agency_email"].append('')
-            else:
-                agencyFahrtdict["agency_id"].append(agencyData[0])
-                agencyFahrtdict["agency_name"].append(agencyData[1])
-                agencyFahrtdict["agency_url"].append(agencyData[2])
-                agencyFahrtdict["agency_timezone"].append(agencyData[3])
-                agencyFahrtdict["agency_lang"].append(agencyData[4])
-                agencyFahrtdict["agency_phone"].append(agencyData[5])
-                agencyFahrtdict["agency_fare_url"].append(agencyData[6])
-                agencyFahrtdict["agency_email"].append(agencyData[7])
+            for idx in range(iagencyData):
+                agencyFahrtdict[header_names[idx]].append(agencyData[idx])
+
 
         self.agencyFahrtdict = agencyFahrtdict
         return True
@@ -783,6 +780,8 @@ class gtfs:
         self.get_gtfs_calendarDates()
         self.get_gtfs_routes()
         self.get_gtfs_agencies()
+        if self.raw_gtfs_data[7] is not None:
+            self.get_gtfs_feed_info()
         self.raw_gtfs_data = None
         return True
 
@@ -942,8 +941,10 @@ class gtfs:
 
     def analyzeDateRangeInGTFSData(self):
         if self.dfWeek is not None:
+            print(self.dfWeek)
             self.dfdateRangeInGTFSData = self.dfWeek.groupby(['start_date', 'end_date']).size().reset_index()
-        print(self.dfdateRangeInGTFSData)
+            print(self.dfdateRangeInGTFSData.iloc[0].start_date)
+            return str(self.dfdateRangeInGTFSData.iloc[0].start_date) + '-' + str(self.dfdateRangeInGTFSData.iloc[0].end_date)
 
 
     def datesWeekday_select_dates_for_date_range(self):
@@ -1108,12 +1109,12 @@ class gtfs:
 
         # set value in column to day if 1 and and compare with day
         fahrplan_dates_all_dates['monday'] = ['Monday' if x == '1' else '-' for x in fahrplan_dates_all_dates['monday']]
-        fahrplan_dates_all_dates['tuesday'] = ['Tuesday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['tuesday']]
-        fahrplan_dates_all_dates['wednesday'] = ['Wednesday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['wednesday']]
-        fahrplan_dates_all_dates['thursday'] = ['Thursday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['thursday']]
-        fahrplan_dates_all_dates['friday'] = ['Friday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['friday']]
-        fahrplan_dates_all_dates['saturday'] = ['Saturday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['saturday']]
-        fahrplan_dates_all_dates['sunday'] = ['Sunday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['sunday']]
+        fahrplan_dates_all_dates['tuesday'] = ['Tuesday' if x == '1' else '-' for x in fahrplan_dates_all_dates['tuesday']]
+        fahrplan_dates_all_dates['wednesday'] = ['Wednesday' if x == '1' else '-' for x in fahrplan_dates_all_dates['wednesday']]
+        fahrplan_dates_all_dates['thursday'] = ['Thursday' if x == '1' else '-' for x in fahrplan_dates_all_dates['thursday']]
+        fahrplan_dates_all_dates['friday'] = ['Friday' if x == '1' else '-' for x in fahrplan_dates_all_dates['friday']]
+        fahrplan_dates_all_dates['saturday'] = ['Saturday' if x == '1' else '-' for x in fahrplan_dates_all_dates['saturday']]
+        fahrplan_dates_all_dates['sunday'] = ['Sunday' if x == '1' else '-' for x in fahrplan_dates_all_dates['sunday']]
 
 
         fahrplan_dates_all_dates = fahrplan_dates_all_dates.set_index('date')

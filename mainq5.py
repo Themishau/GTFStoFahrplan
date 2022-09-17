@@ -11,5 +11,6 @@ if __name__ == '__main__':
           'select_route',
           'select_weekday',
           'start_create_table',
-          'reset_gtfs'], 'controller')
+          'reset_gtfs',
+          'get_date_range'], 'controller')
 
