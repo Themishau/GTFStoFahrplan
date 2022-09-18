@@ -163,6 +163,7 @@ class gtfs:
         # DataFrame with every trip
         self.dfTrips = pd.DataFrame.from_dict(self.tripdict).set_index('trip_id')
 
+
         try:
             # dfTrips['trip_id'] = pd.to_numeric(dfTrips['trip_id'])
             self.dfTrips['trip_id'] = self.dfTrips['trip_id'].astype('string')
@@ -226,10 +227,8 @@ class gtfs:
 
     def getDateRange(self):
         if self.dffeed_info is not None:
-            print('not none lol')
             self.date_range = str(self.dffeed_info.iloc[0].feed_start_date) + '-' + str(self.dffeed_info.iloc[0].feed_end_date)
         else:
-            print('no detected lol')
             self.date_range = self.analyzeDateRangeInGTFSData()
 
     # reads the files
@@ -488,10 +487,11 @@ class gtfs:
             return True
         else:
             return False
-hhh
+
     def check_KommaInText(self, dates):
-        pattern1 = re.findall('".*,.*"', dates)
+        pattern1 = re.findall('"\w*,\w*"', dates)
         if pattern1:
+            print (pattern1)
             return True
         else:
             return False
@@ -570,21 +570,22 @@ hhh
         return True
 
     def printAllHeaders(self, stopsHeader, stop_timesHeader, tripsHeader, calendarHeader, calendar_datesHeader, routesHeader, agencyHeader, feed_infoHeader):
-        print('stopsHeader          = {} \n '
-              'stop_timesHeader     = {} \n '
-              'tripsHeader          = {} \n '
-              'calendarHeader       = {} \n '
-              'calendar_datesHeader = {} \n '
-              'routesHeader         = {} \n '
-              'agencyHeader         = {} \n '
-              'feed_infoHeader      = {} '.format(stopsHeader, stop_timesHeader, tripsHeader, calendarHeader, calendar_datesHeader, routesHeader, agencyHeader, feed_infoHeader))
+        print('stopsHeader          = {} \n'
+              'stop_timesHeader     = {} \n'
+              'tripsHeader          = {} \n'
+              'calendarHeader       = {} \n'
+              'calendar_datesHeader = {} \n'
+              'routesHeader         = {} \n'
+              'agencyHeader         = {} \n'
+              'feed_infoHeader      = {}'.format(stopsHeader, stop_timesHeader, tripsHeader, calendarHeader, calendar_datesHeader, routesHeader, agencyHeader, feed_infoHeader))
 
 
     def get_gtfs_trip(self):
         tripdict = {
         }
 
-        headers = self.raw_gtfs_data[2][0].split(",")
+        headers = self.raw_gtfs_data[2][0].replace('"', "").split(",")
+        itripDate = len(headers)
         header_names = []
         for haltestellen_header in headers:
             tripdict[haltestellen_header] = []
@@ -595,7 +596,6 @@ hhh
             data = data.replace('"', "")
             data = data.replace('\n', "")
             tripDate = data.split(",")
-            itripDate = len(tripDate)
             for idx in range(itripDate):
                 tripdict[header_names[idx]].append(tripDate[idx])
 
@@ -606,7 +606,8 @@ hhh
 
         stopsdict = {
         }
-        headers = self.raw_gtfs_data[0][0].split(",")
+        headers = self.raw_gtfs_data[0][0].replace('"', "").split(",")
+        istopDate = len(headers)
         header_names = []
         for haltestellen_header in headers:
             stopsdict[haltestellen_header] = []
@@ -617,7 +618,7 @@ hhh
             haltestellen = haltestellen.replace('"', "")
             haltestellen = haltestellen.replace('\n', "")
             stopData = haltestellen.split(",")
-            istopDate = len(stopData)
+
             for idx in range(istopDate):
                 stopsdict[header_names[idx]].append(stopData[idx])
 
@@ -629,20 +630,21 @@ hhh
         stopTimesdict = {
         }
 
-        headers = self.raw_gtfs_data[1][0].split(",")
+        headers = self.raw_gtfs_data[1][0].replace('"', "").split(",")
+        istopTimeData = len(headers)
         header_names = []
         for haltestellen_header in headers:
             stopTimesdict[haltestellen_header] = []
             header_names.append(haltestellen_header)
 
         for data in self.raw_gtfs_data[1][1]:
+            # if self.check_KommaInText(data):
+            #     print('found!')
             data = data.replace(", ", " ")
             data = data.replace('"', "")
             data = data.replace('\n', "")
             stopTimeData = data.split(",")
-            istopTimeData = len(stopTimeData)
-            if istopTimeData > 8:
-                print('bigger')
+
             for idx in range(istopTimeData):
                 stopTimesdict[header_names[idx]].append(stopTimeData[idx])
 
@@ -653,7 +655,8 @@ hhh
         calendarWeekdict = {
         }
 
-        headers = self.raw_gtfs_data[3][0].split(",")
+        headers = self.raw_gtfs_data[3][0].replace('"', "").split(",")
+        icalendarDate = len(headers)
         header_names = []
         for haltestellen_header in headers:
             calendarWeekdict[haltestellen_header] = []
@@ -664,7 +667,7 @@ hhh
             data = data.replace('"', "")
             data = data.replace('\n', "")
             calendarDate = data.split(",")
-            icalendarDate = len(calendarDate)
+
             for idx in range(icalendarDate):
                 calendarWeekdict[header_names[idx]].append(calendarDate[idx])
 
@@ -675,7 +678,8 @@ hhh
         calendarDatesdict = {
         }
 
-        headers = self.raw_gtfs_data[4][0].split(",")
+        headers = self.raw_gtfs_data[4][0].replace('"', "").split(",")
+        icalendarDate = len(headers)
         header_names = []
         for haltestellen_header in headers:
             calendarDatesdict[haltestellen_header] = []
@@ -686,7 +690,6 @@ hhh
             data = data.replace('"', "")
             data = data.replace('\n', "")
             calendarDatesDate = data.split(",")
-            icalendarDate = len(calendarDatesDate)
             for idx in range(icalendarDate):
                 calendarDatesdict[header_names[idx]].append(calendarDatesDate[idx])
 
@@ -698,7 +701,8 @@ hhh
         routesFahrtdict = {
         }
 
-        headers = self.raw_gtfs_data[5][0].split(",")
+        headers = self.raw_gtfs_data[5][0].replace('"', "").split(",")
+        iroutesFahrt = len(headers)
         header_names = []
         for haltestellen_header in headers:
             routesFahrtdict[haltestellen_header] = []
@@ -709,7 +713,6 @@ hhh
             data = data.replace('"', "")
             data = data.replace('\n', "")
             routesFahrtData = data.split(",")
-            iroutesFahrt = len(routesFahrtData)
             for idx in range(iroutesFahrt):
                 routesFahrtdict[header_names[idx]].append(routesFahrtData[idx])
 
@@ -720,7 +723,8 @@ hhh
         feed_infodict = {
         }
 
-        headers = self.raw_gtfs_data[7][0].split(",")
+        headers = self.raw_gtfs_data[7][0].replace('"', "").split(",")
+        ifeed_infodict = len(headers)
         header_names = []
         for haltestellen_header in headers:
             feed_infodict[haltestellen_header] = []
@@ -731,7 +735,6 @@ hhh
             data = data.replace('"', "")
             data = data.replace('\n', "")
             feed_infodictData = data.split(",")
-            ifeed_infodict = len(feed_infodictData)
             for idx in range(ifeed_infodict):
                 feed_infodict[header_names[idx]].append(feed_infodictData[idx])
 
@@ -743,7 +746,8 @@ hhh
         agencyFahrtdict = {
         }
 
-        headers = self.raw_gtfs_data[6][0].split(",")
+        headers = self.raw_gtfs_data[6][0].replace('"', "").split(",")
+        iagencyData = len(headers)
         header_names = []
         for haltestellen_header in headers:
             agencyFahrtdict[haltestellen_header] = []
@@ -754,7 +758,6 @@ hhh
             data = data.replace('"', "")
             data = data.replace('\n', "")
             agencyData = data.split(",")
-            iagencyData = len(agencyData)
             for idx in range(iagencyData):
                 agencyFahrtdict[header_names[idx]].append(agencyData[idx])
 
@@ -780,7 +783,7 @@ hhh
         self.get_gtfs_calendarDates()
         self.get_gtfs_routes()
         self.get_gtfs_agencies()
-        if self.raw_gtfs_data[7] is not None:
+        if self.raw_gtfs_data[7][0] is not None:
             self.get_gtfs_feed_info()
         self.raw_gtfs_data = None
         return True
@@ -941,9 +944,7 @@ hhh
 
     def analyzeDateRangeInGTFSData(self):
         if self.dfWeek is not None:
-            print(self.dfWeek)
             self.dfdateRangeInGTFSData = self.dfWeek.groupby(['start_date', 'end_date']).size().reset_index()
-            print(self.dfdateRangeInGTFSData.iloc[0].start_date)
             return str(self.dfdateRangeInGTFSData.iloc[0].start_date) + '-' + str(self.dfdateRangeInGTFSData.iloc[0].end_date)
 
 
@@ -1267,32 +1268,6 @@ hhh
 
     def datesWeekday_select_stops_for_trips(self):
 
-
-        cond_select_stops_for_trips = '''
-                    select 
-                            (select st_dfStopTimes.arrival_time 
-                                from dfStopTimes st_dfStopTimes
-                                where st_dfStopTimes.stop_sequence = 0
-                                  and dfStopTimes.trip_id = st_dfStopTimes.trip_id) as start_time,                         
-                            dfStopTimes.trip_id,
-                            dfStops.stop_name,
-                            dfStopTimes.stop_sequence, 
-                            dfStopTimes.arrival_time, 
-                            dfTrips.service_id, 
-                            dfStops.stop_id                        
-                    from dfStopTimes 
-                    inner join dfTrips on dfStopTimes.trip_id = dfTrips.trip_id
-                    inner join dfStops on dfStopTimes.stop_id = dfStops.stop_id
-                    inner join dfRoutes on dfRoutes.route_id  = dfTrips.route_id
-                    inner join route_short_namedf on dfRoutes.route_short_name = route_short_namedf.route_short_name
-                    inner join varTestAgency on dfRoutes.agency_id = varTestAgency.agency_id
-                    inner join requested_directiondf on dfTrips.direction_id = requested_directiondf.direction_id
-                    where dfRoutes.route_short_name = route_short_namedf.route_short_name -- in this case the bus line number
-                      and dfRoutes.agency_id = varTestAgency.agency_id -- in this case the agency
-                      and dfTrips.direction_id = requested_directiondf.direction_id -- shows the direction of the line 
-                    ;
-                   '''
-
         cond_select_stops_for_trips = '''
                     select 
                             (select st_dfStopTimes.arrival_time 
@@ -1310,7 +1285,27 @@ hhh
                     inner join dfStops on dfStopTimes.stop_id = dfStops.stop_id
                     ;
                    '''
+        cond_Test_SequenceStart = '''select st_dfStopTimes.arrival_time 
+                                       from dfStopTimes st_dfStopTimes
+                                      where st_dfStopTimes.stop_sequence = 0'''
 
+        cond_select_stops_for_tripsOne = '''
+                    select 
+                            (select st_dfStopTimes.arrival_time 
+                                from dfStopTimes st_dfStopTimes
+                                where st_dfStopTimes.stop_sequence = 1
+                                  and dfStopTimes.trip_id = st_dfStopTimes.trip_id) as start_time,                         
+                            dfStopTimes.trip_id,
+                            dfStops.stop_name,
+                            dfStopTimes.stop_sequence, 
+                            dfStopTimes.arrival_time, 
+                            dfTrip.service_id, 
+                            dfStops.stop_id                        
+                    from dfStopTimes 
+                    inner join dfTrip on dfStopTimes.trip_id = dfTrip.trip_id_dup
+                    inner join dfStops on dfStopTimes.stop_id = dfStops.stop_id
+                    ;
+                   '''
         route_short_namedf = self.route_short_namedf
         varTestAgency = self.varTestAgency
         requested_directiondf = self.requested_directiondf
@@ -1337,7 +1332,11 @@ hhh
         dfStops = self.dfStops
         last_time = time.time()
         # get all stop_times and stops for every stop of one route
-        self.fahrplan_calendar_weeks = sqldf(cond_select_stops_for_trips, locals())
+        IsSequenceNumberStartAtZERO = sqldf(cond_Test_SequenceStart, locals())
+        if IsSequenceNumberStartAtZERO.empty:
+            self.fahrplan_calendar_weeks = sqldf(cond_select_stops_for_tripsOne, locals())
+        else:
+            self.fahrplan_calendar_weeks = sqldf(cond_select_stops_for_trips, locals())
         dfTrip = dfTrip.drop('trip_id_dup', axis=1)
         zeit = time.time() - last_time
         last_time = time.time()

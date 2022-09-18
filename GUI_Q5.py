@@ -36,18 +36,19 @@ class GTFSWorker(QThread, Publisher, Subscriber):
     def __init__(self, events, name, process):
         super().__init__(events=events, name=name)
         self.process = process
+        print(self.process)
 
     def run(self):
         # try:
+
             if self.process == 'ImportGTFS':
                 self.dispatch("sub_worker_load_gtfsdata",
                               "sub_worker_load_gtfsdata routine started! Notify subscriber!")
+                self.dispatch("sub_worker_get_date_range",
+                              "sub_worker_get_date_range routine started! Notify subscriber!")
             elif self.process == 'fill_agency_list':
                 self.dispatch("sub_worker_update_routes_list",
                               "sub_worker_update_routes_list routine started! Notify subscriber!")
-            elif self.process == 'fill_dates_range':
-                self.dispatch("sub_worker_get_date_range",
-                              "sub_worker_get_date_range routine started! Notify subscriber!")
             elif self.process == 'create_table_date':
                 self.importedGTFS.emit(5)
                 self.dispatch("sub_worker_prepare_data_fahrplan",
@@ -141,12 +142,14 @@ class Model(Publisher, Subscriber):
         self.notify_set_process("loading GTFS data...")
         # worker = ImportGTFSDataWorker(self.worker_gtfs)
 
-        self.worker = GTFSWorker(['sub_worker_load_gtfsdata'], 'Worker', 'ImportGTFS')
+        self.worker = GTFSWorker(['sub_worker_load_gtfsdata', 'sub_worker_get_date_range'], 'Worker', 'ImportGTFS')
         self.worker.register('sub_worker_load_gtfsdata', self)
+        self.worker.register('sub_worker_get_date_range', self)
 
-        self.worker.importedGTFS.connect(lambda: self.notify_set_process("GTFS still loading..."))
         self.worker.start()
         self.worker.finished.connect(self.update_agency_list)
+        print(self.worker.isRunning())
+        self.worker.exit()
 
         self.gtfs.processing = None
 
@@ -161,6 +164,7 @@ class Model(Publisher, Subscriber):
         self.gtfs.get_routes_of_agency()
 
     def sub_worker_get_date_range(self):
+        print('getDateRange')
         self.gtfs.getDateRange()
 
     # dates
@@ -196,18 +200,6 @@ class Model(Publisher, Subscriber):
     def sub_worker_create_output_fahrplan(self):
         self.gtfs.datesWeekday_create_output_fahrplan()
 
-    def start_get_date_range(self):
-        self.gtfs.processing = "load dates list"
-        self.notify_set_process("loading load dates ...")
-        # worker = ImportGTFSDataWorker(self.worker_gtfs)
-
-        self.worker = GTFSWorker(['sub_worker_get_date_range'], 'Worker', 'fill_dates_range')
-        self.worker.register('sub_worker_get_date_range', self)
-
-        self.worker.importedGTFS.connect(lambda: self.notify_set_process("dates still loading..."))
-        self.worker.start()
-
-        self.worker.finished.connect(self.update_date_range)
 
     def sub_select_agency_event(self):
         self.gtfs.processing = "load routes list"
@@ -217,7 +209,6 @@ class Model(Publisher, Subscriber):
         self.worker = GTFSWorker(['sub_worker_update_routes_list'], 'Worker', 'fill_agency_list')
         self.worker.register('sub_worker_update_routes_list', self)
 
-        self.worker.importedGTFS.connect(lambda: self.notify_set_process("routes still loading..."))
         self.worker.start()
 
         self.worker.finished.connect(self.update_routes_list)
@@ -294,8 +285,6 @@ class Model(Publisher, Subscriber):
     def update_agency_list(self):
         if self.gtfs.noError:
             self.gtfs.read_gtfs_agencies()
-
-            self.start_get_date_range()
             self.notify_update_agency_List()
             self.worker = None
 
@@ -323,6 +312,7 @@ class Model(Publisher, Subscriber):
         self.gtfs.processing = None
 
     def notify_update_agency_List(self):
+
         return self.dispatch("update_agency_list",
                              "update_agency_list routine started! Notify subscriber!")
 
@@ -627,6 +617,7 @@ class Gui(QWidget, Publisher, Subscriber):
         self.listAgencies.clear()
         self.listAgencies.addItems(self.model.gtfs.agenciesList)
         self.line_Selection_date_range.setText(self.model.gtfs.date_range)
+        # self.model.start_get_date_range()
 
     def sub_update_progress_bar(self):
         self.progressBar.setValue(self.model.gtfs.progress)
