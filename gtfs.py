@@ -70,6 +70,8 @@ class gtfs:
         """ loaded raw_gtfs_data """
         self.raw_gtfs_data = None
 
+        """ all stops for given trips """
+        self.filtered_stop_names = None
         """ df-data """
         self.dfStops = None
         self.dfStopTimes = None
@@ -1400,13 +1402,13 @@ class gtfs:
                             fahrplan_calendar_weeks.start_time, 
                             fahrplan_calendar_weeks.trip_id,
                             fahrplan_calendar_weeks.stop_name,
-                            df_deleted_dupl_stop_names.stop_sequence as stop_sequence_sorted,
+                            df_filtered_stop_names.stop_sequence as stop_sequence_sorted,
                             fahrplan_calendar_weeks.stop_sequence,
                             fahrplan_calendar_weeks.arrival_time, 
                             fahrplan_calendar_weeks.service_id, 
                             fahrplan_calendar_weeks.stop_id                        
                     from fahrplan_calendar_weeks 
-                    left join df_deleted_dupl_stop_names on fahrplan_calendar_weeks.stop_id = df_deleted_dupl_stop_names.stop_id  
+                    left join df_filtered_stop_names on fahrplan_calendar_weeks.stop_id = df_filtered_stop_names.stop_id  
                     group by fahrplan_calendar_weeks.date,
                              fahrplan_calendar_weeks.day,
                              fahrplan_calendar_weeks.start_time,
@@ -1426,12 +1428,14 @@ class gtfs:
 
         fahrplan_calendar_weeks = self.fahrplan_calendar_weeks
         self.fahrplan_calendar_weeks = None
-        deleted_dupl_stop_names = self.filterStopSequence(self.fahrplan_sorted_stops)
-        df_deleted_dupl_stop_names = pd.DataFrame.from_dict(deleted_dupl_stop_names)
+        self.filtered_stop_names = self.filterStopSequence(self.fahrplan_sorted_stops)
+        self.df_filtered_stop_names = pd.DataFrame.from_dict(self.filtered_stop_names)
         # df_deleted_dupl_stop_names["stop_name"] = df_deleted_dupl_stop_names["stop_name"].astype('string')
-        df_deleted_dupl_stop_names["stop_sequence"] = df_deleted_dupl_stop_names["stop_sequence"].astype('int32')
-        df_deleted_dupl_stop_names = df_deleted_dupl_stop_names.set_index("stop_sequence")
-        df_deleted_dupl_stop_names = df_deleted_dupl_stop_names.sort_index(axis=0)
+        self.df_filtered_stop_names["stop_sequence"] = self.df_filtered_stop_names["stop_sequence"].astype('int32')
+        self.df_filtered_stop_names = self.df_filtered_stop_names.set_index("stop_sequence")
+        self.df_filtered_stop_names = self.df_filtered_stop_names.sort_index(axis=0)
+        df_filtered_stop_names = self.df_filtered_stop_names
+
         fahrplan_calendar_weeks = sqldf(cond_stop_name_sorted_trips_with_dates, locals())
 
         ###########################
@@ -1466,7 +1470,6 @@ class gtfs:
         self.fahrplan_calendar_filter_days_pivot = self.fahrplan_calendar_filter_days_pivot.sort_index(axis=1)
         self.fahrplan_calendar_filter_days_pivot = self.fahrplan_calendar_filter_days_pivot.sort_index(axis=0)
 
-        # releae some memory
         self.zeit = time.time() - self.last_time
         now = datetime.now()
         self.now = now.strftime("%Y_%m_%d_%H_%M_%S")

@@ -12,5 +12,6 @@ if __name__ == '__main__':
           'select_weekday',
           'start_create_table',
           'reset_gtfs',
+          'send_message_box',
           'get_date_range'], 'controller')
 

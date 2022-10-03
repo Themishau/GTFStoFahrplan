@@ -14,21 +14,6 @@ from PyQt5.QtWidgets import QFileDialog
 
 delimiter = " "
 
-
-# noinspection PyUnresolvedReferences
-class ImportGTFSDataWorker(QThread):
-    importedGTFS = pyqtSignal(int)
-
-    def __init__(self, worker_gtfs):
-        super().__init__()
-        self.gtfs = worker_gtfs
-
-    def run(self):
-        self.gtfs.update_agency_list()
-        self.importedGTFS.emit(20)
-        self.finished.emit()
-
-
 # noinspection PyUnresolvedReferences
 class GTFSWorker(QThread, Publisher, Subscriber):
     importedGTFS = pyqtSignal(int)
@@ -42,8 +27,10 @@ class GTFSWorker(QThread, Publisher, Subscriber):
         # try:
 
             if self.process == 'ImportGTFS':
+                self.importedGTFS.emit(30)
                 self.dispatch("sub_worker_load_gtfsdata",
                               "sub_worker_load_gtfsdata routine started! Notify subscriber!")
+                self.importedGTFS.emit(70)
                 self.dispatch("sub_worker_get_date_range",
                               "sub_worker_get_date_range routine started! Notify subscriber!")
             elif self.process == 'fill_agency_list':
@@ -140,18 +127,17 @@ class Model(Publisher, Subscriber):
     def sub_load_gtfsdata_event(self):
         self.gtfs.processing = "loading data"
         self.notify_set_process("loading GTFS data...")
-        # worker = ImportGTFSDataWorker(self.worker_gtfs)
 
         self.worker = GTFSWorker(['sub_worker_load_gtfsdata', 'sub_worker_get_date_range'], 'Worker', 'ImportGTFS')
         self.worker.register('sub_worker_load_gtfsdata', self)
         self.worker.register('sub_worker_get_date_range', self)
 
+        self.worker.importedGTFS.connect(self.notify_set_progressbar)
         self.worker.start()
         self.worker.finished.connect(self.update_agency_list)
         print(self.worker.isRunning())
         self.worker.exit()
 
-        self.gtfs.processing = None
 
     def error_reset_model(self):
         self.dispatch("restart",
@@ -204,11 +190,11 @@ class Model(Publisher, Subscriber):
     def sub_select_agency_event(self):
         self.gtfs.processing = "load routes list"
         self.notify_set_process("loading load routes list...")
-        # worker = ImportGTFSDataWorker(self.worker_gtfs)
 
         self.worker = GTFSWorker(['sub_worker_update_routes_list'], 'Worker', 'fill_agency_list')
         self.worker.register('sub_worker_update_routes_list', self)
 
+        self.worker.importedGTFS.connect(self.notify_set_progressbar)
         self.worker.start()
 
         self.worker.finished.connect(self.update_routes_list)
@@ -227,7 +213,6 @@ class Model(Publisher, Subscriber):
     def sub_start_create_table(self):
         self.gtfs.processing = "create table"
         self.notify_set_process("create table data...")
-        # worker = ImportGTFSDataWorker(self.worker_gtfs)
 
         if self.gtfs.selected_weekday is None:
             self.worker = GTFSWorker(['sub_worker_prepare_data_fahrplan',
@@ -264,6 +249,7 @@ class Model(Publisher, Subscriber):
             self.worker.register('sub_worker_select_stops_for_trips', self)
             self.worker.register('sub_worker_select_for_every_date_trips_stops', self)
             self.worker.register('sub_worker_select_stop_sequence_stop_name_sorted', self)
+        # if self.gtfs.chooseStopOrder is true:
             self.worker.register('sub_worker_create_fahrplan_dates', self)
             self.worker.register('sub_worker_create_output_fahrplan', self)
 
@@ -279,6 +265,7 @@ class Model(Publisher, Subscriber):
                              "update_progress_bar routine started! Notify subscriber!")
 
     def finished_create_table(self):
+        self.notify_set_progressbar(0)
         self.notify_finished()
         print('fertig')
 
@@ -296,6 +283,7 @@ class Model(Publisher, Subscriber):
     def update_routes_list(self):
         self.notify_update_routes_List()
         self.worker = None
+        self.notify_set_progressbar(0)
         # self.update_weekdate_options()
 
     def update_weekdate_options(self):
@@ -408,7 +396,7 @@ class Gui(QWidget, Publisher, Subscriber):
                                 'update_weekday_list': [self.sub_update_weekdate_option, False],
                                 'update_agency_list': [self.sub_update_agency_list, False],
                                 'update_weekdate_option': [self.sub_update_weekdate_option, False],
-                                'message': [self.sub_write_gui_log, True],
+                                'message': [self.send_message_box, True],
                                 'error_message': [self.sub_write_gui_log, True],
                                 'data_changed': [self.sub_write_gui_log, True],
                                 'update_progress_bar': [self.sub_update_progress_bar, False],
