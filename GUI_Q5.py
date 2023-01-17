@@ -6,7 +6,7 @@ import sys
 import os
 from datetime import datetime
 from PyQt5 import uic
-from PyQt5.Qt import QPoint, QMutex, QWidget, QMessageBox, QDesktopWidget, QApplication
+from PyQt5.Qt import QPoint, QMutex, QWidget, QMessageBox, QDesktopWidget, QApplication, QMainWindow
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QThread, pyqtSignal
@@ -21,7 +21,6 @@ class GTFSWorker(QThread, Publisher, Subscriber):
     def __init__(self, events, name, process):
         super().__init__(events=events, name=name)
         self.process = process
-        print(self.process)
 
     def run(self):
         # try:
@@ -33,6 +32,7 @@ class GTFSWorker(QThread, Publisher, Subscriber):
                 self.importedGTFS.emit(70)
                 self.dispatch("sub_worker_get_date_range",
                               "sub_worker_get_date_range routine started! Notify subscriber!")
+                self.importedGTFS.emit(0)
             elif self.process == 'fill_agency_list':
                 self.dispatch("sub_worker_update_routes_list",
                               "sub_worker_update_routes_list routine started! Notify subscriber!")
@@ -89,9 +89,7 @@ class GTFSWorker(QThread, Publisher, Subscriber):
                               "sub_worker_create_output_fahrplan routine started! Notify subscriber!")
                 self.importedGTFS.emit(100)
             self.finished.emit()
-        # except:
-        #     print('Error in creating table!')
-        #     self.finished.emit()
+
 
 
 
@@ -110,13 +108,10 @@ class Model(Publisher, Subscriber):
     def find(self, name, path):
 
         for root, dirs, files in os.walk(path):
-            print(files)
             if name in files:
                 return True
 
     def set_paths(self, input_path, output_path) -> bool:
-        print(input_path.replace(input_path.split('/')[-1], ''))
-        print(input_path.split('/')[-1])
         try:
             self.gtfs.set_paths(input_path, output_path)
             return self.find(input_path.split('/')[-1], input_path.replace(input_path.split('/')[-1], ''))
@@ -135,7 +130,6 @@ class Model(Publisher, Subscriber):
         self.worker.importedGTFS.connect(self.notify_set_progressbar)
         self.worker.start()
         self.worker.finished.connect(self.update_agency_list)
-        print(self.worker.isRunning())
         self.worker.exit()
 
 
@@ -150,16 +144,14 @@ class Model(Publisher, Subscriber):
         self.gtfs.get_routes_of_agency()
 
     def sub_worker_get_date_range(self):
-        print('getDateRange')
         self.gtfs.getDateRange()
-
-    # dates
+    """ dates """
     def sub_worker_prepare_data_fahrplan(self):
         self.gtfs.dates_prepare_data_fahrplan()
 
     def sub_worker_select_dates_for_date_range(self):
         self.gtfs.datesWeekday_select_dates_for_date_range()
-
+    """ dates """
     def sub_worker_select_dates_delete_exception_2(self):
         self.gtfs.dates_select_dates_delete_exception_2()
 
@@ -172,11 +164,11 @@ class Model(Publisher, Subscriber):
     def sub_worker_select_stop_sequence_stop_name_sorted(self):
         self.gtfs.datesWeekday_select_stop_sequence_stop_name_sorted()
 
-    # weekday
-
+    """ weekday """
     def sub_worker_weekday_prepare_data_fahrplan(self):
         self.gtfs.weekday_prepare_data_fahrplan()
 
+    """ weekday """
     def sub_worker_weekday_select_weekday_exception_2(self):
         self.gtfs.weekday_select_weekday_exception_2()
 
@@ -186,17 +178,13 @@ class Model(Publisher, Subscriber):
     def sub_worker_create_output_fahrplan(self):
         self.gtfs.datesWeekday_create_output_fahrplan()
 
-
     def sub_select_agency_event(self):
         self.gtfs.processing = "load routes list"
         self.notify_set_process("loading load routes list...")
-
         self.worker = GTFSWorker(['sub_worker_update_routes_list'], 'Worker', 'fill_agency_list')
         self.worker.register('sub_worker_update_routes_list', self)
-
         self.worker.importedGTFS.connect(self.notify_set_progressbar)
         self.worker.start()
-
         self.worker.finished.connect(self.update_routes_list)
 
     def sub_select_route_event(self):
@@ -223,7 +211,6 @@ class Model(Publisher, Subscriber):
                                       'sub_worker_select_stop_sequence_stop_name_sorted',
                                       'sub_worker_create_fahrplan_dates',
                                       'sub_worker_create_output_fahrplan'], 'Worker', 'create_table_date')
-
             self.worker.register('sub_worker_prepare_data_fahrplan', self)
             self.worker.register('sub_worker_select_dates_for_date_range', self)
             self.worker.register('sub_worker_select_dates_delete_exception_2', self)
@@ -242,20 +229,17 @@ class Model(Publisher, Subscriber):
                                       'sub_worker_select_stop_sequence_stop_name_sorted',
                                       'sub_worker_create_fahrplan_dates',
                                       'sub_worker_create_output_fahrplan'], 'Worker', 'create_table_weekday')
-
             self.worker.register('sub_worker_weekday_prepare_data_fahrplan', self)
             self.worker.register('sub_worker_select_dates_for_date_range', self)
             self.worker.register('sub_worker_weekday_select_weekday_exception_2', self)
             self.worker.register('sub_worker_select_stops_for_trips', self)
             self.worker.register('sub_worker_select_for_every_date_trips_stops', self)
             self.worker.register('sub_worker_select_stop_sequence_stop_name_sorted', self)
-        # if self.gtfs.chooseStopOrder is true:
             self.worker.register('sub_worker_create_fahrplan_dates', self)
             self.worker.register('sub_worker_create_output_fahrplan', self)
 
         self.worker.importedGTFS.connect(self.notify_set_progressbar)
         self.worker.start()
-
         self.worker.finished.connect(self.finished_create_table)
         self.gtfs.processing = None
 
@@ -267,14 +251,12 @@ class Model(Publisher, Subscriber):
     def finished_create_table(self):
         self.notify_set_progressbar(0)
         self.notify_finished()
-        print('fertig')
 
     def update_agency_list(self):
         if self.gtfs.noError:
             self.gtfs.read_gtfs_agencies()
             self.notify_update_agency_List()
             self.worker = None
-
 
     def update_date_range(self):
         self.worker = None
@@ -292,7 +274,6 @@ class Model(Publisher, Subscriber):
 
     def notify_set_process(self, task):
         self.dispatch("data_changed", "{}".format(task))
-        print('task: {}'.format(task))
         self.gtfs.processing = task
 
     def notify_delete_process(self):
@@ -300,10 +281,8 @@ class Model(Publisher, Subscriber):
         self.gtfs.processing = None
 
     def notify_update_agency_List(self):
-
         return self.dispatch("update_agency_list",
                              "update_agency_list routine started! Notify subscriber!")
-
 
     def notify_update_routes_List(self):
         return self.dispatch("update_routes_list",
@@ -360,7 +339,6 @@ class Model(Publisher, Subscriber):
         else:
             print('event not found in class model: {}'.format(event))
 
-
 class Gui(QWidget, Publisher, Subscriber):
     def __init__(self, events, name):
         super().__init__(events=events, name=name)
@@ -386,10 +364,11 @@ class Gui(QWidget, Publisher, Subscriber):
         self.listAgencies.clicked.connect(self.notify_select_agency)
         self.listRoutes.clicked.connect(self.notify_select_route)
         self.listDatesWeekday.clicked.connect(self.notify_select_weekday_option)
-
         self.comboBox.activated[str].connect(self.onChanged)
         self.comboBox_display.activated[str].connect(self.onChangedTimeFormatMode)
         self.comboBox_direction.activated[str].connect(self.onChangedDirectionMode)
+        self.line_Selection_format.setText('time format 1')
+
         self.lineend = '\n'
         self.textBrowserText = ''
         self.notify_functions = {'update_routes_list': [self.sub_update_routes_list, False],
@@ -402,8 +381,6 @@ class Gui(QWidget, Publisher, Subscriber):
                                 'update_progress_bar': [self.sub_update_progress_bar, False],
                                 'restart': [self.notify_restart, False]
                                }
-
-        # init subs and publisher
 
         # init model with publisher
         self.model = Model(['update_weekday_list',
@@ -441,8 +418,6 @@ class Gui(QWidget, Publisher, Subscriber):
 
         self.refresh_time = get_current_time()
 
-        self.line_Selection_format.setText('time format 1')
-
     # noinspection PyUnresolvedReferences
     @staticmethod
     def resource_path(relative_path):
@@ -452,7 +427,6 @@ class Gui(QWidget, Publisher, Subscriber):
             base_path = sys._MEIPASS
         except Exception:
             base_path = os.path.abspath(".")
-
         return os.path.join(base_path, relative_path)
 
     def center(self):
@@ -508,7 +482,6 @@ class Gui(QWidget, Publisher, Subscriber):
         else:
             notify_function(message)
 
-
     def notify_not_function(self, event):
             print('event not found in class gui: {}'.format(event))
 
@@ -536,7 +509,6 @@ class Gui(QWidget, Publisher, Subscriber):
             self.model.gtfs.selectedAgency = self.listAgencies.currentItem().text().split(',')[0]
             self.reset_weekdayDate()
             self.dispatch("select_agency", "select_agency routine started! Notify subscriber!")
-
         except TypeError:
             print("TypeError in notify_select_agency")
 
@@ -546,7 +518,6 @@ class Gui(QWidget, Publisher, Subscriber):
         self.dispatch("start_create_table", "start_create_table routine started! Notify subscriber!")
 
     def sub_update_weekdate_option(self):
-        print('in sub_update_weekdate_option')
         self.comboBox.setEnabled(True)
         self.comboBox_display.setEnabled(True)
         self.comboBox_direction.setEnabled(True)
@@ -563,7 +534,6 @@ class Gui(QWidget, Publisher, Subscriber):
         self.listDatesWeekday.clear()
 
     def notify_restart(self):
-        print('RESTART')
         self.btnImport.setEnabled(True)
         self.btnRestart.setEnabled(False)
         self.btnStart.setEnabled(False)
@@ -648,16 +618,6 @@ class Gui(QWidget, Publisher, Subscriber):
                                                      directory='C:/Tmp')
         if file_path > '':
             self.lineOutputPath.setText(f'{file_path}/')
-
-    def delete_process(self):
-        self.sub_write_gui_log("{} finished".format(self.process))
-        self.model.gtfs.gtfs_process = None
-
-    def refresh_data(self):
-        if (get_current_time() - self.refresh_time) > 10:
-            time.sleep(1)
-            self.refresh_time = get_current_time()
-        self.update_log(("still processing. Please wait...", "{} finished".format(self.process)))
 
 
 def get_current_time():

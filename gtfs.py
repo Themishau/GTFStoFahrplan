@@ -57,29 +57,29 @@ class gtfs:
         self.runningAsync = 0
 
         """ dicts for create and listbox """
-        self.stopsdict = None
-        self.stopTimesdict = None
-        self.tripdict = None
-        self.calendarWeekdict = None
-        self.calendarDatesdict = None
-        self.routesFahrtdict = None
-        self.agencyFahrtdict = None
+        self.stopsdict = {}
+        self.stopTimesdict = {}
+        self.tripdict = {}
+        self.calendarWeekdict = {}
+        self.calendarDatesdict = {}
+        self.routesFahrtdict = {}
+        self.agencyFahrtdict = {}
 
-        self.feed_infodict = None
+        self.feed_infodict = {}
 
         """ loaded raw_gtfs_data """
-        self.raw_gtfs_data = None
+        self.raw_gtfs_data = []
 
         """ all stops for given trips """
-        self.filtered_stop_names = None
+        self.filtered_stop_names = ""
         """ df-data """
-        self.dfStops = None
-        self.dfStopTimes = None
-        self.dfTrips = None
-        self.dfWeek = None
-        self.dfDates = None
-        self.dfRoutes = None
-        self.dfagency = None
+        self.dfStops = pd.DataFrame({'A' : []})
+        self.dfStopTimes = pd.DataFrame({'A' : []})
+        self.dfTrips = pd.DataFrame({'A' : []})
+        self.dfWeek = pd.DataFrame({'A' : []})
+        self.dfDates = pd.DataFrame({'A' : []})
+        self.dfRoutes = pd.DataFrame({'A' : []})
+        self.dfagency = pd.DataFrame({'A' : []})
         self.dffeed_info = None
         self.now = None
 
@@ -219,7 +219,7 @@ class gtfs:
         # DataFrame with every agency
         self.dfagency = pd.DataFrame.from_dict(self.agencyFahrtdict).set_index('agency_id')
 
-        if self.feed_infodict is not None:
+        if bool(self.feed_infodict):
             self.dffeed_info = pd.DataFrame.from_dict(self.feed_infodict)
 
         zeit = time.time() - last_time
@@ -271,6 +271,9 @@ class gtfs:
             "stop_sequence": [],
             "start_time": []
         }
+        # data['date'] = pd.to_datetime(data['date'], format='%Y-%m-%d %H:%M:%S.%f')
+        # data['date'] = data['date'].dt.strftime('%m-%Y-%d %Y')
+
 
         for stop_name_i in data.itertuples():
             # check for stop_id not for stop_name!
@@ -527,6 +530,7 @@ class gtfs:
                     routesList = routes.readlines()[1:]
                 with io.TextIOWrapper(zf.open("agency.txt"), encoding="utf-8") as agency:
                     agencyList = agency.readlines()[1:]
+
         except:
             print('Error in Unzipping data ')
             return False
@@ -556,7 +560,7 @@ class gtfs:
                 with io.TextIOWrapper(zf.open("feed_info.txt"), encoding="utf-8") as feed_info:
                     feed_infoHeader = feed_info.readlines()[0].rstrip()
         except:
-            print('no feed info')
+            print('no feed info header')
             feed_infoHeader = None
 
         try:
@@ -564,7 +568,7 @@ class gtfs:
                 with io.TextIOWrapper(zf.open("feed_info.txt"), encoding="utf-8") as feed_info:
                     feed_infoList = feed_info.readlines()[1:]
         except:
-            print('no feed info')
+            print('no feed info data')
             feed_infoList = None
 
         self.printAllHeaders(stopsHeader, stop_timesHeader, tripsHeader, calendarHeader, calendar_datesHeader, routesHeader, agencyHeader, feed_infoHeader)
@@ -640,8 +644,6 @@ class gtfs:
             header_names.append(haltestellen_header)
 
         for data in self.raw_gtfs_data[1][1]:
-            # if self.check_KommaInText(data):
-            #     print('found!')
             data = data.replace(", ", " ")
             data = data.replace('"', "")
             data = data.replace('\n', "")
