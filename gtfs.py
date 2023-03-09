@@ -7,7 +7,7 @@ import zipfile
 import io
 from datetime import datetime, timedelta
 import re
-
+import logging
 
 # noinspection SqlResolve
 class gtfs:
@@ -83,14 +83,6 @@ class gtfs:
         self.dffeed_info = None
         self.now = None
 
-        # self.stops_df = None
-        # self.stopTimes_df = None
-        # self.trip_df = None
-        # self.calendarWeek_df = None
-        # self.calendarDates_df = None
-        # self.routesFahrt_df = None
-        # self.agencyFahrt_df = None
-
         """ loaded data for listbox """
         self.agenciesList = None
         self.routesList = None
@@ -155,6 +147,10 @@ class gtfs:
         self.selectedRoute = route
 
     def create_dfs(self):
+        """
+        loads dicts and creates dicts.
+        It also set indices, if possible to speed up search
+        """
 
         last_time = time.time()
 
@@ -206,8 +202,6 @@ class gtfs:
 
         # DataFrame with every service weekly
         self.dfWeek = pd.DataFrame.from_dict(self.calendarWeekdict).set_index('service_id')
-        # self.dfWeek['start_date'] = pd.to_datetime(self.dfWeek['start_date'], format='%Y%m%d')
-        # self.dfWeek['end_date'] = pd.to_datetime(self.dfWeek['end_date'], format='%Y%m%d')
         self.dfWeek['start_date'] = self.dfWeek['start_date'].astype('string')
         self.dfWeek['end_date'] = self.dfWeek['end_date'].astype('string')
 
@@ -265,6 +259,10 @@ class gtfs:
             return True
 
     def filterStopSequence(self, data):
+        """
+        take all stop ids and search for the earlist stoptime
+        for each stop to determine sorting
+        """
         stopsequence = {}
         sorted_stopsequence = {
             "stop_id": [],
@@ -276,7 +274,7 @@ class gtfs:
 
 
         for stop_name_i in data.itertuples():
-            # check for stop_id not for stop_name!
+
             if not self.dictForEntry(stopsequence, "stop_id", stop_name_i.stop_id):
                 temp = {"stop_sequence": -1, "stop_name": '', "trip_id": '', "start_time": '', "arrival_time": ''}
                 temp["stop_sequence"] = stop_name_i.stop_sequence
@@ -408,7 +406,9 @@ class gtfs:
         return sorted_stopsequence
 
     def sortStopSequence(self, stopsequence):
-
+        """
+        sort dict of stops (cust. bubble sort)
+        """
         # get all possible stops
         sequence_count = len(stopsequence)
 
