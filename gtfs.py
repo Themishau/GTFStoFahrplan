@@ -9,6 +9,11 @@ from datetime import datetime, timedelta
 import re
 import logging
 
+logging.basicConfig(level=logging.DEBUG,
+                    format="%(asctime)s %(levelname)s %(message)s",
+                    datefmt="%Y-%m-%d %H:%M:%S")
+
+
 # noinspection SqlResolve
 class gtfs:
     input_path: str
@@ -73,13 +78,13 @@ class gtfs:
         """ all stops for given trips """
         self.filtered_stop_names = ""
         """ df-data """
-        self.dfStops = pd.DataFrame({'A' : []})
-        self.dfStopTimes = pd.DataFrame({'A' : []})
-        self.dfTrips = pd.DataFrame({'A' : []})
-        self.dfWeek = pd.DataFrame({'A' : []})
-        self.dfDates = pd.DataFrame({'A' : []})
-        self.dfRoutes = pd.DataFrame({'A' : []})
-        self.dfagency = pd.DataFrame({'A' : []})
+        self.dfStops = pd.DataFrame({'A': []})
+        self.dfStopTimes = pd.DataFrame({'A': []})
+        self.dfTrips = pd.DataFrame({'A': []})
+        self.dfWeek = pd.DataFrame({'A': []})
+        self.dfDates = pd.DataFrame({'A': []})
+        self.dfRoutes = pd.DataFrame({'A': []})
+        self.dfagency = pd.DataFrame({'A': []})
         self.dffeed_info = None
         self.now = None
 
@@ -137,8 +142,6 @@ class gtfs:
         self.input_path = input_path
         self.output_path = output_path
 
-
-
     def get_routes_of_agency(self) -> None:
         if self.selectedAgency is not None:
             self.select_gtfs_routes_from_agency()
@@ -161,13 +164,12 @@ class gtfs:
         # DataFrame with every trip
         self.dfTrips = pd.DataFrame.from_dict(self.tripdict).set_index('trip_id')
 
-
         try:
             # dfTrips['trip_id'] = pd.to_numeric(dfTrips['trip_id'])
             self.dfTrips['trip_id'] = self.dfTrips['trip_id'].astype('string')
             self.dfTrips['direction_id'] = self.dfTrips['direction_id'].astype('int32')
         except KeyError:
-            print("can not convert dfTrips: trip_id into string")
+            logging.debug("can not convert dfTrips: trip_id into string")
 
         # DataFrame with every stop (time)
         self.dfStopTimes = pd.DataFrame.from_dict(self.stopTimesdict).set_index('stop_id')
@@ -176,29 +178,29 @@ class gtfs:
         #     self.dfStopTimes['arrival_time'] = self.dfStopTimes['arrival_time'].apply(lambda x: self.time_in_string(x))
         #
         # except KeyError:
-        #     print("can not convert dfStopTimes: arrival_time into string and change time")
+        #     logging.debug("can not convert dfStopTimes: arrival_time into string and change time")
 
         try:
             self.dfStopTimes['stop_sequence'] = self.dfStopTimes['stop_sequence'].astype('int32')
         except KeyError:
-            print("can not convert dfStopTimes: stop_sequence into int")
+            logging.debug("can not convert dfStopTimes: stop_sequence into int")
         try:
             self.dfStopTimes['stop_id'] = self.dfStopTimes['stop_id'].astype('int32')
         except KeyError:
-            print("can not convert dfStopTimes: stop_id into int")
+            logging.debug("can not convert dfStopTimes: stop_id into int")
         except OverflowError:
-            print("can not convert dfStopTimes: stop_id into int")
+            logging.debug("can not convert dfStopTimes: stop_id into int")
         try:
             self.dfStopTimes['trip_id'] = self.dfStopTimes['trip_id'].astype('string')
         except KeyError:
-            print("can not convert dfStopTimes: trip_id into string")
+            logging.debug("can not convert dfStopTimes: trip_id into string")
 
         # DataFrame with every stop
         self.dfStops = pd.DataFrame.from_dict(self.stopsdict).set_index('stop_id')
         try:
             self.dfStops['stop_id'] = self.dfStops['stop_id'].astype('int32')
         except KeyError:
-            print("can not convert dfStops: stop_id into int ")
+            logging.debug("can not convert dfStops: stop_id into int ")
 
         # DataFrame with every service weekly
         self.dfWeek = pd.DataFrame.from_dict(self.calendarWeekdict).set_index('service_id')
@@ -217,13 +219,14 @@ class gtfs:
             self.dffeed_info = pd.DataFrame.from_dict(self.feed_infodict)
 
         zeit = time.time() - last_time
-        print("time: {} ".format(zeit))
+        logging.debug("time: {} ".format(zeit))
 
         return True
 
     def getDateRange(self):
         if self.dffeed_info is not None:
-            self.date_range = str(self.dffeed_info.iloc[0].feed_start_date) + '-' + str(self.dffeed_info.iloc[0].feed_end_date)
+            self.date_range = str(self.dffeed_info.iloc[0].feed_start_date) + '-' + str(
+                self.dffeed_info.iloc[0].feed_end_date)
         else:
             self.date_range = self.analyzeDateRangeInGTFSData()
 
@@ -272,7 +275,6 @@ class gtfs:
         # data['date'] = pd.to_datetime(data['date'], format='%Y-%m-%d %H:%M:%S.%f')
         # data['date'] = data['date'].dt.strftime('%m-%Y-%d %Y')
 
-
         for stop_name_i in data.itertuples():
 
             if not self.dictForEntry(stopsequence, "stop_id", stop_name_i.stop_id):
@@ -312,8 +314,8 @@ class gtfs:
                 for stop_name_j in data.itertuples():
                     # if ids match continue comparison
                     if stop_name_i.stop_id == stop_name_j.stop_id:
-                            # 23072022
-                            # and stop_name_i.trip_id == stop_name_j.trip_id\
+                        # 23072022
+                        # and stop_name_i.trip_id == stop_name_j.trip_id\
                         if self.check_hour_24(stop_name_j.start_time):
                             comparetime_j = str((datetime.strptime(stop_name_j.date,
                                                                    '%Y-%m-%d %H:%M:%S.%f').strftime(
@@ -370,7 +372,6 @@ class gtfs:
 
                 stopsequence[stop_name_i.stop_id] = temp
 
-
         new_stopsequence = self.sortStopSequence(stopsequence)
 
         for stop_sequence in new_stopsequence.keys():
@@ -379,7 +380,7 @@ class gtfs:
             sorted_stopsequence['start_time'].append(new_stopsequence[stop_sequence]['start_time'])
 
         #
-        # print('len stop_sequences {}'.format(sequence_count))
+        # logging.debug('len stop_sequences {}'.format(sequence_count))
         # for stop_id in stopsequence.keys():
         #     if stop_id in new_stopsequence \
         #         and stopsequence[stop_id]['start_time'] < new_stopsequence[stop_id]['start_time'] \
@@ -397,7 +398,7 @@ class gtfs:
         #
         #
         #
-        # print(stopsequence)
+        # logging.debug(stopsequence)
         # i = 0
         # for sequence in range(0, len(temp["stop_sequence"])):
         #     i += 1
@@ -484,7 +485,6 @@ class gtfs:
     def time_delete_seconds(self, time):
         return time[:-3]
 
-
     # checks if date string
     def check_dates_input(self, dates):
         pattern1 = re.findall('^\d{8}(?:\d{8})*(?:,\d{8})*$', dates)
@@ -496,7 +496,7 @@ class gtfs:
     def check_KommaInText(self, dates):
         pattern1 = re.findall('"\w*,\w*"', dates)
         if pattern1:
-            print (pattern1)
+            logging.debug(pattern1)
             return True
         else:
             return False
@@ -510,7 +510,7 @@ class gtfs:
             else:
                 return False
         except:
-            print(time)
+            logging.debug(time)
 
     # read zip-data
     def read_gtfs_data(self):
@@ -532,7 +532,7 @@ class gtfs:
                     agencyList = agency.readlines()[1:]
 
         except:
-            print('Error in Unzipping data ')
+            logging.debug('Error in Unzipping data ')
             return False
 
         try:
@@ -552,7 +552,7 @@ class gtfs:
                 with io.TextIOWrapper(zf.open("agency.txt"), encoding="utf-8") as agency:
                     agencyHeader = agency.readlines()[0].rstrip()
         except:
-            print('Error in Unzipping headers')
+            logging.debug('Error in Unzipping headers')
             return False
 
         try:
@@ -560,7 +560,7 @@ class gtfs:
                 with io.TextIOWrapper(zf.open("feed_info.txt"), encoding="utf-8") as feed_info:
                     feed_infoHeader = feed_info.readlines()[0].rstrip()
         except:
-            print('no feed info header')
+            logging.debug('no feed info header')
             feed_infoHeader = None
 
         try:
@@ -568,23 +568,27 @@ class gtfs:
                 with io.TextIOWrapper(zf.open("feed_info.txt"), encoding="utf-8") as feed_info:
                     feed_infoList = feed_info.readlines()[1:]
         except:
-            print('no feed info data')
+            logging.debug('no feed info data')
             feed_infoList = None
 
-        self.printAllHeaders(stopsHeader, stop_timesHeader, tripsHeader, calendarHeader, calendar_datesHeader, routesHeader, agencyHeader, feed_infoHeader)
-        self.raw_gtfs_data = [[stopsHeader,stopsList], [stop_timesHeader,stopTimesList], [tripsHeader,tripsList], [calendarHeader,calendarList], [calendar_datesHeader,calendar_datesList], [routesHeader,routesList],[agencyHeader,agencyList], [feed_infoHeader,feed_infoList]]
+        self.printAllHeaders(stopsHeader, stop_timesHeader, tripsHeader, calendarHeader, calendar_datesHeader,
+                             routesHeader, agencyHeader, feed_infoHeader)
+        self.raw_gtfs_data = [[stopsHeader, stopsList], [stop_timesHeader, stopTimesList], [tripsHeader, tripsList],
+                              [calendarHeader, calendarList], [calendar_datesHeader, calendar_datesList],
+                              [routesHeader, routesList], [agencyHeader, agencyList], [feed_infoHeader, feed_infoList]]
         return True
 
-    def printAllHeaders(self, stopsHeader, stop_timesHeader, tripsHeader, calendarHeader, calendar_datesHeader, routesHeader, agencyHeader, feed_infoHeader):
-        print('stopsHeader          = {} \n'
+    def printAllHeaders(self, stopsHeader, stop_timesHeader, tripsHeader, calendarHeader, calendar_datesHeader,
+                        routesHeader, agencyHeader, feed_infoHeader):
+        logging.debug('stopsHeader          = {} \n'
               'stop_timesHeader     = {} \n'
               'tripsHeader          = {} \n'
               'calendarHeader       = {} \n'
               'calendar_datesHeader = {} \n'
               'routesHeader         = {} \n'
               'agencyHeader         = {} \n'
-              'feed_infoHeader      = {}'.format(stopsHeader, stop_timesHeader, tripsHeader, calendarHeader, calendar_datesHeader, routesHeader, agencyHeader, feed_infoHeader))
-
+              'feed_infoHeader      = {}'.format(stopsHeader, stop_timesHeader, tripsHeader, calendarHeader,
+                                                 calendar_datesHeader, routesHeader, agencyHeader, feed_infoHeader))
 
     def get_gtfs_trip(self):
         tripdict = {
@@ -627,7 +631,6 @@ class gtfs:
 
             for idx in range(istopDate):
                 stopsdict[header_names[idx]].append(stopData[idx])
-
 
         self.stopsdict = stopsdict
         return True
@@ -697,7 +700,6 @@ class gtfs:
             for idx in range(icalendarDate):
                 calendarDatesdict[header_names[idx]].append(calendarDatesDate[idx])
 
-
         self.calendarDatesdict = calendarDatesdict
         return True
 
@@ -765,7 +767,6 @@ class gtfs:
             for idx in range(iagencyData):
                 agencyFahrtdict[header_names[idx]].append(agencyData[idx])
 
-
         self.agencyFahrtdict = agencyFahrtdict
         return True
 
@@ -822,7 +823,7 @@ class gtfs:
         try:
             dfWeek['service_id'] = dfWeek['service_id'].astype(int)
         except:
-            print('dfWeek service_id: can not convert into int')
+            logging.debug('dfWeek service_id: can not convert into int')
 
         cond_services_from_routes = '''
                     select dfWeek.service_id, dfWeek.monday, dfWeek.tuesday, dfWeek.wednesday, dfWeek.thursday, dfWeek.friday, dfWeek.saturday, dfWeek.sunday
@@ -949,8 +950,8 @@ class gtfs:
     def analyzeDateRangeInGTFSData(self):
         if self.dfWeek is not None:
             self.dfdateRangeInGTFSData = self.dfWeek.groupby(['start_date', 'end_date']).size().reset_index()
-            return str(self.dfdateRangeInGTFSData.iloc[0].start_date) + '-' + str(self.dfdateRangeInGTFSData.iloc[0].end_date)
-
+            return str(self.dfdateRangeInGTFSData.iloc[0].start_date) + '-' + str(
+                self.dfdateRangeInGTFSData.iloc[0].end_date)
 
     def datesWeekday_select_dates_for_date_range(self):
         # conditions for searching in dfs
@@ -1114,13 +1115,16 @@ class gtfs:
 
         # set value in column to day if 1 and and compare with day
         fahrplan_dates_all_dates['monday'] = ['Monday' if x == '1' else '-' for x in fahrplan_dates_all_dates['monday']]
-        fahrplan_dates_all_dates['tuesday'] = ['Tuesday' if x == '1' else '-' for x in fahrplan_dates_all_dates['tuesday']]
-        fahrplan_dates_all_dates['wednesday'] = ['Wednesday' if x == '1' else '-' for x in fahrplan_dates_all_dates['wednesday']]
-        fahrplan_dates_all_dates['thursday'] = ['Thursday' if x == '1' else '-' for x in fahrplan_dates_all_dates['thursday']]
+        fahrplan_dates_all_dates['tuesday'] = ['Tuesday' if x == '1' else '-' for x in
+                                               fahrplan_dates_all_dates['tuesday']]
+        fahrplan_dates_all_dates['wednesday'] = ['Wednesday' if x == '1' else '-' for x in
+                                                 fahrplan_dates_all_dates['wednesday']]
+        fahrplan_dates_all_dates['thursday'] = ['Thursday' if x == '1' else '-' for x in
+                                                fahrplan_dates_all_dates['thursday']]
         fahrplan_dates_all_dates['friday'] = ['Friday' if x == '1' else '-' for x in fahrplan_dates_all_dates['friday']]
-        fahrplan_dates_all_dates['saturday'] = ['Saturday' if x == '1' else '-' for x in fahrplan_dates_all_dates['saturday']]
+        fahrplan_dates_all_dates['saturday'] = ['Saturday' if x == '1' else '-' for x in
+                                                fahrplan_dates_all_dates['saturday']]
         fahrplan_dates_all_dates['sunday'] = ['Sunday' if x == '1' else '-' for x in fahrplan_dates_all_dates['sunday']]
-
 
         fahrplan_dates_all_dates = fahrplan_dates_all_dates.set_index('date')
 
@@ -1144,7 +1148,6 @@ class gtfs:
         varTestAgency = self.varTestAgency
         requested_directiondf = self.requested_directiondf
         requested_datesdf = self.requested_datesdf
-
 
         cond_select_dates_delete_exception_2 = '''
                     select  
@@ -1243,12 +1246,16 @@ class gtfs:
 
         # set value in column to day if 1 and and compare with day
         fahrplan_dates_all_dates['monday'] = ['Monday' if x == '1' else '-' for x in fahrplan_dates_all_dates['monday']]
-        fahrplan_dates_all_dates['tuesday'] = ['Tuesday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['tuesday']]
-        fahrplan_dates_all_dates['wednesday'] = ['Wednesday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['wednesday']]
-        fahrplan_dates_all_dates['thursday'] = ['Thursday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['thursday']]
-        fahrplan_dates_all_dates['friday'] = ['Friday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['friday']]
-        fahrplan_dates_all_dates['saturday'] = ['Saturday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['saturday']]
-        fahrplan_dates_all_dates['sunday'] = ['Sunday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['sunday']]
+        fahrplan_dates_all_dates['tuesday'] = ['Tuesday' if x == '1' else '-' for x in
+                                               fahrplan_dates_all_dates['tuesday']]
+        fahrplan_dates_all_dates['wednesday'] = ['Wednesday' if x == '1' else '-' for x in
+                                                 fahrplan_dates_all_dates['wednesday']]
+        fahrplan_dates_all_dates['thursday'] = ['Thursday' if x == '1' else '-' for x in
+                                                fahrplan_dates_all_dates['thursday']]
+        fahrplan_dates_all_dates['friday'] = ['Friday' if x == '1' else '-' for x in fahrplan_dates_all_dates['friday']]
+        fahrplan_dates_all_dates['saturday'] = ['Saturday' if x == '1' else '-' for x in
+                                                fahrplan_dates_all_dates['saturday']]
+        fahrplan_dates_all_dates['sunday'] = ['Sunday' if x == '1' else '-' for x in fahrplan_dates_all_dates['sunday']]
 
         fahrplan_dates_all_dates = fahrplan_dates_all_dates.set_index('date')
 
@@ -1315,7 +1322,6 @@ class gtfs:
         requested_directiondf = self.requested_directiondf
         requested_directiondf['direction_id'] = requested_directiondf['direction_id'].astype('string')
 
-
         dfRoutes = self.dfRoutes
         dfRoutes = pd.merge(left=dfRoutes, right=route_short_namedf, how='inner', on='route_short_name')
         dfRoutes = pd.merge(left=dfRoutes, right=varTestAgency, how='inner', on='agency_id')
@@ -1345,7 +1351,6 @@ class gtfs:
         zeit = time.time() - last_time
         last_time = time.time()
 
-
     def datesWeekday_select_for_every_date_trips_stops(self):
 
         fahrplan_calendar_weeks = self.fahrplan_calendar_weeks
@@ -1367,8 +1372,10 @@ class gtfs:
 
         # combine dates and trips to get a df with trips for every date
         self.fahrplan_calendar_weeks = sqldf(cond_select_for_every_date_trips_stops, locals())
-        self.fahrplan_calendar_weeks['arrival_time']  = self.fahrplan_calendar_weeks['arrival_time'].apply(lambda x: self.time_in_string(x))
-        self.fahrplan_calendar_weeks['start_time']  = self.fahrplan_calendar_weeks['start_time'].apply(lambda x: self.time_in_string(x))
+        self.fahrplan_calendar_weeks['arrival_time'] = self.fahrplan_calendar_weeks['arrival_time'].apply(
+            lambda x: self.time_in_string(x))
+        self.fahrplan_calendar_weeks['start_time'] = self.fahrplan_calendar_weeks['start_time'].apply(
+            lambda x: self.time_in_string(x))
 
         #########################
 
@@ -1456,13 +1463,12 @@ class gtfs:
         fahrplan_calendar_weeks['date'] = pd.to_datetime(fahrplan_calendar_weeks['date'], format='%Y-%m-%d')
         # fahrplan_calendar_weeks['trip_id'] = fahrplan_calendar_weeks['trip_id'].astype('int32')
 
-
         fahrplan_calendar_weeks['arrival_time'] = fahrplan_calendar_weeks['arrival_time'].astype('string')
         if self.timeformat == 1:
-            fahrplan_calendar_weeks['arrival_time'] = fahrplan_calendar_weeks['arrival_time'].apply(lambda x: self.time_delete_seconds(x))
+            fahrplan_calendar_weeks['arrival_time'] = fahrplan_calendar_weeks['arrival_time'].apply(
+                lambda x: self.time_delete_seconds(x))
 
         fahrplan_calendar_weeks['start_time'] = fahrplan_calendar_weeks['start_time'].astype('string')
-
 
         self.fahrplan_calendar_filter_days_pivot = fahrplan_calendar_weeks.pivot(
             index=['date', 'day', 'stop_sequence_sorted', 'stop_name', 'stop_id'], columns=['start_time', 'trip_id'],

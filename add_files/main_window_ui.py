@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1215, 954)
+        MainWindow.resize(1234, 1200)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -25,9 +25,9 @@ class Ui_MainWindow(object):
         MainWindow.setFont(font)
         MainWindow.setAutoFillBackground(False)
         MainWindow.setStyleSheet("border-style: solid;\n"
-"border-color:  #6C5B7B;\n"
-"background: #f8b195; \n"
-"color: white\n"
+"border-color:  #f2f7f5;\n"
+"background: #cfe2da; \n"
+"color: #00473e;\n"
 "")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setStyleSheet("color: white;\n"
@@ -59,7 +59,8 @@ class Ui_MainWindow(object):
         font.setPointSize(18)
         self.menu_widget.setFont(font)
         self.menu_widget.setStyleSheet("border: none;\n"
-"background-color: #C06C84;\n"
+"background-color: #00332c;\n"
+"color: #ee9462;\n"
 "\n"
 "")
         self.menu_widget.setObjectName("menu_widget")
@@ -79,7 +80,7 @@ class Ui_MainWindow(object):
         self.toolBox.setFont(font)
         self.toolBox.setMouseTracking(True)
         self.toolBox.setStyleSheet("#toolBox {\n"
-"    color:#C07C84;\n"
+"    color:#00473e;\n"
 "\n"
 "}\n"
 "\n"
@@ -91,7 +92,7 @@ class Ui_MainWindow(object):
 "}\n"
 "\n"
 "#toolBox::tab:selected {\n"
-"    background-color: #355C7D;\n"
+"    background-color: #256531;\n"
 "    font-weight: bold;\n"
 "}\n"
 "\n"
@@ -102,17 +103,17 @@ class Ui_MainWindow(object):
 "}\n"
 "\n"
 "#toolBox QPushButton:hover {\n"
-"    background-color: 6C587B;\n"
+"    background-color: #587b6d;\n"
 "   border-radius: 3px;\n"
 "}\n"
 "\n"
 "#toolBox QPushButton:checked {\n"
-"    background-color: #355C7D;\n"
+"    background-color: #585d1c;\n"
 "    font-weight: bold;\n"
 "}")
         self.toolBox.setObjectName("toolBox")
         self.page = QtWidgets.QWidget()
-        self.page.setGeometry(QtCore.QRect(0, 0, 221, 571))
+        self.page.setGeometry(QtCore.QRect(0, 0, 221, 817))
         self.page.setObjectName("page")
         self.gridLayout_6 = QtWidgets.QGridLayout(self.page)
         self.gridLayout_6.setObjectName("gridLayout_6")
@@ -124,7 +125,7 @@ class Ui_MainWindow(object):
         icon.addPixmap(QtGui.QPixmap(":/newPrefix/icons/Icon Pack Vol. 1/SVG/HOME.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.toolBox.addItem(self.page, icon, "")
         self.page_2 = QtWidgets.QWidget()
-        self.page_2.setGeometry(QtCore.QRect(0, 0, 221, 571))
+        self.page_2.setGeometry(QtCore.QRect(0, 0, 221, 817))
         self.page_2.setStyleSheet("")
         self.page_2.setObjectName("page_2")
         self.gridLayout_5 = QtWidgets.QGridLayout(self.page_2)
@@ -151,7 +152,7 @@ class Ui_MainWindow(object):
         icon1.addPixmap(QtGui.QPixmap(":/newPrefix/icons/Icon Pack Vol. 1/SVG/BROWSER.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.toolBox.addItem(self.page_2, icon1, "")
         self.page_3 = QtWidgets.QWidget()
-        self.page_3.setGeometry(QtCore.QRect(0, 0, 221, 571))
+        self.page_3.setGeometry(QtCore.QRect(0, 0, 221, 817))
         self.page_3.setObjectName("page_3")
         self.gridLayout_2 = QtWidgets.QGridLayout(self.page_3)
         self.gridLayout_2.setObjectName("gridLayout_2")
@@ -174,7 +175,7 @@ class Ui_MainWindow(object):
         self.gridLayout_7.addWidget(self.textBrowser, 3, 0, 1, 1, QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter)
         self.btnExit = QtWidgets.QPushButton(self.frame)
         self.btnExit.setMinimumSize(QtCore.QSize(100, 40))
-        self.btnExit.setStyleSheet("background-color: #F8B195;")
+        self.btnExit.setStyleSheet("background-color: #3f7444;")
         self.btnExit.setObjectName("btnExit")
         self.gridLayout_7.addWidget(self.btnExit, 2, 0, 1, 1)
         self.gridLayout.addWidget(self.frame, 1, 0, 1, 1)
@@ -185,27 +186,27 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.main_widget.sizePolicy().hasHeightForWidth())
         self.main_widget.setSizePolicy(sizePolicy)
         self.main_widget.setMinimumSize(QtCore.QSize(1000, 0))
-        self.main_widget.setStyleSheet("background: #f8b195; \n"
-"color: black;")
+        self.main_widget.setStyleSheet("background: #f2f7f5; \n"
+"color: #475d5b;")
         self.main_widget.setObjectName("main_widget")
         self.gridLayout_4 = QtWidgets.QGridLayout(self.main_widget)
         self.gridLayout_4.setSizeConstraint(QtWidgets.QLayout.SetMaximumSize)
         self.gridLayout_4.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_4.setObjectName("gridLayout_4")
         self.widget = QtWidgets.QWidget(self.main_widget)
-        self.widget.setStyleSheet("  background: #f8b195; \n"
-"")
+        self.widget.setStyleSheet("")
         self.widget.setObjectName("widget")
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.widget)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.pushButton = QtWidgets.QPushButton(self.widget)
         self.pushButton.setLayoutDirection(QtCore.Qt.LeftToRight)
-        self.pushButton.setStyleSheet("background-color: #CD6C84;\n"
+        self.pushButton.setStyleSheet("background-color: #256531;\n"
 "border-style: solid;\n"
 "border-width: 2px;\n"
 "border-radius: 14px;\n"
-"border-color: #CD6C84;\n"
-"padding: 5px;")
+"border-color: #256531;\n"
+"padding: 5px;\n"
+"color: #f4edea;")
         self.pushButton.setText("")
         icon3 = QtGui.QIcon()
         icon3.addPixmap(QtGui.QPixmap(":/newPrefix/icons/Icon Pack Vol. 1/SVG/ARROW.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -259,7 +260,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
-        self.toolBox.setCurrentIndex(2)
+        self.toolBox.setCurrentIndex(1)
         self.tabWidget.setCurrentIndex(-1)
         self.pushButton.toggled['bool'].connect(self.menu_widget.setHidden) # type: ignore
         self.btnExit.clicked.connect(MainWindow.close) # type: ignore

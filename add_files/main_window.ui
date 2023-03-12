@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1215</width>
-    <height>954</height>
+    <width>1234</width>
+    <height>1200</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -29,9 +29,9 @@
   </property>
   <property name="styleSheet">
    <string notr="true">border-style: solid;
-border-color:  #6C5B7B;
-background: #f8b195; 
-color: white
+border-color:  #f2f7f5;
+background: #cfe2da; 
+color: #00473e;
 </string>
   </property>
   <widget class="QWidget" name="centralwidget">
@@ -96,7 +96,8 @@ color: white
        </property>
        <property name="styleSheet">
         <string notr="true">border: none;
-background-color: #C06C84;
+background-color: #00332c;
+color: #ee9462;
 
 </string>
        </property>
@@ -135,7 +136,7 @@ background-color: #C06C84;
           </property>
           <property name="styleSheet">
            <string notr="true">#toolBox {
-	color:#C07C84;
+	color:#00473e;
 
 }
 
@@ -147,7 +148,7 @@ background-color: #C06C84;
 }
 
 #toolBox::tab:selected {
-	background-color: #355C7D;
+	background-color: #256531;
 	font-weight: bold;
 }
 
@@ -158,17 +159,17 @@ background-color: #C06C84;
 }
 
 #toolBox QPushButton:hover {
-	background-color: 6C587B;
+	background-color: #587b6d;
    border-radius: 3px;
 }
 
 #toolBox QPushButton:checked {
-	background-color: #355C7D;
+	background-color: #585d1c;
 	font-weight: bold;
 }</string>
           </property>
           <property name="currentIndex">
-           <number>2</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="page">
            <property name="geometry">
@@ -176,7 +177,7 @@ background-color: #C06C84;
              <x>0</x>
              <y>0</y>
              <width>221</width>
-             <height>571</height>
+             <height>817</height>
             </rect>
            </property>
            <attribute name="icon">
@@ -221,7 +222,7 @@ background-color: #C06C84;
              <x>0</x>
              <y>0</y>
              <width>221</width>
-             <height>571</height>
+             <height>817</height>
             </rect>
            </property>
            <property name="styleSheet">
@@ -298,7 +299,7 @@ background-color: #C06C84;
              <x>0</x>
              <y>0</y>
              <width>221</width>
-             <height>571</height>
+             <height>817</height>
             </rect>
            </property>
            <attribute name="icon">
@@ -367,7 +368,7 @@ p, li { white-space: pre-wrap; }
               </size>
              </property>
              <property name="styleSheet">
-              <string notr="true">background-color: #F8B195;</string>
+              <string notr="true">background-color: #3f7444;</string>
              </property>
              <property name="text">
               <string>Exit</string>
@@ -393,8 +394,8 @@ p, li { white-space: pre-wrap; }
         </size>
        </property>
        <property name="styleSheet">
-        <string notr="true">background: #f8b195; 
-color: black;</string>
+        <string notr="true">background: #f2f7f5; 
+color: #475d5b;</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_4">
         <property name="sizeConstraint">
@@ -415,8 +416,7 @@ color: black;</string>
         <item row="0" column="0">
          <widget class="QWidget" name="widget" native="true">
           <property name="styleSheet">
-           <string notr="true">  background: #f8b195; 
-</string>
+           <string notr="true"/>
           </property>
           <layout class="QHBoxLayout" name="horizontalLayout">
            <item>
@@ -425,12 +425,13 @@ color: black;</string>
               <enum>Qt::LeftToRight</enum>
              </property>
              <property name="styleSheet">
-              <string notr="true">background-color: #CD6C84;
+              <string notr="true">background-color: #256531;
 border-style: solid;
 border-width: 2px;
 border-radius: 14px;
-border-color: #CD6C84;
-padding: 5px;</string>
+border-color: #256531;
+padding: 5px;
+color: #f4edea;</string>
              </property>
              <property name="text">
               <string/>

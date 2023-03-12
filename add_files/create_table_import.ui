@@ -28,6 +28,52 @@
   <property name="layoutDirection">
    <enum>Qt::LeftToRight</enum>
   </property>
+  <property name="styleSheet">
+   <string notr="true">#Form {
+border-style: solid;
+border-color:  #f2f7f5;
+background: #cfe2da; 
+
+}
+
+#Form QPushButton {
+	background-color: #587b6d;
+   border-radius: 3px;
+	padding: 5px 5px 5px 5px;
+	text-align: center;
+    color:#f2b198;
+}
+
+#Form QLineEdit {
+	background-color: #587b6d;
+	padding: 5px 5px 5px 5px;
+	text-align: center;
+    color:#41312b;
+}
+
+#Form QLabel {
+   border-radius: 3px;
+	padding: 5px 5px 5px 5px;
+	text-align: center;
+    color:#41312b;
+}
+
+#Form QComboBox {
+	background-color: #587b6d;
+   border-radius: 3px;
+	padding: 5px 5px 5px 100px;
+	text-align: center;
+    color:#f2b198;
+    
+}
+
+#Form QPushButton:hover {
+	background-color: #408d49;
+   border-radius: 3px;
+       color:#fde1d6;
+}
+</string>
+  </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="1" column="0">
     <widget class="QLabel" name="label_11">
@@ -126,12 +172,7 @@ padding: 1px;</string>
       </font>
      </property>
      <property name="styleSheet">
-      <string notr="true">background-color: orange;
-border-style: outset;
-border-width: 0px;
-border-radius: 15px;
-border-color: black;
-padding: 4px;</string>
+      <string notr="true"/>
      </property>
      <property name="text">
       <string>...</string>
@@ -149,12 +190,7 @@ padding: 4px;</string>
       </font>
      </property>
      <property name="styleSheet">
-      <string notr="true">background-color: orange;
-border-style: outset;
-border-width: 0px;
-border-radius: 15px;
-border-color: black;
-padding: 4px;</string>
+      <string notr="true"/>
      </property>
      <property name="text">
       <string>...</string>
@@ -172,12 +208,7 @@ padding: 4px;</string>
       </font>
      </property>
      <property name="styleSheet">
-      <string notr="true">background-color: orange;
-border-style: outset;
-border-width: 0px;
-border-radius: 15px;
-border-color: black;
-padding: 4px;</string>
+      <string notr="true"/>
      </property>
      <property name="text">
       <string>Restart Import</string>
@@ -195,12 +226,7 @@ padding: 4px;</string>
       </font>
      </property>
      <property name="styleSheet">
-      <string notr="true">background-color: orange;
-border-style: outset;
-border-width: 0px;
-border-radius: 15px;
-border-color: black;
-padding: 4px;</string>
+      <string notr="true"/>
      </property>
      <property name="text">
       <string>Start Import</string>
@@ -218,12 +244,7 @@ padding: 4px;</string>
       </font>
      </property>
      <property name="styleSheet">
-      <string notr="true">background-color:  #ff9740;
-border-style: outset;
-border-width:0px;
-border-radius: 15px;
-border-color: black;
-padding: 4px;</string>
+      <string notr="true"/>
      </property>
      <item>
       <property name="text">

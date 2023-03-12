@@ -22,6 +22,50 @@ class Ui_Form(object):
         Form.setSizePolicy(sizePolicy)
         Form.setMaximumSize(QtCore.QSize(700, 300))
         Form.setLayoutDirection(QtCore.Qt.LeftToRight)
+        Form.setStyleSheet("#Form {\n"
+"border-style: solid;\n"
+"border-color:  #f2f7f5;\n"
+"background: #cfe2da; \n"
+"\n"
+"}\n"
+"\n"
+"#Form QPushButton {\n"
+"    background-color: #587b6d;\n"
+"   border-radius: 3px;\n"
+"    padding: 5px 5px 5px 5px;\n"
+"    text-align: center;\n"
+"    color:#f2b198;\n"
+"}\n"
+"\n"
+"#Form QLineEdit {\n"
+"    background-color: #587b6d;\n"
+"    padding: 5px 5px 5px 5px;\n"
+"    text-align: center;\n"
+"    color:#41312b;\n"
+"}\n"
+"\n"
+"#Form QLabel {\n"
+"   border-radius: 3px;\n"
+"    padding: 5px 5px 5px 5px;\n"
+"    text-align: center;\n"
+"    color:#41312b;\n"
+"}\n"
+"\n"
+"#Form QComboBox {\n"
+"    background-color: #587b6d;\n"
+"   border-radius: 3px;\n"
+"    padding: 5px 5px 5px 100px;\n"
+"    text-align: center;\n"
+"    color:#f2b198;\n"
+"    \n"
+"}\n"
+"\n"
+"#Form QPushButton:hover {\n"
+"    background-color: #408d49;\n"
+"   border-radius: 3px;\n"
+"       color:#fde1d6;\n"
+"}\n"
+"")
         self.gridLayout = QtWidgets.QGridLayout(Form)
         self.gridLayout.setObjectName("gridLayout")
         self.label_11 = QtWidgets.QLabel(Form)
@@ -65,12 +109,7 @@ class Ui_Form(object):
         font = QtGui.QFont()
         font.setPointSize(12)
         self.btnGetFile.setFont(font)
-        self.btnGetFile.setStyleSheet("background-color: orange;\n"
-"border-style: outset;\n"
-"border-width: 0px;\n"
-"border-radius: 15px;\n"
-"border-color: black;\n"
-"padding: 4px;")
+        self.btnGetFile.setStyleSheet("")
         self.btnGetFile.setObjectName("btnGetFile")
         self.gridLayout.addWidget(self.btnGetFile, 2, 1, 1, 1)
         self.btnGetOutputDir = QtWidgets.QPushButton(Form)
@@ -78,12 +117,7 @@ class Ui_Form(object):
         font = QtGui.QFont()
         font.setPointSize(12)
         self.btnGetOutputDir.setFont(font)
-        self.btnGetOutputDir.setStyleSheet("background-color: orange;\n"
-"border-style: outset;\n"
-"border-width: 0px;\n"
-"border-radius: 15px;\n"
-"border-color: black;\n"
-"padding: 4px;")
+        self.btnGetOutputDir.setStyleSheet("")
         self.btnGetOutputDir.setObjectName("btnGetOutputDir")
         self.gridLayout.addWidget(self.btnGetOutputDir, 5, 1, 1, 1)
         self.btnRestart = QtWidgets.QPushButton(Form)
@@ -91,12 +125,7 @@ class Ui_Form(object):
         font = QtGui.QFont()
         font.setPointSize(12)
         self.btnRestart.setFont(font)
-        self.btnRestart.setStyleSheet("background-color: orange;\n"
-"border-style: outset;\n"
-"border-width: 0px;\n"
-"border-radius: 15px;\n"
-"border-color: black;\n"
-"padding: 4px;")
+        self.btnRestart.setStyleSheet("")
         self.btnRestart.setObjectName("btnRestart")
         self.gridLayout.addWidget(self.btnRestart, 7, 2, 1, 1)
         self.btnImport = QtWidgets.QPushButton(Form)
@@ -104,12 +133,7 @@ class Ui_Form(object):
         font = QtGui.QFont()
         font.setPointSize(12)
         self.btnImport.setFont(font)
-        self.btnImport.setStyleSheet("background-color: orange;\n"
-"border-style: outset;\n"
-"border-width: 0px;\n"
-"border-radius: 15px;\n"
-"border-color: black;\n"
-"padding: 4px;")
+        self.btnImport.setStyleSheet("")
         self.btnImport.setObjectName("btnImport")
         self.gridLayout.addWidget(self.btnImport, 6, 2, 1, 1)
         self.comboBox_display = QtWidgets.QComboBox(Form)
@@ -117,12 +141,7 @@ class Ui_Form(object):
         font = QtGui.QFont()
         font.setPointSize(12)
         self.comboBox_display.setFont(font)
-        self.comboBox_display.setStyleSheet("background-color:  #ff9740;\n"
-"border-style: outset;\n"
-"border-width:0px;\n"
-"border-radius: 15px;\n"
-"border-color: black;\n"
-"padding: 4px;")
+        self.comboBox_display.setStyleSheet("")
         self.comboBox_display.setObjectName("comboBox_display")
         self.comboBox_display.addItem("")
         self.comboBox_display.addItem("")
