@@ -169,7 +169,7 @@ color: #ee9462;
 }</string>
           </property>
           <property name="currentIndex">
-           <number>1</number>
+           <number>2</number>
           </property>
           <widget class="QWidget" name="page">
            <property name="geometry">
@@ -177,18 +177,18 @@ color: #ee9462;
              <x>0</x>
              <y>0</y>
              <width>221</width>
-             <height>817</height>
+             <height>820</height>
             </rect>
            </property>
            <attribute name="icon">
-            <iconset resource="res/resource.qrc">
-             <normaloff>:/newPrefix/icons/Icon Pack Vol. 1/SVG/HOME.svg</normaloff>:/newPrefix/icons/Icon Pack Vol. 1/SVG/HOME.svg</iconset>
+            <iconset resource="res/resource_boot.qrc">
+             <normaloff>:/newPrefix/icons/bootstrap-icons-1.10.3/house-door.svg</normaloff>:/newPrefix/icons/bootstrap-icons-1.10.3/house-door.svg</iconset>
            </attribute>
            <attribute name="label">
             <string>General</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_6">
-            <item row="0" column="0">
+            <item row="1" column="0">
              <spacer name="verticalSpacer_4">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
@@ -201,7 +201,7 @@ color: #ee9462;
               </property>
              </spacer>
             </item>
-            <item row="0" column="1">
+            <item row="1" column="1">
              <spacer name="verticalSpacer">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
@@ -214,6 +214,13 @@ color: #ee9462;
               </property>
              </spacer>
             </item>
+            <item row="0" column="0" colspan="2">
+             <widget class="QPushButton" name="pushButton_5">
+              <property name="text">
+               <string>General Information</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </widget>
           <widget class="QWidget" name="page_2">
@@ -222,15 +229,15 @@ color: #ee9462;
              <x>0</x>
              <y>0</y>
              <width>221</width>
-             <height>817</height>
+             <height>820</height>
             </rect>
            </property>
            <property name="styleSheet">
             <string notr="true"/>
            </property>
            <attribute name="icon">
-            <iconset resource="res/resource.qrc">
-             <normaloff>:/newPrefix/icons/Icon Pack Vol. 1/SVG/BROWSER.svg</normaloff>:/newPrefix/icons/Icon Pack Vol. 1/SVG/BROWSER.svg</iconset>
+            <iconset resource="res/resource_boot.qrc">
+             <normaloff>:/newPrefix/icons/bootstrap-icons-1.10.3/table.svg</normaloff>:/newPrefix/icons/bootstrap-icons-1.10.3/table.svg</iconset>
            </attribute>
            <attribute name="label">
             <string>Create Table</string>
@@ -299,18 +306,18 @@ color: #ee9462;
              <x>0</x>
              <y>0</y>
              <width>221</width>
-             <height>817</height>
+             <height>820</height>
             </rect>
            </property>
            <attribute name="icon">
-            <iconset resource="res/resource.qrc">
-             <normaloff>:/newPrefix/icons/Icon Pack Vol. 1/SVG/DOWNLOAD.svg</normaloff>:/newPrefix/icons/Icon Pack Vol. 1/SVG/DOWNLOAD.svg</iconset>
+            <iconset resource="res/resource_boot.qrc">
+             <normaloff>:/newPrefix/icons/bootstrap-icons-1.10.3/download.svg</normaloff>:/newPrefix/icons/bootstrap-icons-1.10.3/download.svg</iconset>
            </attribute>
            <attribute name="label">
             <string>Download GTFS</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_2">
-            <item row="0" column="0">
+            <item row="1" column="0">
              <spacer name="verticalSpacer_3">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
@@ -322,6 +329,13 @@ color: #ee9462;
                </size>
               </property>
              </spacer>
+            </item>
+            <item row="0" column="0">
+             <widget class="QPushButton" name="pushButton_6">
+              <property name="text">
+               <string>Download GTFS Data</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>
@@ -394,7 +408,7 @@ p, li { white-space: pre-wrap; }
         </size>
        </property>
        <property name="styleSheet">
-        <string notr="true">background: #f2f7f5; 
+        <string notr="true">background: #cfe2da;
 color: #475d5b;</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_4">
@@ -437,11 +451,15 @@ color: #f4edea;</string>
               <string/>
              </property>
              <property name="icon">
-              <iconset resource="res/resource.qrc">
-               <normaloff>:/newPrefix/icons/Icon Pack Vol. 1/SVG/ARROW.svg</normaloff>:/newPrefix/icons/Icon Pack Vol. 1/SVG/ARROW.svg</iconset>
+              <iconset resource="res/resource_boot.qrc">
+               <normaloff>:/newPrefix/icons/bootstrap-icons-1.10.3/arrow-left-square.svg</normaloff>
+               <normalon>:/newPrefix/icons/bootstrap-icons-1.10.3/arrow-right-square.svg</normalon>:/newPrefix/icons/bootstrap-icons-1.10.3/arrow-left-square.svg</iconset>
              </property>
              <property name="checkable">
               <bool>true</bool>
+             </property>
+             <property name="checked">
+              <bool>false</bool>
              </property>
             </widget>
            </item>
@@ -510,10 +528,16 @@ QTabBar::tab:selected {
 
 </string>
           </property>
+          <property name="tabShape">
+           <enum>QTabWidget::Triangular</enum>
+          </property>
           <property name="currentIndex">
            <number>-1</number>
           </property>
           <property name="tabsClosable">
+           <bool>false</bool>
+          </property>
+          <property name="tabBarAutoHide">
            <bool>true</bool>
           </property>
          </widget>
@@ -527,6 +551,7 @@ QTabBar::tab:selected {
  </widget>
  <resources>
   <include location="res/resource.qrc"/>
+  <include location="res/resource_boot.qrc"/>
  </resources>
  <connections>
   <connection>
@@ -536,8 +561,8 @@ QTabBar::tab:selected {
    <slot>setHidden(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>377</x>
-     <y>42</y>
+     <x>276</x>
+     <y>38</y>
     </hint>
     <hint type="destinationlabel">
      <x>96</x>
@@ -552,8 +577,8 @@ QTabBar::tab:selected {
    <slot>close()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>172</x>
-     <y>800</y>
+     <x>185</x>
+     <y>983</y>
     </hint>
     <hint type="destinationlabel">
      <x>639</x>

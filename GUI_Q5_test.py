@@ -372,9 +372,14 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.createTableSelect_btn = self.ui.pushButton_3
         self.createTableCreate_btn = self.ui.pushButton_4
 
+        self.generalNavPush_btn = self.ui.pushButton_5
+        self.downloadGTFSNavPush_btn = self.ui.pushButton_6
+
         self.menu_btns_dict = {self.createTableImport_btn: CreateTableImport,
                                self.createTableSelect_btn: CreateTableSelect,
-                               self.createTableCreate_btn: CreateTableCreate}
+                               self.createTableCreate_btn: CreateTableCreate,
+                               self.generalNavPush_btn: CreateTableSelect,
+                               self.downloadGTFSNavPush_btn: DownloadGTFS}
 
         self.GeneralMainTab = CreateTableImport()
         self.CreateMainTab = CreateTableSelect()
@@ -393,6 +398,12 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.CreateImport_Tab.ui.btnGetFile.clicked.connect(self.getFilePath)
         self.DownloadGTFS_Tab.ui.btnGetDir.clicked.connect(self.getDirPath)
         self.CreateImport_Tab.ui.btnGetOutputDir.clicked.connect(self.getOutputDirPath)
+        self.ui.pushButton_2.clicked.connect(self.show_Create_Import_Window)
+        self.ui.pushButton_3.clicked.connect(self.show_Create_Select_Window)
+        self.ui.pushButton_4.clicked.connect(self.show_Create_Create_Window)
+
+        self.ui.pushButton_5.clicked.connect(self.show_home_window)
+        self.ui.pushButton_6.clicked.connect(self.show_GTFSDownload_window)
         # self.listAgencies.clicked.connect(self.notify_select_agency)
         # self.listRoutes.clicked.connect(self.notify_select_route)
         # self.listDatesWeekday.clicked.connect(self.notify_select_weekday_option)
@@ -451,10 +462,19 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.refresh_time = get_current_time()
         self.show_home_window()
 
+
+    def show_GTFSDownload_window(self):
+        self.set_btn_checked(self.downloadGTFSNavPush_btn)
+        self.ui.tabWidget.setVisible(False)
+
     def show_home_window(self):
+        self.set_btn_checked(self.generalNavPush_btn)
+        self.ui.tabWidget.setVisible(False)
+
+    def show_Create_Import_Window(self):
         result = self.open_tab_flag(self.createTableImport_btn)
         self.set_btn_checked(self.createTableImport_btn)
-        logging.debug(f'result: {result}')
+        logging.debug(f'result[0]: {result[0], result[1]}')
         if result[0]:
             self.ui.tabWidget.setCurrentIndex(result[1])
         else:
@@ -467,7 +487,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
     def show_Create_Select_Window(self):
         result = self.open_tab_flag(self.createTableSelect_btn)
         self.set_btn_checked(self.createTableSelect_btn)
-        logging.debug(f'result: {result}')
+        logging.debug(f'result[0]: {result[0], result[1]}')
         if result[0]:
             self.ui.tabWidget.setCurrentIndex(result[1])
         else:
@@ -477,9 +497,22 @@ class Gui(QMainWindow, Publisher, Subscriber):
             self.ui.tabWidget.palette().setColor(QPalette.Window, QColor.fromRgb(97, 89, 58))
             self.ui.tabWidget.setVisible(True)
 
+    def show_Create_Create_Window(self):
+        result = self.open_tab_flag(self.createTableCreate_btn)
+        self.set_btn_checked(self.createTableCreate_btn)
+        logging.debug(f'result[0]: {result[0], result[1]}')
+        if result[0]:
+            self.ui.tabWidget.setCurrentIndex(result[1])
+        else:
+            tab_title = self.createTableCreate_btn.text()
+            curIndex = self.ui.tabWidget.addTab(self.CreateCreate_Tab, tab_title)
+            self.ui.tabWidget.setCurrentIndex(curIndex)
+            self.ui.tabWidget.palette().setColor(QPalette.Window, QColor.fromRgb(97, 89, 58))
+            self.ui.tabWidget.setVisible(True)
+
     def set_btn_checked(self, btn):
         for button in self.menu_btns_dict.keys():
-            logging.debug(f'result: {self.menu_btns_dict}')
+            logging.debug(f'set_btn_checked: {btn}')
             if button != btn:
                 button.setChecked(False)
             else:
@@ -487,7 +520,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
 
     def open_tab_flag(self, btn_txt):
         open_tab_count = self.ui.tabWidget.count()
-
+        logging.debug(f'open_tab_count: {open_tab_count}')
         for i in range(open_tab_count):
             tab_title = self.ui.tabWidget.tabText(i)
             if tab_title == btn_txt:

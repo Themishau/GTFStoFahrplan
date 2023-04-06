@@ -38,21 +38,22 @@ background: #cfe2da;
 
 #Form QPushButton {
 	background-color: #587b6d;
-   border-radius: 3px;
+   border-radius: 10px;
 	padding: 5px 5px 5px 5px;
 	text-align: center;
     color:#f2b198;
 }
 
 #Form QLineEdit {
-	background-color: #587b6d;
+	background-color: #F0FCF7;
+   border-radius: 10px;
 	padding: 5px 5px 5px 5px;
 	text-align: center;
     color:#41312b;
 }
 
 #Form QLabel {
-   border-radius: 3px;
+   border-radius: 10px;
 	padding: 5px 5px 5px 5px;
 	text-align: center;
     color:#41312b;
@@ -60,7 +61,7 @@ background: #cfe2da;
 
 #Form QComboBox {
 	background-color: #587b6d;
-   border-radius: 3px;
+   border-radius: 10px;
 	padding: 5px 5px 5px 100px;
 	text-align: center;
     color:#f2b198;
@@ -69,7 +70,7 @@ background: #cfe2da;
 
 #Form QPushButton:hover {
 	background-color: #408d49;
-   border-radius: 3px;
+   border-radius: 10px;
        color:#fde1d6;
 }
 </string>
@@ -77,6 +78,11 @@ background: #cfe2da;
   <layout class="QGridLayout" name="gridLayout">
    <item row="1" column="0">
     <widget class="QLabel" name="label_11">
+     <property name="font">
+      <font>
+       <family>MS Reference Sans Serif</family>
+      </font>
+     </property>
      <property name="styleSheet">
       <string notr="true"/>
      </property>
@@ -87,6 +93,11 @@ background: #cfe2da;
    </item>
    <item row="4" column="0">
     <widget class="QLabel" name="label_10">
+     <property name="font">
+      <font>
+       <family>MS Reference Sans Serif</family>
+      </font>
+     </property>
      <property name="styleSheet">
       <string notr="true"/>
      </property>
@@ -116,14 +127,12 @@ background: #cfe2da;
       </font>
      </property>
      <property name="styleSheet">
-      <string notr="true">background-color: #fdfefe;
-border-style: outset;
-border-width: 0.5px;
-border-radius: 15px;
-border-color: black;
-padding: 1px;</string>
+      <string notr="true"/>
      </property>
      <property name="text">
+      <string/>
+     </property>
+     <property name="placeholderText">
       <string>C:/Tmp/GTFS.zip</string>
      </property>
     </widget>
@@ -136,14 +145,12 @@ padding: 1px;</string>
       </font>
      </property>
      <property name="styleSheet">
-      <string notr="true">background-color:  #fdfefe;
-border-style: outset;
-border-width: 0.5px;
-border-radius: 15px;
-border-color: black;
-padding: 1px;</string>
+      <string notr="true"/>
      </property>
      <property name="text">
+      <string/>
+     </property>
+     <property name="placeholderText">
       <string>C:/Tmp/</string>
      </property>
     </widget>
@@ -175,25 +182,11 @@ padding: 1px;</string>
       <string notr="true"/>
      </property>
      <property name="text">
-      <string>...</string>
+      <string/>
      </property>
-    </widget>
-   </item>
-   <item row="5" column="1">
-    <widget class="QPushButton" name="btnGetOutputDir">
-     <property name="enabled">
-      <bool>true</bool>
-     </property>
-     <property name="font">
-      <font>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true"/>
-     </property>
-     <property name="text">
-      <string>...</string>
+     <property name="icon">
+      <iconset resource="res/resource_boot.qrc">
+       <normaloff>:/newPrefix/icons/bootstrap-icons-1.10.3/file-earmark-arrow-up.svg</normaloff>:/newPrefix/icons/bootstrap-icons-1.10.3/file-earmark-arrow-up.svg</iconset>
      </property>
     </widget>
    </item>
@@ -258,8 +251,32 @@ padding: 1px;</string>
      </item>
     </widget>
    </item>
+   <item row="5" column="1">
+    <widget class="QPushButton" name="btnGetOutputDir">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="res/resource_boot.qrc">
+       <normaloff>:/newPrefix/icons/bootstrap-icons-1.10.3/file-earmark-arrow-up.svg</normaloff>:/newPrefix/icons/bootstrap-icons-1.10.3/file-earmark-arrow-up.svg</iconset>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="res/resource_boot.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -31,21 +31,22 @@ class Ui_Form(object):
 "\n"
 "#Form QPushButton {\n"
 "    background-color: #587b6d;\n"
-"   border-radius: 3px;\n"
+"   border-radius: 10px;\n"
 "    padding: 5px 5px 5px 5px;\n"
 "    text-align: center;\n"
 "    color:#f2b198;\n"
 "}\n"
 "\n"
 "#Form QLineEdit {\n"
-"    background-color: #587b6d;\n"
+"    background-color: #F0FCF7;\n"
+"   border-radius: 10px;\n"
 "    padding: 5px 5px 5px 5px;\n"
 "    text-align: center;\n"
 "    color:#41312b;\n"
 "}\n"
 "\n"
 "#Form QLabel {\n"
-"   border-radius: 3px;\n"
+"   border-radius: 10px;\n"
 "    padding: 5px 5px 5px 5px;\n"
 "    text-align: center;\n"
 "    color:#41312b;\n"
@@ -53,7 +54,7 @@ class Ui_Form(object):
 "\n"
 "#Form QComboBox {\n"
 "    background-color: #587b6d;\n"
-"   border-radius: 3px;\n"
+"   border-radius: 10px;\n"
 "    padding: 5px 5px 5px 100px;\n"
 "    text-align: center;\n"
 "    color:#f2b198;\n"
@@ -62,17 +63,23 @@ class Ui_Form(object):
 "\n"
 "#Form QPushButton:hover {\n"
 "    background-color: #408d49;\n"
-"   border-radius: 3px;\n"
+"   border-radius: 10px;\n"
 "       color:#fde1d6;\n"
 "}\n"
 "")
         self.gridLayout = QtWidgets.QGridLayout(Form)
         self.gridLayout.setObjectName("gridLayout")
         self.label_11 = QtWidgets.QLabel(Form)
+        font = QtGui.QFont()
+        font.setFamily("MS Reference Sans Serif")
+        self.label_11.setFont(font)
         self.label_11.setStyleSheet("")
         self.label_11.setObjectName("label_11")
         self.gridLayout.addWidget(self.label_11, 1, 0, 1, 1)
         self.label_10 = QtWidgets.QLabel(Form)
+        font = QtGui.QFont()
+        font.setFamily("MS Reference Sans Serif")
+        self.label_10.setFont(font)
         self.label_10.setStyleSheet("")
         self.label_10.setObjectName("label_10")
         self.gridLayout.addWidget(self.label_10, 4, 0, 1, 1)
@@ -82,24 +89,16 @@ class Ui_Form(object):
         font = QtGui.QFont()
         font.setPointSize(12)
         self.lineInputPath.setFont(font)
-        self.lineInputPath.setStyleSheet("background-color: #fdfefe;\n"
-"border-style: outset;\n"
-"border-width: 0.5px;\n"
-"border-radius: 15px;\n"
-"border-color: black;\n"
-"padding: 1px;")
+        self.lineInputPath.setStyleSheet("")
+        self.lineInputPath.setText("")
         self.lineInputPath.setObjectName("lineInputPath")
         self.gridLayout.addWidget(self.lineInputPath, 2, 0, 1, 1)
         self.lineOutputPath = QtWidgets.QLineEdit(Form)
         font = QtGui.QFont()
         font.setPointSize(12)
         self.lineOutputPath.setFont(font)
-        self.lineOutputPath.setStyleSheet("background-color:  #fdfefe;\n"
-"border-style: outset;\n"
-"border-width: 0.5px;\n"
-"border-radius: 15px;\n"
-"border-color: black;\n"
-"padding: 1px;")
+        self.lineOutputPath.setStyleSheet("")
+        self.lineOutputPath.setText("")
         self.lineOutputPath.setObjectName("lineOutputPath")
         self.gridLayout.addWidget(self.lineOutputPath, 5, 0, 1, 1)
         spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
@@ -110,16 +109,12 @@ class Ui_Form(object):
         font.setPointSize(12)
         self.btnGetFile.setFont(font)
         self.btnGetFile.setStyleSheet("")
+        self.btnGetFile.setText("")
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/newPrefix/icons/bootstrap-icons-1.10.3/file-earmark-arrow-up.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.btnGetFile.setIcon(icon)
         self.btnGetFile.setObjectName("btnGetFile")
         self.gridLayout.addWidget(self.btnGetFile, 2, 1, 1, 1)
-        self.btnGetOutputDir = QtWidgets.QPushButton(Form)
-        self.btnGetOutputDir.setEnabled(True)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.btnGetOutputDir.setFont(font)
-        self.btnGetOutputDir.setStyleSheet("")
-        self.btnGetOutputDir.setObjectName("btnGetOutputDir")
-        self.gridLayout.addWidget(self.btnGetOutputDir, 5, 1, 1, 1)
         self.btnRestart = QtWidgets.QPushButton(Form)
         self.btnRestart.setEnabled(False)
         font = QtGui.QFont()
@@ -146,6 +141,16 @@ class Ui_Form(object):
         self.comboBox_display.addItem("")
         self.comboBox_display.addItem("")
         self.gridLayout.addWidget(self.comboBox_display, 7, 0, 1, 1)
+        self.btnGetOutputDir = QtWidgets.QPushButton(Form)
+        self.btnGetOutputDir.setEnabled(True)
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.btnGetOutputDir.setFont(font)
+        self.btnGetOutputDir.setStyleSheet("")
+        self.btnGetOutputDir.setText("")
+        self.btnGetOutputDir.setIcon(icon)
+        self.btnGetOutputDir.setObjectName("btnGetOutputDir")
+        self.gridLayout.addWidget(self.btnGetOutputDir, 5, 1, 1, 1)
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
@@ -155,11 +160,11 @@ class Ui_Form(object):
         Form.setWindowTitle(_translate("Form", "Form"))
         self.label_11.setText(_translate("Form", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">input data</span></p></body></html>"))
         self.label_10.setText(_translate("Form", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">output path</span></p></body></html>"))
-        self.lineInputPath.setText(_translate("Form", "C:/Tmp/GTFS.zip"))
-        self.lineOutputPath.setText(_translate("Form", "C:/Tmp/"))
-        self.btnGetFile.setText(_translate("Form", "..."))
-        self.btnGetOutputDir.setText(_translate("Form", "..."))
+        self.lineInputPath.setPlaceholderText(_translate("Form", "C:/Tmp/GTFS.zip"))
+        self.lineOutputPath.setPlaceholderText(_translate("Form", "C:/Tmp/"))
         self.btnRestart.setText(_translate("Form", "Restart Import"))
         self.btnImport.setText(_translate("Form", "Start Import"))
         self.comboBox_display.setItemText(0, _translate("Form", "time format 1"))
         self.comboBox_display.setItemText(1, _translate("Form", "time format 2"))
+from add_files.res import resource_boot
+
