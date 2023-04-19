@@ -5,6 +5,9 @@ GTFS to fahrplan
 - creates a timetable.
 - add_files folder is needed. 
 
+![Screenshot](gtfs_beispiel.png)
+
+
 
 # auto-py-to-exe
 
