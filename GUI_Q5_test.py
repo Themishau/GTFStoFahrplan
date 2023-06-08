@@ -11,7 +11,8 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5.QtWidgets import QFileDialog, QApplication
 
-from add_files.main_window_ui import Ui_MainWindow
+# from add_files.main_window_ui import Ui_MainWindow
+from add_files.main_window_ui_backup import Ui_MainWindow
 from create_table_create import CreateTableCreate
 from create_table_import import CreateTableImport
 from create_table_select import CreateTableSelect
@@ -312,46 +313,53 @@ class Model(Publisher, Subscriber):
 
     def notify_subscriber(self, event, message):
         logging.debug('model: {}'.format(event))
-        if event == 'load_gtfsdata_event':
-            self.sub_load_gtfsdata_event()
-        elif event == 'select_agency':
-            self.sub_select_agency_event()
-        elif event == 'select_route':
-            self.sub_select_route_event()
-        elif event == 'select_weekday':
-            self.sub_select_weekday_event()
-        elif event == 'reset_gtfs':
-            self.sub_reset_gtfs()
-        elif event == 'sub_worker_load_gtfsdata':
-            self.sub_worker_load_gtfsdata()
-        elif event == 'sub_worker_update_routes_list':
-            self.sub_worker_update_routes_list()
-        elif event == 'sub_worker_get_date_range':
-            self.sub_worker_get_date_range()
-        elif event == 'start_create_table':
-            self.sub_start_create_table()
-        elif event == 'sub_worker_weekday_prepare_data_fahrplan':
-            self.sub_worker_weekday_prepare_data_fahrplan()
-        elif event == 'sub_worker_weekday_select_weekday_exception_2':
-            self.sub_worker_weekday_select_weekday_exception_2()
-        elif event == 'sub_worker_prepare_data_fahrplan':
-            self.sub_worker_prepare_data_fahrplan()
-        elif event == 'sub_worker_select_dates_for_date_range':
-            self.sub_worker_select_dates_for_date_range()
-        elif event == 'sub_worker_select_dates_delete_exception_2':
-            self.sub_worker_select_dates_delete_exception_2()
-        elif event == 'sub_worker_select_stops_for_trips':
-            self.sub_worker_select_stops_for_trips()
-        elif event == 'sub_worker_select_for_every_date_trips_stops':
-            self.sub_worker_select_for_every_date_trips_stops()
-        elif event == 'sub_worker_select_stop_sequence_stop_name_sorted':
-            self.sub_worker_select_stop_sequence_stop_name_sorted()
-        elif event == 'sub_worker_create_fahrplan_dates':
-            self.sub_worker_create_fahrplan_dates()
-        elif event == 'sub_worker_create_output_fahrplan':
-            self.sub_worker_create_output_fahrplan()
-        else:
-            logging.debug('event not found in class model: {}'.format(event))
+        """
+        let's call the function by getattr
+        
+        """
+        m = globals()['Model']()
+        func = getattr(m, event)
+
+        # if event == 'load_gtfsdata_event':
+        #     self.sub_load_gtfsdata_event()
+        # elif event == 'select_agency':
+        #     self.sub_select_agency_event()
+        # elif event == 'select_route':
+        #     self.sub_select_route_event()
+        # elif event == 'select_weekday':
+        #     self.sub_select_weekday_event()
+        # elif event == 'reset_gtfs':
+        #     self.sub_reset_gtfs()
+        # elif event == 'sub_worker_load_gtfsdata':
+        #     self.sub_worker_load_gtfsdata()
+        # elif event == 'sub_worker_update_routes_list':
+        #     self.sub_worker_update_routes_list()
+        # elif event == 'sub_worker_get_date_range':
+        #     self.sub_worker_get_date_range()
+        # elif event == 'start_create_table':
+        #     self.sub_start_create_table()
+        # elif event == 'sub_worker_weekday_prepare_data_fahrplan':
+        #     self.sub_worker_weekday_prepare_data_fahrplan()
+        # elif event == 'sub_worker_weekday_select_weekday_exception_2':
+        #     self.sub_worker_weekday_select_weekday_exception_2()
+        # elif event == 'sub_worker_prepare_data_fahrplan':
+        #     self.sub_worker_prepare_data_fahrplan()
+        # elif event == 'sub_worker_select_dates_for_date_range':
+        #     self.sub_worker_select_dates_for_date_range()
+        # elif event == 'sub_worker_select_dates_delete_exception_2':
+        #     self.sub_worker_select_dates_delete_exception_2()
+        # elif event == 'sub_worker_select_stops_for_trips':
+        #     self.sub_worker_select_stops_for_trips()
+        # elif event == 'sub_worker_select_for_every_date_trips_stops':
+        #     self.sub_worker_select_for_every_date_trips_stops()
+        # elif event == 'sub_worker_select_stop_sequence_stop_name_sorted':
+        #     self.sub_worker_select_stop_sequence_stop_name_sorted()
+        # elif event == 'sub_worker_create_fahrplan_dates':
+        #     self.sub_worker_create_fahrplan_dates()
+        # elif event == 'sub_worker_create_output_fahrplan':
+        #     self.sub_worker_create_output_fahrplan()
+        # else:
+        #     logging.debug('event not found in class model: {}'.format(event))
 
 
 class Gui(QMainWindow, Publisher, Subscriber):
@@ -362,7 +370,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        self.setFixedSize(1290, 880)
+        self.setFixedSize(1290, 600)
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.center()
         self.oldPos = self.pos()
@@ -381,14 +389,19 @@ class Gui(QMainWindow, Publisher, Subscriber):
                                self.generalNavPush_btn: CreateTableSelect,
                                self.downloadGTFSNavPush_btn: DownloadGTFS}
 
-        self.GeneralMainTab = CreateTableImport()
         self.CreateMainTab = CreateTableSelect()
-        self.DownloadGTFSMainTab = CreateTableCreate()
 
         self.CreateImport_Tab = CreateTableImport()
         self.CreateSelect_Tab = CreateTableSelect()
         self.CreateCreate_Tab = CreateTableCreate()
         self.DownloadGTFS_Tab = DownloadGTFS()
+
+        self.ui.stackedWidget.addWidget(self.CreateImport_Tab)
+        self.ui.stackedWidget.addWidget(self.CreateSelect_Tab)
+        self.ui.stackedWidget.addWidget(self.CreateCreate_Tab)
+        self.ui.stackedWidget.addWidget(self.DownloadGTFS_Tab)
+        self.ui.stackedWidget.addWidget(self.CreateImport_Tab)
+        self.ui.stackedWidget.addWidget(self.CreateImport_Tab)
 
         # connect gui elements to methods
 
@@ -396,7 +409,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.CreateImport_Tab.ui.btnRestart.clicked.connect(self.notify_restart)
         self.CreateCreate_Tab.ui.btnStart.clicked.connect(self.notify_create_table)
         self.CreateImport_Tab.ui.btnGetFile.clicked.connect(self.getFilePath)
-        self.DownloadGTFS_Tab.ui.btnGetDir.clicked.connect(self.getDirPath)
+        # self.DownloadGTFS_Tab.ui.btnGetDir.clicked.connect(self.getDirPath)
         self.CreateImport_Tab.ui.btnGetOutputDir.clicked.connect(self.getOutputDirPath)
         self.ui.pushButton_2.clicked.connect(self.show_Create_Import_Window)
         self.ui.pushButton_3.clicked.connect(self.show_Create_Select_Window)
@@ -465,67 +478,32 @@ class Gui(QMainWindow, Publisher, Subscriber):
 
     def show_GTFSDownload_window(self):
         self.set_btn_checked(self.downloadGTFSNavPush_btn)
-        self.ui.tabWidget.setVisible(False)
+        self.ui.stackedWidget.setCurrentWidget(self.DownloadGTFS_Tab)
 
     def show_home_window(self):
         self.set_btn_checked(self.generalNavPush_btn)
-        self.ui.tabWidget.setVisible(False)
+        self.ui.stackedWidget.setCurrentWidget(self.CreateMainTab)
 
     def show_Create_Import_Window(self):
-        result = self.open_tab_flag(self.createTableImport_btn)
         self.set_btn_checked(self.createTableImport_btn)
-        logging.debug(f'result[0]: {result[0], result[1]}')
-        if result[0]:
-            self.ui.tabWidget.setCurrentIndex(result[1])
-        else:
-            tab_title = self.createTableImport_btn.text()
-            curIndex = self.ui.tabWidget.addTab(self.CreateImport_Tab, tab_title)
-            self.ui.tabWidget.setCurrentIndex(curIndex)
-            self.ui.tabWidget.palette().setColor(QPalette.Window, QColor.fromRgb(97, 89, 58))
-            self.ui.tabWidget.setVisible(True)
+        self.ui.stackedWidget.setCurrentWidget(self.CreateImport_Tab)
+
 
     def show_Create_Select_Window(self):
-        result = self.open_tab_flag(self.createTableSelect_btn)
         self.set_btn_checked(self.createTableSelect_btn)
-        logging.debug(f'result[0]: {result[0], result[1]}')
-        if result[0]:
-            self.ui.tabWidget.setCurrentIndex(result[1])
-        else:
-            tab_title = self.createTableSelect_btn.text()
-            curIndex = self.ui.tabWidget.addTab(self.CreateSelect_Tab, tab_title)
-            self.ui.tabWidget.setCurrentIndex(curIndex)
-            self.ui.tabWidget.palette().setColor(QPalette.Window, QColor.fromRgb(97, 89, 58))
-            self.ui.tabWidget.setVisible(True)
+        self.ui.stackedWidget.setCurrentWidget(self.CreateSelect_Tab)
 
     def show_Create_Create_Window(self):
-        result = self.open_tab_flag(self.createTableCreate_btn)
         self.set_btn_checked(self.createTableCreate_btn)
-        logging.debug(f'result[0]: {result[0], result[1]}')
-        if result[0]:
-            self.ui.tabWidget.setCurrentIndex(result[1])
-        else:
-            tab_title = self.createTableCreate_btn.text()
-            curIndex = self.ui.tabWidget.addTab(self.CreateCreate_Tab, tab_title)
-            self.ui.tabWidget.setCurrentIndex(curIndex)
-            self.ui.tabWidget.palette().setColor(QPalette.Window, QColor.fromRgb(97, 89, 58))
-            self.ui.tabWidget.setVisible(True)
+        self.ui.stackedWidget.setCurrentWidget(self.CreateCreate_Tab)
 
     def set_btn_checked(self, btn):
         for button in self.menu_btns_dict.keys():
-            logging.debug(f'set_btn_checked: {btn}')
+            logging.debug(f'set_btn_checked: {btn.__str__()}')
             if button != btn:
                 button.setChecked(False)
             else:
                 button.setChecked(True)
-
-    def open_tab_flag(self, btn_txt):
-        open_tab_count = self.ui.tabWidget.count()
-        logging.debug(f'open_tab_count: {open_tab_count}')
-        for i in range(open_tab_count):
-            tab_title = self.ui.tabWidget.tabText(i)
-            if tab_title == btn_txt:
-                return True
-        return False, -1
 
     # noinspection PyUnresolvedReferences
     @staticmethod

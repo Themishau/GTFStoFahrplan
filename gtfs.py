@@ -77,6 +77,7 @@ class gtfs:
 
         """ all stops for given trips """
         self.filtered_stop_names = ""
+
         """ df-data """
         self.dfStops = pd.DataFrame({'A': []})
         self.dfStopTimes = pd.DataFrame({'A': []})

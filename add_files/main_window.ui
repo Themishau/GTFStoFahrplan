@@ -2,23 +2,33 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>1234</width>
-    <height>1200</height>
+    <height>582</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+   <sizepolicy hsizetype="Expanding" vsizetype="Ignored">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
+  <property name="maximumSize">
+   <size>
+    <width>16777215</width>
+    <height>954</height>
+   </size>
+  </property>
   <property name="font">
    <font>
     <pointsize>12</pointsize>
+    <stylestrategy>NoAntialias</stylestrategy>
    </font>
   </property>
   <property name="windowTitle">
@@ -28,15 +38,17 @@
    <bool>false</bool>
   </property>
   <property name="styleSheet">
-   <string notr="true">border-style: solid;
-border-color:  #f2f7f5;
-background: #cfe2da; 
+   <string notr="true">background: #cfe2da; 
 color: #00473e;
 </string>
   </property>
+  <property name="tabShape">
+   <enum>QTabWidget::Triangular</enum>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <property name="styleSheet">
-    <string notr="true">color: white;
+    <string notr="true">background-color: #00332c;
+color: #ee9462;
 </string>
    </property>
    <layout class="QGridLayout" name="gridLayout_3">
@@ -92,50 +104,11 @@ color: #00473e;
         <font>
          <family>Segoe UI</family>
          <pointsize>18</pointsize>
+         <stylestrategy>NoAntialias</stylestrategy>
         </font>
        </property>
        <property name="styleSheet">
-        <string notr="true">border: none;
-background-color: #00332c;
-color: #ee9462;
-
-</string>
-       </property>
-       <layout class="QGridLayout" name="gridLayout">
-        <property name="sizeConstraint">
-         <enum>QLayout::SetNoConstraint</enum>
-        </property>
-        <property name="leftMargin">
-         <number>4</number>
-        </property>
-        <property name="topMargin">
-         <number>4</number>
-        </property>
-        <property name="rightMargin">
-         <number>4</number>
-        </property>
-        <property name="bottomMargin">
-         <number>15</number>
-        </property>
-        <item row="0" column="0">
-         <widget class="QToolBox" name="toolBox">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="font">
-           <font>
-            <family>Segoe UI</family>
-            <pointsize>12</pointsize>
-           </font>
-          </property>
-          <property name="mouseTracking">
-           <bool>true</bool>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">#toolBox {
+        <string notr="true">#toolBox {
 	color:#00473e;
 
 }
@@ -167,17 +140,56 @@ color: #ee9462;
 	background-color: #585d1c;
 	font-weight: bold;
 }</string>
+       </property>
+       <layout class="QGridLayout" name="gridLayout">
+        <property name="sizeConstraint">
+         <enum>QLayout::SetNoConstraint</enum>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <item row="0" column="0">
+         <widget class="QToolBox" name="toolBox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <family>Segoe UI</family>
+            <pointsize>12</pointsize>
+           </font>
+          </property>
+          <property name="mouseTracking">
+           <bool>true</bool>
+          </property>
+          <property name="styleSheet">
+           <string notr="true"/>
           </property>
           <property name="currentIndex">
-           <number>2</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="page">
            <property name="geometry">
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>221</width>
-             <height>820</height>
+             <width>229</width>
+             <height>224</height>
             </rect>
            </property>
            <attribute name="icon">
@@ -228,8 +240,8 @@ color: #ee9462;
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>221</width>
-             <height>820</height>
+             <width>229</width>
+             <height>224</height>
             </rect>
            </property>
            <property name="styleSheet">
@@ -305,8 +317,8 @@ color: #ee9462;
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>221</width>
-             <height>820</height>
+             <width>229</width>
+             <height>224</height>
             </rect>
            </property>
            <attribute name="icon">
@@ -479,8 +491,8 @@ color: #f4edea;</string>
           </layout>
          </widget>
         </item>
-        <item row="1" column="0" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
-         <widget class="QTabWidget" name="tabWidget">
+        <item row="1" column="0">
+         <widget class="QStackedWidget" name="stackedWidget">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
             <horstretch>10</horstretch>
@@ -527,18 +539,6 @@ QTabBar::tab:selected {
 }
 
 </string>
-          </property>
-          <property name="tabShape">
-           <enum>QTabWidget::Triangular</enum>
-          </property>
-          <property name="currentIndex">
-           <number>-1</number>
-          </property>
-          <property name="tabsClosable">
-           <bool>false</bool>
-          </property>
-          <property name="tabBarAutoHide">
-           <bool>true</bool>
           </property>
          </widget>
         </item>
