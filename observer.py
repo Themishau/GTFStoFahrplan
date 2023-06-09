@@ -41,6 +41,6 @@ class Publisher(object):
         del self.get_subscribers(event)[who]
 
     def dispatch(self, event, message):
-        # logging.debug("{} {} dispatch(self, event, message) {} {} ".format(self ,self.get_subscribers(event).items(), event, message))
+        logging.debug("{} {} dispatch(self, event, message) {} {} ".format(self ,self.get_subscribers(event).items(), event, message))
         for subscriber, callback in self.get_subscribers(event).items():
             callback(event, message)

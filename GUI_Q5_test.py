@@ -111,9 +111,18 @@ class Model(Publisher, Subscriber):
         self.gtfs = gtfs()
         self.mutex = QMutex()
         self.worker = None
+        self.notify_functions = {
+                                 'load_gtfsdata_event': [self.sub_load_gtfsdata_event, False],
+                                 'select_agency': [self.sub_select_agency_event, False],
+                                 'select_route': [self.sub_select_route_event, False],
+                                 'select_weekday': [self.sub_select_weekday_event, False],
+                                 'reset_gtfs': [self.sub_reset_gtfs, False],
+                                 'start_create_table': [self.sub_start_create_table, False],
+                                 }
+
 
     def sub_reset_gtfs(self):
-        self.gtfs = gtfs()
+            self.gtfs = gtfs()
 
     def find(self, name, path):
 
@@ -142,9 +151,12 @@ class Model(Publisher, Subscriber):
         self.worker.finished.connect(self.update_agency_list)
         self.worker.exit()
 
+        self.worker.unregister('sub_worker_load_gtfsdata', self)
+        self.worker.unregister('sub_worker_get_date_range', self)
+
     def error_reset_model(self):
-        self.dispatch("restart",
-                      "restart routine started! Notify subscriber!")
+            self.dispatch("restart",
+                          "restart routine started! Notify subscriber!")
 
     def sub_worker_load_gtfsdata(self):
         self.gtfs.async_task_load_GTFS_data()
@@ -252,11 +264,28 @@ class Model(Publisher, Subscriber):
             self.worker.register('sub_worker_select_stop_sequence_stop_name_sorted', self)
             self.worker.register('sub_worker_create_fahrplan_dates', self)
             self.worker.register('sub_worker_create_output_fahrplan', self)
-
         self.worker.importedGTFS.connect(self.notify_set_progressbar)
         self.worker.start()
         self.worker.finished.connect(self.finished_create_table)
         self.gtfs.processing = None
+        if self.gtfs.selected_weekday is None:
+            self.worker.unregister('sub_worker_prepare_data_fahrplan', self)
+            self.worker.unregister('sub_worker_select_dates_for_date_range', self)
+            self.worker.unregister('sub_worker_select_dates_delete_exception_2', self)
+            self.worker.unregister('sub_worker_select_stops_for_trips', self)
+            self.worker.unregister('sub_worker_select_for_every_date_trips_stops', self)
+            self.worker.unregister('sub_worker_select_stop_sequence_stop_name_sorted', self)
+            self.worker.unregister('sub_worker_create_fahrplan_dates', self)
+            self.worker.unregister('sub_worker_create_output_fahrplan', self)
+        else:
+            self.worker.unregister('sub_worker_weekday_prepare_data_fahrplan', self)
+            self.worker.unregister('sub_worker_select_dates_for_date_range', self)
+            self.worker.unregister('sub_worker_weekday_select_weekday_exception_2', self)
+            self.worker.unregister('sub_worker_select_stops_for_trips', self)
+            self.worker.unregister('sub_worker_select_for_every_date_trips_stops', self)
+            self.worker.unregister('sub_worker_select_stop_sequence_stop_name_sorted', self)
+            self.worker.unregister('sub_worker_create_fahrplan_dates', self)
+            self.worker.unregister('sub_worker_create_output_fahrplan', self)
 
     def notify_set_progressbar(self, val):
         self.gtfs.progress = val
@@ -311,14 +340,25 @@ class Model(Publisher, Subscriber):
         return self.dispatch("message",
                              "Table created!")
 
+
     def notify_subscriber(self, event, message):
-        logging.debug('model: {}'.format(event))
-        """
-        let's call the function by getattr
-        
-        """
-        m = globals()['Model']()
-        func = getattr(m, event)
+        logging.debug(f'event: {event}, message {message}')
+        notify_function, parameters = self.notify_functions.get(event, self.notify_not_function)
+        if not parameters:
+            notify_function()
+        else:
+            notify_function(message)
+
+    def notify_not_function(self, event):
+        logging.debug('event not found in class gui: {}'.format(event))
+    # def notify_subscriber(self, event, message):
+    #     logging.debug('model: {}'.format(event))
+    #     """
+    #     let's call the function by getattr
+    #
+    #     """
+    #     m = globals()['Model']()
+    #     func = getattr(m, event)
 
         # if event == 'load_gtfsdata_event':
         #     self.sub_load_gtfsdata_event()
@@ -438,6 +478,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
                                  'restart': [self.notify_restart, False]
                                  }
 
+
         # init model with publisher
         self.model = Model(['update_weekday_list',
                             'update_routes_list',
@@ -464,7 +505,6 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.model.register('restart', self)
 
         # init Observer controller -> model
-        self.register('message_test', self.model)
         self.register('load_gtfsdata_event', self.model)
         self.register('select_agency', self.model)
         self.register('select_route', self.model)
@@ -640,16 +680,17 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.CreateCreate_Tab.ui.btnStart.setEnabled(False)
         self.CreateCreate_Tab.ui.btnStop.setEnabled(False)
         self.CreateCreate_Tab.ui.comboBox.setEnabled(False)
-        self.CreateCreate_Tab.ui.comboBox_display.setEnabled(True)
+        self.CreateImport_Tab.ui.comboBox_display.setEnabled(True)
         self.CreateCreate_Tab.ui.comboBox_direction.setEnabled(False)
         self.CreateSelect_Tab.ui.listAgencies.clear()
         self.CreateSelect_Tab.ui.listRoutes.clear()
-        self.CreateSelect_Tab.ui.listDatesWeekday.clear()
+        self.CreateCreate_Tab.ui.listDatesWeekday.clear()
 
         return self.dispatch("reset_gtfs", "reset_gtfs started! Notify subscriber!")
 
     # based on linked event subscriber are going to be notified
     def notify_subscriber(self, event, message):
+        logging.debug(f'CONTROLLER event: {event}, message {message}')
         notify_function, parameters = self.notify_functions.get(event, self.notify_not_function)
         if not parameters:
             notify_function()
