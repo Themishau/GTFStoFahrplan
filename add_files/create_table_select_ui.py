@@ -14,7 +14,14 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(589, 299)
+        Form.resize(800, 400)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(Form.sizePolicy().hasHeightForWidth())
+        Form.setSizePolicy(sizePolicy)
+        Form.setMinimumSize(QtCore.QSize(800, 400))
+        Form.setMaximumSize(QtCore.QSize(800, 400))
         Form.setStyleSheet("#Form {\n"
 "border-style: solid;\n"
 "border-color:  #f2f7f5;\n"
@@ -85,6 +92,13 @@ class Ui_Form(object):
         self.label_5.setObjectName("label_5")
         self.gridLayout.addWidget(self.label_5, 1, 0, 1, 1)
         self.listAgencies = QtWidgets.QListWidget(Form)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.listAgencies.sizePolicy().hasHeightForWidth())
+        self.listAgencies.setSizePolicy(sizePolicy)
+        self.listAgencies.setMinimumSize(QtCore.QSize(0, 0))
+        self.listAgencies.setMaximumSize(QtCore.QSize(900, 500))
         font = QtGui.QFont()
         font.setPointSize(12)
         self.listAgencies.setFont(font)
