@@ -6,81 +6,135 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>621</width>
-    <height>662</height>
+    <width>589</width>
+    <height>299</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
-    <widget class="QLabel" name="label_5">
-     <property name="font">
-      <font>
-       <family>72</family>
-       <pointsize>8</pointsize>
-       <weight>9</weight>
-       <italic>false</italic>
-       <bold>false</bold>
-      </font>
-     </property>
-     <property name="layoutDirection">
-      <enum>Qt::LeftToRight</enum>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">background-color:  #ffcbc0;
-font: 75 8pt &quot;72&quot;;</string>
-     </property>
-     <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Agencies&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-    </widget>
+  <property name="styleSheet">
+   <string notr="true">#Form {
+border-style: solid;
+border-color:  #f2f7f5;
+background: #cfe2da; 
+
+}
+
+#Form QListWidget {
+	background-color: #F0FCF7;
+   border-radius: 10px;
+	padding: 5px 5px 5px 5px;
+	text-align: center;
+    color:#41312b;
+}
+
+#Form QPushButton {
+	background-color: #587b6d;
+   border-radius: 10px;
+	padding: 5px 5px 5px 5px;
+	text-align: center;
+    color:#f2b198;
+}
+
+#Form QLineEdit {
+	background-color: #F0FCF7;
+   border-radius: 10px;
+	padding: 5px 5px 5px 5px;
+	text-align: center;
+    color:#41312b;
+}
+
+#Form QLabel {
+   border-radius: 10px;
+	padding: 5px 5px 5px 5px;
+	text-align: center;
+    color:#41312b;
+}
+
+#Form QComboBox {
+	background-color: #587b6d;
+   border-radius: 10px;
+	padding: 5px 5px 5px 100px;
+	text-align: center;
+    color:#f2b198;
+    
+}
+
+#Form QPushButton:hover {
+	background-color: #408d49;
+   border-radius: 10px;
+       color:#fde1d6;
+}
+</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_5">
+       <property name="font">
+        <font>
+         <family>72</family>
+         <pointsize>8</pointsize>
+         <weight>50</weight>
+         <italic>false</italic>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="layoutDirection">
+        <enum>Qt::LeftToRight</enum>
+       </property>
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+       <property name="text">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Agencies&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QListWidget" name="listAgencies">
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QTableView" name="tableView"/>
+     </item>
+    </layout>
    </item>
-   <item row="1" column="0">
-    <widget class="QListWidget" name="listAgencies">
-     <property name="font">
-      <font>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">background-color:  #ff9740;
-border-style: outset;
-border-width: 0px;
-border-radius: 15px;
-border-color: black;
-padding: 4px;</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="label_8">
-     <property name="styleSheet">
-      <string notr="true">background-color:  #ffcbc0;
-font: 75 8pt &quot;72&quot;;</string>
-     </property>
-     <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Trips&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QListWidget" name="listRoutes">
-     <property name="font">
-      <font>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">background-color:  #ff9740;
-border-style: outset;
-border-width: 0px;
-border-radius: 15px;
-border-color: black;
-padding: 4px;</string>
-     </property>
-    </widget>
+   <item>
+    <layout class="QGridLayout" name="gridLayout_2">
+     <item row="2" column="0">
+      <widget class="QListWidget" name="listRoutes">
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_8">
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+       <property name="text">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Trips&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>

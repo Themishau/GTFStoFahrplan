@@ -8,8 +8,8 @@ from datetime import datetime
 from PyQt5.Qt import QPoint, QMutex, QWidget, QMessageBox, QDesktopWidget, QApplication, QMainWindow
 from PyQt5.QtGui import QPixmap, QColor, QPalette
 from PyQt5.QtCore import Qt
-from PyQt5.QtCore import QThread, pyqtSignal
-from PyQt5.QtWidgets import QFileDialog, QApplication
+from PyQt5.QtCore import QThread, pyqtSignal, QAbstractTableModel
+from PyQt5.QtWidgets import QFileDialog, QApplication, QTableView
 
 # from add_files.main_window_ui import Ui_MainWindow
 from add_files.main_window_ui_backup import Ui_MainWindow
@@ -44,7 +44,7 @@ class GTFSWorker(QThread, Publisher, Subscriber):
             self.importedGTFS.emit(70)
             self.dispatch("sub_worker_get_date_range",
                           "sub_worker_get_date_range routine started! Notify subscriber!")
-            self.importedGTFS.emit(0)
+            self.importedGTFS.emit(100)
         elif self.process == 'fill_agency_list':
             self.dispatch("sub_worker_update_routes_list",
                           "sub_worker_update_routes_list routine started! Notify subscriber!")
@@ -118,6 +118,8 @@ class Model(Publisher, Subscriber):
                                  'select_weekday': [self.sub_select_weekday_event, False],
                                  'reset_gtfs': [self.sub_reset_gtfs, False],
                                  'start_create_table': [self.sub_start_create_table, False],
+                                 'sub_worker_load_gtfsdata': [self.sub_worker_load_gtfsdata, False],
+                                 'sub_worker_get_date_range': [self.sub_worker_get_date_range, False],
                                  }
 
 
@@ -146,13 +148,14 @@ class Model(Publisher, Subscriber):
         self.worker.register('sub_worker_load_gtfsdata', self)
         self.worker.register('sub_worker_get_date_range', self)
 
-        self.worker.importedGTFS.connect(self.notify_set_progressbar)
+        self.worker.importedGTFS.connect(self.notify_set_import_progressbar)
         self.worker.start()
         self.worker.finished.connect(self.update_agency_list)
         self.worker.exit()
 
-        self.worker.unregister('sub_worker_load_gtfsdata', self)
-        self.worker.unregister('sub_worker_get_date_range', self)
+        if self.gtfs.noError:
+            logging.debug('error in sub_load_gtfsdata_event!!!')
+
 
     def error_reset_model(self):
             self.dispatch("restart",
@@ -267,30 +270,35 @@ class Model(Publisher, Subscriber):
         self.worker.importedGTFS.connect(self.notify_set_progressbar)
         self.worker.start()
         self.worker.finished.connect(self.finished_create_table)
-        self.gtfs.processing = None
-        if self.gtfs.selected_weekday is None:
-            self.worker.unregister('sub_worker_prepare_data_fahrplan', self)
-            self.worker.unregister('sub_worker_select_dates_for_date_range', self)
-            self.worker.unregister('sub_worker_select_dates_delete_exception_2', self)
-            self.worker.unregister('sub_worker_select_stops_for_trips', self)
-            self.worker.unregister('sub_worker_select_for_every_date_trips_stops', self)
-            self.worker.unregister('sub_worker_select_stop_sequence_stop_name_sorted', self)
-            self.worker.unregister('sub_worker_create_fahrplan_dates', self)
-            self.worker.unregister('sub_worker_create_output_fahrplan', self)
-        else:
-            self.worker.unregister('sub_worker_weekday_prepare_data_fahrplan', self)
-            self.worker.unregister('sub_worker_select_dates_for_date_range', self)
-            self.worker.unregister('sub_worker_weekday_select_weekday_exception_2', self)
-            self.worker.unregister('sub_worker_select_stops_for_trips', self)
-            self.worker.unregister('sub_worker_select_for_every_date_trips_stops', self)
-            self.worker.unregister('sub_worker_select_stop_sequence_stop_name_sorted', self)
-            self.worker.unregister('sub_worker_create_fahrplan_dates', self)
-            self.worker.unregister('sub_worker_create_output_fahrplan', self)
+
+        # if self.gtfs.selected_weekday is None:
+        #     self.worker.unregister('sub_worker_prepare_data_fahrplan', self)
+        #     self.worker.unregister('sub_worker_select_dates_for_date_range', self)
+        #     self.worker.unregister('sub_worker_select_dates_delete_exception_2', self)
+        #     self.worker.unregister('sub_worker_select_stops_for_trips', self)
+        #     self.worker.unregister('sub_worker_select_for_every_date_trips_stops', self)
+        #     self.worker.unregister('sub_worker_select_stop_sequence_stop_name_sorted', self)
+        #     self.worker.unregister('sub_worker_create_fahrplan_dates', self)
+        #     self.worker.unregister('sub_worker_create_output_fahrplan', self)
+        # else:
+        #     self.worker.unregister('sub_worker_weekday_prepare_data_fahrplan', self)
+        #     self.worker.unregister('sub_worker_select_dates_for_date_range', self)
+        #     self.worker.unregister('sub_worker_weekday_select_weekday_exception_2', self)
+        #     self.worker.unregister('sub_worker_select_stops_for_trips', self)
+        #     self.worker.unregister('sub_worker_select_for_every_date_trips_stops', self)
+        #     self.worker.unregister('sub_worker_select_stop_sequence_stop_name_sorted', self)
+        #     self.worker.unregister('sub_worker_create_fahrplan_dates', self)
+        #     self.worker.unregister('sub_worker_create_output_fahrplan', self)
 
     def notify_set_progressbar(self, val):
         self.gtfs.progress = val
         return self.dispatch("update_progress_bar",
                              "update_progress_bar routine started! Notify subscriber!")
+
+    def notify_set_import_progressbar(self, val):
+        self.gtfs.import_progress = val
+        return self.dispatch("update_import_progress_bar",
+                             "update_import_progress_bar routine started! Notify subscriber!")
 
     def finished_create_table(self):
         self.notify_set_progressbar(0)
@@ -475,6 +483,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
                                  'error_message': [self.sub_write_gui_log, True],
                                  'data_changed': [self.sub_write_gui_log, True],
                                  'update_progress_bar': [self.sub_update_progress_bar, False],
+                                 'update_import_progress_bar': [self.sub_update_import_progress_bar, False],
                                  'restart': [self.notify_restart, False]
                                  }
 
@@ -490,6 +499,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
                             'message',
                             'data_changed',
                             'update_progress_bar',
+                            'update_import_progress_bar',
                             'restart'], 'model')
 
         # init Observer model -> controller
@@ -502,6 +512,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.model.register('error_message', self)
         self.model.register('data_changed', self)
         self.model.register('update_progress_bar', self)
+        self.model.register('update_import_progress_bar', self)
         self.model.register('restart', self)
 
         # init Observer controller -> model
@@ -634,6 +645,10 @@ class Gui(QMainWindow, Publisher, Subscriber):
 
     def sub_update_progress_bar(self):
         self.CreateCreate_Tab.ui.progressBar.setValue(self.model.gtfs.progress)
+
+    def sub_update_import_progress_bar(self):
+        self.CreateImport_Tab.ui.progressBar.setValue(self.model.gtfs.import_progress)
+
 
     def sub_write_gui_log(self, text):
         time_now = datetime.now().strftime("%d-%b-%Y (%H:%M:%S)")

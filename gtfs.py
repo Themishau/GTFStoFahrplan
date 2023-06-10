@@ -8,14 +8,14 @@ import io
 from datetime import datetime, timedelta
 import re
 import logging
-
+from PyQt5.QtCore import QAbstractTableModel
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
                     datefmt="%Y-%m-%d %H:%M:%S")
 
 
 # noinspection SqlResolve
-class gtfs:
+class gtfs(QAbstractTableModel):
     input_path: str
     output_path: str
     gtfs_data_list: list[list[str]]
@@ -24,11 +24,13 @@ class gtfs:
     runningAsync: int
 
     def __init__(self):
+        QAbstractTableModel.__init__(self)
         self.noError = False
         self.input_path = ""
         self.output_path = ""
         self.date_range = ""
         self.progress = 0
+        self.import_progress = 0
         self.options_dates_weekday = ['Dates', 'Weekday']
         self.weekDayOptions = {0: [0, 'Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday'],
                                1: [1, 'Monday, Tuesday, Wednesday, Thursday, Friday'],
