@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from observer import Publisher, Subscriber
 import time
 import pandas as pd
 from pandasql import sqldf
@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 # noinspection SqlResolve
-class gtfs(QAbstractTableModel):
+class gtfs(Publisher, Subscriber):
     input_path: str
     output_path: str
     gtfs_data_list: list[list[str]]
@@ -23,14 +23,21 @@ class gtfs(QAbstractTableModel):
     selected_direction: int
     runningAsync: int
 
-    def __init__(self):
-        QAbstractTableModel.__init__(self)
-        self.noError = False
+    def __init__(self, events, name):
+        super().__init__(events=events, name=name)
+        self.notify_functions = {
+            'ImportGTFS': [self.async_task_load_GTFS_data, False],
+            'fill_agency_list': [self.get_routes_of_agency, False],
+            'create_table_date': [self.sub_worker_create_output_fahrplan_date, False],
+            'create_table_weekday': [self.sub_worker_create_output_fahrplan_weekday, False],
+
+        }
         self.input_path = ""
         self.output_path = ""
         self.date_range = ""
-        self.progress = 0
-        self.import_progress = 0
+        self._progress = 0
+        self._import_progress = 0
+        self._agenciesList = None
         self.options_dates_weekday = ['Dates', 'Weekday']
         self.weekDayOptions = {0: [0, 'Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday'],
                                1: [1, 'Monday, Tuesday, Wednesday, Thursday, Friday'],
@@ -92,7 +99,6 @@ class gtfs(QAbstractTableModel):
         self.now = None
 
         """ loaded data for listbox """
-        self.agenciesList = None
         self.routesList = None
         self.weekdayList = None
         self.serviceslist = None
@@ -124,9 +130,53 @@ class gtfs(QAbstractTableModel):
         self.fahrplan_sorted_stops = None
         self.fahrplan_calendar_filter_days_pivot = None
 
+    @property
+    def progress(self):
+        return self._progress
+
+    @property
+    def import_progress(self):
+        return self._import_progress
+
+    @progress.setter
+    def progress(self, value):
+        self._progress = value
+        self.dispatch("update_progress_bar", "update_progress_bar routine started! Notify subscriber!")
+
+    @import_progress.setter
+    def import_progress(self, value):
+        self._import_progress = value
+        self.dispatch("update_import_progress_bar", "update_import_progress_bar routine started! Notify subscriber!")
+
+    @property
+    def agenciesList(self):
+        return self._agenciesList
+
+
+    @agenciesList.setter
+    def agenciesList(self, value):
+        self._agenciesList = value
+        self.dispatch("update_agency_list",
+                      "update_agency_list routine started! Notify subscriber!")
+
+    def notify_subscriber(self, event, message):
+        logging.debug(f'event: {event}, message {message}')
+        notify_function, parameters = self.notify_functions.get(event, self.notify_not_function)
+        if not parameters:
+            notify_function()
+        else:
+            notify_function(message)
+
+    def notify_not_function(self, event):
+        logging.debug('event not found in class gui: {}'.format(event))
+
     # loads data from zip
-    def async_task_load_GTFS_data(self) -> bool:
-        return self.import_gtfs()
+    def async_task_load_GTFS_data(self):
+        self.import_progress = 20
+        self.import_gtfs()
+        self.import_progress = 60
+        self.getDateRange()
+        self.import_progress = 100
 
     # import routine and
     def import_gtfs(self) -> bool:
@@ -134,12 +184,9 @@ class gtfs(QAbstractTableModel):
 
         if self.read_paths() is True:
             if self.read_gtfs_data() is True:
-                self.noError = self.read_gtfs_data_from_path()
-        if self.noError is True:
-            self.noError = self.create_dfs()
-        if self.noError is True:
-            self.noError = self.cleandicts()
-        return self.noError
+                self.read_gtfs_data_from_path()
+                self.create_dfs()
+        return self.cleandicts()
 
     def set_paths(self, input_path, output_path):
         self.input_path = input_path
@@ -151,6 +198,44 @@ class gtfs(QAbstractTableModel):
 
     def set_routes(self, route) -> None:
         self.selectedRoute = route
+
+    def sub_worker_create_output_fahrplan_weekday(self):
+        self.progress = 5
+        self.weekday_prepare_data_fahrplan()
+        self.progress = 10
+        self.datesWeekday_select_dates_for_date_range()
+        self.progress = 20
+        self.weekday_select_weekday_exception_2()
+        self.progress = 30
+        self.datesWeekday_select_stops_for_trips()
+        self.progress = 40
+        self.datesWeekday_select_for_every_date_trips_stops()
+        self.progress = 50
+        self.datesWeekday_select_stop_sequence_stop_name_sorted()
+        self.progress = 70
+        self.datesWeekday_create_fahrplan()
+        self.progress = 80
+        self.datesWeekday_create_output_fahrplan()
+        self.progress = 100
+
+    def sub_worker_create_output_fahrplan_date(self):
+        self.progress = 5
+        self.dates_prepare_data_fahrplan()
+        self.progress = 10
+        self.datesWeekday_select_dates_for_date_range()
+        self.progress = 20
+        self.dates_select_dates_delete_exception_2()
+        self.progress = 30
+        self.datesWeekday_select_stops_for_trips()
+        self.progress = 40
+        self.datesWeekday_select_for_every_date_trips_stops()
+        self.progress = 50
+        self.datesWeekday_select_stop_sequence_stop_name_sorted()
+        self.progress = 60
+        self.datesWeekday_create_fahrplan()
+        self.progress = 70
+        self.datesWeekday_create_output_fahrplan()
+        self.progress = 100
 
     def create_dfs(self):
         """
@@ -1247,7 +1332,7 @@ class gtfs(QAbstractTableModel):
         fahrplan_dates_all_dates['end_date'] = pd.to_datetime(fahrplan_dates_all_dates['end_date'], format='%Y%m%d')
         fahrplan_dates_all_dates['day'] = fahrplan_dates_all_dates['date'].dt.day_name()
 
-        # set value in column to day if 1 and and compare with day
+        # set value in column to day if 1 and compare with day
         fahrplan_dates_all_dates['monday'] = ['Monday' if x == '1' else '-' for x in fahrplan_dates_all_dates['monday']]
         fahrplan_dates_all_dates['tuesday'] = ['Tuesday' if x == '1' else '-' for x in
                                                fahrplan_dates_all_dates['tuesday']]

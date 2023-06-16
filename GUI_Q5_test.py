@@ -25,10 +25,8 @@ logging.basicConfig(level=logging.DEBUG,
 
 delimiter = " "
 
-
 # noinspection PyUnresolvedReferences
 class GTFSWorker(QThread, Publisher, Subscriber):
-    importedGTFS = pyqtSignal(int)
 
     def __init__(self, events, name, process):
         super().__init__(events=events, name=name)
@@ -36,79 +34,36 @@ class GTFSWorker(QThread, Publisher, Subscriber):
 
     def run(self):
         # try:
-
         if self.process == 'ImportGTFS':
-            self.importedGTFS.emit(30)
             self.dispatch("sub_worker_load_gtfsdata",
                           "sub_worker_load_gtfsdata routine started! Notify subscriber!")
-            self.importedGTFS.emit(70)
-            self.dispatch("sub_worker_get_date_range",
-                          "sub_worker_get_date_range routine started! Notify subscriber!")
-            self.importedGTFS.emit(100)
         elif self.process == 'fill_agency_list':
             self.dispatch("sub_worker_update_routes_list",
                           "sub_worker_update_routes_list routine started! Notify subscriber!")
         elif self.process == 'create_table_date':
-            self.importedGTFS.emit(5)
-            self.dispatch("sub_worker_prepare_data_fahrplan",
-                          "sub_worker_prepare_data_fahrplan routine started! Notify subscriber!")
-            self.importedGTFS.emit(15)
-            self.dispatch("sub_worker_select_dates_for_date_range",
-                          "sub_worker_select_dates_for_date_range routine started! Notify subscriber!")
-            self.importedGTFS.emit(20)
-            self.dispatch("sub_worker_select_dates_delete_exception_2",
-                          "sub_worker_select_dates_delete_exception_2 routine started! Notify subscriber!")
-            self.importedGTFS.emit(30)
-            self.dispatch("sub_worker_select_stops_for_trips",
-                          "sub_worker_select_stops_for_trips routine started! Notify subscriber!")
-            self.importedGTFS.emit(40)
-            self.dispatch("sub_worker_select_for_every_date_trips_stops",
-                          "sub_worker_select_for_every_date_trips_stops routine started! Notify subscriber!")
-            self.importedGTFS.emit(50)
-            self.dispatch("sub_worker_select_stop_sequence_stop_name_sorted",
-                          "sub_worker_select_stop_sequence_stop_name_sorted routine started! Notify subscriber!")
-            self.importedGTFS.emit(70)
-            self.dispatch("sub_worker_create_fahrplan_dates",
-                          "sub_worker_create_fahrplan_dates routine started! Notify subscriber!")
-            self.importedGTFS.emit(90)
-            self.dispatch("sub_worker_create_output_fahrplan",
-                          "sub_worker_create_output_fahrplan routine started! Notify subscriber!")
-            self.importedGTFS.emit(100)
+            self.dispatch("sub_worker_create_output_fahrplan_date",
+                          "sub_worker_create_output_fahrplan_date routine started! Notify subscriber!")
         elif self.process == 'create_table_weekday':
-            self.importedGTFS.emit(5)
-            self.dispatch("sub_worker_weekday_prepare_data_fahrplan",
-                          "sub_worker_weekday_prepare_data_fahrplan routine started! Notify subscriber!")
-            self.importedGTFS.emit(15)
-            self.dispatch("sub_worker_select_dates_for_date_range",
-                          "sub_worker_select_dates_for_date_range routine started! Notify subscriber!")
-            self.importedGTFS.emit(20)
-            self.dispatch("sub_worker_weekday_select_weekday_exception_2",
-                          "sub_worker_weekday_select_weekday_exception_2 routine started! Notify subscriber!")
-            self.importedGTFS.emit(30)
-            self.dispatch("sub_worker_select_stops_for_trips",
-                          "sub_worker_select_stops_for_trips routine started! Notify subscriber!")
-            self.importedGTFS.emit(40)
-            self.dispatch("sub_worker_select_for_every_date_trips_stops",
-                          "sub_worker_select_for_every_date_trips_stops routine started! Notify subscriber!")
-            self.importedGTFS.emit(50)
-            self.dispatch("sub_worker_select_stop_sequence_stop_name_sorted",
-                          "sub_worker_select_stop_sequence_stop_name_sorted routine started! Notify subscriber!")
-            self.importedGTFS.emit(70)
-            self.dispatch("sub_worker_create_fahrplan_dates",
-                          "sub_worker_create_fahrplan_dates routine started! Notify subscriber!")
-            self.importedGTFS.emit(90)
-            self.dispatch("sub_worker_create_output_fahrplan",
-                          "sub_worker_create_output_fahrplan routine started! Notify subscriber!")
-            self.importedGTFS.emit(100)
-        self.finished.emit()
-
+            self.dispatch("sub_worker_create_output_fahrplan_weekday",
+                          "sub_worker_create_output_fahrplan_weekday routine started! Notify subscriber!")
 
 # noinspection PyUnresolvedReferences
 class Model(Publisher, Subscriber):
     def __init__(self, events, name):
         Publisher.__init__(self, events)
         Subscriber.__init__(self, name)
-        self.gtfs = gtfs()
+        self.gtfs = gtfs(['ImportGTFS',
+                          'fill_agency_list',
+                          'create_table_date',
+                          'create_table_weekday',
+                          'update_weekday_list',
+                          'update_routes_list',
+                          'update_date_range',
+                          'update_agency_list',
+                          'active_weekdate_options',
+                          'update_weekdate_option',
+                          'update_progress_bar',
+                          'update_import_progress_bar'], 'data')
         self.mutex = QMutex()
         self.worker = None
         self.notify_functions = {
@@ -118,13 +73,13 @@ class Model(Publisher, Subscriber):
                                  'select_weekday': [self.sub_select_weekday_event, False],
                                  'reset_gtfs': [self.sub_reset_gtfs, False],
                                  'start_create_table': [self.sub_start_create_table, False],
-                                 'sub_worker_load_gtfsdata': [self.sub_worker_load_gtfsdata, False],
-                                 'sub_worker_get_date_range': [self.sub_worker_get_date_range, False],
+                                 'sub_worker_load_gtfsdata': [self.sub_worker_load_gtfsdata, False]
                                  }
 
-
     def sub_reset_gtfs(self):
-            self.gtfs = gtfs()
+        self.gtfs = gtfs(['ImportGTFS',
+                          'create_table_date',
+                          'create_table_weekday'], 'data')
 
     def find(self, name, path):
 
@@ -144,17 +99,12 @@ class Model(Publisher, Subscriber):
         self.gtfs.processing = "loading data"
         self.notify_set_process("loading GTFS data...")
 
-        self.worker = GTFSWorker(['sub_worker_load_gtfsdata', 'sub_worker_get_date_range'], 'Worker', 'ImportGTFS')
+        self.worker = GTFSWorker(['sub_worker_load_gtfsdata'], 'Worker', 'ImportGTFS')
         self.worker.register('sub_worker_load_gtfsdata', self)
-        self.worker.register('sub_worker_get_date_range', self)
 
-        self.worker.importedGTFS.connect(self.notify_set_import_progressbar)
         self.worker.start()
         self.worker.finished.connect(self.update_agency_list)
         self.worker.exit()
-
-        if self.gtfs.noError:
-            logging.debug('error in sub_load_gtfsdata_event!!!')
 
 
     def error_reset_model(self):
@@ -167,53 +117,17 @@ class Model(Publisher, Subscriber):
     def sub_worker_update_routes_list(self):
         self.gtfs.get_routes_of_agency()
 
-    def sub_worker_get_date_range(self):
-        self.gtfs.getDateRange()
+    def sub_worker_create_output_fahrplan_weekday(self):
+        self.gtfs.sub_worker_create_output_fahrplan_weekday()
 
-    """ dates """
-
-    def sub_worker_prepare_data_fahrplan(self):
-        self.gtfs.dates_prepare_data_fahrplan()
-
-    def sub_worker_select_dates_for_date_range(self):
-        self.gtfs.datesWeekday_select_dates_for_date_range()
-
-    """ dates """
-
-    def sub_worker_select_dates_delete_exception_2(self):
-        self.gtfs.dates_select_dates_delete_exception_2()
-
-    def sub_worker_select_stops_for_trips(self):
-        self.gtfs.datesWeekday_select_stops_for_trips()
-
-    def sub_worker_select_for_every_date_trips_stops(self):
-        self.gtfs.datesWeekday_select_for_every_date_trips_stops()
-
-    def sub_worker_select_stop_sequence_stop_name_sorted(self):
-        self.gtfs.datesWeekday_select_stop_sequence_stop_name_sorted()
-
-    """ weekday """
-
-    def sub_worker_weekday_prepare_data_fahrplan(self):
-        self.gtfs.weekday_prepare_data_fahrplan()
-
-    """ weekday """
-
-    def sub_worker_weekday_select_weekday_exception_2(self):
-        self.gtfs.weekday_select_weekday_exception_2()
-
-    def sub_worker_create_fahrplan_dates(self):
-        self.gtfs.datesWeekday_create_fahrplan()
-
-    def sub_worker_create_output_fahrplan(self):
-        self.gtfs.datesWeekday_create_output_fahrplan()
+    def sub_worker_create_output_fahrplan_date(self):
+        self.gtfs.sub_worker_create_output_fahrplan_date()
 
     def sub_select_agency_event(self):
         self.gtfs.processing = "load routes list"
         self.notify_set_process("loading load routes list...")
         self.worker = GTFSWorker(['sub_worker_update_routes_list'], 'Worker', 'fill_agency_list')
         self.worker.register('sub_worker_update_routes_list', self)
-        self.worker.importedGTFS.connect(self.notify_set_progressbar)
         self.worker.start()
         self.worker.finished.connect(self.update_routes_list)
 
@@ -233,82 +147,22 @@ class Model(Publisher, Subscriber):
         self.notify_set_process("create table data...")
 
         if self.gtfs.selected_weekday is None:
-            self.worker = GTFSWorker(['sub_worker_prepare_data_fahrplan',
-                                      'sub_worker_select_dates_for_date_range',
-                                      'sub_worker_select_dates_delete_exception_2',
-                                      'sub_worker_select_stops_for_trips',
-                                      'sub_worker_select_for_every_date_trips_stops',
-                                      'sub_worker_select_stop_sequence_stop_name_sorted',
-                                      'sub_worker_create_fahrplan_dates',
-                                      'sub_worker_create_output_fahrplan'], 'Worker', 'create_table_date')
-            self.worker.register('sub_worker_prepare_data_fahrplan', self)
-            self.worker.register('sub_worker_select_dates_for_date_range', self)
-            self.worker.register('sub_worker_select_dates_delete_exception_2', self)
-            self.worker.register('sub_worker_select_stops_for_trips', self)
-            self.worker.register('sub_worker_select_for_every_date_trips_stops', self)
-            self.worker.register('sub_worker_select_stop_sequence_stop_name_sorted', self)
-            self.worker.register('sub_worker_create_fahrplan_dates', self)
-            self.worker.register('sub_worker_create_output_fahrplan', self)
-
+            self.worker = GTFSWorker(['sub_worker_create_output_fahrplan'], 'Worker', 'create_table_date')
         else:
-            self.worker = GTFSWorker(['sub_worker_weekday_prepare_data_fahrplan',
-                                      'sub_worker_select_dates_for_date_range',
-                                      'sub_worker_weekday_select_weekday_exception_2',
-                                      'sub_worker_select_stops_for_trips',
-                                      'sub_worker_select_for_every_date_trips_stops',
-                                      'sub_worker_select_stop_sequence_stop_name_sorted',
-                                      'sub_worker_create_fahrplan_dates',
-                                      'sub_worker_create_output_fahrplan'], 'Worker', 'create_table_weekday')
-            self.worker.register('sub_worker_weekday_prepare_data_fahrplan', self)
-            self.worker.register('sub_worker_select_dates_for_date_range', self)
-            self.worker.register('sub_worker_weekday_select_weekday_exception_2', self)
-            self.worker.register('sub_worker_select_stops_for_trips', self)
-            self.worker.register('sub_worker_select_for_every_date_trips_stops', self)
-            self.worker.register('sub_worker_select_stop_sequence_stop_name_sorted', self)
-            self.worker.register('sub_worker_create_fahrplan_dates', self)
-            self.worker.register('sub_worker_create_output_fahrplan', self)
+            self.worker = GTFSWorker(['sub_worker_create_output_fahrplan'], 'Worker', 'create_table_weekday')
+        self.worker.register('sub_worker_create_output_fahrplan', self)
+
         self.worker.importedGTFS.connect(self.notify_set_progressbar)
         self.worker.start()
         self.worker.finished.connect(self.finished_create_table)
 
-        # if self.gtfs.selected_weekday is None:
-        #     self.worker.unregister('sub_worker_prepare_data_fahrplan', self)
-        #     self.worker.unregister('sub_worker_select_dates_for_date_range', self)
-        #     self.worker.unregister('sub_worker_select_dates_delete_exception_2', self)
-        #     self.worker.unregister('sub_worker_select_stops_for_trips', self)
-        #     self.worker.unregister('sub_worker_select_for_every_date_trips_stops', self)
-        #     self.worker.unregister('sub_worker_select_stop_sequence_stop_name_sorted', self)
-        #     self.worker.unregister('sub_worker_create_fahrplan_dates', self)
-        #     self.worker.unregister('sub_worker_create_output_fahrplan', self)
-        # else:
-        #     self.worker.unregister('sub_worker_weekday_prepare_data_fahrplan', self)
-        #     self.worker.unregister('sub_worker_select_dates_for_date_range', self)
-        #     self.worker.unregister('sub_worker_weekday_select_weekday_exception_2', self)
-        #     self.worker.unregister('sub_worker_select_stops_for_trips', self)
-        #     self.worker.unregister('sub_worker_select_for_every_date_trips_stops', self)
-        #     self.worker.unregister('sub_worker_select_stop_sequence_stop_name_sorted', self)
-        #     self.worker.unregister('sub_worker_create_fahrplan_dates', self)
-        #     self.worker.unregister('sub_worker_create_output_fahrplan', self)
-
-    def notify_set_progressbar(self, val):
-        self.gtfs.progress = val
-        return self.dispatch("update_progress_bar",
-                             "update_progress_bar routine started! Notify subscriber!")
-
-    def notify_set_import_progressbar(self, val):
-        self.gtfs.import_progress = val
-        return self.dispatch("update_import_progress_bar",
-                             "update_import_progress_bar routine started! Notify subscriber!")
-
     def finished_create_table(self):
-        self.notify_set_progressbar(0)
         self.notify_finished()
 
     def update_agency_list(self):
-        if self.gtfs.noError:
-            self.gtfs.read_gtfs_agencies()
-            self.notify_update_agency_List()
-            self.worker = None
+        self.gtfs.read_gtfs_agencies()
+        self.notify_update_agency_List()
+        self.worker = None
 
     def update_date_range(self):
         self.worker = None
@@ -348,7 +202,6 @@ class Model(Publisher, Subscriber):
         return self.dispatch("message",
                              "Table created!")
 
-
     def notify_subscriber(self, event, message):
         logging.debug(f'event: {event}, message {message}')
         notify_function, parameters = self.notify_functions.get(event, self.notify_not_function)
@@ -359,56 +212,6 @@ class Model(Publisher, Subscriber):
 
     def notify_not_function(self, event):
         logging.debug('event not found in class gui: {}'.format(event))
-    # def notify_subscriber(self, event, message):
-    #     logging.debug('model: {}'.format(event))
-    #     """
-    #     let's call the function by getattr
-    #
-    #     """
-    #     m = globals()['Model']()
-    #     func = getattr(m, event)
-
-        # if event == 'load_gtfsdata_event':
-        #     self.sub_load_gtfsdata_event()
-        # elif event == 'select_agency':
-        #     self.sub_select_agency_event()
-        # elif event == 'select_route':
-        #     self.sub_select_route_event()
-        # elif event == 'select_weekday':
-        #     self.sub_select_weekday_event()
-        # elif event == 'reset_gtfs':
-        #     self.sub_reset_gtfs()
-        # elif event == 'sub_worker_load_gtfsdata':
-        #     self.sub_worker_load_gtfsdata()
-        # elif event == 'sub_worker_update_routes_list':
-        #     self.sub_worker_update_routes_list()
-        # elif event == 'sub_worker_get_date_range':
-        #     self.sub_worker_get_date_range()
-        # elif event == 'start_create_table':
-        #     self.sub_start_create_table()
-        # elif event == 'sub_worker_weekday_prepare_data_fahrplan':
-        #     self.sub_worker_weekday_prepare_data_fahrplan()
-        # elif event == 'sub_worker_weekday_select_weekday_exception_2':
-        #     self.sub_worker_weekday_select_weekday_exception_2()
-        # elif event == 'sub_worker_prepare_data_fahrplan':
-        #     self.sub_worker_prepare_data_fahrplan()
-        # elif event == 'sub_worker_select_dates_for_date_range':
-        #     self.sub_worker_select_dates_for_date_range()
-        # elif event == 'sub_worker_select_dates_delete_exception_2':
-        #     self.sub_worker_select_dates_delete_exception_2()
-        # elif event == 'sub_worker_select_stops_for_trips':
-        #     self.sub_worker_select_stops_for_trips()
-        # elif event == 'sub_worker_select_for_every_date_trips_stops':
-        #     self.sub_worker_select_for_every_date_trips_stops()
-        # elif event == 'sub_worker_select_stop_sequence_stop_name_sorted':
-        #     self.sub_worker_select_stop_sequence_stop_name_sorted()
-        # elif event == 'sub_worker_create_fahrplan_dates':
-        #     self.sub_worker_create_fahrplan_dates()
-        # elif event == 'sub_worker_create_output_fahrplan':
-        #     self.sub_worker_create_output_fahrplan()
-        # else:
-        #     logging.debug('event not found in class model: {}'.format(event))
-
 
 class Gui(QMainWindow, Publisher, Subscriber):
     def __init__(self, events, name):
@@ -418,7 +221,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        self.setFixedSize(1290, 600)
+        self.setFixedSize(1350, 600)
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.center()
         self.oldPos = self.pos()
@@ -465,7 +268,11 @@ class Gui(QMainWindow, Publisher, Subscriber):
 
         self.ui.pushButton_5.clicked.connect(self.show_home_window)
         self.ui.pushButton_6.clicked.connect(self.show_GTFSDownload_window)
-        # self.listAgencies.clicked.connect(self.notify_select_agency)
+        self.CreateSelect_Tab.ui.listAgencies.clicked.connect(self.notify_select_agency)
+        """
+         TODO: 
+        """
+
         # self.listRoutes.clicked.connect(self.notify_select_route)
         # self.listDatesWeekday.clicked.connect(self.notify_select_weekday_option)
         # self.comboBox.activated[str].connect(self.onChanged)
@@ -487,7 +294,6 @@ class Gui(QMainWindow, Publisher, Subscriber):
                                  'restart': [self.notify_restart, False]
                                  }
 
-
         # init model with publisher
         self.model = Model(['update_weekday_list',
                             'update_routes_list',
@@ -503,17 +309,18 @@ class Gui(QMainWindow, Publisher, Subscriber):
                             'restart'], 'model')
 
         # init Observer model -> controller
-        self.model.register('update_routes_list', self)  # Achtung, sich selbst angeben und nicht self.controller
-        self.model.register('update_date_range', self)
-        self.model.register('update_weekday_list', self)
-        self.model.register('update_agency_list', self)
-        self.model.register('update_weekdate_option', self)
+        self.model.register('restart', self)
         self.model.register('message', self)
         self.model.register('error_message', self)
+
+        self.model.gtfs.register('update_routes_list', self)  # Achtung, sich selbst angeben und nicht self.controller
+        self.model.gtfs.register('update_date_range', self)
+        self.model.gtfs.register('update_weekday_list', self)
+        self.model.gtfs.register('update_agency_list', self)
+        self.model.gtfs.register('update_weekdate_option', self)
         self.model.register('data_changed', self)
-        self.model.register('update_progress_bar', self)
-        self.model.register('update_import_progress_bar', self)
-        self.model.register('restart', self)
+        self.model.gtfs.register('update_progress_bar', self)
+        self.model.gtfs.register('update_import_progress_bar', self)
 
         # init Observer controller -> model
         self.register('load_gtfsdata_event', self.model)
@@ -525,7 +332,6 @@ class Gui(QMainWindow, Publisher, Subscriber):
 
         self.refresh_time = get_current_time()
         self.show_home_window()
-
 
     def show_GTFSDownload_window(self):
         self.set_btn_checked(self.downloadGTFSNavPush_btn)
@@ -539,7 +345,6 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.set_btn_checked(self.createTableImport_btn)
         self.ui.stackedWidget.setCurrentWidget(self.CreateImport_Tab)
 
-
     def show_Create_Select_Window(self):
         self.set_btn_checked(self.createTableSelect_btn)
         self.ui.stackedWidget.setCurrentWidget(self.CreateSelect_Tab)
@@ -550,7 +355,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
 
     def set_btn_checked(self, btn):
         for button in self.menu_btns_dict.keys():
-            logging.debug(f'set_btn_checked: {btn.__str__()}')
+            logging.debug(f'set_btn_checked ?: {btn.objectName()}')
             if button != btn:
                 button.setChecked(False)
             else:
@@ -614,7 +419,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
 
     def sub_update_weekdate_option(self):
         self.CreateCreate_Tab.ui.comboBox.setEnabled(True)
-        self.CreateCreate_Tab.ui.comboBox_display.setEnabled(True)
+        self.CreateImport_Tab.ui.comboBox_display.setEnabled(True)
         self.CreateCreate_Tab.ui.comboBox_direction.setEnabled(True)
         self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(True)
         self.sub_update_weekday_list()
@@ -623,7 +428,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
 
     def reset_weekdayDate(self):
         self.CreateCreate_Tab.ui.comboBox.setEnabled(False)
-        self.CreateCreate_Tab.ui.comboBox_display.setEnabled(True)
+        self.CreateImport_Tab.ui.comboBox_display.setEnabled(True)
         self.CreateCreate_Tab.ui.comboBox_direction.setEnabled(False)
         self.CreateCreate_Tab.ui.lineDateInput.setEnabled(False)
         self.CreateCreate_Tab.ui.listDatesWeekday.clear()
@@ -648,7 +453,6 @@ class Gui(QMainWindow, Publisher, Subscriber):
 
     def sub_update_import_progress_bar(self):
         self.CreateImport_Tab.ui.progressBar.setValue(self.model.gtfs.import_progress)
-
 
     def sub_write_gui_log(self, text):
         time_now = datetime.now().strftime("%d-%b-%Y (%H:%M:%S)")
@@ -736,8 +540,8 @@ class Gui(QMainWindow, Publisher, Subscriber):
             if self.model.gtfs.agenciesList is None:
                 return False
             self.CreateCreate_Tab.ui.line_Selection_agency.setText(
-                self.CreateCreate_Tab.ui.listAgencies.currentItem().text())
-            self.model.gtfs.selectedAgency = self.CreateCreate_Tab.ui.listAgencies.currentItem().text().split(',')[0]
+                self.CreateSelect_Tab.ui.listAgencies.currentItem().text())
+            self.model.gtfs.selectedAgency = self.CreateSelect_Tab.ui.listAgencies.currentItem().text().split(',')[0]
             self.reset_weekdayDate()
             self.dispatch("select_agency", "select_agency routine started! Notify subscriber!")
         except TypeError:
@@ -765,7 +569,6 @@ class Gui(QMainWindow, Publisher, Subscriber):
     def notify_close_program(self):
         return self.dispatch("close_program", "close_program routine started! Notify subscriber!")
 
-
 def get_current_time():
     """ Helper function to get the current time in seconds. """
 
@@ -773,13 +576,11 @@ def get_current_time():
     total_time = (now.hour * 3600) + (now.minute * 60) + now.second
     return total_time
 
-
 def main(events, name):
     gtfs_app = QApplication(sys.argv)
     application_window = Gui(events=events, name=name)
     application_window.show()
     sys.exit(gtfs_app.exec_())
-
 
 if __name__ == '__main__':
     logging.debug('no')

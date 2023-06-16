@@ -70,7 +70,6 @@ class Ui_MainWindow(object):
 "#toolBox::tab {\n"
 "    padding-left: 5px;\n"
 "    text-align: left;\n"
-"    border-radius: 2px;\n"
 "    border-style: solid;\n"
 "}\n"
 "\n"
@@ -236,8 +235,8 @@ class Ui_MainWindow(object):
         self.stackedWidget.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.stackedWidget.setAutoFillBackground(False)
         self.stackedWidget.setStyleSheet("QTabWidget {\n"
-"         border: none;\n"
-"         padding:1 px;\n"
+"         border: solid;\n"
+"         padding:0 px;\n"
 "        }\n"
 "\n"
 "QTabWidget::panel {\n"
@@ -268,7 +267,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
-        self.toolBox.setCurrentIndex(1)
+        self.toolBox.setCurrentIndex(0)
         self.pushButton.toggled['bool'].connect(self.menu_widget.setHidden) # type: ignore
         self.btnExit.clicked.connect(MainWindow.close) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(MainWindow)

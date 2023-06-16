@@ -13,6 +13,60 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">#Form {
+border-style: solid;
+border-color:  #f2f7f5;
+background: #cfe2da; 
+
+}
+
+#Form QListWidget {
+	background-color: #F0FCF7;
+   border-radius: 10px;
+	padding: 5px 5px 5px 5px;
+	text-align: center;
+    color:#41312b;
+}
+
+#Form QPushButton {
+	background-color: #587b6d;
+   border-radius: 10px;
+	padding: 5px 5px 5px 5px;
+	text-align: center;
+    color:#f2b198;
+}
+
+#Form QLineEdit {
+	background-color: #F0FCF7;
+   border-radius: 10px;
+	padding: 5px 5px 5px 5px;
+	text-align: center;
+    color:#41312b;
+}
+
+#Form QLabel {
+   border-radius: 10px;
+	padding: 5px 5px 5px 5px;
+	text-align: center;
+    color:#41312b;
+}
+
+#Form QComboBox {
+	background-color: #587b6d;
+   border-radius: 10px;
+	padding: 5px 5px 5px 100px;
+	text-align: center;
+    color:#f2b198;
+    
+}
+
+#Form QPushButton:hover {
+	background-color: #408d49;
+   border-radius: 10px;
+       color:#fde1d6;
+}</string>
+  </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
     <widget class="QWidget" name="widget_2" native="true">
@@ -28,8 +82,7 @@
               <item row="3" column="0">
                <widget class="QLabel" name="label_12">
                 <property name="styleSheet">
-                 <string notr="true">background-color:  #ffcbc0;
-font: 75 8pt &quot;72&quot;;</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;mode&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -47,12 +100,7 @@ font: 75 8pt &quot;72&quot;;</string>
                  </font>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">background-color:  #ff9740;
-border-style: outset;
-border-width:0px;
-border-radius: 15px;
-border-color: black;
-padding: 4px;</string>
+                 <string notr="true"/>
                 </property>
                 <item>
                  <property name="text">
@@ -77,12 +125,7 @@ padding: 4px;</string>
                  </font>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">background-color:  #ff9740;
-border-style: outset;
-border-width:0px;
-border-radius: 15px;
-border-color: black;
-padding: 4px;</string>
+                 <string notr="true"/>
                 </property>
                 <item>
                  <property name="text">
@@ -125,14 +168,13 @@ padding: 4px;</string>
                  <font>
                   <family>72</family>
                   <pointsize>8</pointsize>
-                  <weight>9</weight>
+                  <weight>50</weight>
                   <italic>false</italic>
                   <bold>false</bold>
                  </font>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">background-color:  #ffcbc0;
-font: 75 8pt &quot;72&quot;;</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Weekday&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -142,7 +184,7 @@ font: 75 8pt &quot;72&quot;;</string>
               <item row="2" column="0">
                <widget class="QLabel" name="label_2">
                 <property name="styleSheet">
-                 <string notr="true">background-color:  #ffcbc0;</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string>example: 20211212</string>
@@ -160,12 +202,7 @@ font: 75 8pt &quot;72&quot;;</string>
                  </font>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">background-color:  #fdfefe;
-border-style: outset;
-border-width: 0.5px;
-border-radius: 15px;
-border-color: black;
-padding: 1px;</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string>20211212</string>
@@ -183,12 +220,7 @@ padding: 1px;</string>
                  </font>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">background-color:  #ff9740;
-border-style: outset;
-border-width: 0px;
-border-radius: 15px;
-border-color: black;
-padding: 4px;</string>
+                 <string notr="true"/>
                 </property>
                 <property name="verticalScrollBarPolicy">
                  <enum>Qt::ScrollBarAlwaysOff</enum>
@@ -204,14 +236,13 @@ padding: 4px;</string>
                  <font>
                   <family>72</family>
                   <pointsize>8</pointsize>
-                  <weight>9</weight>
+                  <weight>50</weight>
                   <italic>false</italic>
                   <bold>false</bold>
                  </font>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">background-color:  #ffcbc0;
-font: 75 8pt &quot;72&quot;;</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Date&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -229,14 +260,13 @@ font: 75 8pt &quot;72&quot;;</string>
                       <font>
                        <family>72</family>
                        <pointsize>8</pointsize>
-                       <weight>9</weight>
+                       <weight>50</weight>
                        <italic>false</italic>
                        <bold>false</bold>
                       </font>
                      </property>
                      <property name="styleSheet">
-                      <string notr="true">background-color:  #ffcbc0;
-font: 75 8pt &quot;72&quot;;</string>
+                      <string notr="true"/>
                      </property>
                      <property name="text">
                       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Selection&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -249,12 +279,7 @@ font: 75 8pt &quot;72&quot;;</string>
                       <bool>false</bool>
                      </property>
                      <property name="styleSheet">
-                      <string notr="true">background-color:  #ff9740;
-border-style: outset;
-border-width: 0px;
-border-radius: 15px;
-border-color: black;
-padding: 4px;</string>
+                      <string notr="true"/>
                      </property>
                     </widget>
                    </item>
@@ -264,12 +289,7 @@ padding: 4px;</string>
                       <bool>false</bool>
                      </property>
                      <property name="styleSheet">
-                      <string notr="true">background-color:  #ff9740;
-border-style: outset;
-border-width: 0px;
-border-radius: 15px;
-border-color: black;
-padding: 4px;</string>
+                      <string notr="true"/>
                      </property>
                     </widget>
                    </item>
@@ -279,12 +299,7 @@ padding: 4px;</string>
                       <bool>false</bool>
                      </property>
                      <property name="styleSheet">
-                      <string notr="true">background-color:  #ff9740;
-border-style: outset;
-border-width: 0px;
-border-radius: 15px;
-border-color: black;
-padding: 4px;</string>
+                      <string notr="true"/>
                      </property>
                     </widget>
                    </item>
@@ -294,12 +309,7 @@ padding: 4px;</string>
                       <bool>false</bool>
                      </property>
                      <property name="styleSheet">
-                      <string notr="true">background-color:  #ff9740;
-border-style: outset;
-border-width: 0px;
-border-radius: 15px;
-border-color: black;
-padding: 4px;</string>
+                      <string notr="true"/>
                      </property>
                     </widget>
                    </item>
@@ -309,14 +319,13 @@ padding: 4px;</string>
                       <font>
                        <family>72</family>
                        <pointsize>8</pointsize>
-                       <weight>9</weight>
+                       <weight>50</weight>
                        <italic>false</italic>
                        <bold>false</bold>
                       </font>
                      </property>
                      <property name="styleSheet">
-                      <string notr="true">background-color:  #ffcbc0;
-font: 75 8pt &quot;72&quot;;</string>
+                      <string notr="true"/>
                      </property>
                      <property name="text">
                       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;detected date range&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -357,12 +366,7 @@ font: 75 8pt &quot;72&quot;;</string>
                       </font>
                      </property>
                      <property name="styleSheet">
-                      <string notr="true">background-color: orange;
-border-style: outset;
-border-width: 0px;
-border-radius: 15px;
-border-color: black;
-padding: 4px;</string>
+                      <string notr="true"/>
                      </property>
                      <property name="text">
                       <string>Create Table</string>
@@ -380,12 +384,7 @@ padding: 4px;</string>
                       </font>
                      </property>
                      <property name="styleSheet">
-                      <string notr="true">background-color: orange;
-border-style: outset;
-border-width: 0px;
-border-radius: 15px;
-border-color: black;
-padding: 4px;</string>
+                      <string notr="true"/>
                      </property>
                      <property name="text">
                       <string>Stop</string>
@@ -405,14 +404,13 @@ padding: 4px;</string>
                          <font>
                           <family>72</family>
                           <pointsize>8</pointsize>
-                          <weight>9</weight>
+                          <weight>50</weight>
                           <italic>false</italic>
                           <bold>false</bold>
                          </font>
                         </property>
                         <property name="styleSheet">
-                         <string notr="true">background-color:  #ffcbc0;
-font: 75 8pt &quot;72&quot;;</string>
+                         <string notr="true"/>
                         </property>
                         <property name="text">
                          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Log&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -422,12 +420,7 @@ font: 75 8pt &quot;72&quot;;</string>
                       <item row="1" column="0">
                        <widget class="QTextBrowser" name="textBrowser">
                         <property name="styleSheet">
-                         <string notr="true">background-color:  #fdfefe;
-border-style: outset;
-border-width: 1px;
-border-radius: 15px;
-border-color: black;
-padding: 4px;</string>
+                         <string notr="true"/>
                         </property>
                         <property name="frameShape">
                          <enum>QFrame::Box</enum>
@@ -464,8 +457,7 @@ padding: 4px;</string>
               <item row="0" column="0">
                <widget class="QLabel" name="label_14">
                 <property name="styleSheet">
-                 <string notr="true">background-color:  #ffcbc0;
-font: 75 8pt &quot;72&quot;;</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;progress&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -478,8 +470,7 @@ font: 75 8pt &quot;72&quot;;</string>
                  <bool>false</bool>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">background-color:  #ffcbc0;
-padding: 1 px;</string>
+                 <string notr="true"/>
                 </property>
                 <property name="value">
                  <number>0</number>

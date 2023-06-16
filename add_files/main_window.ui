@@ -116,7 +116,6 @@ color: #ee9462;
 #toolBox::tab {
 	padding-left: 5px;
 	text-align: left;
-	border-radius: 2px;
     border-style: solid;
 }
 
@@ -181,7 +180,7 @@ color: #ee9462;
            <string notr="true"/>
           </property>
           <property name="currentIndex">
-           <number>1</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="page">
            <property name="geometry">
@@ -513,8 +512,8 @@ color: #f4edea;</string>
           </property>
           <property name="styleSheet">
            <string notr="true">QTabWidget {
-         border: none;
-         padding:1 px;
+         border: solid;
+         padding:0 px;
         }
 
 QTabWidget::panel {
