@@ -11,8 +11,8 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QThread, pyqtSignal, QAbstractTableModel
 from PyQt5.QtWidgets import QFileDialog, QApplication, QTableView
 
-# from add_files.main_window_ui import Ui_MainWindow
-from add_files.main_window_ui_backup import Ui_MainWindow
+from add_files.main_window_ui import Ui_MainWindow
+from general_window_information import GeneralInformation
 from create_table_create import CreateTableCreate
 from create_table_import import CreateTableImport
 from create_table_select import CreateTableSelect
@@ -73,7 +73,8 @@ class Model(Publisher, Subscriber):
                                  'select_weekday': [self.sub_select_weekday_event, False],
                                  'reset_gtfs': [self.sub_reset_gtfs, False],
                                  'start_create_table': [self.sub_start_create_table, False],
-                                 'sub_worker_load_gtfsdata': [self.sub_worker_load_gtfsdata, False]
+                                 'sub_worker_load_gtfsdata': [self.sub_worker_load_gtfsdata, False],
+                                 'sub_worker_update_routes_list': [self.sub_worker_update_routes_list, False]
                                  }
 
     def sub_reset_gtfs(self):
@@ -152,7 +153,6 @@ class Model(Publisher, Subscriber):
             self.worker = GTFSWorker(['sub_worker_create_output_fahrplan'], 'Worker', 'create_table_weekday')
         self.worker.register('sub_worker_create_output_fahrplan', self)
 
-        self.worker.importedGTFS.connect(self.notify_set_progressbar)
         self.worker.start()
         self.worker.finished.connect(self.finished_create_table)
 
@@ -161,7 +161,6 @@ class Model(Publisher, Subscriber):
 
     def update_agency_list(self):
         self.gtfs.read_gtfs_agencies()
-        self.notify_update_agency_List()
         self.worker = None
 
     def update_date_range(self):
@@ -169,9 +168,7 @@ class Model(Publisher, Subscriber):
         # self.update_weekdate_options()
 
     def update_routes_list(self):
-        self.notify_update_routes_List()
         self.worker = None
-        self.notify_set_progressbar(0)
         # self.update_weekdate_options()
 
     def update_weekdate_options(self):
@@ -185,10 +182,6 @@ class Model(Publisher, Subscriber):
     def notify_delete_process(self):
         self.dispatch("data_changed", "{} finished".format(self.gtfs.processing))
         self.gtfs.processing = None
-
-    def notify_update_agency_List(self):
-        return self.dispatch("update_agency_list",
-                             "update_agency_list routine started! Notify subscriber!")
 
     def notify_update_routes_List(self):
         return self.dispatch("update_routes_list",
@@ -230,18 +223,16 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.createTableImport_btn = self.ui.pushButton_2
         self.createTableSelect_btn = self.ui.pushButton_3
         self.createTableCreate_btn = self.ui.pushButton_4
-
         self.generalNavPush_btn = self.ui.pushButton_5
         self.downloadGTFSNavPush_btn = self.ui.pushButton_6
 
         self.menu_btns_dict = {self.createTableImport_btn: CreateTableImport,
                                self.createTableSelect_btn: CreateTableSelect,
                                self.createTableCreate_btn: CreateTableCreate,
-                               self.generalNavPush_btn: CreateTableSelect,
+                               self.generalNavPush_btn: GeneralInformation,
                                self.downloadGTFSNavPush_btn: DownloadGTFS}
 
-        self.CreateMainTab = CreateTableSelect()
-
+        self.CreateMainTab = GeneralInformation()
         self.CreateImport_Tab = CreateTableImport()
         self.CreateSelect_Tab = CreateTableSelect()
         self.CreateCreate_Tab = CreateTableCreate()
@@ -252,7 +243,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.ui.stackedWidget.addWidget(self.CreateCreate_Tab)
         self.ui.stackedWidget.addWidget(self.DownloadGTFS_Tab)
         self.ui.stackedWidget.addWidget(self.CreateImport_Tab)
-        self.ui.stackedWidget.addWidget(self.CreateImport_Tab)
+        self.ui.stackedWidget.addWidget(self.CreateMainTab)
 
         # connect gui elements to methods
 

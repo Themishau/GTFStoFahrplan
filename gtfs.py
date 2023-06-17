@@ -8,6 +8,9 @@ import io
 from datetime import datetime, timedelta
 import re
 import logging
+import sys
+import os
+import h5py
 from PyQt5.QtCore import QAbstractTableModel
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
@@ -38,6 +41,7 @@ class gtfs(Publisher, Subscriber):
         self._progress = 0
         self._import_progress = 0
         self._agenciesList = None
+        self._routesList = None
         self.options_dates_weekday = ['Dates', 'Weekday']
         self.weekDayOptions = {0: [0, 'Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday'],
                                1: [1, 'Monday, Tuesday, Wednesday, Thursday, Friday'],
@@ -99,7 +103,7 @@ class gtfs(Publisher, Subscriber):
         self.now = None
 
         """ loaded data for listbox """
-        self.routesList = None
+
         self.weekdayList = None
         self.serviceslist = None
 
@@ -158,6 +162,17 @@ class gtfs(Publisher, Subscriber):
         self._agenciesList = value
         self.dispatch("update_agency_list",
                       "update_agency_list routine started! Notify subscriber!")
+
+    @property
+    def routesList(self):
+        return self._routesList
+
+
+    @routesList.setter
+    def routesList(self, value):
+        self._routesList = value
+        self.dispatch("update_routes_list",
+                      "update_routes_list routine started! Notify subscriber!")
 
     def notify_subscriber(self, event, message):
         logging.debug(f'event: {event}, message {message}')
@@ -311,6 +326,38 @@ class gtfs(Publisher, Subscriber):
 
         return True
 
+    def save_h5(self, h5_filename, data, labels, descr=None,
+                data_dtype='float32', label_dtype='float32'):
+        """Create a compressed .h5 file containing:
+        data    : numpy array
+        labels  : numpy array
+        descr   : text description ofthe data contained (must be a string)
+        """
+
+        if os.path.exists(h5_filename):
+            # prevent overwriting a file
+            sys.exit('File already exists!')
+
+        h5_fout = h5py.File(h5_filename)
+
+        h5_fout.create_dataset(
+            name='data',
+            data=data,
+            compression='gzip', compression_opts=4,
+            dtype=data_dtype)
+
+        h5_fout.create_dataset(
+            name='labels',
+            data=labels,
+            compression='gzip', compression_opts=4,
+            dtype=label_dtype)
+
+
+        if descr is not None:
+            h5_fout.create_dataset(
+                'description', data=descr)
+
+        h5_fout.close()
     def getDateRange(self):
         if self.dffeed_info is not None:
             self.date_range = str(self.dffeed_info.iloc[0].feed_start_date) + '-' + str(
@@ -950,6 +997,7 @@ class gtfs(Publisher, Subscriber):
                                        'Route': [self.selectedRoute],
                                        'WeekdayOption': [self.selected_weekday]
                                        }
+
         self.dfheader_for_export_data = pd.DataFrame.from_dict(self.header_for_export_data)
 
         dummy_direction = 0
