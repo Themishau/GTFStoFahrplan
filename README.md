@@ -5,7 +5,7 @@ GTFS to fahrplan
 - creates a timetable.
 - add_files folder is needed. 
 
-![Screenshot](gtfs_beispiel.png)
+![Screenshot](gfts_example_gui.png)
 
 
 
