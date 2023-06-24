@@ -100,8 +100,8 @@ class Ui_SplashScreen(object):
 
     def retranslateUi(self, SplashScreen):
         SplashScreen.setWindowTitle(QCoreApplication.translate("SplashScreen", u"MainWindow", None))
-        self.label_title.setText(QCoreApplication.translate("SplashScreen", u"<strong>YOUR</strong> APP NAME", None))
-        self.label_description.setText(QCoreApplication.translate("SplashScreen", u"<strong>APP</strong> DESCRIPTION", None))
+        self.label_title.setText(QCoreApplication.translate("SplashScreen", u"<strong>GTFS</strong> TIMETABLER", None))
+        self.label_description.setText(QCoreApplication.translate("SplashScreen", u"<strong>APP</strong> Create Time Tables", None))
         self.label_loading.setText(QCoreApplication.translate("SplashScreen", u"loading...", None))
         self.label_credits.setText(QCoreApplication.translate("SplashScreen", u"<strong>Created</strong>: Themishau", None))
     # retranslateUi
