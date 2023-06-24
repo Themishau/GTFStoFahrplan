@@ -33,15 +33,17 @@ class gtfs(Publisher, Subscriber):
             'fill_agency_list': [self.get_routes_of_agency, False],
             'create_table_date': [self.sub_worker_create_output_fahrplan_date, False],
             'create_table_weekday': [self.sub_worker_create_output_fahrplan_weekday, False],
-
         }
         self.input_path = ""
-        self.output_path = ""
+        self._output_path = ""
         self.date_range = ""
+        self._gtfs_name = ""
+        self._pickleDir = ""
         self._progress = 0
         self._import_progress = 0
         self._agenciesList = None
         self._routesList = None
+
         self.options_dates_weekday = ['Dates', 'Weekday']
         self.weekDayOptions = {0: [0, 'Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday'],
                                1: [1, 'Monday, Tuesday, Wednesday, Thursday, Friday'],
@@ -141,6 +143,35 @@ class gtfs(Publisher, Subscriber):
     @property
     def import_progress(self):
         return self._import_progress
+
+    @property
+    def input_path(self):
+        return self._gtfs_name
+
+    @input_path.setter
+    def input_path(self, value):
+        self._input_path = value
+
+    @property
+    def pickleDir(self):
+        return self._pickleDir
+
+    @pickleDir.setter
+    def pickleDir(self, value):
+        if os.path.isdir(value):
+            self._pickleDir = value
+        else:
+            self.dispatch("message",
+                                 "Folder not found. Please check!")
+
+
+    @property
+    def gtfs_name(self):
+        return self._gtfs_name
+
+    @gtfs_name.setter
+    def gtfs_name(self, value):
+        self._import_progress = value
 
     @progress.setter
     def progress(self, value):
@@ -266,11 +297,14 @@ class gtfs(Publisher, Subscriber):
 
         # DataFrame with every trip
         self.dfTrips = pd.DataFrame.from_dict(self.tripdict).set_index('trip_id')
-
         try:
             # dfTrips['trip_id'] = pd.to_numeric(dfTrips['trip_id'])
-            self.dfTrips['trip_id'] = self.dfTrips['trip_id'].astype('string')
-            self.dfTrips['direction_id'] = self.dfTrips['direction_id'].astype('int32')
+            self.dfTrips['trip_id'] = self.dfTrips['trip_id'].astype('int8')
+            self.dfTrips['direction_id'] = self.dfTrips['direction_id'].astype('int8')
+            self.dfTrips['shape_id'] = self.dfTrips['shape_id'].astype('int8')
+            self.dfTrips['wheelchair_accessible'] = self.dfTrips['wheelchair_accessible'].astype('int8')
+            self.dfTrips['bikes_allowed'] = self.dfTrips['bikes_allowed'].astype('int8')
+
         except KeyError:
             logging.debug("can not convert dfTrips: trip_id into string")
 
@@ -326,38 +360,48 @@ class gtfs(Publisher, Subscriber):
 
         return True
 
+    def save_pickle(self):
+         os.mkdir(self.output_path + "/" + "")
+         self.dfStops.to_pickle("./dummy.pkl")
+         self.dfStopTimes.to_pickle("./dummy.pkl")
+         self.dfTrips.to_pickle("./dummy.pkl")
+         self.dfWeek.to_pickle("./dummy.pkl")
+         self.dfDates.to_pickle("./dummy.pkl")
+         self.dfRoutes.to_pickle("./dummy.pkl")
+         self.dfagency.to_pickle("./dummy.pkl")
+         self.dffeed_info.to_pickle("./dummy.pkl")
+
+    def load_pickle(self):
+            return
+
+
     def save_h5(self, h5_filename, data, labels, descr=None,
                 data_dtype='float32', label_dtype='float32'):
         """Create a compressed .h5 file containing:
         data    : numpy array
         labels  : numpy array
-        descr   : text description ofthe data contained (must be a string)
+        descr   : text description of the data contained (must be a string)
         """
 
         if os.path.exists(h5_filename):
             # prevent overwriting a file
             sys.exit('File already exists!')
 
-        h5_fout = h5py.File(h5_filename)
+        with h5py.File(h5_filename, 'w') as f:
+            h5_fout = f.create_dataset(
+                name='data',
+                data=data,
+                compression='gzip', compression_opts=4)
 
-        h5_fout.create_dataset(
-            name='data',
-            data=data,
-            compression='gzip', compression_opts=4,
-            dtype=data_dtype)
-
-        h5_fout.create_dataset(
-            name='labels',
-            data=labels,
-            compression='gzip', compression_opts=4,
-            dtype=label_dtype)
-
-
-        if descr is not None:
             h5_fout.create_dataset(
-                'description', data=descr)
+                name='labels',
+                data=labels,
+                compression='gzip', compression_opts=4)
 
-        h5_fout.close()
+            if descr is not None:
+                h5_fout.create_dataset(
+                    'description', data=descr)
+
     def getDateRange(self):
         if self.dffeed_info is not None:
             self.date_range = str(self.dffeed_info.iloc[0].feed_start_date) + '-' + str(

@@ -17,6 +17,8 @@ from create_table_create import CreateTableCreate
 from create_table_import import CreateTableImport
 from create_table_select import CreateTableSelect
 from download_gtfs import DownloadGTFS
+
+
 import logging
 
 logging.basicConfig(level=logging.DEBUG,
@@ -24,6 +26,7 @@ logging.basicConfig(level=logging.DEBUG,
                     datefmt="%Y-%m-%d %H:%M:%S")
 
 delimiter = " "
+
 
 # noinspection PyUnresolvedReferences
 class GTFSWorker(QThread, Publisher, Subscriber):
@@ -63,6 +66,7 @@ class Model(Publisher, Subscriber):
                           'active_weekdate_options',
                           'update_weekdate_option',
                           'update_progress_bar',
+                          'message',
                           'update_import_progress_bar'], 'data')
         self.mutex = QMutex()
         self.worker = None
@@ -114,6 +118,7 @@ class Model(Publisher, Subscriber):
 
     def sub_worker_load_gtfsdata(self):
         self.gtfs.async_task_load_GTFS_data()
+
 
     def sub_worker_update_routes_list(self):
         self.gtfs.get_routes_of_agency()
@@ -310,6 +315,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.model.gtfs.register('update_agency_list', self)
         self.model.gtfs.register('update_weekdate_option', self)
         self.model.register('data_changed', self)
+        self.model.gtfs.register('message', self)
         self.model.gtfs.register('update_progress_bar', self)
         self.model.gtfs.register('update_import_progress_bar', self)
 
@@ -438,7 +444,8 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.CreateCreate_Tab.ui.line_Selection_date_range.setText(self.model.gtfs.date_range)
         self.show_Create_Select_Window()
         # self.model.start_get_date_range()
-
+        logging.debug("done with creating dfs")
+        self.model.gtfs.save_h5(h5_filename="C:/Tmp/test.h5", data=self.model.gtfs.dfTrips, labels="trips")
     def sub_update_progress_bar(self):
         self.CreateCreate_Tab.ui.progressBar.setValue(self.model.gtfs.progress)
 
@@ -538,6 +545,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         except TypeError:
             logging.debug("TypeError in notify_select_agency")
 
+
     def notify_create_table(self):
         if self.model.gtfs.selected_weekday is None:
             self.model.gtfs.selected_dates = self.CreateSelect_Tab.ui.lineDateInput.text()
@@ -567,11 +575,9 @@ def get_current_time():
     total_time = (now.hour * 3600) + (now.minute * 60) + now.second
     return total_time
 
-def main(events, name):
-    gtfs_app = QApplication(sys.argv)
-    application_window = Gui(events=events, name=name)
-    application_window.show()
-    sys.exit(gtfs_app.exec_())
+
+# SPLASH SCREEN
+
 
 if __name__ == '__main__':
     logging.debug('no')
