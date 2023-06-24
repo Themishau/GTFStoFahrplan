@@ -67,7 +67,7 @@ class Ui_SplashScreen(object):
 "}\n"
 "QProgressBar::chunk{\n"
 "	border-radius: 10px;\n"
-"	background-color: qlineargradient(spread:pad, x1:0, y1:0.511364, x2:1, y2:0.523, stop:0 rgba(254, 121, 199, 255), stop:1 rgba(170, 85, 255, 255));\n"
+"	background-color: qlineargradient(spread:pad, x1:0, y1:0.511364, x2:1, y2:0.523, stop:0 #ee9462, stop:1 rgba(170, 85, 255, 255));\n"
 "}")
         self.progressBar.setValue(24)
         self.label_loading = QLabel(self.dropShadowFrame)
