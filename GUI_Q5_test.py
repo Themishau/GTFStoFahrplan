@@ -328,7 +328,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.register('start_create_table', self.model)
 
         self.refresh_time = get_current_time()
-        self.show_home_window()
+        self.show_Create_Select_Window()
 
     def show_GTFSDownload_window(self):
         self.set_btn_checked(self.downloadGTFSNavPush_btn)
@@ -445,7 +445,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.show_Create_Select_Window()
         # self.model.start_get_date_range()
         logging.debug("done with creating dfs")
-        self.model.gtfs.save_h5(h5_filename="C:/Tmp/test.h5", data=self.model.gtfs.dfTrips, labels="trips")
+        # self.model.gtfs.save_h5(h5_filename="C:/Tmp/test.h5", data=self.model.gtfs.dfTrips, labels="trips")
     def sub_update_progress_bar(self):
         self.CreateCreate_Tab.ui.progressBar.setValue(self.model.gtfs.progress)
 

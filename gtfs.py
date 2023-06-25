@@ -171,8 +171,9 @@ class gtfs(Publisher, Subscriber):
 
     @gtfs_name.setter
     def gtfs_name(self, value):
-        self._import_progress = value
-
+        self._gtfs_name = value
+        # self.dispatch("message",
+        #               "Folder not found. Please check!")
     @progress.setter
     def progress(self, value):
         self._progress = value
