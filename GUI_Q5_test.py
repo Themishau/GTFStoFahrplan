@@ -440,6 +440,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
     def sub_update_agency_list(self):
         self.CreateSelect_Tab.ui.listAgencies.clear()
         self.CreateSelect_Tab.ui.listAgencies.addItems(self.model.gtfs.agenciesList)
+        self.CreateSelect_Tab.ui.tableView.setModel(TableModel(self.model.gtfs.dfagency))
         self.CreateCreate_Tab.ui.line_Selection_date_range.setText(self.model.gtfs.date_range)
         self.show_Create_Select_Window()
         # self.model.start_get_date_range()
@@ -540,9 +541,6 @@ class Gui(QMainWindow, Publisher, Subscriber):
                 self.CreateSelect_Tab.ui.listAgencies.currentItem().text())
             self.model.gtfs.selectedAgency = self.CreateSelect_Tab.ui.listAgencies.currentItem().text().split(',')[0]
             self.reset_weekdayDate()
-            self.CreateSelect_Tab.ui.tableView.setModel(TableModel(self.model.gtfs.dfagency))
-
-
             self.dispatch("select_agency", "select_agency routine started! Notify subscriber!")
         except TypeError:
             logging.debug("TypeError in notify_select_agency")
