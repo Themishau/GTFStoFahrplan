@@ -17,8 +17,7 @@ from create_table_create import CreateTableCreate
 from create_table_import import CreateTableImport
 from create_table_select import CreateTableSelect
 from download_gtfs import DownloadGTFS
-
-
+from SelectTableView import TableModel
 import logging
 
 logging.basicConfig(level=logging.DEBUG,
@@ -328,7 +327,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.register('start_create_table', self.model)
 
         self.refresh_time = get_current_time()
-        self.show_Create_Select_Window()
+        self.show_home_window()
 
     def show_GTFSDownload_window(self):
         self.set_btn_checked(self.downloadGTFSNavPush_btn)
@@ -541,6 +540,9 @@ class Gui(QMainWindow, Publisher, Subscriber):
                 self.CreateSelect_Tab.ui.listAgencies.currentItem().text())
             self.model.gtfs.selectedAgency = self.CreateSelect_Tab.ui.listAgencies.currentItem().text().split(',')[0]
             self.reset_weekdayDate()
+            self.CreateSelect_Tab.ui.tableView.setModel(TableModel(self.model.gtfs.dfagency))
+
+
             self.dispatch("select_agency", "select_agency routine started! Notify subscriber!")
         except TypeError:
             logging.debug("TypeError in notify_select_agency")

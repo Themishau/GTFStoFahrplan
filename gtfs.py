@@ -146,7 +146,7 @@ class gtfs(Publisher, Subscriber):
 
     @property
     def input_path(self):
-        return self._gtfs_name
+        return self._input_path
 
     @input_path.setter
     def input_path(self, value):
@@ -231,8 +231,11 @@ class gtfs(Publisher, Subscriber):
 
         if self.read_paths() is True:
             if self.read_gtfs_data() is True:
+                logging.debug("read_gtfs_data")
                 self.read_gtfs_data_from_path()
+                logging.debug("read_gtfs_data_from_path")
                 self.create_dfs()
+                logging.debug("create_dfs ")
         return self.cleandicts()
 
     def set_paths(self, input_path, output_path):
