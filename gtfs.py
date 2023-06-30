@@ -354,7 +354,7 @@ class gtfs(Publisher, Subscriber):
         self.dfDates['date'] = pd.to_datetime(self.dfDates['date'], format='%Y%m%d')
 
         # DataFrame with every agency
-        self.dfagency = pd.DataFrame.from_dict(self.agencyFahrtdict).set_index('agency_id')
+        self.dfagency = pd.DataFrame.from_dict(self.agencyFahrtdict)
 
         if bool(self.feed_infodict):
             self.dffeed_info = pd.DataFrame.from_dict(self.feed_infodict)

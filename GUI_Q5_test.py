@@ -5,10 +5,9 @@ import time
 import sys
 import os
 from datetime import datetime
-from PyQt5.Qt import QPoint, QMutex, QWidget, QMessageBox, QDesktopWidget, QApplication, QMainWindow
-from PyQt5.QtGui import QPixmap, QColor, QPalette
+from PyQt5.Qt import QPoint, QMutex, QThread, QWidget, QMessageBox, QDesktopWidget, QApplication, QMainWindow
 from PyQt5.QtCore import Qt
-from PyQt5.QtCore import QThread, pyqtSignal, QAbstractTableModel
+from PyQt5 import QtCore
 from PyQt5.QtWidgets import QFileDialog, QApplication, QTableView
 
 from add_files.main_window_ui import Ui_MainWindow
@@ -18,6 +17,7 @@ from create_table_import import CreateTableImport
 from create_table_select import CreateTableSelect
 from download_gtfs import DownloadGTFS
 from SelectTableView import TableModel
+from RoundProgressBar import RoundProgress
 import logging
 
 logging.basicConfig(level=logging.DEBUG,
@@ -217,6 +217,10 @@ class Gui(QMainWindow, Publisher, Subscriber):
         # pixmap = QPixmap(self.resource_path('add_files\\5282.jpg'))
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        self.progressRound = RoundProgress()
+        self.progressRound.value = 50
+        self.progressRound.setMinimumSize(self.progressRound.width, self.progressRound.height)
+        self.ui.gridLayout_7.addWidget(self.progressRound,3, 0, 1, 1,  QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter)
 
         self.setFixedSize(1350, 600)
         self.setWindowFlags(Qt.FramelessWindowHint)
@@ -246,7 +250,6 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.ui.stackedWidget.addWidget(self.CreateSelect_Tab)
         self.ui.stackedWidget.addWidget(self.CreateCreate_Tab)
         self.ui.stackedWidget.addWidget(self.DownloadGTFS_Tab)
-        self.ui.stackedWidget.addWidget(self.CreateImport_Tab)
         self.ui.stackedWidget.addWidget(self.CreateMainTab)
 
         # connect gui elements to methods
@@ -264,6 +267,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.ui.pushButton_5.clicked.connect(self.show_home_window)
         self.ui.pushButton_6.clicked.connect(self.show_GTFSDownload_window)
         self.CreateSelect_Tab.ui.listAgencies.clicked.connect(self.notify_select_agency)
+        self.CreateSelect_Tab.ui.tableView.clicked.connect(self.notify_tableview_agency)
         """
          TODO: 
         """
@@ -327,6 +331,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.register('start_create_table', self.model)
 
         self.refresh_time = get_current_time()
+        self.ui.toolBox.setCurrentIndex(0)
         self.show_home_window()
 
     def show_GTFSDownload_window(self):
@@ -524,6 +529,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.CreateSelect_Tab.ui.line_Selection_trips.setText(self.CreateSelect_Tab.ui.listRoutes.currentItem().text())
         self.model.gtfs.selectedRoute = self.CreateSelect_Tab.ui.listRoutes.currentItem().text().split(',')[1]
         self.dispatch("select_route", "select_route routine started! Notify subscriber!")
+        logging.debug(f"notify_select_route {self.model.gtfs.selectedRoute}")
         self.sub_update_weekdate_option()
 
     # activity on gui will trigger notify events
@@ -541,10 +547,16 @@ class Gui(QMainWindow, Publisher, Subscriber):
                 self.CreateSelect_Tab.ui.listAgencies.currentItem().text())
             self.model.gtfs.selectedAgency = self.CreateSelect_Tab.ui.listAgencies.currentItem().text().split(',')[0]
             self.reset_weekdayDate()
+            logging.debug(f"notify_select_agency {self.model.gtfs.selectedAgency}")
             self.dispatch("select_agency", "select_agency routine started! Notify subscriber!")
         except TypeError:
             logging.debug("TypeError in notify_select_agency")
 
+    def notify_tableview_agency(self):
+        index = self.CreateSelect_Tab.ui.tableView.selectedIndexes()[0]
+        logging.debug(f"index {index}")
+        id_us = self.CreateSelect_Tab.ui.tableView.model().data(index)
+        logging.debug(f"index {id_us}")
 
     def notify_create_table(self):
         if self.model.gtfs.selected_weekday is None:

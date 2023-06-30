@@ -9,7 +9,7 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from RoundProgressBar import RoundProgress
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -186,10 +186,7 @@ class Ui_MainWindow(object):
         # self.progressBar.setProperty("value", 24)
         # self.progressBar.setObjectName("progressBar")
         # self.gridLayout_7.addWidget(self.progressBar, 3, 0, 1, 1)
-        self.progressRound = RoundProgress()
-        self.progressRound.value = 50
-        self.progressRound.setMinimumSize(self.progressRound.width, self.progressRound.height)
-        self.gridLayout_7.addWidget(self.progressRound,3, 0, 1, 1,  QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter)
+
         self.textBrowser = QtWidgets.QTextBrowser(self.frame)
         self.textBrowser.setMaximumSize(QtCore.QSize(100, 25))
         self.textBrowser.setObjectName("textBrowser")
