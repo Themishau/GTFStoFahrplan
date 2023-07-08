@@ -77,7 +77,9 @@ class Model(Publisher, Subscriber):
                                  'reset_gtfs': [self.sub_reset_gtfs, False],
                                  'start_create_table': [self.sub_start_create_table, False],
                                  'sub_worker_load_gtfsdata': [self.sub_worker_load_gtfsdata, False],
-                                 'sub_worker_update_routes_list': [self.sub_worker_update_routes_list, False]
+                                 'sub_worker_update_routes_list': [self.sub_worker_update_routes_list, False],
+                                 'sub_worker_create_output_fahrplan_date': [self.sub_worker_create_output_fahrplan_date, False],
+                                 'sub_worker_create_output_fahrplan_weekday': [self.sub_worker_create_output_fahrplan_weekday, False]
                                  }
 
     def sub_reset_gtfs(self):
@@ -150,12 +152,15 @@ class Model(Publisher, Subscriber):
     def sub_start_create_table(self):
         self.gtfs.processing = "create table"
         self.notify_set_process("create table data...")
-
+        logging.debug(f'create table date: {self.gtfs.selected_dates}')
+        logging.debug(f'create table weekday: {self.gtfs.selected_weekday}')
         if self.gtfs.selected_weekday is None:
-            self.worker = GTFSWorker(['sub_worker_create_output_fahrplan'], 'Worker', 'create_table_date')
+            self.worker = GTFSWorker(['sub_worker_create_output_fahrplan_date'], 'Worker', 'create_table_date')
+            self.worker.register('sub_worker_create_output_fahrplan_date', self)
+
         else:
-            self.worker = GTFSWorker(['sub_worker_create_output_fahrplan'], 'Worker', 'create_table_weekday')
-        self.worker.register('sub_worker_create_output_fahrplan', self)
+            self.worker = GTFSWorker(['sub_worker_create_output_fahrplan_weekday'], 'Worker', 'create_table_weekday')
+            self.worker.register('sub_worker_create_output_fahrplan_weekday', self)
 
         self.worker.start()
         self.worker.finished.connect(self.finished_create_table)
@@ -218,9 +223,10 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.progressRound = RoundProgress()
-        self.progressRound.value = 50
+        self.progressRound.value = 99
         self.progressRound.setMinimumSize(self.progressRound.width, self.progressRound.height)
         self.ui.gridLayout_7.addWidget(self.progressRound,3, 0, 1, 1,  QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter)
+
 
         self.setFixedSize(1350, 600)
         self.setWindowFlags(Qt.FramelessWindowHint)
@@ -272,12 +278,12 @@ class Gui(QMainWindow, Publisher, Subscriber):
          TODO: 
         """
 
-        # self.listRoutes.clicked.connect(self.notify_select_route)
-        # self.listDatesWeekday.clicked.connect(self.notify_select_weekday_option)
-        # self.comboBox.activated[str].connect(self.onChanged)
-        # self.comboBox_display.activated[str].connect(self.onChangedTimeFormatMode)
-        # self.comboBox_direction.activated[str].connect(self.onChangedDirectionMode)
-        # self.line_Selection_format.setText('time format 1')
+        self.CreateSelect_Tab.ui.listRoutes.clicked.connect(self.notify_select_route)
+        self.CreateCreate_Tab.ui.listDatesWeekday.clicked.connect(self.notify_select_weekday_option)
+        self.CreateCreate_Tab.ui.comboBox.activated[str].connect(self.onChanged)
+        self.CreateImport_Tab.ui.comboBox_display.activated[str].connect(self.onChangedTimeFormatMode)
+        self.CreateCreate_Tab.ui.comboBox_direction.activated[str].connect(self.onChangedDirectionMode)
+        self.CreateCreate_Tab.ui.line_Selection_format.setText('time format 1')
 
         self.lineend = '\n'
         self.textBrowserText = ''
@@ -303,8 +309,6 @@ class Gui(QMainWindow, Publisher, Subscriber):
                             'error_message',
                             'message',
                             'data_changed',
-                            'update_progress_bar',
-                            'update_import_progress_bar',
                             'restart'], 'model')
 
         # init Observer model -> controller
@@ -405,7 +409,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
             self.model.gtfs.timeformat = 1
         elif text == 'time format 2':
             self.model.gtfs.timeformat = 2
-        self.CreateImport_Tab.ui.line_Selection_format.setText(text)
+        self.CreateCreate_Tab.ui.line_Selection_format.setText(text)
 
     def onChangedDirectionMode(self, text):
         if text == 'direction 1':
@@ -443,10 +447,12 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.CreateSelect_Tab.ui.listRoutes.addItems(self.model.gtfs.routesList)
 
     def sub_update_agency_list(self):
+        self.model.gtfs.save_pickle()
         self.CreateSelect_Tab.ui.listAgencies.clear()
         self.CreateSelect_Tab.ui.listAgencies.addItems(self.model.gtfs.agenciesList)
         self.CreateSelect_Tab.ui.tableView.setModel(TableModel(self.model.gtfs.dfagency))
         self.CreateCreate_Tab.ui.line_Selection_date_range.setText(self.model.gtfs.date_range)
+        self.CreateCreate_Tab.ui.lineDateInput.setText(self.model.gtfs.date_range)
         self.show_Create_Select_Window()
         # self.model.start_get_date_range()
         logging.debug("done with creating dfs")
@@ -526,7 +532,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
     def notify_select_route(self):
         if self.model.gtfs.routesList is None:
             return False
-        self.CreateSelect_Tab.ui.line_Selection_trips.setText(self.CreateSelect_Tab.ui.listRoutes.currentItem().text())
+        self.CreateCreate_Tab.ui.line_Selection_trips.setText(self.CreateSelect_Tab.ui.listRoutes.currentItem().text())
         self.model.gtfs.selectedRoute = self.CreateSelect_Tab.ui.listRoutes.currentItem().text().split(',')[1]
         self.dispatch("select_route", "select_route routine started! Notify subscriber!")
         logging.debug(f"notify_select_route {self.model.gtfs.selectedRoute}")
@@ -536,7 +542,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
     def notify_select_weekday_option(self):
         if self.model.gtfs.weekDayOptionsList is None:
             return False
-        self.model.gtfs.selected_weekday = self.CreateSelect_Tab.ui.listDatesWeekday.currentItem().text().split(',')[0]
+        self.model.gtfs.selected_weekday = self.CreateCreate_Tab.ui.listDatesWeekday.currentItem().text().split(',')[0]
         self.dispatch("select_weekday", "select_weekday routine started! Notify subscriber!")
 
     def notify_select_agency(self):
@@ -560,7 +566,11 @@ class Gui(QMainWindow, Publisher, Subscriber):
 
     def notify_create_table(self):
         if self.model.gtfs.selected_weekday is None:
-            self.model.gtfs.selected_dates = self.CreateSelect_Tab.ui.lineDateInput.text()
+            self.model.gtfs.selected_dates = self.CreateCreate_Tab.ui.lineDateInput.text()
+            self.model.gtfs.selected_weekday = None
+        else:
+            self.model.gtfs.selected_dates = None
+
         self.dispatch("start_create_table", "start_create_table routine started! Notify subscriber!")
 
     def notify_load_gtfsdata_event(self):
@@ -586,10 +596,6 @@ def get_current_time():
     now = dt.datetime.now()
     total_time = (now.hour * 3600) + (now.minute * 60) + now.second
     return total_time
-
-
-# SPLASH SCREEN
-
 
 if __name__ == '__main__':
     logging.debug('no')

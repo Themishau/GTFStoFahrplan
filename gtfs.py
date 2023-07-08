@@ -12,6 +12,7 @@ import sys
 import os
 import h5py
 from PyQt5.QtCore import QAbstractTableModel
+
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
                     datefmt="%Y-%m-%d %H:%M:%S")
@@ -162,8 +163,7 @@ class gtfs(Publisher, Subscriber):
             self._pickleDir = value
         else:
             self.dispatch("message",
-                                 "Folder not found. Please check!")
-
+                          "Folder not found. Please check!")
 
     @property
     def gtfs_name(self):
@@ -174,6 +174,7 @@ class gtfs(Publisher, Subscriber):
         self._gtfs_name = value
         # self.dispatch("message",
         #               "Folder not found. Please check!")
+
     @progress.setter
     def progress(self, value):
         self._progress = value
@@ -188,7 +189,6 @@ class gtfs(Publisher, Subscriber):
     def agenciesList(self):
         return self._agenciesList
 
-
     @agenciesList.setter
     def agenciesList(self, value):
         self._agenciesList = value
@@ -198,7 +198,6 @@ class gtfs(Publisher, Subscriber):
     @property
     def routesList(self):
         return self._routesList
-
 
     @routesList.setter
     def routesList(self, value):
@@ -365,19 +364,38 @@ class gtfs(Publisher, Subscriber):
         return True
 
     def save_pickle(self):
-         os.mkdir(self.output_path + "/" + "")
-         self.dfStops.to_pickle("./dummy.pkl")
-         self.dfStopTimes.to_pickle("./dummy.pkl")
-         self.dfTrips.to_pickle("./dummy.pkl")
-         self.dfWeek.to_pickle("./dummy.pkl")
-         self.dfDates.to_pickle("./dummy.pkl")
-         self.dfRoutes.to_pickle("./dummy.pkl")
-         self.dfagency.to_pickle("./dummy.pkl")
-         self.dffeed_info.to_pickle("./dummy.pkl")
+        self.dfStops.to_pickle(self.output_path + "dfStops.pkl")
+        self.dfStopTimes.to_pickle(self.output_path + "dfStopTimes.pkl")
+        self.dfTrips.to_pickle(self.output_path + "dfTrips.pkl")
+        self.dfWeek.to_pickle(self.output_path + "dfWeek.pkl")
+        self.dfDates.to_pickle(self.output_path + "dfDates.pkl")
+        self.dfRoutes.to_pickle(self.output_path + "dfRoutes.pkl")
+        self.dfagency.to_pickle(self.output_path + "dfagency.pkl")
+
+        if self.dffeed_info is not None:
+            self.dffeed_info.to_pickle("./dffeed_info.pkl")
+
+        with zipfile.ZipFile(self.output_path + "testPICKLE.zip", "w", compression=zipfile.ZIP_DEFLATED) as zf:
+            zf.write(self.output_path + "dfStops.pkl")
+            zf.write(self.output_path + "dfStopTimes.pkl")
+            zf.write(self.output_path + "dfTrips.pkl")
+            zf.write(self.output_path + "dfWeek.pkl")
+            zf.write(self.output_path + "dfDates.pkl")
+            zf.write(self.output_path + "dfRoutes.pkl")
+            zf.write(self.output_path + "dfagency.pkl")
+
+        os.remove(self.output_path + "dfStops.pkl")
+        os.remove(self.output_path + "dfStopTimes.pkl")
+        os.remove(self.output_path + "dfTrips.pkl")
+        os.remove(self.output_path + "dfWeek.pkl")
+        os.remove(self.output_path + "dfDates.pkl")
+        os.remove(self.output_path + "dfRoutes.pkl")
+        os.remove(self.output_path + "dfagency.pkl")
+        if self.dffeed_info is not None:
+            os.remove(self.output_path + "dffeed_info.pkl")
 
     def load_pickle(self):
-            return
-
+        return
 
     def save_h5(self, h5_filename, data, labels, descr=None,
                 data_dtype='float32', label_dtype='float32'):
@@ -764,14 +782,15 @@ class gtfs(Publisher, Subscriber):
     def printAllHeaders(self, stopsHeader, stop_timesHeader, tripsHeader, calendarHeader, calendar_datesHeader,
                         routesHeader, agencyHeader, feed_infoHeader):
         logging.debug('stopsHeader          = {} \n'
-              'stop_timesHeader     = {} \n'
-              'tripsHeader          = {} \n'
-              'calendarHeader       = {} \n'
-              'calendar_datesHeader = {} \n'
-              'routesHeader         = {} \n'
-              'agencyHeader         = {} \n'
-              'feed_infoHeader      = {}'.format(stopsHeader, stop_timesHeader, tripsHeader, calendarHeader,
-                                                 calendar_datesHeader, routesHeader, agencyHeader, feed_infoHeader))
+                      'stop_timesHeader     = {} \n'
+                      'tripsHeader          = {} \n'
+                      'calendarHeader       = {} \n'
+                      'calendar_datesHeader = {} \n'
+                      'routesHeader         = {} \n'
+                      'agencyHeader         = {} \n'
+                      'feed_infoHeader      = {}'.format(stopsHeader, stop_timesHeader, tripsHeader, calendarHeader,
+                                                         calendar_datesHeader, routesHeader, agencyHeader,
+                                                         feed_infoHeader))
 
     def get_gtfs_trip(self):
         tripdict = {
