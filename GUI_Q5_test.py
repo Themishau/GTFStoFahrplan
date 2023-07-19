@@ -65,8 +65,7 @@ class Model(Publisher, Subscriber):
                           'active_weekdate_options',
                           'update_weekdate_option',
                           'update_progress_bar',
-                          'message',
-                          'update_import_progress_bar'], 'data')
+                          'message'], 'data')
         self.mutex = QMutex()
         self.worker = None
         self.notify_functions = {
@@ -223,7 +222,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.progressRound = RoundProgress()
-        self.progressRound.value = 99
+        self.progressRound.value = 0
         self.progressRound.setMinimumSize(self.progressRound.width, self.progressRound.height)
         self.ui.gridLayout_7.addWidget(self.progressRound,3, 0, 1, 1,  QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter)
 
@@ -295,7 +294,6 @@ class Gui(QMainWindow, Publisher, Subscriber):
                                  'error_message': [self.sub_write_gui_log, True],
                                  'data_changed': [self.sub_write_gui_log, True],
                                  'update_progress_bar': [self.sub_update_progress_bar, False],
-                                 'update_import_progress_bar': [self.sub_update_import_progress_bar, False],
                                  'restart': [self.notify_restart, False]
                                  }
 
@@ -324,7 +322,6 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.model.register('data_changed', self)
         self.model.gtfs.register('message', self)
         self.model.gtfs.register('update_progress_bar', self)
-        self.model.gtfs.register('update_import_progress_bar', self)
 
         # init Observer controller -> model
         self.register('load_gtfsdata_event', self.model)
@@ -447,7 +444,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.CreateSelect_Tab.ui.listRoutes.addItems(self.model.gtfs.routesList)
 
     def sub_update_agency_list(self):
-        self.model.gtfs.save_pickle()
+        # self.model.gtfs.save_pickle()
         self.CreateSelect_Tab.ui.listAgencies.clear()
         self.CreateSelect_Tab.ui.listAgencies.addItems(self.model.gtfs.agenciesList)
         self.CreateSelect_Tab.ui.tableView.setModel(TableModel(self.model.gtfs.dfagency))
@@ -458,10 +455,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         logging.debug("done with creating dfs")
         # self.model.gtfs.save_h5(h5_filename="C:/Tmp/test.h5", data=self.model.gtfs.dfTrips, labels="trips")
     def sub_update_progress_bar(self):
-        self.CreateCreate_Tab.ui.progressBar.setValue(self.model.gtfs.progress)
-
-    def sub_update_import_progress_bar(self):
-        self.CreateImport_Tab.ui.progressBar.setValue(self.model.gtfs.import_progress)
+        self.progressRound.set_value(self.model.gtfs.progress)
 
     def sub_write_gui_log(self, text):
         time_now = datetime.now().strftime("%d-%b-%Y (%H:%M:%S)")

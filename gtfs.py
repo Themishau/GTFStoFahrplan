@@ -41,7 +41,6 @@ class gtfs(Publisher, Subscriber):
         self._gtfs_name = ""
         self._pickleDir = ""
         self._progress = 0
-        self._import_progress = 0
         self._agenciesList = None
         self._routesList = None
         self.pkl_loaded = False
@@ -143,10 +142,6 @@ class gtfs(Publisher, Subscriber):
         return self._progress
 
     @property
-    def import_progress(self):
-        return self._import_progress
-
-    @property
     def input_path(self):
         return self._input_path
 
@@ -181,11 +176,6 @@ class gtfs(Publisher, Subscriber):
         self._progress = value
         self.dispatch("update_progress_bar", "update_progress_bar routine started! Notify subscriber!")
 
-    @import_progress.setter
-    def import_progress(self, value):
-        self._import_progress = value
-        self.dispatch("update_import_progress_bar", "update_import_progress_bar routine started! Notify subscriber!")
-
     @property
     def agenciesList(self):
         return self._agenciesList
@@ -219,11 +209,11 @@ class gtfs(Publisher, Subscriber):
 
     # loads data from zip
     def async_task_load_GTFS_data(self):
-        self.import_progress = 20
+        self.progress = 20
         self.import_gtfs()
-        self.import_progress = 60
+        self.progress = 60
         self.getDateRange()
-        self.import_progress = 100
+        self.progress = 100
 
     # import routine and
     def import_gtfs(self) -> bool:
@@ -241,6 +231,7 @@ class gtfs(Publisher, Subscriber):
                     return True
                 else:
                     logging.debug("Pickle Data Detected. Loading Pickle Data")
+                    self.cleandicts()
                     return True
         return False
 
@@ -719,28 +710,28 @@ class gtfs(Publisher, Subscriber):
 
     # read zip-data
     def read_gtfs_data(self):
-        try:
-            with zipfile.ZipFile(self.input_path) as zf:
-                logging.debug(zf.namelist())
-                for file in zf.namelist():
-                    if file.endswith('pkl'):
-                        self.pkl_loaded = True
-                        break
+        # try:
+        with zipfile.ZipFile(self.input_path) as zf:
+            logging.debug(zf.namelist())
+            for file in zf.namelist():
+                if file.endswith('pkl'):
+                    self.pkl_loaded = True
+                    break
 
             if self.pkl_loaded is True:
-                with io.TextIOWrapper(zf.open("Tmp/dfStops.pkl")) as stops:
+                with zf.open("Tmp/dfStops.pkl") as stops:
                     self.dfStops = pd.read_pickle(stops)
-                with io.TextIOWrapper(zf.open("Tmp/dfStopTimes.pkl")) as stop_times:
+                with zf.open("Tmp/dfStopTimes.pkl") as stop_times:
                     self.dfStopTimes = pd.read_pickle(stop_times)
-                with io.TextIOWrapper(zf.open("Tmp/dfTrips.pkl")) as trips:
+                with zf.open("Tmp/dfTrips.pkl") as trips:
                     self.dfTrips = pd.read_pickle(trips)
-                with io.TextIOWrapper(zf.open("Tmp/dfWeek.pkl")) as calendar:
+                with zf.open("Tmp/dfWeek.pkl") as calendar:
                     self.dfWeek = pd.read_pickle(calendar)
-                with io.TextIOWrapper(zf.open("Tmp/dfDates.pkl")) as calendar_dates:
+                with zf.open("Tmp/dfDates.pkl") as calendar_dates:
                     self.dfDates = pd.read_pickle(calendar_dates)
-                with io.TextIOWrapper(zf.open("Tmp/dfRoutes.pkl")) as routes:
+                with zf.open("Tmp/dfRoutes.pkl") as routes:
                     self.dfRoutes = pd.read_pickle(routes)
-                with io.TextIOWrapper(zf.open("Tmp/dfagency.pkl")) as agency:
+                with zf.open("Tmp/dfagency.pkl") as agency:
                     self.dfagency = pd.read_pickle(agency)
 
                 try:
@@ -751,9 +742,9 @@ class gtfs(Publisher, Subscriber):
                     logging.debug('no feed info header')
                     feed_infoHeader = None
 
-        except:
-            logging.debug('Error in Unzipping data ')
-            return False
+        # except:
+        #     logging.debug('Error in Unzipping data ')
+        #     return False
 
         if self.pkl_loaded is False:
             try:

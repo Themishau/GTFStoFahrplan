@@ -23,7 +23,12 @@ class RoundProgress(QWidget):
 
         self.resize(self.width, self.height)
 
+    def set_value(self, value):
+        self.value = value
+        self.repaint()
+
     def paintEvent(self, event):
+        print(event)
         width = self.width - self.progress_width
         height = self.height - self.progress_width
         margin = self.progress_width / 2
