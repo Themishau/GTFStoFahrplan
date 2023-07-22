@@ -1,29 +1,33 @@
-from gtfs import gtfs
-from observer import Publisher, Subscriber
 import datetime as dt
+from datetime import datetime
 import time
 import sys
 import os
-from datetime import datetime
+import logging
+
 from PyQt5.Qt import QPoint, QMutex, QThread, QWidget, QMessageBox, QDesktopWidget, QApplication, QMainWindow
 from PyQt5.QtCore import Qt
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QFileDialog, QApplication, QTableView
 
+from gtfs import gtfs
+from observer import Publisher, Subscriber
+
 from add_files.main_window_ui import Ui_MainWindow
 from general_window_information import GeneralInformation
+
 from create_table_create import CreateTableCreate
 from create_table_import import CreateTableImport
 from create_table_select import CreateTableSelect
+
 from download_gtfs import DownloadGTFS
+
 from SelectTableView import TableModel
 from RoundProgressBar import RoundProgress
-import logging
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
                     datefmt="%Y-%m-%d %H:%M:%S")
-
 delimiter = " "
 
 
@@ -49,6 +53,7 @@ class GTFSWorker(QThread, Publisher, Subscriber):
             self.dispatch("sub_worker_create_output_fahrplan_weekday",
                           "sub_worker_create_output_fahrplan_weekday routine started! Notify subscriber!")
 
+
 # noinspection PyUnresolvedReferences
 class Model(Publisher, Subscriber):
     def __init__(self, events, name):
@@ -69,17 +74,17 @@ class Model(Publisher, Subscriber):
         self.mutex = QMutex()
         self.worker = None
         self.notify_functions = {
-                                 'load_gtfsdata_event': [self.sub_load_gtfsdata_event, False],
-                                 'select_agency': [self.sub_select_agency_event, False],
-                                 'select_route': [self.sub_select_route_event, False],
-                                 'select_weekday': [self.sub_select_weekday_event, False],
-                                 'reset_gtfs': [self.sub_reset_gtfs, False],
-                                 'start_create_table': [self.sub_start_create_table, False],
-                                 'sub_worker_load_gtfsdata': [self.sub_worker_load_gtfsdata, False],
-                                 'sub_worker_update_routes_list': [self.sub_worker_update_routes_list, False],
-                                 'sub_worker_create_output_fahrplan_date': [self.sub_worker_create_output_fahrplan_date, False],
-                                 'sub_worker_create_output_fahrplan_weekday': [self.sub_worker_create_output_fahrplan_weekday, False]
-                                 }
+            'load_gtfsdata_event': [self.sub_load_gtfsdata_event, False],
+            'select_agency': [self.sub_select_agency_event, False],
+            'select_route': [self.sub_select_route_event, False],
+            'select_weekday': [self.sub_select_weekday_event, False],
+            'reset_gtfs': [self.sub_reset_gtfs, False],
+            'start_create_table': [self.sub_start_create_table, False],
+            'sub_worker_load_gtfsdata': [self.sub_worker_load_gtfsdata, False],
+            'sub_worker_update_routes_list': [self.sub_worker_update_routes_list, False],
+            'sub_worker_create_output_fahrplan_date': [self.sub_worker_create_output_fahrplan_date, False],
+            'sub_worker_create_output_fahrplan_weekday': [self.sub_worker_create_output_fahrplan_weekday, False]
+        }
 
     def sub_reset_gtfs(self):
         self.gtfs = gtfs(['ImportGTFS',
@@ -111,14 +116,12 @@ class Model(Publisher, Subscriber):
         self.worker.finished.connect(self.update_agency_list)
         self.worker.exit()
 
-
     def error_reset_model(self):
-            self.dispatch("restart",
-                          "restart routine started! Notify subscriber!")
+        self.dispatch("restart",
+                      "restart routine started! Notify subscriber!")
 
     def sub_worker_load_gtfsdata(self):
         self.gtfs.async_task_load_GTFS_data()
-
 
     def sub_worker_update_routes_list(self):
         self.gtfs.get_routes_of_agency()
@@ -214,6 +217,7 @@ class Model(Publisher, Subscriber):
     def notify_not_function(self, event):
         logging.debug('event not found in class gui: {}'.format(event))
 
+
 class Gui(QMainWindow, Publisher, Subscriber):
     def __init__(self, events, name):
         super().__init__(events=events, name=name)
@@ -224,8 +228,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.progressRound = RoundProgress()
         self.progressRound.value = 0
         self.progressRound.setMinimumSize(self.progressRound.width, self.progressRound.height)
-        self.ui.gridLayout_7.addWidget(self.progressRound,3, 0, 1, 1,  QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter)
-
+        self.ui.gridLayout_7.addWidget(self.progressRound, 3, 0, 1, 1, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
 
         self.setFixedSize(1350, 600)
         self.setWindowFlags(Qt.FramelessWindowHint)
@@ -454,6 +457,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         # self.model.start_get_date_range()
         logging.debug("done with creating dfs")
         # self.model.gtfs.save_h5(h5_filename="C:/Tmp/test.h5", data=self.model.gtfs.dfTrips, labels="trips")
+
     def sub_update_progress_bar(self):
         self.progressRound.set_value(self.model.gtfs.progress)
 
@@ -584,12 +588,14 @@ class Gui(QMainWindow, Publisher, Subscriber):
     def notify_close_program(self):
         return self.dispatch("close_program", "close_program routine started! Notify subscriber!")
 
+
 def get_current_time():
     """ Helper function to get the current time in seconds. """
 
     now = dt.datetime.now()
     total_time = (now.hour * 3600) + (now.minute * 60) + now.second
     return total_time
+
 
 if __name__ == '__main__':
     logging.debug('no')
