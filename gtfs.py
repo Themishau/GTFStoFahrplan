@@ -101,6 +101,7 @@ class gtfs(Publisher, Subscriber):
         self.dfWeek = pd.DataFrame({'A': []})
         self.dfDates = pd.DataFrame({'A': []})
         self.dfRoutes = pd.DataFrame({'A': []})
+        self.dfSelectedRoutes = pd.DataFrame({'A': []})
         self.dfagency = pd.DataFrame({'A': []})
         self.dffeed_info = None
         self.now = None
@@ -187,12 +188,12 @@ class gtfs(Publisher, Subscriber):
                       "update_agency_list routine started! Notify subscriber!")
 
     @property
-    def routesList(self):
-        return self._routesList
+    def dfSelectedRoutes(self):
+        return self._dfSelectedRoutes
 
-    @routesList.setter
-    def routesList(self, value):
-        self._routesList = value
+    @dfSelectedRoutes.setter
+    def dfSelectedRoutes(self, value):
+        self._dfSelectedRoutes = value
         self.dispatch("update_routes_list",
                       "update_routes_list routine started! Notify subscriber!")
 
@@ -247,17 +248,17 @@ class gtfs(Publisher, Subscriber):
         self.selectedRoute = route
 
     def sub_worker_create_output_fahrplan_weekday(self):
-        self.progress = 5
-        self.weekday_prepare_data_fahrplan()
         self.progress = 10
-        self.datesWeekday_select_dates_for_date_range()
+        self.weekday_prepare_data_fahrplan()
         self.progress = 20
-        self.weekday_select_weekday_exception_2()
+        self.datesWeekday_select_dates_for_date_range()
         self.progress = 30
-        self.datesWeekday_select_stops_for_trips()
+        self.weekday_select_weekday_exception_2()
         self.progress = 40
-        self.datesWeekday_select_for_every_date_trips_stops()
+        self.datesWeekday_select_stops_for_trips()
         self.progress = 50
+        self.datesWeekday_select_for_every_date_trips_stops()
+        self.progress = 60
         self.datesWeekday_select_stop_sequence_stop_name_sorted()
         self.progress = 70
         self.datesWeekday_create_fahrplan()
@@ -266,21 +267,22 @@ class gtfs(Publisher, Subscriber):
         self.progress = 100
 
     def sub_worker_create_output_fahrplan_date(self):
-        self.progress = 5
-        self.dates_prepare_data_fahrplan()
+        logging.debug(f"PREPARE date ")
         self.progress = 10
-        self.datesWeekday_select_dates_for_date_range()
+        self.dates_prepare_data_fahrplan()
         self.progress = 20
-        self.dates_select_dates_delete_exception_2()
+        self.datesWeekday_select_dates_for_date_range()
         self.progress = 30
-        self.datesWeekday_select_stops_for_trips()
+        self.dates_select_dates_delete_exception_2()
         self.progress = 40
-        self.datesWeekday_select_for_every_date_trips_stops()
+        self.datesWeekday_select_stops_for_trips()
         self.progress = 50
-        self.datesWeekday_select_stop_sequence_stop_name_sorted()
+        self.datesWeekday_select_for_every_date_trips_stops()
         self.progress = 60
-        self.datesWeekday_create_fahrplan()
+        self.datesWeekday_select_stop_sequence_stop_name_sorted()
         self.progress = 70
+        self.datesWeekday_create_fahrplan()
+        self.progress = 80
         self.datesWeekday_create_output_fahrplan()
         self.progress = 100
 
@@ -1033,18 +1035,23 @@ class gtfs(Publisher, Subscriber):
         inputVar = [{'agency_id': self.selectedAgency}]
         varTest = pd.DataFrame(inputVar).set_index('agency_id')
         cond_routes_of_agency = '''
-                    select dfRoutes.route_id, dfRoutes.route_short_name
+                    select *
                     from dfRoutes 
                     left join varTest
                     where varTest.agency_id = dfRoutes.agency_id
                     order by dfRoutes.route_short_name;
                    '''
         routes_list = sqldf(cond_routes_of_agency, locals())
-        routes_list = routes_list.values.tolist()
-        routes_str_list = []
-        for lists in routes_list:
-            routes_str_list.append('{},{}'.format(lists[0], lists[1]))
-        self.routesList = routes_str_list
+        """
+        todo
+        """
+        self.dfSelectedRoutes = routes_list
+
+        # routes_list = routes_list.values.tolist()
+        # routes_str_list = []
+        # for lists in routes_list:
+        #     routes_str_list.append('{},{}'.format(lists[0], lists[1]))
+        # self.routesList = routes_str_list
         return True
 
     def select_gtfs_services_from_routes(self, route, tripdict, calendarWeekdict):
@@ -1151,7 +1158,6 @@ class gtfs(Publisher, Subscriber):
         self.varTestService = pd.DataFrame(inputVarService).set_index('weekdayOption')
 
     def dates_prepare_data_fahrplan(self):
-
         self.last_time = time.time()
 
         if not self.check_dates_input(self.selected_dates):
@@ -1193,7 +1199,7 @@ class gtfs(Publisher, Subscriber):
         # conditions for searching in dfs
         dfTrips = self.dfTrips
         dfWeek = self.dfWeek
-        dfRoutes = self.dfRoutes
+        dfRoutes = self.dfSelectedRoutes
         route_short_namedf = self.route_short_namedf
         varTestAgency = self.varTestAgency
         requested_directiondf = self.requested_directiondf
@@ -1239,6 +1245,7 @@ class gtfs(Publisher, Subscriber):
         dfWeek.saturday,
         dfWeek.sunday
         """
+
         self.fahrplan_dates = None
         self.fahrplan_dates = sqldf(cond_select_dates_for_date_range, locals())
 
@@ -1674,6 +1681,13 @@ class gtfs(Publisher, Subscriber):
         fahrplan_calendar_weeks = self.fahrplan_calendar_weeks
         self.fahrplan_calendar_weeks = None
         self.filtered_stop_names = self.filterStopSequence(self.fahrplan_sorted_stops)
+
+        """
+        
+        create new def with filterStopSequence
+        
+        """
+
         self.df_filtered_stop_names = pd.DataFrame.from_dict(self.filtered_stop_names)
         # df_deleted_dupl_stop_names["stop_name"] = df_deleted_dupl_stop_names["stop_name"].astype('string')
         self.df_filtered_stop_names["stop_sequence"] = self.df_filtered_stop_names["stop_sequence"].astype('int32')

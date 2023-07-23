@@ -8,8 +8,10 @@ class CreateTableSelect(QWidget):
         super(CreateTableSelect, self).__init__()
         self.ui = Ui_CreateTableSelect()
         self.ui.setupUi(self)
-        self.ui.tableView.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.ui.tableView.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.ui.AgenciesTableView.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.ui.AgenciesTableView.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.ui.TripsTableView.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.ui.TripsTableView.setSelectionMode(QAbstractItemView.SingleSelection)
 
 
 

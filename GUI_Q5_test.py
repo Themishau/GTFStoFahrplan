@@ -180,7 +180,7 @@ class Model(Publisher, Subscriber):
 
     def update_routes_list(self):
         self.worker = None
-        # self.update_weekdate_options()
+
 
     def update_weekdate_options(self):
         self.notify_update_weekdate_option()
@@ -274,13 +274,13 @@ class Gui(QMainWindow, Publisher, Subscriber):
 
         self.ui.pushButton_5.clicked.connect(self.show_home_window)
         self.ui.pushButton_6.clicked.connect(self.show_GTFSDownload_window)
-        self.CreateSelect_Tab.ui.listAgencies.clicked.connect(self.notify_select_agency)
-        self.CreateSelect_Tab.ui.tableView.clicked.connect(self.notify_tableview_agency)
+
+        self.CreateSelect_Tab.ui.AgenciesTableView.clicked.connect(self.notify_AgenciesTableView_agency)
+        self.CreateSelect_Tab.ui.TripsTableView.clicked.connect(self.notify_TripsTableView)
         """
          TODO: 
         """
 
-        self.CreateSelect_Tab.ui.listRoutes.clicked.connect(self.notify_select_route)
         self.CreateCreate_Tab.ui.listDatesWeekday.clicked.connect(self.notify_select_weekday_option)
         self.CreateCreate_Tab.ui.comboBox.activated[str].connect(self.onChanged)
         self.CreateImport_Tab.ui.comboBox_display.activated[str].connect(self.onChangedTimeFormatMode)
@@ -350,6 +350,9 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.set_btn_checked(self.createTableImport_btn)
         self.ui.stackedWidget.setCurrentWidget(self.CreateImport_Tab)
 
+    """
+    TODO: is this bugged? 
+    """
     def show_Create_Select_Window(self):
         self.set_btn_checked(self.createTableSelect_btn)
         self.ui.stackedWidget.setCurrentWidget(self.CreateSelect_Tab)
@@ -443,14 +446,11 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.CreateCreate_Tab.ui.listDatesWeekday.addItems(self.model.gtfs.weekDayOptionsList)
 
     def sub_update_routes_list(self):
-        self.CreateSelect_Tab.ui.listRoutes.clear()
-        self.CreateSelect_Tab.ui.listRoutes.addItems(self.model.gtfs.routesList)
+        self.CreateSelect_Tab.ui.TripsTableView.setModel(TableModel(self.model.gtfs.dfSelectedRoutes))
 
     def sub_update_agency_list(self):
         # self.model.gtfs.save_pickle()
-        self.CreateSelect_Tab.ui.listAgencies.clear()
-        self.CreateSelect_Tab.ui.listAgencies.addItems(self.model.gtfs.agenciesList)
-        self.CreateSelect_Tab.ui.tableView.setModel(TableModel(self.model.gtfs.dfagency))
+        self.CreateSelect_Tab.ui.AgenciesTableView.setModel(TableModel(self.model.gtfs.dfagency))
         self.CreateCreate_Tab.ui.line_Selection_date_range.setText(self.model.gtfs.date_range)
         self.CreateCreate_Tab.ui.lineDateInput.setText(self.model.gtfs.date_range)
         self.show_Create_Select_Window()
@@ -526,41 +526,35 @@ class Gui(QMainWindow, Publisher, Subscriber):
     def notify_not_function(self, event):
         logging.debug('event not found in class gui: {}'.format(event))
 
-    # activity on gui will trigger notify events
-    def notify_select_route(self):
-        if self.model.gtfs.routesList is None:
-            return False
-        self.CreateCreate_Tab.ui.line_Selection_trips.setText(self.CreateSelect_Tab.ui.listRoutes.currentItem().text())
-        self.model.gtfs.selectedRoute = self.CreateSelect_Tab.ui.listRoutes.currentItem().text().split(',')[1]
-        self.dispatch("select_route", "select_route routine started! Notify subscriber!")
-        logging.debug(f"notify_select_route {self.model.gtfs.selectedRoute}")
-        self.sub_update_weekdate_option()
-
-    # activity on gui will trigger notify events
     def notify_select_weekday_option(self):
         if self.model.gtfs.weekDayOptionsList is None:
             return False
         self.model.gtfs.selected_weekday = self.CreateCreate_Tab.ui.listDatesWeekday.currentItem().text().split(',')[0]
         self.dispatch("select_weekday", "select_weekday routine started! Notify subscriber!")
 
-    def notify_select_agency(self):
-        try:
-            if self.model.gtfs.agenciesList is None:
-                return False
-            self.CreateCreate_Tab.ui.line_Selection_agency.setText(
-                self.CreateSelect_Tab.ui.listAgencies.currentItem().text())
-            self.model.gtfs.selectedAgency = self.CreateSelect_Tab.ui.listAgencies.currentItem().text().split(',')[0]
-            self.reset_weekdayDate()
-            logging.debug(f"notify_select_agency {self.model.gtfs.selectedAgency}")
-            self.dispatch("select_agency", "select_agency routine started! Notify subscriber!")
-        except TypeError:
-            logging.debug("TypeError in notify_select_agency")
 
-    def notify_tableview_agency(self):
-        index = self.CreateSelect_Tab.ui.tableView.selectedIndexes()[0]
+    def notify_AgenciesTableView_agency(self):
+        index = self.CreateSelect_Tab.ui.AgenciesTableView.selectedIndexes()[0]
         logging.debug(f"index {index}")
-        id_us = self.CreateSelect_Tab.ui.tableView.model().data(index)
+        id_us = self.CreateSelect_Tab.ui.AgenciesTableView.model().data(index)
         logging.debug(f"index {id_us}")
+        self.model.gtfs.selectedAgency = id_us
+        logging.debug(f"selectedAgency {self.model.gtfs.selectedAgency}")
+        self.reset_weekdayDate()
+        self.dispatch("select_agency", "select_agency routine started! Notify subscriber!")
+
+    def notify_TripsTableView(self):
+        index = self.CreateSelect_Tab.ui.TripsTableView.selectedIndexes()[2]
+        logging.debug(f"index {index}")
+        id_us = self.CreateSelect_Tab.ui.TripsTableView.model().data(index)
+        logging.debug(f"index {id_us}")
+        self.model.gtfs.selectedRoute = id_us
+        logging.debug(f"selectedRoute {self.model.gtfs.selectedRoute}")
+        self.sub_update_weekdate_option()
+        self.CreateCreate_Tab.ui.line_Selection_agency.setText(f"selected agency: {self.model.gtfs.selectedAgency}")
+        self.CreateCreate_Tab.ui.line_Selection_trips.setText(f"selected Trip: {self.model.gtfs.selectedRoute}")
+        self.dispatch("select_route", "select_route routine started! Notify subscriber!")
+
 
     def notify_create_table(self):
         if self.model.gtfs.selected_weekday is None:
