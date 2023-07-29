@@ -30,7 +30,6 @@ logging.basicConfig(level=logging.DEBUG,
                     datefmt="%Y-%m-%d %H:%M:%S")
 delimiter = " "
 
-
 # noinspection PyUnresolvedReferences
 class GTFSWorker(QThread, Publisher, Subscriber):
 
@@ -76,7 +75,6 @@ class Model(Publisher, Subscriber):
         self.notify_functions = {
             'load_gtfsdata_event': [self.sub_load_gtfsdata_event, False],
             'select_agency': [self.sub_select_agency_event, False],
-            'select_route': [self.sub_select_route_event, False],
             'select_weekday': [self.sub_select_weekday_event, False],
             'reset_gtfs': [self.sub_reset_gtfs, False],
             'start_create_table': [self.sub_start_create_table, False],
@@ -140,16 +138,11 @@ class Model(Publisher, Subscriber):
         self.worker.start()
         self.worker.finished.connect(self.update_routes_list)
 
-    def sub_select_route_event(self):
-        self.dispatch("data_changed", "{} selected".format(self.gtfs.selectedRoute))
-
     def sub_select_weekday_event(self):
         self.gtfs.selected_dates = None
-        self.dispatch("data_changed", "{} selected".format(self.gtfs.selected_weekday))
 
     def sub_select_date_event(self):
         self.gtfs.selected_weekday = None
-        self.dispatch("data_changed", "{} selected".format(self.gtfs.selected_dates))
 
     def sub_start_create_table(self):
         self.gtfs.processing = "create table"
@@ -187,11 +180,9 @@ class Model(Publisher, Subscriber):
         self.worker = None
 
     def notify_set_process(self, task):
-        self.dispatch("data_changed", "{}".format(task))
         self.gtfs.processing = task
 
     def notify_delete_process(self):
-        self.dispatch("data_changed", "{} finished".format(self.gtfs.processing))
         self.gtfs.processing = None
 
     def notify_update_routes_List(self):
@@ -217,7 +208,6 @@ class Model(Publisher, Subscriber):
     def notify_not_function(self, event):
         logging.debug('event not found in class gui: {}'.format(event))
 
-
 class Gui(QMainWindow, Publisher, Subscriber):
     def __init__(self, events, name):
         super().__init__(events=events, name=name)
@@ -230,7 +220,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.progressRound.setMinimumSize(self.progressRound.width, self.progressRound.height)
         self.ui.gridLayout_7.addWidget(self.progressRound, 3, 0, 1, 1, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
 
-        self.setFixedSize(1350, 600)
+        self.setFixedSize(1350, 800)
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.center()
         self.oldPos = self.pos()
@@ -294,8 +284,6 @@ class Gui(QMainWindow, Publisher, Subscriber):
                                  'update_agency_list': [self.sub_update_agency_list, False],
                                  'update_weekdate_option': [self.sub_update_weekdate_option, False],
                                  'message': [self.send_message_box, True],
-                                 'error_message': [self.sub_write_gui_log, True],
-                                 'data_changed': [self.sub_write_gui_log, True],
                                  'update_progress_bar': [self.sub_update_progress_bar, False],
                                  'restart': [self.notify_restart, False]
                                  }
@@ -329,7 +317,6 @@ class Gui(QMainWindow, Publisher, Subscriber):
         # init Observer controller -> model
         self.register('load_gtfsdata_event', self.model)
         self.register('select_agency', self.model)
-        self.register('select_route', self.model)
         self.register('select_weekday', self.model)
         self.register('reset_gtfs', self.model)
         self.register('start_create_table', self.model)
@@ -467,7 +454,6 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.CreateCreate_Tab.ui.textBrowser.setText(self.textBrowserText)
 
     def set_process(self, task):
-        self.sub_write_gui_log("{} started".format(task))
         self.model.gtfs.gtfs_process = task
 
     def getFilePath(self):
@@ -553,7 +539,6 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.sub_update_weekdate_option()
         self.CreateCreate_Tab.ui.line_Selection_agency.setText(f"selected agency: {self.model.gtfs.selectedAgency}")
         self.CreateCreate_Tab.ui.line_Selection_trips.setText(f"selected Trip: {self.model.gtfs.selectedRoute}")
-        self.dispatch("select_route", "select_route routine started! Notify subscriber!")
 
 
     def notify_create_table(self):

@@ -17,7 +17,6 @@ logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
                     datefmt="%Y-%m-%d %H:%M:%S")
 
-
 # noinspection SqlResolve
 class gtfs(Publisher, Subscriber):
     input_path: str
