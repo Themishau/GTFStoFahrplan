@@ -48,6 +48,12 @@ class GTFSWorker(QThread, Publisher, Subscriber):
         elif self.process == 'create_table_date':
             self.dispatch("sub_worker_create_output_fahrplan_date",
                           "sub_worker_create_output_fahrplan_date routine started! Notify subscriber!")
+        elif self.process == 'create_table_date_individual':
+            self.dispatch("sub_worker_create_output_fahrplan_date_indi",
+                      "sub_worker_create_output_fahrplan_date_indi routine started! Notify subscriber!")
+        elif self.process == 'create_table_date_individual_continue':
+            self.dispatch("sub_worker_create_output_fahrplan_date_indi_continue",
+                          "sub_worker_create_output_fahrplan_date_indi_continue routine started! Notify subscriber!")
         elif self.process == 'create_table_weekday':
             self.dispatch("sub_worker_create_output_fahrplan_weekday",
                           "sub_worker_create_output_fahrplan_weekday routine started! Notify subscriber!")
@@ -61,6 +67,7 @@ class Model(Publisher, Subscriber):
         self.gtfs = gtfs(['ImportGTFS',
                           'fill_agency_list',
                           'create_table_date',
+                          'create_table_date_individual',
                           'create_table_weekday',
                           'update_weekday_list',
                           'update_routes_list',
@@ -79,14 +86,18 @@ class Model(Publisher, Subscriber):
             'reset_gtfs': [self.sub_reset_gtfs, False],
             'start_create_table': [self.sub_start_create_table, False],
             'sub_worker_load_gtfsdata': [self.sub_worker_load_gtfsdata, False],
+            'sub_worker_load_gtfsdata_indi': [self.sub_worker_load_gtfsdata_indi, False],
             'sub_worker_update_routes_list': [self.sub_worker_update_routes_list, False],
             'sub_worker_create_output_fahrplan_date': [self.sub_worker_create_output_fahrplan_date, False],
+            'sub_worker_create_output_fahrplan_date_indi': [self.sub_worker_create_output_fahrplan_date_indi, False],
+            'sub_worker_create_output_fahrplan_date_indi_continue': [self.sub_worker_create_output_fahrplan_date_indi_continue, False],
             'sub_worker_create_output_fahrplan_weekday': [self.sub_worker_create_output_fahrplan_weekday, False]
         }
 
     def sub_reset_gtfs(self):
         self.gtfs = gtfs(['ImportGTFS',
                           'create_table_date',
+                          'create_table_date_individual',
                           'create_table_weekday'], 'data')
 
     def find(self, name, path):
@@ -114,6 +125,7 @@ class Model(Publisher, Subscriber):
         self.worker.finished.connect(self.update_agency_list)
         self.worker.exit()
 
+
     def error_reset_model(self):
         self.dispatch("restart",
                       "restart routine started! Notify subscriber!")
@@ -130,6 +142,11 @@ class Model(Publisher, Subscriber):
     def sub_worker_create_output_fahrplan_date(self):
         self.gtfs.sub_worker_create_output_fahrplan_date()
 
+    def sub_worker_create_output_fahrplan_date_indi(self):
+        self.gtfs.sub_worker_create_output_fahrplan_date_indi()
+
+    def sub_worker_create_output_fahrplan_date_indi_continue(self):
+        self.gtfs.sub_worker_create_output_fahrplan_date_indi_continue()
     def sub_select_agency_event(self):
         self.gtfs.processing = "load routes list"
         self.notify_set_process("loading load routes list...")
@@ -144,12 +161,26 @@ class Model(Publisher, Subscriber):
     def sub_select_date_event(self):
         self.gtfs.selected_weekday = None
 
+
+    def sub_start_create_table_continue(self):
+        self.gtfs.processing = "continue..."
+        self.notify_set_process("continue...")
+        logging.debug(f'continue...: {self.gtfs.selected_dates}')
+        self.worker = GTFSWorker(['sub_worker_create_output_fahrplan_date_indi_continue'], 'Worker', 'create_table_date_individual_continue')
+        self.worker.register('sub_worker_create_output_fahrplan_date_indi_continue', self)
+        self.worker.start()
+        self.worker.finished.connect(self.finished_create_table)
+
     def sub_start_create_table(self):
         self.gtfs.processing = "create table"
         self.notify_set_process("create table data...")
         logging.debug(f'create table date: {self.gtfs.selected_dates}')
         logging.debug(f'create table weekday: {self.gtfs.selected_weekday}')
-        if self.gtfs.selected_weekday is None:
+        if self.gtfs.selected_weekday is None and self.gtfs.individualsorting is True:
+            self.worker = GTFSWorker(['sub_worker_create_output_fahrplan_date_indi'], 'Worker', 'create_table_date_indi')
+            self.worker.register('sub_worker_create_output_fahrplan_date_indi', self)
+
+        elif self.gtfs.selected_weekday is None:
             self.worker = GTFSWorker(['sub_worker_create_output_fahrplan_date'], 'Worker', 'create_table_date')
             self.worker.register('sub_worker_create_output_fahrplan_date', self)
 
@@ -158,7 +189,10 @@ class Model(Publisher, Subscriber):
             self.worker.register('sub_worker_create_output_fahrplan_weekday', self)
 
         self.worker.start()
-        self.worker.finished.connect(self.finished_create_table)
+        if self.gtfs.selected_weekday is None and self.gtfs.individualsorting is True:
+            self.worker.finished.connect(self.update_sorting_table)
+        else:
+            self.worker.finished.connect(self.finished_create_table)
 
     def finished_create_table(self):
         self.notify_finished()
@@ -219,12 +253,12 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.progressRound.value = 0
         self.progressRound.setMinimumSize(self.progressRound.width, self.progressRound.height)
         self.ui.gridLayout_7.addWidget(self.progressRound, 3, 0, 1, 1, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-
-        self.setFixedSize(1350, 800)
+        self.setFixedSize(1350, 900)
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.center()
         self.oldPos = self.pos()
         self.messageBox_model = QMessageBox()
+
 
         self.createTableImport_btn = self.ui.pushButton_2
         self.createTableSelect_btn = self.ui.pushButton_3
@@ -264,16 +298,12 @@ class Gui(QMainWindow, Publisher, Subscriber):
 
         self.ui.pushButton_5.clicked.connect(self.show_home_window)
         self.ui.pushButton_6.clicked.connect(self.show_GTFSDownload_window)
-
+        self.CreateImport_Tab.ui.comboBox_display.activated[str].connect(self.onChangedTimeFormatMode)
         self.CreateSelect_Tab.ui.AgenciesTableView.clicked.connect(self.notify_AgenciesTableView_agency)
         self.CreateSelect_Tab.ui.TripsTableView.clicked.connect(self.notify_TripsTableView)
-        """
-         TODO: 
-        """
-
+        self.CreateCreate_Tab.ui.UseIndividualSorting.clicked.connect(self.set_individualsorting)
         self.CreateCreate_Tab.ui.listDatesWeekday.clicked.connect(self.notify_select_weekday_option)
         self.CreateCreate_Tab.ui.comboBox.activated[str].connect(self.onChanged)
-        self.CreateImport_Tab.ui.comboBox_display.activated[str].connect(self.onChangedTimeFormatMode)
         self.CreateCreate_Tab.ui.comboBox_direction.activated[str].connect(self.onChangedDirectionMode)
         self.CreateCreate_Tab.ui.line_Selection_format.setText('time format 1')
 
@@ -347,6 +377,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
     def show_Create_Create_Window(self):
         self.set_btn_checked(self.createTableCreate_btn)
         self.ui.stackedWidget.setCurrentWidget(self.CreateCreate_Tab)
+        self.ui.stackedWidget.resize(500,500)
 
     def set_btn_checked(self, btn):
         for button in self.menu_btns_dict.keys():
@@ -455,6 +486,10 @@ class Gui(QMainWindow, Publisher, Subscriber):
 
     def set_process(self, task):
         self.model.gtfs.gtfs_process = task
+
+    def set_individualsorting(self):
+        self.model.gtfs.individualsorting = not self.model.gtfs.individualsorting
+        logging.debug(f"individualsorting: {self.model.gtfs.individualsorting}")
 
     def getFilePath(self):
         try:

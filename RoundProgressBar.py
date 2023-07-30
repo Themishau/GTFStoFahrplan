@@ -9,8 +9,8 @@ class RoundProgress(QWidget):
     def __init__(self, *args, **kwargs):
         QWidget.__init__(self, *args, **kwargs)
         self.value = 0
-        self.width = 80
-        self.height = 80
+        self.width = 120
+        self.height = 120
         self.progress_width = 10
         self.progress_round_cap = True
         self.progress_color = 0x498BD1

@@ -43,6 +43,7 @@ class gtfs(Publisher, Subscriber):
         self._agenciesList = None
         self._routesList = None
         self.pkl_loaded = False
+        self._individualsorting = False
 
         self.options_dates_weekday = ['Dates', 'Weekday']
         self.weekDayOptions = {0: [0, 'Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday'],
@@ -136,6 +137,14 @@ class gtfs(Publisher, Subscriber):
         self.fahrplan_dates_all_dates = None
         self.fahrplan_sorted_stops = None
         self.fahrplan_calendar_filter_days_pivot = None
+
+    @property
+    def individualsorting(self):
+        return self._individualsorting
+
+    @individualsorting.setter
+    def individualsorting(self, value):
+        self._individualsorting = value
 
     @property
     def progress(self):
