@@ -23,6 +23,7 @@ from create_table_select import CreateTableSelect
 from download_gtfs import DownloadGTFS
 
 from SelectTableView import TableModel
+from SortTableView import TableModelSort
 from RoundProgressBar import RoundProgress
 
 logging.basicConfig(level=logging.DEBUG,
@@ -68,9 +69,11 @@ class Model(Publisher, Subscriber):
                           'fill_agency_list',
                           'create_table_date',
                           'create_table_date_individual',
+                          'create_table_date_individual_continue',
                           'create_table_weekday',
                           'update_weekday_list',
                           'update_routes_list',
+                          'update_stopname_create_list',
                           'update_date_range',
                           'update_agency_list',
                           'active_weekdate_options',
@@ -96,9 +99,20 @@ class Model(Publisher, Subscriber):
 
     def sub_reset_gtfs(self):
         self.gtfs = gtfs(['ImportGTFS',
+                          'fill_agency_list',
                           'create_table_date',
                           'create_table_date_individual',
-                          'create_table_weekday'], 'data')
+                          'create_table_date_individual_continue',
+                          'create_table_weekday',
+                          'update_weekday_list',
+                          'update_routes_list',
+                          'update_stopname_create_list',
+                          'update_date_range',
+                          'update_agency_list',
+                          'active_weekdate_options',
+                          'update_weekdate_option',
+                          'update_progress_bar',
+                          'message'], 'data')
 
     def find(self, name, path):
 
@@ -135,6 +149,9 @@ class Model(Publisher, Subscriber):
 
     def sub_worker_update_routes_list(self):
         self.gtfs.get_routes_of_agency()
+
+    def sub_worker_load_gtfsdata_indi(self):
+        print('sub_worker_load_gtfsdata_indi')
 
     def sub_worker_create_output_fahrplan_weekday(self):
         self.gtfs.sub_worker_create_output_fahrplan_weekday()
@@ -176,8 +193,9 @@ class Model(Publisher, Subscriber):
         self.notify_set_process("create table data...")
         logging.debug(f'create table date: {self.gtfs.selected_dates}')
         logging.debug(f'create table weekday: {self.gtfs.selected_weekday}')
+        logging.debug(f'create table individualsorting: {self.gtfs.individualsorting}')
         if self.gtfs.selected_weekday is None and self.gtfs.individualsorting is True:
-            self.worker = GTFSWorker(['sub_worker_create_output_fahrplan_date_indi'], 'Worker', 'create_table_date_indi')
+            self.worker = GTFSWorker(['sub_worker_create_output_fahrplan_date_indi'], 'Worker', 'create_table_date_individual')
             self.worker.register('sub_worker_create_output_fahrplan_date_indi', self)
 
         elif self.gtfs.selected_weekday is None:
@@ -196,6 +214,9 @@ class Model(Publisher, Subscriber):
 
     def finished_create_table(self):
         self.notify_finished()
+
+    def update_sorting_table(self):
+        self.worker = None
 
     def update_agency_list(self):
         self.gtfs.read_gtfs_agencies()
@@ -219,6 +240,9 @@ class Model(Publisher, Subscriber):
     def notify_delete_process(self):
         self.gtfs.processing = None
 
+    def notify_update_stopname_create_list(self):
+        return self.dispatch("update_stopname_create_list",
+                             "update_stopname_create_list routine started! Notify subscriber!")
     def notify_update_routes_List(self):
         return self.dispatch("update_routes_list",
                              "update_routes_list routine started! Notify subscriber!")
@@ -289,6 +313,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.CreateImport_Tab.ui.btnImport.clicked.connect(self.notify_load_gtfsdata_event)
         self.CreateImport_Tab.ui.btnRestart.clicked.connect(self.notify_restart)
         self.CreateCreate_Tab.ui.btnStart.clicked.connect(self.notify_create_table)
+        self.CreateCreate_Tab.ui.btnContinueCreate.clicked.connect(self.notify_create_table)
         self.CreateImport_Tab.ui.btnGetFile.clicked.connect(self.getFilePath)
         # self.DownloadGTFS_Tab.ui.btnGetDir.clicked.connect(self.getDirPath)
         self.CreateImport_Tab.ui.btnGetOutputDir.clicked.connect(self.getOutputDirPath)
@@ -298,9 +323,11 @@ class Gui(QMainWindow, Publisher, Subscriber):
 
         self.ui.pushButton_5.clicked.connect(self.show_home_window)
         self.ui.pushButton_6.clicked.connect(self.show_GTFSDownload_window)
+
         self.CreateImport_Tab.ui.comboBox_display.activated[str].connect(self.onChangedTimeFormatMode)
         self.CreateSelect_Tab.ui.AgenciesTableView.clicked.connect(self.notify_AgenciesTableView_agency)
         self.CreateSelect_Tab.ui.TripsTableView.clicked.connect(self.notify_TripsTableView)
+        self.CreateCreate_Tab.ui.tableView_sorting_stops.clicked.connect(self.notify_StopNameTableView)
         self.CreateCreate_Tab.ui.UseIndividualSorting.clicked.connect(self.set_individualsorting)
         self.CreateCreate_Tab.ui.listDatesWeekday.clicked.connect(self.notify_select_weekday_option)
         self.CreateCreate_Tab.ui.comboBox.activated[str].connect(self.onChanged)
@@ -313,6 +340,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
                                  'update_weekday_list': [self.sub_update_weekdate_option, False],
                                  'update_agency_list': [self.sub_update_agency_list, False],
                                  'update_weekdate_option': [self.sub_update_weekdate_option, False],
+                                 'update_stopname_create_list':[self.sub_update_stopname_create_list, False],
                                  'message': [self.send_message_box, True],
                                  'update_progress_bar': [self.sub_update_progress_bar, False],
                                  'restart': [self.notify_restart, False]
@@ -325,6 +353,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
                             'update_agency_list',
                             'active_weekdate_options',
                             'update_weekdate_option',
+                            'update_stopname_create_list',
                             'error_message',
                             'message',
                             'data_changed',
@@ -336,6 +365,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.model.register('error_message', self)
 
         self.model.gtfs.register('update_routes_list', self)  # Achtung, sich selbst angeben und nicht self.controller
+        self.model.gtfs.register('update_stopname_create_list', self)
         self.model.gtfs.register('update_date_range', self)
         self.model.gtfs.register('update_weekday_list', self)
         self.model.gtfs.register('update_agency_list', self)
@@ -466,6 +496,9 @@ class Gui(QMainWindow, Publisher, Subscriber):
     def sub_update_routes_list(self):
         self.CreateSelect_Tab.ui.TripsTableView.setModel(TableModel(self.model.gtfs.dfSelectedRoutes))
 
+    def sub_update_stopname_create_list(self):
+        self.CreateCreate_Tab.ui.tableView_sorting_stops.setModel(TableModelSort(self.model.gtfs.df_filtered_stop_names))
+
     def sub_update_agency_list(self):
         # self.model.gtfs.save_pickle()
         self.CreateSelect_Tab.ui.AgenciesTableView.setModel(TableModel(self.model.gtfs.dfagency))
@@ -575,6 +608,8 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.CreateCreate_Tab.ui.line_Selection_agency.setText(f"selected agency: {self.model.gtfs.selectedAgency}")
         self.CreateCreate_Tab.ui.line_Selection_trips.setText(f"selected Trip: {self.model.gtfs.selectedRoute}")
 
+    def notify_StopNameTableView(self):
+        logging.debug(f"click stop")
 
     def notify_create_table(self):
         if self.model.gtfs.selected_weekday is None:
@@ -583,6 +618,10 @@ class Gui(QMainWindow, Publisher, Subscriber):
         else:
             self.model.gtfs.selected_dates = None
 
+        self.dispatch("start_create_table", "start_create_table routine started! Notify subscriber!")
+
+    def notify_create_table_continue(self):
+        hier
         self.dispatch("start_create_table", "start_create_table routine started! Notify subscriber!")
 
     def notify_load_gtfsdata_event(self):

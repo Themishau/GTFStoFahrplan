@@ -275,6 +275,7 @@ class gtfs(Publisher, Subscriber):
         self.progress = 100
 
     def sub_worker_create_output_fahrplan_date(self):
+        self.progress = 0
         logging.debug(f"PREPARE date ")
         self.progress = 10
         self.dates_prepare_data_fahrplan()
@@ -290,6 +291,36 @@ class gtfs(Publisher, Subscriber):
         self.datesWeekday_select_stop_sequence_stop_name_sorted()
         self.progress = 70
         self.datesWeekday_create_fahrplan()
+        self.progress = 80
+        self.datesWeekday_create_output_fahrplan()
+        self.progress = 100
+
+    def sub_worker_create_output_fahrplan_date_indi(self):
+        self.progress = 0
+        logging.debug(f"PREPARE intividual date ")
+        self.progress = 10
+        self.dates_prepare_data_fahrplan()
+        self.progress = 20
+        self.datesWeekday_select_dates_for_date_range()
+        self.progress = 30
+        self.dates_select_dates_delete_exception_2()
+        self.progress = 40
+        self.datesWeekday_select_stops_for_trips()
+        self.progress = 50
+        self.datesWeekday_select_for_every_date_trips_stops()
+        self.progress = 60
+        self.datesWeekday_select_stop_sequence_stop_name_sorted()
+        self.progress = 70
+        self.datesWeekday_create_sort_stopnames()
+        self.dispatch("update_stopname_create_list",
+                      "update_stopname_create_list routine started! Notify subscriber!")
+        # self.progress = 80
+        # self.datesWeekday_create_output_fahrplan()
+        # self.progress = 100
+
+    def sub_worker_create_output_fahrplan_date_indi_continue(self):
+        logging.debug(f"PREPARE intividual date ")
+        self.datesWeekday_create_fahrplan_continue()
         self.progress = 80
         self.datesWeekday_create_output_fahrplan()
         self.progress = 100
@@ -476,6 +507,7 @@ class gtfs(Publisher, Subscriber):
         sorted_stopsequence = {
             "stop_id": [],
             "stop_sequence": [],
+            "stop_name": [],
             "start_time": []
         }
         # data['date'] = pd.to_datetime(data['date'], format='%Y-%m-%d %H:%M:%S.%f')
@@ -583,6 +615,7 @@ class gtfs(Publisher, Subscriber):
         for stop_sequence in new_stopsequence.keys():
             sorted_stopsequence['stop_id'].append(new_stopsequence[stop_sequence]['stop_id'])
             sorted_stopsequence['stop_sequence'].append(stop_sequence)
+            sorted_stopsequence['stop_name'].append(new_stopsequence[stop_sequence]['stop_name'])
             sorted_stopsequence['start_time'].append(new_stopsequence[stop_sequence]['start_time'])
 
         #
@@ -1090,7 +1123,7 @@ class gtfs(Publisher, Subscriber):
     def read_gtfs_agencies(self):
         dfagency = self.dfagency
         cond_agencies = '''
-                    select dfagency.agency_id, dfagency.agency_name
+                    select *
                     from dfagency 
                     order by dfagency.agency_id;
                    '''
@@ -1654,6 +1687,98 @@ class gtfs(Publisher, Subscriber):
 
     # tried to get all data in one variable but then I need to create a new index for every dict again
     # maybe I try to get change it later
+
+    def datesWeekday_create_sort_stopnames(self):
+        fahrplan_calendar_weeks = self.fahrplan_calendar_weeks
+        self.fahrplan_calendar_weeks = None
+        self.filtered_stop_names = self.filterStopSequence(self.fahrplan_sorted_stops)
+
+        """
+        
+        create new def with filterStopSequence
+        
+        """
+
+        self.df_filtered_stop_names = pd.DataFrame.from_dict(self.filtered_stop_names)
+        # df_deleted_dupl_stop_names["stop_name"] = df_deleted_dupl_stop_names["stop_name"].astype('string')
+        self.df_filtered_stop_names["stop_sequence"] = self.df_filtered_stop_names["stop_sequence"].astype('int32')
+        # self.df_filtered_stop_names = self.df_filtered_stop_names.set_index("stop_sequence")
+        self.df_filtered_stop_names = self.df_filtered_stop_names.sort_index(axis=0)
+
+
+
+
+    def datesWeekday_create_fahrplan_continue(self):
+
+        cond_stop_name_sorted_trips_with_dates = '''
+                    select  fahrplan_calendar_weeks.date,
+                            fahrplan_calendar_weeks.day,
+                            fahrplan_calendar_weeks.start_time, 
+                            fahrplan_calendar_weeks.trip_id,
+                            fahrplan_calendar_weeks.stop_name,
+                            df_filtered_stop_names.stop_sequence as stop_sequence_sorted,
+                            fahrplan_calendar_weeks.stop_sequence,
+                            fahrplan_calendar_weeks.arrival_time, 
+                            fahrplan_calendar_weeks.service_id, 
+                            fahrplan_calendar_weeks.stop_id                        
+                    from fahrplan_calendar_weeks 
+                    left join df_filtered_stop_names on fahrplan_calendar_weeks.stop_id = df_filtered_stop_names.stop_id  
+                    group by fahrplan_calendar_weeks.date,
+                             fahrplan_calendar_weeks.day,
+                             fahrplan_calendar_weeks.start_time,
+                             fahrplan_calendar_weeks.arrival_time, 
+                             fahrplan_calendar_weeks.trip_id,
+                             fahrplan_calendar_weeks.stop_name,
+                             stop_sequence_sorted,
+                             fahrplan_calendar_weeks.stop_sequence,
+                             fahrplan_calendar_weeks.service_id,
+                             fahrplan_calendar_weeks.stop_id
+    
+                    order by fahrplan_calendar_weeks.date,
+                             fahrplan_calendar_weeks.stop_sequence,
+                             fahrplan_calendar_weeks.start_time,
+                             fahrplan_calendar_weeks.trip_id;
+                   '''
+
+        df_filtered_stop_names = self.df_filtered_stop_names
+
+        fahrplan_calendar_weeks = sqldf(cond_stop_name_sorted_trips_with_dates, locals())
+
+        ###########################
+
+        fahrplan_calendar_weeks['date'] = pd.to_datetime(fahrplan_calendar_weeks['date'], format='%Y-%m-%d %H:%M:%S.%f')
+        # fahrplan_calendar_weeks['trip_id'] = fahrplan_calendar_weeks['trip_id'].astype('int32')
+        fahrplan_calendar_weeks['arrival_time'] = fahrplan_calendar_weeks['arrival_time'].astype('string')
+        fahrplan_calendar_weeks['start_time'] = fahrplan_calendar_weeks['start_time'].astype('string')
+
+        # fahrplan_calendar_weeks = fahrplan_calendar_weeks.drop(columns=['stop_sequence', 'service_id', 'stop_id'])
+        fahrplan_calendar_weeks = fahrplan_calendar_weeks.drop(columns=['stop_sequence', 'service_id'])
+        fahrplan_calendar_weeks = fahrplan_calendar_weeks.groupby(
+            ['date', 'day', 'stop_sequence_sorted', 'stop_name', 'stop_id', 'start_time',
+             'trip_id']).first().reset_index()
+
+        fahrplan_calendar_weeks['date'] = pd.to_datetime(fahrplan_calendar_weeks['date'], format='%Y-%m-%d')
+        # fahrplan_calendar_weeks['trip_id'] = fahrplan_calendar_weeks['trip_id'].astype('int32')
+
+        fahrplan_calendar_weeks['arrival_time'] = fahrplan_calendar_weeks['arrival_time'].astype('string')
+        if self.timeformat == 1:
+            fahrplan_calendar_weeks['arrival_time'] = fahrplan_calendar_weeks['arrival_time'].apply(
+                lambda x: self.time_delete_seconds(x))
+
+        fahrplan_calendar_weeks['start_time'] = fahrplan_calendar_weeks['start_time'].astype('string')
+
+        self.fahrplan_calendar_filter_days_pivot = fahrplan_calendar_weeks.pivot(
+            index=['date', 'day', 'stop_sequence_sorted', 'stop_name', 'stop_id'], columns=['start_time', 'trip_id'],
+            values='arrival_time')
+
+        # fahrplan_calendar_filter_days_pivot['date'] = pd.to_datetime(fahrplan_calendar_filter_days_pivot['date'], format='%Y-%m-%d %H:%M:%S.%f')
+        self.fahrplan_calendar_filter_days_pivot = self.fahrplan_calendar_filter_days_pivot.sort_index(axis=1)
+        self.fahrplan_calendar_filter_days_pivot = self.fahrplan_calendar_filter_days_pivot.sort_index(axis=0)
+
+        self.zeit = time.time() - self.last_time
+        now = datetime.now()
+        self.now = now.strftime("%Y_%m_%d_%H_%M_%S")
+
     def datesWeekday_create_fahrplan(self):
 
         cond_stop_name_sorted_trips_with_dates = '''
