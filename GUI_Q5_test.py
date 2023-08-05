@@ -498,7 +498,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
 
     def sub_update_stopname_create_list(self):
         self.CreateCreate_Tab.ui.tableView_sorting_stops.setModel(TableModelSort(self.model.gtfs.df_filtered_stop_names))
-
+        # self.CreateCreate_Tab.ui.tableView_sorting_stops.populate()
     def sub_update_agency_list(self):
         # self.model.gtfs.save_pickle()
         self.CreateSelect_Tab.ui.AgenciesTableView.setModel(TableModel(self.model.gtfs.dfagency))
@@ -621,7 +621,6 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.dispatch("start_create_table", "start_create_table routine started! Notify subscriber!")
 
     def notify_create_table_continue(self):
-        hier
         self.dispatch("start_create_table", "start_create_table routine started! Notify subscriber!")
 
     def notify_load_gtfsdata_event(self):
