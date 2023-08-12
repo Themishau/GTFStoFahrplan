@@ -9,7 +9,7 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
+from customTableView import customTableView
 
 class Ui_Form(object):
     def setupUi(self, Form):
@@ -72,7 +72,10 @@ class Ui_Form(object):
 "}")
         self.gridLayout = QtWidgets.QGridLayout(Form)
         self.gridLayout.setObjectName("gridLayout")
-        self.tableView_sorting_stops = QtWidgets.QTableView(Form)
+        # self.tableView_sorting_stops = QtWidgets.QTableView(Form)
+        self.tableView_sorting_stops = customTableView()
+
+
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)

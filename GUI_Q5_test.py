@@ -327,7 +327,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.CreateImport_Tab.ui.comboBox_display.activated[str].connect(self.onChangedTimeFormatMode)
         self.CreateSelect_Tab.ui.AgenciesTableView.clicked.connect(self.notify_AgenciesTableView_agency)
         self.CreateSelect_Tab.ui.TripsTableView.clicked.connect(self.notify_TripsTableView)
-        self.CreateCreate_Tab.ui.tableView_sorting_stops.clicked.connect(self.notify_StopNameTableView)
+        # self.CreateCreate_Tab.ui.tableView_sorting_stops.clicked.connect(self.notify_StopNameTableView)
         self.CreateCreate_Tab.ui.UseIndividualSorting.clicked.connect(self.set_individualsorting)
         self.CreateCreate_Tab.ui.listDatesWeekday.clicked.connect(self.notify_select_weekday_option)
         self.CreateCreate_Tab.ui.comboBox.activated[str].connect(self.onChanged)
@@ -498,6 +498,8 @@ class Gui(QMainWindow, Publisher, Subscriber):
 
     def sub_update_stopname_create_list(self):
         self.CreateCreate_Tab.ui.tableView_sorting_stops.setModel(TableModelSort(self.model.gtfs.df_filtered_stop_names))
+        logging.debug(self.CreateCreate_Tab.ui.tableView_sorting_stops.dragEnabled())
+        logging.debug(self.CreateCreate_Tab.ui.tableView_sorting_stops.dragDropOverwriteMode())
         # self.CreateCreate_Tab.ui.tableView_sorting_stops.populate()
     def sub_update_agency_list(self):
         # self.model.gtfs.save_pickle()
