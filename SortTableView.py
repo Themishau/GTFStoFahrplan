@@ -7,8 +7,6 @@ class TableModelSort(QtCore.QAbstractTableModel):
         super(TableModelSort, self).__init__()
         self._data = data
 
-
-
     def rowCount(self, parent=None):
         return self._data.shape[0]
 
@@ -36,9 +34,11 @@ class TableModelSort(QtCore.QAbstractTableModel):
         for col in range(self.columnCount()):
             new_data.append(index.sibling(index.row(),col))
 
-        item = self.data(index.row(),3)
-        self.was_enabled = item.isEnabled()
-        item.setEnabled(True) # Hack// Fixes copying instead of moving when item is disabled
+        # item = self.data(index.row(),3)
+        item = self.data(index,3)
+        if item is not None:
+            self.was_enabled = item.isEnabled()
+            item.setEnabled(True) # Hack// Fixes copying instead of moving when item is disabled
 
         return super().mimeData(new_data)
 
@@ -47,12 +47,16 @@ class TableModelSort(QtCore.QAbstractTableModel):
         """
         Always move the entire row, and don't allow column "shifting"
         """
-        response = super().dropMimeData(data, Qt.CopyAction, row, 0, parent)
-        if row == -1:   #Drop after last row
-            row = self.rowCount()-1
-        item = self.data(row,3)
-        item.setEnabled(self.was_enabled) # Hack// Fixes copying instead of moving when style column is disabled
-        return response
+        # response = super().dropMimeData(data, Qt.CopyAction, row, 0, parent)
+        # if row == -1:   #Drop after last row
+        #     row = self.rowCount()-1
+        # item = self.data(row,3)
+        # item.setEnabled(self.was_enabled) # Hack// Fixes copying instead of moving when style column is disabled
+        # return response
+        print("dropMimeData(data: %r, action: %r, row: %r, col: %r, parent: %r)" % (
+            data.formats(), action, row, col, self._index2str(parent)))
+        assert action == QtCore.Qt.MoveAction
+        return super().dropMimeData(data, action, row, 0, parent)
 
     def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlags:
         # https://doc.qt.io/qt-5/qt.html#ItemFlag-enum
@@ -68,5 +72,6 @@ class TableModelSort(QtCore.QAbstractTableModel):
     def relocateRow(self, row_source, row_target) -> None:
         row_a, row_b = max(row_source, row_target), min(row_source, row_target)
         self.beginMoveRows(QtCore.QModelIndex(), row_a, row_a, QtCore.QModelIndex(), row_b)
-        self._data.insert(row_target, self._data.pop(row_source))
+        # also change column stop_sequence
+        self._data.loc[row_source], self._data.loc[row_target] = self._data.loc[row_target].copy(), self._data.loc[row_source].copy()
         self.endMoveRows()
