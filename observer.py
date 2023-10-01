@@ -1,18 +1,22 @@
 # -*- coding: utf-8 -*-
 # https://www.protechtraining.com/blog/post/tutorial-the-observer-pattern-in-python-879
+import logging
 
+logging.basicConfig(level=logging.DEBUG,
+                    format="%(asctime)s %(levelname)s %(message)s",
+                    datefmt="%Y-%m-%d %H:%M:%S")
 
 class Subscriber(object):
     def __init__(self, name, *args, **kwargs):
         self.name = name
-        print("Subscriber name {}".format(self.name))
+        logging.debug("Subscriber name {}".format(self.name))
 
     def notify_subscriber(self, event, message):
-        print("no override")
-        print('{}'.format(self.name))
+        logging.debug("no override")
+        logging.debug('{}'.format(self.name))
 
     def print_me(self):
-        print(self.name)
+        logging.debug(self.name)
 
 
 class Publisher(object):
@@ -23,7 +27,7 @@ class Publisher(object):
                        for event in events}
 
     def print_me(self):
-        print(self.events)
+        logging.debug(self.events)
 
     def get_subscribers(self, event):
         return self.events[event]
@@ -37,6 +41,6 @@ class Publisher(object):
         del self.get_subscribers(event)[who]
 
     def dispatch(self, event, message):
-        # print("{} {} dispatch(self, event, message) {} {} ".format(self ,self.get_subscribers(event).items(), event, message))
+        logging.debug(f"{self} {self.get_subscribers(event).items()} dispatch(self, event, message) {event} {message} ")
         for subscriber, callback in self.get_subscribers(event).items():
             callback(event, message)

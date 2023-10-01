@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from observer import Publisher, Subscriber
 import time
 import pandas as pd
 from pandasql import sqldf
@@ -8,9 +8,17 @@ import io
 from datetime import datetime, timedelta
 import re
 import logging
+import sys
+import os
+import h5py
+from PyQt5.QtCore import QAbstractTableModel
+
+logging.basicConfig(level=logging.DEBUG,
+                    format="%(asctime)s %(levelname)s %(message)s",
+                    datefmt="%Y-%m-%d %H:%M:%S")
 
 # noinspection SqlResolve
-class gtfs:
+class gtfs(Publisher, Subscriber):
     input_path: str
     output_path: str
     gtfs_data_list: list[list[str]]
@@ -18,12 +26,26 @@ class gtfs:
     selected_direction: int
     runningAsync: int
 
-    def __init__(self):
-        self.noError = False
+    def __init__(self, events, name):
+        super().__init__(events=events, name=name)
+        self.notify_functions = {
+            'ImportGTFS': [self.async_task_load_GTFS_data, False],
+            'fill_agency_list': [self.get_routes_of_agency, False],
+            'create_table_date': [self.sub_worker_create_output_fahrplan_date, False],
+            'create_table_weekday': [self.sub_worker_create_output_fahrplan_weekday, False],
+        }
         self.input_path = ""
-        self.output_path = ""
+        self._output_path = ""
         self.date_range = ""
-        self.progress = 0
+        self._gtfs_name = ""
+        self._pickleSavePath = ""
+        self._progress = 0
+        self._agenciesList = None
+        self._routesList = None
+        self.pkl_loaded = False
+        self._individualsorting = False
+        self._pickleExport_checked = False
+
         self.options_dates_weekday = ['Dates', 'Weekday']
         self.weekDayOptions = {0: [0, 'Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday'],
                                1: [1, 'Monday, Tuesday, Wednesday, Thursday, Friday'],
@@ -72,20 +94,21 @@ class gtfs:
 
         """ all stops for given trips """
         self.filtered_stop_names = ""
+
         """ df-data """
-        self.dfStops = pd.DataFrame({'A' : []})
-        self.dfStopTimes = pd.DataFrame({'A' : []})
-        self.dfTrips = pd.DataFrame({'A' : []})
-        self.dfWeek = pd.DataFrame({'A' : []})
-        self.dfDates = pd.DataFrame({'A' : []})
-        self.dfRoutes = pd.DataFrame({'A' : []})
-        self.dfagency = pd.DataFrame({'A' : []})
+        self.dfStops = pd.DataFrame({'A': []})
+        self.dfStopTimes = pd.DataFrame({'A': []})
+        self.dfTrips = pd.DataFrame({'A': []})
+        self.dfWeek = pd.DataFrame({'A': []})
+        self.dfDates = pd.DataFrame({'A': []})
+        self.dfRoutes = pd.DataFrame({'A': []})
+        self.dfSelectedRoutes = pd.DataFrame({'A': []})
+        self.dfagency = pd.DataFrame({'A': []})
         self.dffeed_info = None
         self.now = None
 
         """ loaded data for listbox """
-        self.agenciesList = None
-        self.routesList = None
+
         self.weekdayList = None
         self.serviceslist = None
 
@@ -116,9 +139,99 @@ class gtfs:
         self.fahrplan_sorted_stops = None
         self.fahrplan_calendar_filter_days_pivot = None
 
+    @property
+    def individualsorting(self):
+        return self._individualsorting
+
+    @individualsorting.setter
+    def individualsorting(self, value):
+        self._individualsorting = value
+
+    @property
+    def progress(self):
+        return self._progress
+
+    @property
+    def input_path(self):
+        return self._input_path
+
+    @input_path.setter
+    def input_path(self, value):
+        self._input_path = value
+
+    @property
+    def pickleSavePath(self):
+        return self._pickleSavePath
+
+    @pickleSavePath.setter
+    def pickleSavePath(self, value):
+        if value is not None:
+            self._pickleSavePath = value
+        else:
+            self.dispatch("message",
+                          "Folder not found. Please check!")
+
+    @property
+    def gtfs_name(self):
+        return self._gtfs_name
+
+    @gtfs_name.setter
+    def gtfs_name(self, value):
+        self._gtfs_name = value
+        # self.dispatch("message",
+        #               "Folder not found. Please check!")
+
+    @progress.setter
+    def progress(self, value):
+        self._progress = value
+        self.dispatch("update_progress_bar", "update_progress_bar routine started! Notify subscriber!")
+
+    @property
+    def agenciesList(self):
+        return self._agenciesList
+
+    @agenciesList.setter
+    def agenciesList(self, value):
+        self._agenciesList = value
+        self.dispatch("update_agency_list",
+                      "update_agency_list routine started! Notify subscriber!")
+
+    @property
+    def pickleExport_checked(self):
+        return self._pickleExport_checked
+
+    @pickleExport_checked.setter
+    def pickleExport_checked(self, value):
+        self._pickleExport_checked = value
+
+    @property
+    def dfSelectedRoutes(self):
+        return self._dfSelectedRoutes
+
+    @dfSelectedRoutes.setter
+    def dfSelectedRoutes(self, value):
+        self._dfSelectedRoutes = value
+        self.dispatch("update_routes_list",
+                      "update_routes_list routine started! Notify subscriber!")
+
+    def notify_subscriber(self, event, message):
+        logging.debug(f'event: {event}, message {message}')
+        notify_function, parameters = self.notify_functions.get(event, self.notify_not_function)
+        if not parameters:
+            notify_function()
+        else:
+            notify_function(message)
+
+    def notify_not_function(self, event):
+        logging.debug('event not found in class gui: {}'.format(event))
+
     # loads data from zip
-    def async_task_load_GTFS_data(self) -> bool:
-        return self.import_gtfs()
+    def async_task_load_GTFS_data(self):
+        self.progress = 20
+        self.import_gtfs()
+        self.progress = 60
+        self.getDateRange()
+        self.progress = 100
 
     # import routine and
     def import_gtfs(self) -> bool:
@@ -126,17 +239,24 @@ class gtfs:
 
         if self.read_paths() is True:
             if self.read_gtfs_data() is True:
-                self.noError = self.read_gtfs_data_from_path()
-        if self.noError is True:
-            self.noError = self.create_dfs()
-        if self.noError is True:
-            self.noError = self.cleandicts()
-        return self.noError
+                if self.pkl_loaded is False:
+                    logging.debug("read_gtfs_data")
+                    self.read_gtfs_data_from_path()
+                    logging.debug("read_gtfs_data_from_path")
+                    self.create_dfs()
+                    logging.debug("create_dfs ")
+                    self.cleandicts()
+                    return True
+                else:
+                    logging.debug("Pickle Data Detected. Loading Pickle Data")
+                    self.cleandicts()
+                    return True
+        return False
 
-    def set_paths(self, input_path, output_path):
+    def set_paths(self, input_path, output_path, picklesavepath = ""):
         self.input_path = input_path
         self.output_path = output_path
-
+        self.pickleSavePath = picklesavepath
 
 
     def get_routes_of_agency(self) -> None:
@@ -145,6 +265,76 @@ class gtfs:
 
     def set_routes(self, route) -> None:
         self.selectedRoute = route
+
+    def sub_worker_create_output_fahrplan_weekday(self):
+        self.progress = 10
+        self.weekday_prepare_data_fahrplan()
+        self.progress = 20
+        self.datesWeekday_select_dates_for_date_range()
+        self.progress = 30
+        self.weekday_select_weekday_exception_2()
+        self.progress = 40
+        self.datesWeekday_select_stops_for_trips()
+        self.progress = 50
+        self.datesWeekday_select_for_every_date_trips_stops()
+        self.progress = 60
+        self.datesWeekday_select_stop_sequence_stop_name_sorted()
+        self.progress = 70
+        self.datesWeekday_create_fahrplan()
+        self.progress = 80
+        self.datesWeekday_create_output_fahrplan()
+        self.progress = 100
+
+    def sub_worker_create_output_fahrplan_date(self):
+        self.progress = 0
+        logging.debug(f"PREPARE date ")
+        self.progress = 10
+        self.dates_prepare_data_fahrplan()
+        self.progress = 20
+        self.datesWeekday_select_dates_for_date_range()
+        self.progress = 30
+        self.dates_select_dates_delete_exception_2()
+        self.progress = 40
+        self.datesWeekday_select_stops_for_trips()
+        self.progress = 50
+        self.datesWeekday_select_for_every_date_trips_stops()
+        self.progress = 60
+        self.datesWeekday_select_stop_sequence_stop_name_sorted()
+        self.progress = 70
+        self.datesWeekday_create_fahrplan()
+        self.progress = 80
+        self.datesWeekday_create_output_fahrplan()
+        self.progress = 100
+
+    def sub_worker_create_output_fahrplan_date_indi(self):
+        self.progress = 0
+        logging.debug(f"PREPARE intividual date ")
+        self.progress = 10
+        self.dates_prepare_data_fahrplan()
+        self.progress = 20
+        self.datesWeekday_select_dates_for_date_range()
+        self.progress = 30
+        self.dates_select_dates_delete_exception_2()
+        self.progress = 40
+        self.datesWeekday_select_stops_for_trips()
+        self.progress = 50
+        self.datesWeekday_select_for_every_date_trips_stops()
+        self.progress = 60
+        self.datesWeekday_select_stop_sequence_stop_name_sorted()
+        self.progress = 70
+        self.datesWeekday_create_sort_stopnames()
+        self.dispatch("update_stopname_create_list",
+                      "update_stopname_create_list routine started! Notify subscriber!")
+        # self.progress = 80
+        # self.datesWeekday_create_output_fahrplan()
+        # self.progress = 100
+
+    def sub_worker_create_output_fahrplan_date_indi_continue(self):
+        logging.debug(f"PREPARE intividual date ")
+        self.datesWeekday_create_fahrplan_continue()
+        self.progress = 80
+        self.datesWeekday_create_output_fahrplan()
+        self.progress = 100
 
     def create_dfs(self):
         """
@@ -160,14 +350,16 @@ class gtfs:
 
         # DataFrame with every trip
         self.dfTrips = pd.DataFrame.from_dict(self.tripdict).set_index('trip_id')
-
-
         try:
             # dfTrips['trip_id'] = pd.to_numeric(dfTrips['trip_id'])
-            self.dfTrips['trip_id'] = self.dfTrips['trip_id'].astype('string')
-            self.dfTrips['direction_id'] = self.dfTrips['direction_id'].astype('int32')
+            self.dfTrips['trip_id'] = self.dfTrips['trip_id'].astype('int8')
+            self.dfTrips['direction_id'] = self.dfTrips['direction_id'].astype('int8')
+            self.dfTrips['shape_id'] = self.dfTrips['shape_id'].astype('int8')
+            self.dfTrips['wheelchair_accessible'] = self.dfTrips['wheelchair_accessible'].astype('int8')
+            self.dfTrips['bikes_allowed'] = self.dfTrips['bikes_allowed'].astype('int8')
+
         except KeyError:
-            print("can not convert dfTrips: trip_id into string")
+            logging.debug("can not convert dfTrips: trip_id into string")
 
         # DataFrame with every stop (time)
         self.dfStopTimes = pd.DataFrame.from_dict(self.stopTimesdict).set_index('stop_id')
@@ -176,29 +368,29 @@ class gtfs:
         #     self.dfStopTimes['arrival_time'] = self.dfStopTimes['arrival_time'].apply(lambda x: self.time_in_string(x))
         #
         # except KeyError:
-        #     print("can not convert dfStopTimes: arrival_time into string and change time")
+        #     logging.debug("can not convert dfStopTimes: arrival_time into string and change time")
 
         try:
             self.dfStopTimes['stop_sequence'] = self.dfStopTimes['stop_sequence'].astype('int32')
         except KeyError:
-            print("can not convert dfStopTimes: stop_sequence into int")
+            logging.debug("can not convert dfStopTimes: stop_sequence into int")
         try:
             self.dfStopTimes['stop_id'] = self.dfStopTimes['stop_id'].astype('int32')
         except KeyError:
-            print("can not convert dfStopTimes: stop_id into int")
+            logging.debug("can not convert dfStopTimes: stop_id into int")
         except OverflowError:
-            print("can not convert dfStopTimes: stop_id into int")
+            logging.debug("can not convert dfStopTimes: stop_id into int")
         try:
             self.dfStopTimes['trip_id'] = self.dfStopTimes['trip_id'].astype('string')
         except KeyError:
-            print("can not convert dfStopTimes: trip_id into string")
+            logging.debug("can not convert dfStopTimes: trip_id into string")
 
         # DataFrame with every stop
         self.dfStops = pd.DataFrame.from_dict(self.stopsdict).set_index('stop_id')
         try:
             self.dfStops['stop_id'] = self.dfStops['stop_id'].astype('int32')
         except KeyError:
-            print("can not convert dfStops: stop_id into int ")
+            logging.debug("can not convert dfStops: stop_id into int ")
 
         # DataFrame with every service weekly
         self.dfWeek = pd.DataFrame.from_dict(self.calendarWeekdict).set_index('service_id')
@@ -211,19 +403,78 @@ class gtfs:
         self.dfDates['date'] = pd.to_datetime(self.dfDates['date'], format='%Y%m%d')
 
         # DataFrame with every agency
-        self.dfagency = pd.DataFrame.from_dict(self.agencyFahrtdict).set_index('agency_id')
+        self.dfagency = pd.DataFrame.from_dict(self.agencyFahrtdict)
 
         if bool(self.feed_infodict):
             self.dffeed_info = pd.DataFrame.from_dict(self.feed_infodict)
 
         zeit = time.time() - last_time
-        print("time: {} ".format(zeit))
+        logging.debug("time: {} ".format(zeit))
 
         return True
 
+    def save_pickle(self):
+        self.dfStops.to_pickle(self.output_path + "dfStops.pkl")
+        self.dfStopTimes.to_pickle(self.output_path + "dfStopTimes.pkl")
+        self.dfTrips.to_pickle(self.output_path + "dfTrips.pkl")
+        self.dfWeek.to_pickle(self.output_path + "dfWeek.pkl")
+        self.dfDates.to_pickle(self.output_path + "dfDates.pkl")
+        self.dfRoutes.to_pickle(self.output_path + "dfRoutes.pkl")
+        self.dfagency.to_pickle(self.output_path + "dfagency.pkl")
+
+        if self.dffeed_info is not None:
+            self.dffeed_info.to_pickle("./dffeed_info.pkl")
+
+        with zipfile.ZipFile(self.pickleSavePath, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+            zf.write(self.output_path + "dfStops.pkl")
+            zf.write(self.output_path + "dfStopTimes.pkl")
+            zf.write(self.output_path + "dfTrips.pkl")
+            zf.write(self.output_path + "dfWeek.pkl")
+            zf.write(self.output_path + "dfDates.pkl")
+            zf.write(self.output_path + "dfRoutes.pkl")
+            zf.write(self.output_path + "dfagency.pkl")
+
+        os.remove(self.output_path + "dfStops.pkl")
+        os.remove(self.output_path + "dfStopTimes.pkl")
+        os.remove(self.output_path + "dfTrips.pkl")
+        os.remove(self.output_path + "dfWeek.pkl")
+        os.remove(self.output_path + "dfDates.pkl")
+        os.remove(self.output_path + "dfRoutes.pkl")
+        os.remove(self.output_path + "dfagency.pkl")
+        if self.dffeed_info is not None:
+            os.remove(self.output_path + "dffeed_info.pkl")
+
+    def save_h5(self, h5_filename, data, labels, descr=None,
+                data_dtype='float32', label_dtype='float32'):
+        """Create a compressed .h5 file containing:
+        data    : numpy array
+        labels  : numpy array
+        descr   : text description of the data contained (must be a string)
+        """
+
+        if os.path.exists(h5_filename):
+            # prevent overwriting a file
+            sys.exit('File already exists!')
+
+        with h5py.File(h5_filename, 'w') as f:
+            h5_fout = f.create_dataset(
+                name='data',
+                data=data,
+                compression='gzip', compression_opts=4)
+
+            h5_fout.create_dataset(
+                name='labels',
+                data=labels,
+                compression='gzip', compression_opts=4)
+
+            if descr is not None:
+                h5_fout.create_dataset(
+                    'description', data=descr)
+
     def getDateRange(self):
         if self.dffeed_info is not None:
-            self.date_range = str(self.dffeed_info.iloc[0].feed_start_date) + '-' + str(self.dffeed_info.iloc[0].feed_end_date)
+            self.date_range = str(self.dffeed_info.iloc[0].feed_start_date) + '-' + str(
+                self.dffeed_info.iloc[0].feed_end_date)
         else:
             self.date_range = self.analyzeDateRangeInGTFSData()
 
@@ -267,11 +518,11 @@ class gtfs:
         sorted_stopsequence = {
             "stop_id": [],
             "stop_sequence": [],
+            "stop_name": [],
             "start_time": []
         }
         # data['date'] = pd.to_datetime(data['date'], format='%Y-%m-%d %H:%M:%S.%f')
         # data['date'] = data['date'].dt.strftime('%m-%Y-%d %Y')
-
 
         for stop_name_i in data.itertuples():
 
@@ -312,8 +563,8 @@ class gtfs:
                 for stop_name_j in data.itertuples():
                     # if ids match continue comparison
                     if stop_name_i.stop_id == stop_name_j.stop_id:
-                            # 23072022
-                            # and stop_name_i.trip_id == stop_name_j.trip_id\
+                        # 23072022
+                        # and stop_name_i.trip_id == stop_name_j.trip_id\
                         if self.check_hour_24(stop_name_j.start_time):
                             comparetime_j = str((datetime.strptime(stop_name_j.date,
                                                                    '%Y-%m-%d %H:%M:%S.%f').strftime(
@@ -370,16 +621,16 @@ class gtfs:
 
                 stopsequence[stop_name_i.stop_id] = temp
 
-
         new_stopsequence = self.sortStopSequence(stopsequence)
 
         for stop_sequence in new_stopsequence.keys():
             sorted_stopsequence['stop_id'].append(new_stopsequence[stop_sequence]['stop_id'])
             sorted_stopsequence['stop_sequence'].append(stop_sequence)
+            sorted_stopsequence['stop_name'].append(new_stopsequence[stop_sequence]['stop_name'])
             sorted_stopsequence['start_time'].append(new_stopsequence[stop_sequence]['start_time'])
 
         #
-        # print('len stop_sequences {}'.format(sequence_count))
+        # logging.debug('len stop_sequences {}'.format(sequence_count))
         # for stop_id in stopsequence.keys():
         #     if stop_id in new_stopsequence \
         #         and stopsequence[stop_id]['start_time'] < new_stopsequence[stop_id]['start_time'] \
@@ -397,7 +648,7 @@ class gtfs:
         #
         #
         #
-        # print(stopsequence)
+        # logging.debug(stopsequence)
         # i = 0
         # for sequence in range(0, len(temp["stop_sequence"])):
         #     i += 1
@@ -484,7 +735,6 @@ class gtfs:
     def time_delete_seconds(self, time):
         return time[:-3]
 
-
     # checks if date string
     def check_dates_input(self, dates):
         pattern1 = re.findall('^\d{8}(?:\d{8})*(?:,\d{8})*$', dates)
@@ -496,7 +746,7 @@ class gtfs:
     def check_KommaInText(self, dates):
         pattern1 = re.findall('"\w*,\w*"', dates)
         if pattern1:
-            print (pattern1)
+            logging.debug(pattern1)
             return True
         else:
             return False
@@ -510,81 +760,124 @@ class gtfs:
             else:
                 return False
         except:
-            print(time)
+            logging.debug(time)
 
     # read zip-data
     def read_gtfs_data(self):
-        try:
-            with zipfile.ZipFile(self.input_path) as zf:
-                with io.TextIOWrapper(zf.open("stops.txt"), encoding="utf-8") as stops:
-                    stopsList = stops.readlines()[1:]
-                with io.TextIOWrapper(zf.open("stop_times.txt"), encoding="utf-8") as stop_times:
-                    stopTimesList = stop_times.readlines()[1:]
-                with io.TextIOWrapper(zf.open("trips.txt"), encoding="utf-8") as trips:
-                    tripsList = trips.readlines()[1:]
-                with io.TextIOWrapper(zf.open("calendar.txt"), encoding="utf-8") as calendar:
-                    calendarList = calendar.readlines()[1:]
-                with io.TextIOWrapper(zf.open("calendar_dates.txt"), encoding="utf-8") as calendar_dates:
-                    calendar_datesList = calendar_dates.readlines()[1:]
-                with io.TextIOWrapper(zf.open("routes.txt"), encoding="utf-8") as routes:
-                    routesList = routes.readlines()[1:]
-                with io.TextIOWrapper(zf.open("agency.txt"), encoding="utf-8") as agency:
-                    agencyList = agency.readlines()[1:]
+        # try:
+        with zipfile.ZipFile(self.input_path) as zf:
+            logging.debug(zf.namelist())
+            for file in zf.namelist():
+                if file.endswith('pkl'):
+                    self.pkl_loaded = True
+                    break
 
-        except:
-            print('Error in Unzipping data ')
-            return False
+            if self.pkl_loaded is True:
+                with zf.open("Tmp/dfStops.pkl") as stops:
+                    self.dfStops = pd.read_pickle(stops)
+                with zf.open("Tmp/dfStopTimes.pkl") as stop_times:
+                    self.dfStopTimes = pd.read_pickle(stop_times)
+                with zf.open("Tmp/dfTrips.pkl") as trips:
+                    self.dfTrips = pd.read_pickle(trips)
+                with zf.open("Tmp/dfWeek.pkl") as calendar:
+                    self.dfWeek = pd.read_pickle(calendar)
+                with zf.open("Tmp/dfDates.pkl") as calendar_dates:
+                    self.dfDates = pd.read_pickle(calendar_dates)
+                with zf.open("Tmp/dfRoutes.pkl") as routes:
+                    self.dfRoutes = pd.read_pickle(routes)
+                with zf.open("Tmp/dfagency.pkl") as agency:
+                    self.dfagency = pd.read_pickle(agency)
 
-        try:
-            with zipfile.ZipFile(self.input_path) as zf:
-                with io.TextIOWrapper(zf.open("stops.txt"), encoding="utf-8") as stops:
-                    stopsHeader = stops.readlines()[0].rstrip()
-                with io.TextIOWrapper(zf.open("stop_times.txt"), encoding="utf-8") as stop_times:
-                    stop_timesHeader = stop_times.readlines()[0].rstrip()
-                with io.TextIOWrapper(zf.open("trips.txt"), encoding="utf-8") as trips:
-                    tripsHeader = trips.readlines()[0]
-                with io.TextIOWrapper(zf.open("calendar.txt"), encoding="utf-8") as calendar:
-                    calendarHeader = calendar.readlines()[0].rstrip()
-                with io.TextIOWrapper(zf.open("calendar_dates.txt"), encoding="utf-8") as calendar_dates:
-                    calendar_datesHeader = calendar_dates.readlines()[0].rstrip()
-                with io.TextIOWrapper(zf.open("routes.txt"), encoding="utf-8") as routes:
-                    routesHeader = routes.readlines()[0].rstrip()
-                with io.TextIOWrapper(zf.open("agency.txt"), encoding="utf-8") as agency:
-                    agencyHeader = agency.readlines()[0].rstrip()
-        except:
-            print('Error in Unzipping headers')
-            return False
+                try:
+                    with zipfile.ZipFile(self.input_path) as zf:
+                        with io.TextIOWrapper(zf.open("Tmp/dffeed_info.pkl")) as feed_info:
+                            self.dffeed_info = pd.read_pickle(feed_info)
+                except:
+                    logging.debug('no feed info header')
+                    feed_infoHeader = None
 
-        try:
-            with zipfile.ZipFile(self.input_path) as zf:
-                with io.TextIOWrapper(zf.open("feed_info.txt"), encoding="utf-8") as feed_info:
-                    feed_infoHeader = feed_info.readlines()[0].rstrip()
-        except:
-            print('no feed info header')
-            feed_infoHeader = None
+        # except:
+        #     logging.debug('Error in Unzipping data ')
+        #     return False
 
-        try:
-            with zipfile.ZipFile(self.input_path) as zf:
-                with io.TextIOWrapper(zf.open("feed_info.txt"), encoding="utf-8") as feed_info:
-                    feed_infoList = feed_info.readlines()[1:]
-        except:
-            print('no feed info data')
-            feed_infoList = None
+        if self.pkl_loaded is False:
+            try:
+                with zipfile.ZipFile(self.input_path) as zf:
+                    with io.TextIOWrapper(zf.open("stops.txt"), encoding="utf-8") as stops:
+                        stopsList = stops.readlines()[1:]
+                    with io.TextIOWrapper(zf.open("stop_times.txt"), encoding="utf-8") as stop_times:
+                        stopTimesList = stop_times.readlines()[1:]
+                    with io.TextIOWrapper(zf.open("trips.txt"), encoding="utf-8") as trips:
+                        tripsList = trips.readlines()[1:]
+                    with io.TextIOWrapper(zf.open("calendar.txt"), encoding="utf-8") as calendar:
+                        calendarList = calendar.readlines()[1:]
+                    with io.TextIOWrapper(zf.open("calendar_dates.txt"), encoding="utf-8") as calendar_dates:
+                        calendar_datesList = calendar_dates.readlines()[1:]
+                    with io.TextIOWrapper(zf.open("routes.txt"), encoding="utf-8") as routes:
+                        routesList = routes.readlines()[1:]
+                    with io.TextIOWrapper(zf.open("agency.txt"), encoding="utf-8") as agency:
+                        agencyList = agency.readlines()[1:]
 
-        self.printAllHeaders(stopsHeader, stop_timesHeader, tripsHeader, calendarHeader, calendar_datesHeader, routesHeader, agencyHeader, feed_infoHeader)
-        self.raw_gtfs_data = [[stopsHeader,stopsList], [stop_timesHeader,stopTimesList], [tripsHeader,tripsList], [calendarHeader,calendarList], [calendar_datesHeader,calendar_datesList], [routesHeader,routesList],[agencyHeader,agencyList], [feed_infoHeader,feed_infoList]]
+            except:
+                logging.debug('Error in Unzipping data ')
+                return False
+
+            try:
+                with zipfile.ZipFile(self.input_path) as zf:
+                    with io.TextIOWrapper(zf.open("stops.txt"), encoding="utf-8") as stops:
+                        stopsHeader = stops.readlines()[0].rstrip()
+                    with io.TextIOWrapper(zf.open("stop_times.txt"), encoding="utf-8") as stop_times:
+                        stop_timesHeader = stop_times.readlines()[0].rstrip()
+                    with io.TextIOWrapper(zf.open("trips.txt"), encoding="utf-8") as trips:
+                        tripsHeader = trips.readlines()[0]
+                    with io.TextIOWrapper(zf.open("calendar.txt"), encoding="utf-8") as calendar:
+                        calendarHeader = calendar.readlines()[0].rstrip()
+                    with io.TextIOWrapper(zf.open("calendar_dates.txt"), encoding="utf-8") as calendar_dates:
+                        calendar_datesHeader = calendar_dates.readlines()[0].rstrip()
+                    with io.TextIOWrapper(zf.open("routes.txt"), encoding="utf-8") as routes:
+                        routesHeader = routes.readlines()[0].rstrip()
+                    with io.TextIOWrapper(zf.open("agency.txt"), encoding="utf-8") as agency:
+                        agencyHeader = agency.readlines()[0].rstrip()
+            except:
+                logging.debug('Error in Unzipping headers')
+                return False
+
+            try:
+                with zipfile.ZipFile(self.input_path) as zf:
+                    with io.TextIOWrapper(zf.open("feed_info.txt"), encoding="utf-8") as feed_info:
+                        feed_infoHeader = feed_info.readlines()[0].rstrip()
+            except:
+                logging.debug('no feed info header')
+                feed_infoHeader = None
+
+            try:
+                with zipfile.ZipFile(self.input_path) as zf:
+                    with io.TextIOWrapper(zf.open("feed_info.txt"), encoding="utf-8") as feed_info:
+                        feed_infoList = feed_info.readlines()[1:]
+            except:
+                logging.debug('no feed info data')
+                feed_infoList = None
+
+            self.printAllHeaders(stopsHeader, stop_timesHeader, tripsHeader, calendarHeader, calendar_datesHeader,
+                                 routesHeader, agencyHeader, feed_infoHeader)
+            self.raw_gtfs_data = [[stopsHeader, stopsList], [stop_timesHeader, stopTimesList], [tripsHeader, tripsList],
+                                  [calendarHeader, calendarList], [calendar_datesHeader, calendar_datesList],
+                                  [routesHeader, routesList], [agencyHeader, agencyList],
+                                  [feed_infoHeader, feed_infoList]]
         return True
 
-    def printAllHeaders(self, stopsHeader, stop_timesHeader, tripsHeader, calendarHeader, calendar_datesHeader, routesHeader, agencyHeader, feed_infoHeader):
-        print('stopsHeader          = {} \n'
-              'stop_timesHeader     = {} \n'
-              'tripsHeader          = {} \n'
-              'calendarHeader       = {} \n'
-              'calendar_datesHeader = {} \n'
-              'routesHeader         = {} \n'
-              'agencyHeader         = {} \n'
-              'feed_infoHeader      = {}'.format(stopsHeader, stop_timesHeader, tripsHeader, calendarHeader, calendar_datesHeader, routesHeader, agencyHeader, feed_infoHeader))
-
+    def printAllHeaders(self, stopsHeader, stop_timesHeader, tripsHeader, calendarHeader, calendar_datesHeader,
+                        routesHeader, agencyHeader, feed_infoHeader):
+        logging.debug('stopsHeader          = {} \n'
+                      'stop_timesHeader     = {} \n'
+                      'tripsHeader          = {} \n'
+                      'calendarHeader       = {} \n'
+                      'calendar_datesHeader = {} \n'
+                      'routesHeader         = {} \n'
+                      'agencyHeader         = {} \n'
+                      'feed_infoHeader      = {}'.format(stopsHeader, stop_timesHeader, tripsHeader, calendarHeader,
+                                                         calendar_datesHeader, routesHeader, agencyHeader,
+                                                         feed_infoHeader))
 
     def get_gtfs_trip(self):
         tripdict = {
@@ -627,7 +920,6 @@ class gtfs:
 
             for idx in range(istopDate):
                 stopsdict[header_names[idx]].append(stopData[idx])
-
 
         self.stopsdict = stopsdict
         return True
@@ -697,7 +989,6 @@ class gtfs:
             for idx in range(icalendarDate):
                 calendarDatesdict[header_names[idx]].append(calendarDatesDate[idx])
 
-
         self.calendarDatesdict = calendarDatesdict
         return True
 
@@ -765,7 +1056,6 @@ class gtfs:
             for idx in range(iagencyData):
                 agencyFahrtdict[header_names[idx]].append(agencyData[idx])
 
-
         self.agencyFahrtdict = agencyFahrtdict
         return True
 
@@ -797,18 +1087,23 @@ class gtfs:
         inputVar = [{'agency_id': self.selectedAgency}]
         varTest = pd.DataFrame(inputVar).set_index('agency_id')
         cond_routes_of_agency = '''
-                    select dfRoutes.route_id, dfRoutes.route_short_name
+                    select *
                     from dfRoutes 
                     left join varTest
                     where varTest.agency_id = dfRoutes.agency_id
                     order by dfRoutes.route_short_name;
                    '''
         routes_list = sqldf(cond_routes_of_agency, locals())
-        routes_list = routes_list.values.tolist()
-        routes_str_list = []
-        for lists in routes_list:
-            routes_str_list.append('{},{}'.format(lists[0], lists[1]))
-        self.routesList = routes_str_list
+        """
+        todo
+        """
+        self.dfSelectedRoutes = routes_list
+
+        # routes_list = routes_list.values.tolist()
+        # routes_str_list = []
+        # for lists in routes_list:
+        #     routes_str_list.append('{},{}'.format(lists[0], lists[1]))
+        # self.routesList = routes_str_list
         return True
 
     def select_gtfs_services_from_routes(self, route, tripdict, calendarWeekdict):
@@ -822,7 +1117,7 @@ class gtfs:
         try:
             dfWeek['service_id'] = dfWeek['service_id'].astype(int)
         except:
-            print('dfWeek service_id: can not convert into int')
+            logging.debug('dfWeek service_id: can not convert into int')
 
         cond_services_from_routes = '''
                     select dfWeek.service_id, dfWeek.monday, dfWeek.tuesday, dfWeek.wednesday, dfWeek.thursday, dfWeek.friday, dfWeek.saturday, dfWeek.sunday
@@ -839,7 +1134,7 @@ class gtfs:
     def read_gtfs_agencies(self):
         dfagency = self.dfagency
         cond_agencies = '''
-                    select dfagency.agency_id, dfagency.agency_name
+                    select *
                     from dfagency 
                     order by dfagency.agency_id;
                    '''
@@ -861,6 +1156,7 @@ class gtfs:
                                        'Route': [self.selectedRoute],
                                        'WeekdayOption': [self.selected_weekday]
                                        }
+
         self.dfheader_for_export_data = pd.DataFrame.from_dict(self.header_for_export_data)
 
         dummy_direction = 0
@@ -914,7 +1210,6 @@ class gtfs:
         self.varTestService = pd.DataFrame(inputVarService).set_index('weekdayOption')
 
     def dates_prepare_data_fahrplan(self):
-
         self.last_time = time.time()
 
         if not self.check_dates_input(self.selected_dates):
@@ -949,14 +1244,14 @@ class gtfs:
     def analyzeDateRangeInGTFSData(self):
         if self.dfWeek is not None:
             self.dfdateRangeInGTFSData = self.dfWeek.groupby(['start_date', 'end_date']).size().reset_index()
-            return str(self.dfdateRangeInGTFSData.iloc[0].start_date) + '-' + str(self.dfdateRangeInGTFSData.iloc[0].end_date)
-
+            return str(self.dfdateRangeInGTFSData.iloc[0].start_date) + '-' + str(
+                self.dfdateRangeInGTFSData.iloc[0].end_date)
 
     def datesWeekday_select_dates_for_date_range(self):
         # conditions for searching in dfs
         dfTrips = self.dfTrips
         dfWeek = self.dfWeek
-        dfRoutes = self.dfRoutes
+        dfRoutes = self.dfSelectedRoutes
         route_short_namedf = self.route_short_namedf
         varTestAgency = self.varTestAgency
         requested_directiondf = self.requested_directiondf
@@ -1002,6 +1297,7 @@ class gtfs:
         dfWeek.saturday,
         dfWeek.sunday
         """
+
         self.fahrplan_dates = None
         self.fahrplan_dates = sqldf(cond_select_dates_for_date_range, locals())
 
@@ -1114,13 +1410,16 @@ class gtfs:
 
         # set value in column to day if 1 and and compare with day
         fahrplan_dates_all_dates['monday'] = ['Monday' if x == '1' else '-' for x in fahrplan_dates_all_dates['monday']]
-        fahrplan_dates_all_dates['tuesday'] = ['Tuesday' if x == '1' else '-' for x in fahrplan_dates_all_dates['tuesday']]
-        fahrplan_dates_all_dates['wednesday'] = ['Wednesday' if x == '1' else '-' for x in fahrplan_dates_all_dates['wednesday']]
-        fahrplan_dates_all_dates['thursday'] = ['Thursday' if x == '1' else '-' for x in fahrplan_dates_all_dates['thursday']]
+        fahrplan_dates_all_dates['tuesday'] = ['Tuesday' if x == '1' else '-' for x in
+                                               fahrplan_dates_all_dates['tuesday']]
+        fahrplan_dates_all_dates['wednesday'] = ['Wednesday' if x == '1' else '-' for x in
+                                                 fahrplan_dates_all_dates['wednesday']]
+        fahrplan_dates_all_dates['thursday'] = ['Thursday' if x == '1' else '-' for x in
+                                                fahrplan_dates_all_dates['thursday']]
         fahrplan_dates_all_dates['friday'] = ['Friday' if x == '1' else '-' for x in fahrplan_dates_all_dates['friday']]
-        fahrplan_dates_all_dates['saturday'] = ['Saturday' if x == '1' else '-' for x in fahrplan_dates_all_dates['saturday']]
+        fahrplan_dates_all_dates['saturday'] = ['Saturday' if x == '1' else '-' for x in
+                                                fahrplan_dates_all_dates['saturday']]
         fahrplan_dates_all_dates['sunday'] = ['Sunday' if x == '1' else '-' for x in fahrplan_dates_all_dates['sunday']]
-
 
         fahrplan_dates_all_dates = fahrplan_dates_all_dates.set_index('date')
 
@@ -1144,7 +1443,6 @@ class gtfs:
         varTestAgency = self.varTestAgency
         requested_directiondf = self.requested_directiondf
         requested_datesdf = self.requested_datesdf
-
 
         cond_select_dates_delete_exception_2 = '''
                     select  
@@ -1241,14 +1539,18 @@ class gtfs:
         fahrplan_dates_all_dates['end_date'] = pd.to_datetime(fahrplan_dates_all_dates['end_date'], format='%Y%m%d')
         fahrplan_dates_all_dates['day'] = fahrplan_dates_all_dates['date'].dt.day_name()
 
-        # set value in column to day if 1 and and compare with day
+        # set value in column to day if 1 and compare with day
         fahrplan_dates_all_dates['monday'] = ['Monday' if x == '1' else '-' for x in fahrplan_dates_all_dates['monday']]
-        fahrplan_dates_all_dates['tuesday'] = ['Tuesday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['tuesday']]
-        fahrplan_dates_all_dates['wednesday'] = ['Wednesday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['wednesday']]
-        fahrplan_dates_all_dates['thursday'] = ['Thursday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['thursday']]
-        fahrplan_dates_all_dates['friday'] = ['Friday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['friday']]
-        fahrplan_dates_all_dates['saturday'] = ['Saturday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['saturday']]
-        fahrplan_dates_all_dates['sunday'] = ['Sunday' if x == '1' else '-' for x  in fahrplan_dates_all_dates['sunday']]
+        fahrplan_dates_all_dates['tuesday'] = ['Tuesday' if x == '1' else '-' for x in
+                                               fahrplan_dates_all_dates['tuesday']]
+        fahrplan_dates_all_dates['wednesday'] = ['Wednesday' if x == '1' else '-' for x in
+                                                 fahrplan_dates_all_dates['wednesday']]
+        fahrplan_dates_all_dates['thursday'] = ['Thursday' if x == '1' else '-' for x in
+                                                fahrplan_dates_all_dates['thursday']]
+        fahrplan_dates_all_dates['friday'] = ['Friday' if x == '1' else '-' for x in fahrplan_dates_all_dates['friday']]
+        fahrplan_dates_all_dates['saturday'] = ['Saturday' if x == '1' else '-' for x in
+                                                fahrplan_dates_all_dates['saturday']]
+        fahrplan_dates_all_dates['sunday'] = ['Sunday' if x == '1' else '-' for x in fahrplan_dates_all_dates['sunday']]
 
         fahrplan_dates_all_dates = fahrplan_dates_all_dates.set_index('date')
 
@@ -1315,7 +1617,6 @@ class gtfs:
         requested_directiondf = self.requested_directiondf
         requested_directiondf['direction_id'] = requested_directiondf['direction_id'].astype('string')
 
-
         dfRoutes = self.dfRoutes
         dfRoutes = pd.merge(left=dfRoutes, right=route_short_namedf, how='inner', on='route_short_name')
         dfRoutes = pd.merge(left=dfRoutes, right=varTestAgency, how='inner', on='agency_id')
@@ -1345,7 +1646,6 @@ class gtfs:
         zeit = time.time() - last_time
         last_time = time.time()
 
-
     def datesWeekday_select_for_every_date_trips_stops(self):
 
         fahrplan_calendar_weeks = self.fahrplan_calendar_weeks
@@ -1367,8 +1667,10 @@ class gtfs:
 
         # combine dates and trips to get a df with trips for every date
         self.fahrplan_calendar_weeks = sqldf(cond_select_for_every_date_trips_stops, locals())
-        self.fahrplan_calendar_weeks['arrival_time']  = self.fahrplan_calendar_weeks['arrival_time'].apply(lambda x: self.time_in_string(x))
-        self.fahrplan_calendar_weeks['start_time']  = self.fahrplan_calendar_weeks['start_time'].apply(lambda x: self.time_in_string(x))
+        self.fahrplan_calendar_weeks['arrival_time'] = self.fahrplan_calendar_weeks['arrival_time'].apply(
+            lambda x: self.time_in_string(x))
+        self.fahrplan_calendar_weeks['start_time'] = self.fahrplan_calendar_weeks['start_time'].apply(
+            lambda x: self.time_in_string(x))
 
         #########################
 
@@ -1396,6 +1698,98 @@ class gtfs:
 
     # tried to get all data in one variable but then I need to create a new index for every dict again
     # maybe I try to get change it later
+
+    def datesWeekday_create_sort_stopnames(self):
+        fahrplan_calendar_weeks = self.fahrplan_calendar_weeks
+        self.fahrplan_calendar_weeks = None
+        self.filtered_stop_names = self.filterStopSequence(self.fahrplan_sorted_stops)
+
+        """
+        
+        create new def with filterStopSequence
+        
+        """
+
+        self.df_filtered_stop_names = pd.DataFrame.from_dict(self.filtered_stop_names)
+        # df_deleted_dupl_stop_names["stop_name"] = df_deleted_dupl_stop_names["stop_name"].astype('string')
+        self.df_filtered_stop_names["stop_sequence"] = self.df_filtered_stop_names["stop_sequence"].astype('int32')
+        # self.df_filtered_stop_names = self.df_filtered_stop_names.set_index("stop_sequence")
+        self.df_filtered_stop_names = self.df_filtered_stop_names.sort_index(axis=0)
+
+
+
+
+    def datesWeekday_create_fahrplan_continue(self):
+
+        cond_stop_name_sorted_trips_with_dates = '''
+                    select  fahrplan_calendar_weeks.date,
+                            fahrplan_calendar_weeks.day,
+                            fahrplan_calendar_weeks.start_time, 
+                            fahrplan_calendar_weeks.trip_id,
+                            fahrplan_calendar_weeks.stop_name,
+                            df_filtered_stop_names.stop_sequence as stop_sequence_sorted,
+                            fahrplan_calendar_weeks.stop_sequence,
+                            fahrplan_calendar_weeks.arrival_time, 
+                            fahrplan_calendar_weeks.service_id, 
+                            fahrplan_calendar_weeks.stop_id                        
+                    from fahrplan_calendar_weeks 
+                    left join df_filtered_stop_names on fahrplan_calendar_weeks.stop_id = df_filtered_stop_names.stop_id  
+                    group by fahrplan_calendar_weeks.date,
+                             fahrplan_calendar_weeks.day,
+                             fahrplan_calendar_weeks.start_time,
+                             fahrplan_calendar_weeks.arrival_time, 
+                             fahrplan_calendar_weeks.trip_id,
+                             fahrplan_calendar_weeks.stop_name,
+                             stop_sequence_sorted,
+                             fahrplan_calendar_weeks.stop_sequence,
+                             fahrplan_calendar_weeks.service_id,
+                             fahrplan_calendar_weeks.stop_id
+    
+                    order by fahrplan_calendar_weeks.date,
+                             fahrplan_calendar_weeks.stop_sequence,
+                             fahrplan_calendar_weeks.start_time,
+                             fahrplan_calendar_weeks.trip_id;
+                   '''
+
+        df_filtered_stop_names = self.df_filtered_stop_names
+
+        fahrplan_calendar_weeks = sqldf(cond_stop_name_sorted_trips_with_dates, locals())
+
+        ###########################
+
+        fahrplan_calendar_weeks['date'] = pd.to_datetime(fahrplan_calendar_weeks['date'], format='%Y-%m-%d %H:%M:%S.%f')
+        # fahrplan_calendar_weeks['trip_id'] = fahrplan_calendar_weeks['trip_id'].astype('int32')
+        fahrplan_calendar_weeks['arrival_time'] = fahrplan_calendar_weeks['arrival_time'].astype('string')
+        fahrplan_calendar_weeks['start_time'] = fahrplan_calendar_weeks['start_time'].astype('string')
+
+        # fahrplan_calendar_weeks = fahrplan_calendar_weeks.drop(columns=['stop_sequence', 'service_id', 'stop_id'])
+        fahrplan_calendar_weeks = fahrplan_calendar_weeks.drop(columns=['stop_sequence', 'service_id'])
+        fahrplan_calendar_weeks = fahrplan_calendar_weeks.groupby(
+            ['date', 'day', 'stop_sequence_sorted', 'stop_name', 'stop_id', 'start_time',
+             'trip_id']).first().reset_index()
+
+        fahrplan_calendar_weeks['date'] = pd.to_datetime(fahrplan_calendar_weeks['date'], format='%Y-%m-%d')
+        # fahrplan_calendar_weeks['trip_id'] = fahrplan_calendar_weeks['trip_id'].astype('int32')
+
+        fahrplan_calendar_weeks['arrival_time'] = fahrplan_calendar_weeks['arrival_time'].astype('string')
+        if self.timeformat == 1:
+            fahrplan_calendar_weeks['arrival_time'] = fahrplan_calendar_weeks['arrival_time'].apply(
+                lambda x: self.time_delete_seconds(x))
+
+        fahrplan_calendar_weeks['start_time'] = fahrplan_calendar_weeks['start_time'].astype('string')
+
+        self.fahrplan_calendar_filter_days_pivot = fahrplan_calendar_weeks.pivot(
+            index=['date', 'day', 'stop_sequence_sorted', 'stop_name', 'stop_id'], columns=['start_time', 'trip_id'],
+            values='arrival_time')
+
+        # fahrplan_calendar_filter_days_pivot['date'] = pd.to_datetime(fahrplan_calendar_filter_days_pivot['date'], format='%Y-%m-%d %H:%M:%S.%f')
+        self.fahrplan_calendar_filter_days_pivot = self.fahrplan_calendar_filter_days_pivot.sort_index(axis=1)
+        self.fahrplan_calendar_filter_days_pivot = self.fahrplan_calendar_filter_days_pivot.sort_index(axis=0)
+
+        self.zeit = time.time() - self.last_time
+        now = datetime.now()
+        self.now = now.strftime("%Y_%m_%d_%H_%M_%S")
+
     def datesWeekday_create_fahrplan(self):
 
         cond_stop_name_sorted_trips_with_dates = '''
@@ -1431,6 +1825,13 @@ class gtfs:
         fahrplan_calendar_weeks = self.fahrplan_calendar_weeks
         self.fahrplan_calendar_weeks = None
         self.filtered_stop_names = self.filterStopSequence(self.fahrplan_sorted_stops)
+
+        """
+        
+        create new def with filterStopSequence
+        
+        """
+
         self.df_filtered_stop_names = pd.DataFrame.from_dict(self.filtered_stop_names)
         # df_deleted_dupl_stop_names["stop_name"] = df_deleted_dupl_stop_names["stop_name"].astype('string')
         self.df_filtered_stop_names["stop_sequence"] = self.df_filtered_stop_names["stop_sequence"].astype('int32')
@@ -1456,13 +1857,12 @@ class gtfs:
         fahrplan_calendar_weeks['date'] = pd.to_datetime(fahrplan_calendar_weeks['date'], format='%Y-%m-%d')
         # fahrplan_calendar_weeks['trip_id'] = fahrplan_calendar_weeks['trip_id'].astype('int32')
 
-
         fahrplan_calendar_weeks['arrival_time'] = fahrplan_calendar_weeks['arrival_time'].astype('string')
         if self.timeformat == 1:
-            fahrplan_calendar_weeks['arrival_time'] = fahrplan_calendar_weeks['arrival_time'].apply(lambda x: self.time_delete_seconds(x))
+            fahrplan_calendar_weeks['arrival_time'] = fahrplan_calendar_weeks['arrival_time'].apply(
+                lambda x: self.time_delete_seconds(x))
 
         fahrplan_calendar_weeks['start_time'] = fahrplan_calendar_weeks['start_time'].astype('string')
-
 
         self.fahrplan_calendar_filter_days_pivot = fahrplan_calendar_weeks.pivot(
             index=['date', 'day', 'stop_sequence_sorted', 'stop_name', 'stop_id'], columns=['start_time', 'trip_id'],

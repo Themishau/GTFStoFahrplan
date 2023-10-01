@@ -2,23 +2,33 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1215</width>
-    <height>954</height>
+    <width>1234</width>
+    <height>582</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+   <sizepolicy hsizetype="Expanding" vsizetype="Ignored">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
+  <property name="maximumSize">
+   <size>
+    <width>16777215</width>
+    <height>954</height>
+   </size>
+  </property>
   <property name="font">
    <font>
     <pointsize>12</pointsize>
+    <stylestrategy>PreferAntialias</stylestrategy>
    </font>
   </property>
   <property name="windowTitle">
@@ -28,15 +38,17 @@
    <bool>false</bool>
   </property>
   <property name="styleSheet">
-   <string notr="true">border-style: solid;
-border-color:  #6C5B7B;
-background: #f8b195; 
-color: white
+   <string notr="true">background: #cfe2da; 
+color: #00473e;
 </string>
+  </property>
+  <property name="tabShape">
+   <enum>QTabWidget::Triangular</enum>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="styleSheet">
-    <string notr="true">color: white;
+    <string notr="true">background-color: #00332c;
+color: #ee9462;
 </string>
    </property>
    <layout class="QGridLayout" name="gridLayout_3">
@@ -92,62 +104,23 @@ color: white
         <font>
          <family>Segoe UI</family>
          <pointsize>18</pointsize>
+         <stylestrategy>NoAntialias</stylestrategy>
         </font>
        </property>
        <property name="styleSheet">
-        <string notr="true">border: none;
-background-color: #C06C84;
-
-</string>
-       </property>
-       <layout class="QGridLayout" name="gridLayout">
-        <property name="sizeConstraint">
-         <enum>QLayout::SetNoConstraint</enum>
-        </property>
-        <property name="leftMargin">
-         <number>4</number>
-        </property>
-        <property name="topMargin">
-         <number>4</number>
-        </property>
-        <property name="rightMargin">
-         <number>4</number>
-        </property>
-        <property name="bottomMargin">
-         <number>15</number>
-        </property>
-        <item row="0" column="0">
-         <widget class="QToolBox" name="toolBox">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="font">
-           <font>
-            <family>Segoe UI</family>
-            <pointsize>12</pointsize>
-           </font>
-          </property>
-          <property name="mouseTracking">
-           <bool>true</bool>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">#toolBox {
-	color:#C07C84;
+        <string notr="true">#toolBox {
+	color:#00473e;
 
 }
 
 #toolBox::tab {
 	padding-left: 5px;
 	text-align: left;
-	border-radius: 2px;
     border-style: solid;
 }
 
 #toolBox::tab:selected {
-	background-color: #355C7D;
+	background-color: #256531;
 	font-weight: bold;
 }
 
@@ -158,174 +131,34 @@ background-color: #C06C84;
 }
 
 #toolBox QPushButton:hover {
-	background-color: 6C587B;
+	background-color: #587b6d;
    border-radius: 3px;
 }
 
 #toolBox QPushButton:checked {
-	background-color: #355C7D;
+	background-color: #585d1c;
 	font-weight: bold;
 }</string>
-          </property>
-          <property name="currentIndex">
-           <number>2</number>
-          </property>
-          <widget class="QWidget" name="page">
-           <property name="geometry">
-            <rect>
-             <x>0</x>
-             <y>0</y>
-             <width>221</width>
-             <height>571</height>
-            </rect>
-           </property>
-           <attribute name="icon">
-            <iconset resource="res/resource.qrc">
-             <normaloff>:/newPrefix/icons/Icon Pack Vol. 1/SVG/HOME.svg</normaloff>:/newPrefix/icons/Icon Pack Vol. 1/SVG/HOME.svg</iconset>
-           </attribute>
-           <attribute name="label">
-            <string>General</string>
-           </attribute>
-           <layout class="QGridLayout" name="gridLayout_6">
-            <item row="0" column="0">
-             <spacer name="verticalSpacer_4">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>299</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item row="0" column="1">
-             <spacer name="verticalSpacer">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>299</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="page_2">
-           <property name="geometry">
-            <rect>
-             <x>0</x>
-             <y>0</y>
-             <width>221</width>
-             <height>571</height>
-            </rect>
-           </property>
-           <property name="styleSheet">
-            <string notr="true"/>
-           </property>
-           <attribute name="icon">
-            <iconset resource="res/resource.qrc">
-             <normaloff>:/newPrefix/icons/Icon Pack Vol. 1/SVG/BROWSER.svg</normaloff>:/newPrefix/icons/Icon Pack Vol. 1/SVG/BROWSER.svg</iconset>
-           </attribute>
-           <attribute name="label">
-            <string>Create Table</string>
-           </attribute>
-           <layout class="QGridLayout" name="gridLayout_5">
-            <item row="3" column="1">
-             <spacer name="verticalSpacer_2">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>209</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item row="0" column="0" colspan="2">
-             <widget class="QPushButton" name="pushButton_2">
-              <property name="styleSheet">
-               <string notr="true"/>
-              </property>
-              <property name="text">
-               <string>Import</string>
-              </property>
-              <property name="checkable">
-               <bool>true</bool>
-              </property>
-              <property name="checked">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0" colspan="2">
-             <widget class="QPushButton" name="pushButton_3">
-              <property name="styleSheet">
-               <string notr="true"/>
-              </property>
-              <property name="text">
-               <string>Select</string>
-              </property>
-              <property name="checkable">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0" colspan="2">
-             <widget class="QPushButton" name="pushButton_4">
-              <property name="styleSheet">
-               <string notr="true"/>
-              </property>
-              <property name="text">
-               <string>Create</string>
-              </property>
-              <property name="checkable">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="page_3">
-           <property name="geometry">
-            <rect>
-             <x>0</x>
-             <y>0</y>
-             <width>221</width>
-             <height>571</height>
-            </rect>
-           </property>
-           <attribute name="icon">
-            <iconset resource="res/resource.qrc">
-             <normaloff>:/newPrefix/icons/Icon Pack Vol. 1/SVG/DOWNLOAD.svg</normaloff>:/newPrefix/icons/Icon Pack Vol. 1/SVG/DOWNLOAD.svg</iconset>
-           </attribute>
-           <attribute name="label">
-            <string>Download GTFS</string>
-           </attribute>
-           <layout class="QGridLayout" name="gridLayout_2">
-            <item row="0" column="0">
-             <spacer name="verticalSpacer_3">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>299</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-           </layout>
-          </widget>
-         </widget>
-        </item>
+       </property>
+       <layout class="QGridLayout" name="gridLayout">
+        <property name="sizeConstraint">
+         <enum>QLayout::SetNoConstraint</enum>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <property name="spacing">
+         <number>0</number>
+        </property>
         <item row="1" column="0">
          <widget class="QFrame" name="frame">
           <property name="minimumSize">
@@ -341,7 +174,225 @@ background-color: #C06C84;
            <enum>QFrame::Raised</enum>
           </property>
           <layout class="QGridLayout" name="gridLayout_7">
-           <item row="3" column="0" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+           <item row="2" column="0" alignment="Qt::AlignTop">
+            <widget class="QToolBox" name="toolBox">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>420</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <family>Segoe UI</family>
+               <pointsize>12</pointsize>
+              </font>
+             </property>
+             <property name="mouseTracking">
+              <bool>true</bool>
+             </property>
+             <property name="layoutDirection">
+              <enum>Qt::LeftToRight</enum>
+             </property>
+             <property name="styleSheet">
+              <string notr="true"/>
+             </property>
+             <property name="currentIndex">
+              <number>2</number>
+             </property>
+             <widget class="QWidget" name="page">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>209</width>
+                <height>312</height>
+               </rect>
+              </property>
+              <attribute name="icon">
+               <iconset resource="res/resource_boot.qrc">
+                <normaloff>:/newPrefix/icons/bootstrap-icons-1.10.3/house-door.svg</normaloff>:/newPrefix/icons/bootstrap-icons-1.10.3/house-door.svg</iconset>
+              </attribute>
+              <attribute name="label">
+               <string>General</string>
+              </attribute>
+              <layout class="QGridLayout" name="gridLayout_6">
+               <item row="0" column="0" colspan="2">
+                <widget class="QPushButton" name="pushButton_5">
+                 <property name="text">
+                  <string>General Information</string>
+                 </property>
+                 <property name="checkable">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <spacer name="verticalSpacer">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </widget>
+             <widget class="QWidget" name="page_2">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>209</width>
+                <height>312</height>
+               </rect>
+              </property>
+              <property name="styleSheet">
+               <string notr="true"/>
+              </property>
+              <attribute name="icon">
+               <iconset resource="res/resource_boot.qrc">
+                <normaloff>:/newPrefix/icons/bootstrap-icons-1.10.3/table.svg</normaloff>:/newPrefix/icons/bootstrap-icons-1.10.3/table.svg</iconset>
+              </attribute>
+              <attribute name="label">
+               <string>Create Table</string>
+              </attribute>
+              <layout class="QGridLayout" name="gridLayout_5">
+               <item row="1" column="0" colspan="2">
+                <widget class="QPushButton" name="pushButton_3">
+                 <property name="styleSheet">
+                  <string notr="true"/>
+                 </property>
+                 <property name="text">
+                  <string>Select</string>
+                 </property>
+                 <property name="checkable">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0" colspan="2">
+                <widget class="QPushButton" name="pushButton_2">
+                 <property name="styleSheet">
+                  <string notr="true"/>
+                 </property>
+                 <property name="text">
+                  <string>Import</string>
+                 </property>
+                 <property name="checkable">
+                  <bool>true</bool>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0" colspan="2">
+                <widget class="QPushButton" name="pushButton_4">
+                 <property name="styleSheet">
+                  <string notr="true"/>
+                 </property>
+                 <property name="text">
+                  <string>Create</string>
+                 </property>
+                 <property name="checkable">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0">
+                <spacer name="verticalSpacer_2">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </widget>
+             <widget class="QWidget" name="page_3">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>209</width>
+                <height>312</height>
+               </rect>
+              </property>
+              <attribute name="icon">
+               <iconset resource="res/resource_boot.qrc">
+                <normaloff>:/newPrefix/icons/bootstrap-icons-1.10.3/download.svg</normaloff>:/newPrefix/icons/bootstrap-icons-1.10.3/download.svg</iconset>
+              </attribute>
+              <attribute name="label">
+               <string>Download GTFS</string>
+              </attribute>
+              <layout class="QGridLayout" name="gridLayout_2">
+               <item row="0" column="0">
+                <widget class="QPushButton" name="pushButton_6">
+                 <property name="text">
+                  <string>Download GTFS Data</string>
+                 </property>
+                 <property name="checkable">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <spacer name="verticalSpacer_3">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </widget>
+            </widget>
+           </item>
+           <item row="5" column="0">
+            <widget class="QPushButton" name="btnExit">
+             <property name="minimumSize">
+              <size>
+               <width>100</width>
+               <height>40</height>
+              </size>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: #3f7444;</string>
+             </property>
+             <property name="text">
+              <string>Exit</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QProgressBar" name="progressBar">
+             <property name="value">
+              <number>24</number>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="0" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
             <widget class="QTextBrowser" name="textBrowser">
              <property name="maximumSize">
               <size>
@@ -358,21 +409,18 @@ p, li { white-space: pre-wrap; }
              </property>
             </widget>
            </item>
-           <item row="2" column="0">
-            <widget class="QPushButton" name="btnExit">
-             <property name="minimumSize">
+           <item row="4" column="0">
+            <spacer name="verticalSpacer_4">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
               <size>
-               <width>100</width>
+               <width>20</width>
                <height>40</height>
               </size>
              </property>
-             <property name="styleSheet">
-              <string notr="true">background-color: #F8B195;</string>
-             </property>
-             <property name="text">
-              <string>Exit</string>
-             </property>
-            </widget>
+            </spacer>
            </item>
           </layout>
          </widget>
@@ -393,8 +441,8 @@ p, li { white-space: pre-wrap; }
         </size>
        </property>
        <property name="styleSheet">
-        <string notr="true">background: #f8b195; 
-color: black;</string>
+        <string notr="true">background: #cfe2da;
+color: #475d5b;</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_4">
         <property name="sizeConstraint">
@@ -415,8 +463,7 @@ color: black;</string>
         <item row="0" column="0">
          <widget class="QWidget" name="widget" native="true">
           <property name="styleSheet">
-           <string notr="true">  background: #f8b195; 
-</string>
+           <string notr="true"/>
           </property>
           <layout class="QHBoxLayout" name="horizontalLayout">
            <item>
@@ -425,22 +472,27 @@ color: black;</string>
               <enum>Qt::LeftToRight</enum>
              </property>
              <property name="styleSheet">
-              <string notr="true">background-color: #CD6C84;
+              <string notr="true">background-color: #256531;
 border-style: solid;
 border-width: 2px;
 border-radius: 14px;
-border-color: #CD6C84;
-padding: 5px;</string>
+border-color: #256531;
+padding: 5px;
+color: #f4edea;</string>
              </property>
              <property name="text">
               <string/>
              </property>
              <property name="icon">
-              <iconset resource="res/resource.qrc">
-               <normaloff>:/newPrefix/icons/Icon Pack Vol. 1/SVG/ARROW.svg</normaloff>:/newPrefix/icons/Icon Pack Vol. 1/SVG/ARROW.svg</iconset>
+              <iconset resource="res/resource_boot.qrc">
+               <normaloff>:/newPrefix/icons/bootstrap-icons-1.10.3/arrow-left-square.svg</normaloff>
+               <normalon>:/newPrefix/icons/bootstrap-icons-1.10.3/arrow-right-square.svg</normalon>:/newPrefix/icons/bootstrap-icons-1.10.3/arrow-left-square.svg</iconset>
              </property>
              <property name="checkable">
               <bool>true</bool>
+             </property>
+             <property name="checked">
+              <bool>false</bool>
              </property>
             </widget>
            </item>
@@ -460,8 +512,8 @@ padding: 5px;</string>
           </layout>
          </widget>
         </item>
-        <item row="1" column="0" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
-         <widget class="QTabWidget" name="tabWidget">
+        <item row="1" column="0">
+         <widget class="QStackedWidget" name="stackedWidget">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
             <horstretch>10</horstretch>
@@ -482,8 +534,8 @@ padding: 5px;</string>
           </property>
           <property name="styleSheet">
            <string notr="true">QTabWidget {
-         border: none;
-         padding:1 px;
+         border: solid;
+         padding:0 px;
         }
 
 QTabWidget::panel {
@@ -509,12 +561,6 @@ QTabBar::tab:selected {
 
 </string>
           </property>
-          <property name="currentIndex">
-           <number>-1</number>
-          </property>
-          <property name="tabsClosable">
-           <bool>true</bool>
-          </property>
          </widget>
         </item>
        </layout>
@@ -526,6 +572,7 @@ QTabBar::tab:selected {
  </widget>
  <resources>
   <include location="res/resource.qrc"/>
+  <include location="res/resource_boot.qrc"/>
  </resources>
  <connections>
   <connection>
@@ -535,8 +582,8 @@ QTabBar::tab:selected {
    <slot>setHidden(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>377</x>
-     <y>42</y>
+     <x>276</x>
+     <y>38</y>
     </hint>
     <hint type="destinationlabel">
      <x>96</x>
@@ -551,8 +598,8 @@ QTabBar::tab:selected {
    <slot>close()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>172</x>
-     <y>800</y>
+     <x>185</x>
+     <y>983</y>
     </hint>
     <hint type="destinationlabel">
      <x>639</x>
