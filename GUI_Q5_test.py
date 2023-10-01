@@ -31,6 +31,7 @@ logging.basicConfig(level=logging.DEBUG,
                     datefmt="%Y-%m-%d %H:%M:%S")
 delimiter = " "
 
+
 # noinspection PyUnresolvedReferences
 class GTFSWorker(QThread, Publisher, Subscriber):
 
@@ -51,7 +52,7 @@ class GTFSWorker(QThread, Publisher, Subscriber):
                           "sub_worker_create_output_fahrplan_date routine started! Notify subscriber!")
         elif self.process == 'create_table_date_individual':
             self.dispatch("sub_worker_create_output_fahrplan_date_indi",
-                      "sub_worker_create_output_fahrplan_date_indi routine started! Notify subscriber!")
+                          "sub_worker_create_output_fahrplan_date_indi routine started! Notify subscriber!")
         elif self.process == 'create_table_date_individual_continue':
             self.dispatch("sub_worker_create_output_fahrplan_date_indi_continue",
                           "sub_worker_create_output_fahrplan_date_indi_continue routine started! Notify subscriber!")
@@ -93,7 +94,8 @@ class Model(Publisher, Subscriber):
             'sub_worker_update_routes_list': [self.sub_worker_update_routes_list, False],
             'sub_worker_create_output_fahrplan_date': [self.sub_worker_create_output_fahrplan_date, False],
             'sub_worker_create_output_fahrplan_date_indi': [self.sub_worker_create_output_fahrplan_date_indi, False],
-            'sub_worker_create_output_fahrplan_date_indi_continue': [self.sub_worker_create_output_fahrplan_date_indi_continue, False],
+            'sub_worker_create_output_fahrplan_date_indi_continue': [
+                self.sub_worker_create_output_fahrplan_date_indi_continue, False],
             'sub_worker_create_output_fahrplan_weekday': [self.sub_worker_create_output_fahrplan_weekday, False]
         }
 
@@ -120,9 +122,9 @@ class Model(Publisher, Subscriber):
             if name in files:
                 return True
 
-    def set_paths(self, input_path, output_path) -> bool:
+    def set_paths(self, input_path, output_path, picklesave_path) -> bool:
         try:
-            self.gtfs.set_paths(input_path, output_path)
+            self.gtfs.set_paths(input_path, output_path, picklesave_path)
             return self.find(input_path.split('/')[-1], input_path.replace(input_path.split('/')[-1], ''))
         except FileNotFoundError:
             logging.debug('error setting paths')
@@ -138,7 +140,6 @@ class Model(Publisher, Subscriber):
         self.worker.start()
         self.worker.finished.connect(self.update_agency_list)
         self.worker.exit()
-
 
     def error_reset_model(self):
         self.dispatch("restart",
@@ -164,6 +165,7 @@ class Model(Publisher, Subscriber):
 
     def sub_worker_create_output_fahrplan_date_indi_continue(self):
         self.gtfs.sub_worker_create_output_fahrplan_date_indi_continue()
+
     def sub_select_agency_event(self):
         self.gtfs.processing = "load routes list"
         self.notify_set_process("loading load routes list...")
@@ -178,12 +180,12 @@ class Model(Publisher, Subscriber):
     def sub_select_date_event(self):
         self.gtfs.selected_weekday = None
 
-
     def sub_start_create_table_continue(self):
         self.gtfs.processing = "continue..."
         self.notify_set_process("continue...")
         logging.debug(f'continue...: {self.gtfs.selected_dates}')
-        self.worker = GTFSWorker(['sub_worker_create_output_fahrplan_date_indi_continue'], 'Worker', 'create_table_date_individual_continue')
+        self.worker = GTFSWorker(['sub_worker_create_output_fahrplan_date_indi_continue'], 'Worker',
+                                 'create_table_date_individual_continue')
         self.worker.register('sub_worker_create_output_fahrplan_date_indi_continue', self)
         self.worker.start()
         self.worker.finished.connect(self.finished_create_table)
@@ -195,7 +197,8 @@ class Model(Publisher, Subscriber):
         logging.debug(f'create table weekday: {self.gtfs.selected_weekday}')
         logging.debug(f'create table individualsorting: {self.gtfs.individualsorting}')
         if self.gtfs.selected_weekday is None and self.gtfs.individualsorting is True:
-            self.worker = GTFSWorker(['sub_worker_create_output_fahrplan_date_indi'], 'Worker', 'create_table_date_individual')
+            self.worker = GTFSWorker(['sub_worker_create_output_fahrplan_date_indi'], 'Worker',
+                                     'create_table_date_individual')
             self.worker.register('sub_worker_create_output_fahrplan_date_indi', self)
 
         elif self.gtfs.selected_weekday is None:
@@ -219,6 +222,8 @@ class Model(Publisher, Subscriber):
         self.worker = None
 
     def update_agency_list(self):
+        if self.gtfs.pickleExport_checked is True:
+            self.gtfs.save_pickle()
         self.gtfs.read_gtfs_agencies()
         self.worker = None
 
@@ -228,7 +233,6 @@ class Model(Publisher, Subscriber):
 
     def update_routes_list(self):
         self.worker = None
-
 
     def update_weekdate_options(self):
         self.notify_update_weekdate_option()
@@ -243,6 +247,7 @@ class Model(Publisher, Subscriber):
     def notify_update_stopname_create_list(self):
         return self.dispatch("update_stopname_create_list",
                              "update_stopname_create_list routine started! Notify subscriber!")
+
     def notify_update_routes_List(self):
         return self.dispatch("update_routes_list",
                              "update_routes_list routine started! Notify subscriber!")
@@ -266,6 +271,7 @@ class Model(Publisher, Subscriber):
     def notify_not_function(self, event):
         logging.debug('event not found in class gui: {}'.format(event))
 
+
 class Gui(QMainWindow, Publisher, Subscriber):
     def __init__(self, events, name):
         super().__init__(events=events, name=name)
@@ -282,7 +288,6 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.center()
         self.oldPos = self.pos()
         self.messageBox_model = QMessageBox()
-
 
         self.createTableImport_btn = self.ui.pushButton_2
         self.createTableSelect_btn = self.ui.pushButton_3
@@ -315,6 +320,8 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.CreateCreate_Tab.ui.btnStart.clicked.connect(self.notify_create_table)
         self.CreateCreate_Tab.ui.btnContinueCreate.clicked.connect(self.notify_create_table)
         self.CreateImport_Tab.ui.btnGetFile.clicked.connect(self.getFilePath)
+        self.CreateImport_Tab.ui.btnGetPickleFile.clicked.connect(self.getPickleSavePath)
+
         # self.DownloadGTFS_Tab.ui.btnGetDir.clicked.connect(self.getDirPath)
         self.CreateImport_Tab.ui.btnGetOutputDir.clicked.connect(self.getOutputDirPath)
         self.ui.pushButton_2.clicked.connect(self.show_Create_Import_Window)
@@ -325,6 +332,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.ui.pushButton_6.clicked.connect(self.show_GTFSDownload_window)
 
         self.CreateImport_Tab.ui.comboBox_display.activated[str].connect(self.onChangedTimeFormatMode)
+        self.CreateImport_Tab.ui.checkBox_savepickle.clicked.connect(self.set_pickleExport_checked)
         self.CreateSelect_Tab.ui.AgenciesTableView.clicked.connect(self.notify_AgenciesTableView_agency)
         self.CreateSelect_Tab.ui.TripsTableView.clicked.connect(self.notify_TripsTableView)
         # self.CreateCreate_Tab.ui.tableView_sorting_stops.clicked.connect(self.notify_StopNameTableView)
@@ -340,7 +348,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
                                  'update_weekday_list': [self.sub_update_weekdate_option, False],
                                  'update_agency_list': [self.sub_update_agency_list, False],
                                  'update_weekdate_option': [self.sub_update_weekdate_option, False],
-                                 'update_stopname_create_list':[self.sub_update_stopname_create_list, False],
+                                 'update_stopname_create_list': [self.sub_update_stopname_create_list, False],
                                  'message': [self.send_message_box, True],
                                  'update_progress_bar': [self.sub_update_progress_bar, False],
                                  'restart': [self.notify_restart, False]
@@ -400,6 +408,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
     """
     TODO: is this bugged? 
     """
+
     def show_Create_Select_Window(self):
         self.set_btn_checked(self.createTableSelect_btn)
         self.ui.stackedWidget.setCurrentWidget(self.CreateSelect_Tab)
@@ -407,7 +416,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
     def show_Create_Create_Window(self):
         self.set_btn_checked(self.createTableCreate_btn)
         self.ui.stackedWidget.setCurrentWidget(self.CreateCreate_Tab)
-        self.ui.stackedWidget.resize(500,500)
+        self.ui.stackedWidget.resize(500, 500)
 
     def set_btn_checked(self, btn):
         for button in self.menu_btns_dict.keys():
@@ -497,12 +506,14 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.CreateSelect_Tab.ui.TripsTableView.setModel(TableModel(self.model.gtfs.dfSelectedRoutes))
 
     def sub_update_stopname_create_list(self):
-        self.CreateCreate_Tab.ui.tableView_sorting_stops.setModel(TableModelSort(self.model.gtfs.df_filtered_stop_names))
+        self.CreateCreate_Tab.ui.tableView_sorting_stops.setModel(
+            TableModelSort(self.model.gtfs.df_filtered_stop_names))
         logging.debug(self.CreateCreate_Tab.ui.tableView_sorting_stops.dragEnabled())
         logging.debug(self.CreateCreate_Tab.ui.tableView_sorting_stops.dragDropOverwriteMode())
         # self.CreateCreate_Tab.ui.tableView_sorting_stops.populate()
+
     def sub_update_agency_list(self):
-        # self.model.gtfs.save_pickle()
+
         self.CreateSelect_Tab.ui.AgenciesTableView.setModel(TableModel(self.model.gtfs.dfagency))
         self.CreateCreate_Tab.ui.line_Selection_date_range.setText(self.model.gtfs.date_range)
         self.CreateCreate_Tab.ui.lineDateInput.setText(self.model.gtfs.date_range)
@@ -525,6 +536,9 @@ class Gui(QMainWindow, Publisher, Subscriber):
     def set_individualsorting(self):
         self.model.gtfs.individualsorting = not self.model.gtfs.individualsorting
         logging.debug(f"individualsorting: {self.model.gtfs.individualsorting}")
+
+    def set_pickleExport_checked(self):
+        self.model.gtfs.pickleExport_checked = self.CreateImport_Tab.ui.checkBox_savepickle.isChecked()
 
     def getFilePath(self):
         try:
@@ -555,6 +569,23 @@ class Gui(QMainWindow, Publisher, Subscriber):
                                                      directory='C:/Tmp')
         if file_path > '':
             self.CreateImport_Tab.ui.lineOutputPath.setText(f'{file_path}/')
+
+    def getPickleSavePath(self):
+        try:
+            file_path = QFileDialog.getSaveFileName(parent=self,
+                                                    caption='Select GTFS Zip File',
+                                                    directory='C:/Tmp',
+                                                    filter='Zip File (*.zip)',
+                                                    initialFilter='Zip File (*.zip)')
+
+        except:
+            file_path = QFileDialog.getSaveFileName(parent=self,
+                                                    caption='Select GTFS Zip File',
+                                                    directory=os.getcwd(),
+                                                    filter='Zip File (*.zip)',
+                                                    initialFilter='Zip File (*.zip)')
+        if file_path[0] > '':
+            self.CreateImport_Tab.ui.picklesavename.setText(file_path[0])
 
     def notify_restart(self):
         self.CreateImport_Tab.ui.btnImport.setEnabled(True)
@@ -587,7 +618,6 @@ class Gui(QMainWindow, Publisher, Subscriber):
             return False
         self.model.gtfs.selected_weekday = self.CreateCreate_Tab.ui.listDatesWeekday.currentItem().text().split(',')[0]
         self.dispatch("select_weekday", "select_weekday routine started! Notify subscriber!")
-
 
     def notify_AgenciesTableView_agency(self):
         index = self.CreateSelect_Tab.ui.AgenciesTableView.selectedIndexes()[0]
@@ -629,7 +659,8 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.CreateImport_Tab.ui.btnImport.setEnabled(False)
         self.CreateImport_Tab.ui.btnRestart.setEnabled(True)
         if self.model.set_paths(self.CreateImport_Tab.ui.lineInputPath.text(),
-                                self.CreateImport_Tab.ui.lineOutputPath.text()):
+                                self.CreateImport_Tab.ui.lineOutputPath.text(),
+                                self.CreateImport_Tab.ui.picklesavename.text()):
             return self.dispatch("load_gtfsdata_event", "load_gtfsdata_event routine started! Notify subscriber!")
         else:
             self.notify_restart()

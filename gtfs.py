@@ -38,12 +38,13 @@ class gtfs(Publisher, Subscriber):
         self._output_path = ""
         self.date_range = ""
         self._gtfs_name = ""
-        self._pickleDir = ""
+        self._pickleSavePath = ""
         self._progress = 0
         self._agenciesList = None
         self._routesList = None
         self.pkl_loaded = False
         self._individualsorting = False
+        self._pickleExport_checked = False
 
         self.options_dates_weekday = ['Dates', 'Weekday']
         self.weekDayOptions = {0: [0, 'Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday'],
@@ -159,13 +160,13 @@ class gtfs(Publisher, Subscriber):
         self._input_path = value
 
     @property
-    def pickleDir(self):
-        return self._pickleDir
+    def pickleSavePath(self):
+        return self._pickleSavePath
 
-    @pickleDir.setter
-    def pickleDir(self, value):
-        if os.path.isdir(value):
-            self._pickleDir = value
+    @pickleSavePath.setter
+    def pickleSavePath(self, value):
+        if value is not None:
+            self._pickleSavePath = value
         else:
             self.dispatch("message",
                           "Folder not found. Please check!")
@@ -194,6 +195,14 @@ class gtfs(Publisher, Subscriber):
         self._agenciesList = value
         self.dispatch("update_agency_list",
                       "update_agency_list routine started! Notify subscriber!")
+
+    @property
+    def pickleExport_checked(self):
+        return self._pickleExport_checked
+
+    @pickleExport_checked.setter
+    def pickleExport_checked(self, value):
+        self._pickleExport_checked = value
 
     @property
     def dfSelectedRoutes(self):
@@ -244,9 +253,11 @@ class gtfs(Publisher, Subscriber):
                     return True
         return False
 
-    def set_paths(self, input_path, output_path):
+    def set_paths(self, input_path, output_path, picklesavepath = ""):
         self.input_path = input_path
         self.output_path = output_path
+        self.pickleSavePath = picklesavepath
+
 
     def get_routes_of_agency(self) -> None:
         if self.selectedAgency is not None:
@@ -414,7 +425,7 @@ class gtfs(Publisher, Subscriber):
         if self.dffeed_info is not None:
             self.dffeed_info.to_pickle("./dffeed_info.pkl")
 
-        with zipfile.ZipFile(self.output_path + "testPICKLE.zip", "w", compression=zipfile.ZIP_DEFLATED) as zf:
+        with zipfile.ZipFile(self.pickleSavePath, "w", compression=zipfile.ZIP_DEFLATED) as zf:
             zf.write(self.output_path + "dfStops.pkl")
             zf.write(self.output_path + "dfStopTimes.pkl")
             zf.write(self.output_path + "dfTrips.pkl")

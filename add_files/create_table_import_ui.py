@@ -86,6 +86,7 @@ class Ui_Form(object):
         self.btnGetPickleFile.setFont(font)
         self.btnGetPickleFile.setStyleSheet("")
         self.btnGetPickleFile.setText("")
+        self.btnGetPickleFile.setEnabled(True)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/newPrefix/icons/bootstrap-icons-1.10.3/file-earmark-arrow-up.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.btnGetPickleFile.setIcon(icon)
