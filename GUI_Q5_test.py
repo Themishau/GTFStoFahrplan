@@ -454,6 +454,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
     def onChanged(self, text):
         if text == 'date':
             self.CreateCreate_Tab.ui.listDatesWeekday.clear()
+            self.CreateCreate_Tab.ui.lineDateInput.setText(self.model.gtfs.date_range)
             self.CreateCreate_Tab.ui.lineDateInput.setEnabled(True)
             self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(False)
             self.model.gtfs.selected_weekday = None
@@ -482,14 +483,26 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.messageBox_model.setText(text)
         self.messageBox_model.exec_()
 
-    def sub_update_weekdate_option(self):
+
+    def initialize_create_base_option(self):
         self.CreateCreate_Tab.ui.comboBox.setEnabled(True)
         self.CreateImport_Tab.ui.comboBox_display.setEnabled(True)
         self.CreateCreate_Tab.ui.comboBox_direction.setEnabled(True)
+
+    def sub_update_weekdate_option(self):
+        self.initialize_create_base_option()
         self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(True)
         self.sub_update_weekday_list()
         self.CreateCreate_Tab.ui.btnStart.setEnabled(True)
         self.CreateCreate_Tab.ui.btnStop.setEnabled(True)
+
+    def sub_initialize_create_view_weekdaydate_option(self):
+        self.initialize_create_base_option()
+        self.CreateCreate_Tab.ui.listDatesWeekday.clear()
+        self.CreateCreate_Tab.ui.lineDateInput.setText(self.model.gtfs.date_range)
+        self.CreateCreate_Tab.ui.lineDateInput.setEnabled(True)
+        self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(False)
+        self.model.gtfs.selected_weekday = None
 
     def reset_weekdayDate(self):
         self.CreateCreate_Tab.ui.comboBox.setEnabled(False)
@@ -508,8 +521,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
     def sub_update_stopname_create_list(self):
         self.CreateCreate_Tab.ui.tableView_sorting_stops.setModel(
             TableModelSort(self.model.gtfs.df_filtered_stop_names))
-        logging.debug(self.CreateCreate_Tab.ui.tableView_sorting_stops.dragEnabled())
-        logging.debug(self.CreateCreate_Tab.ui.tableView_sorting_stops.dragDropOverwriteMode())
+        self.CreateCreate_Tab.ui.btnContinueCreate.setEnabled(True)
         # self.CreateCreate_Tab.ui.tableView_sorting_stops.populate()
 
     def sub_update_agency_list(self):
@@ -590,14 +602,21 @@ class Gui(QMainWindow, Publisher, Subscriber):
     def notify_restart(self):
         self.CreateImport_Tab.ui.btnImport.setEnabled(True)
         self.CreateImport_Tab.ui.btnRestart.setEnabled(False)
-        self.CreateCreate_Tab.ui.btnStart.setEnabled(False)
-        self.CreateCreate_Tab.ui.btnStop.setEnabled(False)
-        self.CreateCreate_Tab.ui.comboBox.setEnabled(False)
         self.CreateImport_Tab.ui.comboBox_display.setEnabled(True)
-        self.CreateCreate_Tab.ui.comboBox_direction.setEnabled(False)
+
         self.CreateSelect_Tab.ui.listAgencies.clear()
         self.CreateSelect_Tab.ui.listRoutes.clear()
+
+        self.CreateCreate_Tab.ui.btnStart.setEnabled(False)
+        self.CreateCreate_Tab.ui.btnStop.setEnabled(False)
+        self.CreateCreate_Tab.ui.btnContinueCreate.setEnabled(False)
+        self.CreateCreate_Tab.ui.comboBox.setEnabled(False)
+        self.CreateCreate_Tab.ui.comboBox_direction.setEnabled(False)
+        self.CreateCreate_Tab.ui.UseIndividualSorting.setEnabled(False)
+
         self.CreateCreate_Tab.ui.listDatesWeekday.clear()
+        self.CreateCreate_Tab.ui.tableView_sorting_stops.clear()
+
 
         return self.dispatch("reset_gtfs", "reset_gtfs started! Notify subscriber!")
 
@@ -636,7 +655,9 @@ class Gui(QMainWindow, Publisher, Subscriber):
         logging.debug(f"index {id_us}")
         self.model.gtfs.selectedRoute = id_us
         logging.debug(f"selectedRoute {self.model.gtfs.selectedRoute}")
-        self.sub_update_weekdate_option()
+        """ change initial selection (weekday mode or date mode) """
+        self.sub_initialize_create_view_weekdaydate_option()
+        # self.sub_update_weekdate_option()
         self.CreateCreate_Tab.ui.line_Selection_agency.setText(f"selected agency: {self.model.gtfs.selectedAgency}")
         self.CreateCreate_Tab.ui.line_Selection_trips.setText(f"selected Trip: {self.model.gtfs.selectedRoute}")
 

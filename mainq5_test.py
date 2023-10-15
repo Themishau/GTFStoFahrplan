@@ -3,7 +3,7 @@ import sys
 from GUI_Q5_test import Gui
 from SplashScreen import SplashScreen
 
-from PySide2.QtWidgets import *
+from PyQt5.QtWidgets import *
 
 if __name__ == '__main__':
       gtfs_app = QApplication(sys.argv)

@@ -17,6 +17,7 @@ logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
                     datefmt="%Y-%m-%d %H:%M:%S")
 
+
 # noinspection SqlResolve
 class gtfs(Publisher, Subscriber):
     input_path: str
@@ -34,6 +35,8 @@ class gtfs(Publisher, Subscriber):
             'create_table_date': [self.sub_worker_create_output_fahrplan_date, False],
             'create_table_weekday': [self.sub_worker_create_output_fahrplan_weekday, False],
         }
+
+        """ property """
         self.input_path = ""
         self._output_path = ""
         self.date_range = ""
@@ -45,7 +48,6 @@ class gtfs(Publisher, Subscriber):
         self.pkl_loaded = False
         self._individualsorting = False
         self._pickleExport_checked = False
-
         self.options_dates_weekday = ['Dates', 'Weekday']
         self.weekDayOptions = {0: [0, 'Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday'],
                                1: [1, 'Monday, Tuesday, Wednesday, Thursday, Friday'],
@@ -139,6 +141,7 @@ class gtfs(Publisher, Subscriber):
         self.fahrplan_sorted_stops = None
         self.fahrplan_calendar_filter_days_pivot = None
 
+
     @property
     def individualsorting(self):
         return self._individualsorting
@@ -214,6 +217,8 @@ class gtfs(Publisher, Subscriber):
         self.dispatch("update_routes_list",
                       "update_routes_list routine started! Notify subscriber!")
 
+
+
     def notify_subscriber(self, event, message):
         logging.debug(f'event: {event}, message {message}')
         notify_function, parameters = self.notify_functions.get(event, self.notify_not_function)
@@ -253,11 +258,10 @@ class gtfs(Publisher, Subscriber):
                     return True
         return False
 
-    def set_paths(self, input_path, output_path, picklesavepath = ""):
+    def set_paths(self, input_path, output_path, picklesavepath=""):
         self.input_path = input_path
         self.output_path = output_path
         self.pickleSavePath = picklesavepath
-
 
     def get_routes_of_agency(self) -> None:
         if self.selectedAgency is not None:
@@ -405,7 +409,7 @@ class gtfs(Publisher, Subscriber):
         # DataFrame with every agency
         self.dfagency = pd.DataFrame.from_dict(self.agencyFahrtdict)
 
-        if bool(self.feed_infodict):
+        if self.feed_infodict:
             self.dffeed_info = pd.DataFrame.from_dict(self.feed_infodict)
 
         zeit = time.time() - last_time
@@ -472,6 +476,7 @@ class gtfs(Publisher, Subscriber):
                     'description', data=descr)
 
     def getDateRange(self):
+        logging.debug('len stop_sequences {}'.format(self.dffeed_info))
         if self.dffeed_info is not None:
             self.date_range = str(self.dffeed_info.iloc[0].feed_start_date) + '-' + str(
                 self.dffeed_info.iloc[0].feed_end_date)
@@ -1241,6 +1246,7 @@ class gtfs(Publisher, Subscriber):
         inputVarAgency = [{'agency_id': self.selectedAgency}]
         self.varTestAgency = pd.DataFrame(inputVarAgency)
 
+    """checks for first and last date in data and returns it """
     def analyzeDateRangeInGTFSData(self):
         if self.dfWeek is not None:
             self.dfdateRangeInGTFSData = self.dfWeek.groupby(['start_date', 'end_date']).size().reset_index()
@@ -1715,9 +1721,6 @@ class gtfs(Publisher, Subscriber):
         self.df_filtered_stop_names["stop_sequence"] = self.df_filtered_stop_names["stop_sequence"].astype('int32')
         # self.df_filtered_stop_names = self.df_filtered_stop_names.set_index("stop_sequence")
         self.df_filtered_stop_names = self.df_filtered_stop_names.sort_index(axis=0)
-
-
-
 
     def datesWeekday_create_fahrplan_continue(self):
 
