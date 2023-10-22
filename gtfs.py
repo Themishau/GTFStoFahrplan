@@ -141,7 +141,6 @@ class gtfs(Publisher, Subscriber):
         self.fahrplan_sorted_stops = None
         self.fahrplan_calendar_filter_days_pivot = None
 
-
     @property
     def individualsorting(self):
         return self._individualsorting
@@ -216,8 +215,6 @@ class gtfs(Publisher, Subscriber):
         self._dfSelectedRoutes = value
         self.dispatch("update_routes_list",
                       "update_routes_list routine started! Notify subscriber!")
-
-
 
     def notify_subscriber(self, event, message):
         logging.debug(f'event: {event}, message {message}')
@@ -334,7 +331,7 @@ class gtfs(Publisher, Subscriber):
         # self.progress = 100
 
     def sub_worker_create_output_fahrplan_date_indi_continue(self):
-        logging.debug(f"PREPARE intividual date ")
+        logging.debug(f"continue to create table with individual sorting")
         self.datesWeekday_create_fahrplan_continue()
         self.progress = 80
         self.datesWeekday_create_output_fahrplan()
@@ -1247,6 +1244,7 @@ class gtfs(Publisher, Subscriber):
         self.varTestAgency = pd.DataFrame(inputVarAgency)
 
     """checks for first and last date in data and returns it """
+
     def analyzeDateRangeInGTFSData(self):
         if self.dfWeek is not None:
             self.dfdateRangeInGTFSData = self.dfWeek.groupby(['start_date', 'end_date']).size().reset_index()
@@ -1472,11 +1470,11 @@ class gtfs(Publisher, Subscriber):
                                                                     where fahrplan_dates_all_dates.service_id = dfDates.service_id
                                                                       and fahrplan_dates_all_dates.date = dfDates.date 
                                                                       and dfDates.exception_type = 2 
-                                                                )
+                                                               )
                      and fahrplan_dates_all_dates.date in (select requested_datesdf.date 
                                                                   from requested_datesdf                                                            
                                                                     where fahrplan_dates_all_dates.date = requested_datesdf.date
-                                                                )
+                                                          )
                      and (   (   fahrplan_dates_all_dates.day = fahrplan_dates_all_dates.monday
                               or fahrplan_dates_all_dates.day = fahrplan_dates_all_dates.tuesday
                               or fahrplan_dates_all_dates.day = fahrplan_dates_all_dates.wednesday
@@ -1487,13 +1485,13 @@ class gtfs(Publisher, Subscriber):
                              )
                              or 
                              (   fahrplan_dates_all_dates.date in (select dfDates.date
-                                                                  from dfDates                                                            
+                                                                   from dfDates                                                            
                                                                     where fahrplan_dates_all_dates.service_id = dfDates.service_id 
                                                                       and fahrplan_dates_all_dates.date = dfDates.date
                                                                       and dfDates.exception_type = 1
-                                                                 )    
+                                                                  )    
                              )
-                          ) 
+                        ) 
                     order by fahrplan_dates_all_dates.date;
                    '''
 
@@ -1642,6 +1640,7 @@ class gtfs(Publisher, Subscriber):
         dfStopTimes = pd.merge(left=dfStopTimes, right=dfTrip, how='inner', left_on='trip_id', right_on='trip_id_dup')
         dfStops = self.dfStops
         last_time = time.time()
+
         # get all stop_times and stops for every stop of one route
         IsSequenceNumberStartAtZERO = sqldf(cond_Test_SequenceStart, locals())
         if IsSequenceNumberStartAtZERO.empty:
@@ -1707,15 +1706,9 @@ class gtfs(Publisher, Subscriber):
 
     def datesWeekday_create_sort_stopnames(self):
         fahrplan_calendar_weeks = self.fahrplan_calendar_weeks
-        self.fahrplan_calendar_weeks = None
-        self.filtered_stop_names = self.filterStopSequence(self.fahrplan_sorted_stops)
+        self.filtered_stop_names = self.filterStopSequence(self.fahrplan_sorted_stops.copy())
 
-        """
-        
-        create new def with filterStopSequence
-        
-        """
-
+        # create new def with filterStopSequence
         self.df_filtered_stop_names = pd.DataFrame.from_dict(self.filtered_stop_names)
         # df_deleted_dupl_stop_names["stop_name"] = df_deleted_dupl_stop_names["stop_name"].astype('string')
         self.df_filtered_stop_names["stop_sequence"] = self.df_filtered_stop_names["stop_sequence"].astype('int32')
@@ -1753,7 +1746,7 @@ class gtfs(Publisher, Subscriber):
                              fahrplan_calendar_weeks.start_time,
                              fahrplan_calendar_weeks.trip_id;
                    '''
-
+        fahrplan_calendar_weeks = self.fahrplan_calendar_weeks
         df_filtered_stop_names = self.df_filtered_stop_names
 
         fahrplan_calendar_weeks = sqldf(cond_stop_name_sorted_trips_with_dates, locals())
@@ -1838,7 +1831,7 @@ class gtfs(Publisher, Subscriber):
         self.df_filtered_stop_names = pd.DataFrame.from_dict(self.filtered_stop_names)
         # df_deleted_dupl_stop_names["stop_name"] = df_deleted_dupl_stop_names["stop_name"].astype('string')
         self.df_filtered_stop_names["stop_sequence"] = self.df_filtered_stop_names["stop_sequence"].astype('int32')
-        self.df_filtered_stop_names = self.df_filtered_stop_names.set_index("stop_sequence")
+        # self.df_filtered_stop_names = self.df_filtered_stop_names.set_index("stop_sequence")
         self.df_filtered_stop_names = self.df_filtered_stop_names.sort_index(axis=0)
         df_filtered_stop_names = self.df_filtered_stop_names
 
