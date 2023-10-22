@@ -3,7 +3,7 @@ import sys
 from GUI_Q5_test import Gui
 from SplashScreen import SplashScreen
 
-from PySide2.QtWidgets import *
+from PyQt5.QtWidgets import *
 
 if __name__ == '__main__':
       gtfs_app = QApplication(sys.argv)
@@ -16,6 +16,7 @@ if __name__ == '__main__':
                                        'select_route',
                                        'select_weekday',
                                        'start_create_table',
+                                       'start_create_table_continue',
                                        'reset_gtfs',
                                        'send_message_box',
                                        'get_date_range'], name='controller')

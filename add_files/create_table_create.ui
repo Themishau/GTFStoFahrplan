@@ -77,36 +77,56 @@ background: #cfe2da;
 }</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="2" column="0" colspan="2">
-    <widget class="QTableView" name="tableView_sorting_stops">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="1">
-    <widget class="QPushButton" name="btnStop">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="font">
-      <font>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true"/>
-     </property>
-     <property name="text">
-      <string>Stop</string>
-     </property>
+   <item row="9" column="0">
+    <widget class="QWidget" name="widget_8" native="true">
+     <layout class="QGridLayout" name="gridLayout_15"/>
     </widget>
    </item>
    <item row="0" column="0">
     <layout class="QGridLayout" name="gridLayout_5">
+     <item row="4" column="0">
+      <widget class="QLineEdit" name="lineDateInput">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+       <property name="text">
+        <string>20211212</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QComboBox" name="comboBox">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+       <item>
+        <property name="text">
+         <string>date</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>weekday</string>
+        </property>
+       </item>
+      </widget>
+     </item>
      <item row="0" column="0">
       <widget class="QLabel" name="label_12">
        <property name="styleSheet">
@@ -117,17 +137,35 @@ background: #cfe2da;
        </property>
       </widget>
      </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="label_2">
+     <item row="6" column="0">
+      <widget class="QLineEdit" name="line_Selection_date_range">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLabel" name="label_6">
+       <property name="font">
+        <font>
+         <family>72</family>
+         <pointsize>8</pointsize>
+         <italic>false</italic>
+         <bold>false</bold>
+        </font>
+       </property>
        <property name="styleSheet">
         <string notr="true"/>
        </property>
        <property name="text">
-        <string>example: 20211212</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Weekday&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="1" rowspan="3">
+     <item row="4" column="1" rowspan="4">
       <widget class="QListWidget" name="listDatesWeekday">
        <property name="enabled">
         <bool>false</bool>
@@ -148,65 +186,13 @@ background: #cfe2da;
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
-      <widget class="QComboBox" name="comboBox">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
-       <item>
-        <property name="text">
-         <string>weekday</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>date</string>
-        </property>
-       </item>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QLabel" name="label_6">
-       <property name="font">
-        <font>
-         <family>72</family>
-         <pointsize>8</pointsize>
-         <weight>50</weight>
-         <italic>false</italic>
-         <bold>false</bold>
-        </font>
-       </property>
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
-       <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Weekday&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-      </widget>
-     </item>
      <item row="3" column="0">
-      <widget class="QLineEdit" name="lineDateInput">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
+      <widget class="QLabel" name="label_2">
        <property name="styleSheet">
         <string notr="true"/>
        </property>
        <property name="text">
-        <string>20211212</string>
+        <string>example: 20211212</string>
        </property>
       </widget>
      </item>
@@ -216,7 +202,6 @@ background: #cfe2da;
         <font>
          <family>72</family>
          <pointsize>8</pointsize>
-         <weight>50</weight>
          <italic>false</italic>
          <bold>false</bold>
         </font>
@@ -254,37 +239,12 @@ background: #cfe2da;
        </item>
       </widget>
      </item>
-    </layout>
-   </item>
-   <item row="0" column="1">
-    <layout class="QGridLayout" name="gridLayout_3">
-     <item row="11" column="0">
-      <widget class="QLineEdit" name="line_Selection_agency">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
-      </widget>
-     </item>
-     <item row="12" column="0">
-      <widget class="QLineEdit" name="line_Selection_trips">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
+     <item row="5" column="0">
       <widget class="QLabel" name="label_17">
        <property name="font">
         <font>
          <family>72</family>
          <pointsize>8</pointsize>
-         <weight>50</weight>
          <italic>false</italic>
          <bold>false</bold>
         </font>
@@ -297,8 +257,65 @@ background: #cfe2da;
        </property>
       </widget>
      </item>
-     <item row="4" column="0">
-      <widget class="QLineEdit" name="line_Selection_date_range">
+    </layout>
+   </item>
+   <item row="2" column="0">
+    <widget class="QPushButton" name="btnStart">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>Create Table</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QCheckBox" name="UseIndividualSorting">
+     <property name="text">
+      <string>Use individual sorting</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QPushButton" name="btnStop">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>Stop</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0" colspan="2">
+    <widget class="QTableView" name="tableView_sorting_stops">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <layout class="QGridLayout" name="gridLayout_3">
+     <item row="12" column="0">
+      <widget class="QLineEdit" name="line_Selection_agency">
        <property name="enabled">
         <bool>false</bool>
        </property>
@@ -307,13 +324,32 @@ background: #cfe2da;
        </property>
       </widget>
      </item>
-     <item row="9" column="0">
+     <item row="13" column="0">
+      <widget class="QLineEdit" name="line_Selection_trips">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+      </widget>
+     </item>
+     <item row="11" column="0">
+      <widget class="QLineEdit" name="line_Selection_format">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
       <widget class="QLabel" name="label_16">
        <property name="font">
         <font>
          <family>72</family>
          <pointsize>8</pointsize>
-         <weight>50</weight>
          <italic>false</italic>
          <bold>false</bold>
         </font>
@@ -326,50 +362,9 @@ background: #cfe2da;
        </property>
       </widget>
      </item>
-     <item row="10" column="0">
-      <widget class="QLineEdit" name="line_Selection_format">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
-      </widget>
-     </item>
     </layout>
    </item>
-   <item row="1" column="0">
-    <widget class="QCheckBox" name="UseIndividualSorting">
-     <property name="text">
-      <string>Use individual sorting</string>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="0">
-    <widget class="QWidget" name="widget_8" native="true">
-     <layout class="QGridLayout" name="gridLayout_15">
-      <item row="1" column="0">
-       <widget class="QPushButton" name="btnStart">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>12</pointsize>
-         </font>
-        </property>
-        <property name="styleSheet">
-         <string notr="true"/>
-        </property>
-        <property name="text">
-         <string>Create Table</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item row="3" column="0">
+   <item row="4" column="0">
     <widget class="QPushButton" name="btnContinueCreate">
      <property name="enabled">
       <bool>false</bool>

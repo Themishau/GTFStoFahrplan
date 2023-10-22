@@ -1,30 +1,25 @@
 import datetime as dt
-from datetime import datetime
-import time
-import sys
-import os
 import logging
+import os
+import sys
+from datetime import datetime
 
-from PyQt5.Qt import QPoint, QMutex, QThread, QWidget, QMessageBox, QDesktopWidget, QApplication, QMainWindow
-from PyQt5.QtCore import Qt
 from PyQt5 import QtCore
-from PyQt5.QtWidgets import QFileDialog, QApplication, QTableView
+from PyQt5.Qt import QPoint, QMutex, QThread, QMessageBox, QDesktopWidget, QMainWindow
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QFileDialog
 
-from gtfs import gtfs
-from observer import Publisher, Subscriber
-
+from RoundProgressBar import RoundProgress
+from SelectTableView import TableModel
+from SortTableView import TableModelSort
 from add_files.main_window_ui import Ui_MainWindow
-from general_window_information import GeneralInformation
-
 from create_table_create import CreateTableCreate
 from create_table_import import CreateTableImport
 from create_table_select import CreateTableSelect
-
 from download_gtfs import DownloadGTFS
-
-from SelectTableView import TableModel
-from SortTableView import TableModelSort
-from RoundProgressBar import RoundProgress
+from general_window_information import GeneralInformation
+from gtfs import gtfs
+from observer import Publisher, Subscriber
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
@@ -89,6 +84,7 @@ class Model(Publisher, Subscriber):
             'select_weekday': [self.sub_select_weekday_event, False],
             'reset_gtfs': [self.sub_reset_gtfs, False],
             'start_create_table': [self.sub_start_create_table, False],
+            'start_create_table_continue': [self.sub_start_create_table_continue, False],
             'sub_worker_load_gtfsdata': [self.sub_worker_load_gtfsdata, False],
             'sub_worker_load_gtfsdata_indi': [self.sub_worker_load_gtfsdata_indi, False],
             'sub_worker_update_routes_list': [self.sub_worker_update_routes_list, False],
@@ -132,7 +128,6 @@ class Model(Publisher, Subscriber):
 
     def sub_load_gtfsdata_event(self):
         self.gtfs.processing = "loading data"
-        self.notify_set_process("loading GTFS data...")
 
         self.worker = GTFSWorker(['sub_worker_load_gtfsdata'], 'Worker', 'ImportGTFS')
         self.worker.register('sub_worker_load_gtfsdata', self)
@@ -168,7 +163,6 @@ class Model(Publisher, Subscriber):
 
     def sub_select_agency_event(self):
         self.gtfs.processing = "load routes list"
-        self.notify_set_process("loading load routes list...")
         self.worker = GTFSWorker(['sub_worker_update_routes_list'], 'Worker', 'fill_agency_list')
         self.worker.register('sub_worker_update_routes_list', self)
         self.worker.start()
@@ -182,7 +176,6 @@ class Model(Publisher, Subscriber):
 
     def sub_start_create_table_continue(self):
         self.gtfs.processing = "continue..."
-        self.notify_set_process("continue...")
         logging.debug(f'continue...: {self.gtfs.selected_dates}')
         self.worker = GTFSWorker(['sub_worker_create_output_fahrplan_date_indi_continue'], 'Worker',
                                  'create_table_date_individual_continue')
@@ -192,7 +185,6 @@ class Model(Publisher, Subscriber):
 
     def sub_start_create_table(self):
         self.gtfs.processing = "create table"
-        self.notify_set_process("create table data...")
         logging.debug(f'create table date: {self.gtfs.selected_dates}')
         logging.debug(f'create table weekday: {self.gtfs.selected_weekday}')
         logging.debug(f'create table individualsorting: {self.gtfs.individualsorting}')
@@ -318,7 +310,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.CreateImport_Tab.ui.btnImport.clicked.connect(self.notify_load_gtfsdata_event)
         self.CreateImport_Tab.ui.btnRestart.clicked.connect(self.notify_restart)
         self.CreateCreate_Tab.ui.btnStart.clicked.connect(self.notify_create_table)
-        self.CreateCreate_Tab.ui.btnContinueCreate.clicked.connect(self.notify_create_table)
+        self.CreateCreate_Tab.ui.btnContinueCreate.clicked.connect(self.notify_create_table_continue)
         self.CreateImport_Tab.ui.btnGetFile.clicked.connect(self.getFilePath)
         self.CreateImport_Tab.ui.btnGetPickleFile.clicked.connect(self.getPickleSavePath)
 
@@ -388,6 +380,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.register('select_weekday', self.model)
         self.register('reset_gtfs', self.model)
         self.register('start_create_table', self.model)
+        self.register('start_create_table_continue', self.model)
 
         self.refresh_time = get_current_time()
         self.ui.toolBox.setCurrentIndex(0)
@@ -420,7 +413,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
 
     def set_btn_checked(self, btn):
         for button in self.menu_btns_dict.keys():
-            logging.debug(f'set_btn_checked ?: {btn.objectName()}')
+            logging.debug(f'set_btn_checked: {btn.objectName()}')
             if button != btn:
                 button.setChecked(False)
             else:
@@ -454,6 +447,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
     def onChanged(self, text):
         if text == 'date':
             self.CreateCreate_Tab.ui.listDatesWeekday.clear()
+            self.CreateCreate_Tab.ui.lineDateInput.setText(self.model.gtfs.date_range)
             self.CreateCreate_Tab.ui.lineDateInput.setEnabled(True)
             self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(False)
             self.model.gtfs.selected_weekday = None
@@ -482,14 +476,25 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.messageBox_model.setText(text)
         self.messageBox_model.exec_()
 
-    def sub_update_weekdate_option(self):
+    def initialize_create_base_option(self):
         self.CreateCreate_Tab.ui.comboBox.setEnabled(True)
         self.CreateImport_Tab.ui.comboBox_display.setEnabled(True)
         self.CreateCreate_Tab.ui.comboBox_direction.setEnabled(True)
-        self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(True)
-        self.sub_update_weekday_list()
         self.CreateCreate_Tab.ui.btnStart.setEnabled(True)
         self.CreateCreate_Tab.ui.btnStop.setEnabled(True)
+
+    def sub_update_weekdate_option(self):
+        self.initialize_create_base_option()
+        self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(True)
+        self.sub_update_weekday_list()
+
+    def sub_initialize_create_view_weekdaydate_option(self):
+        self.initialize_create_base_option()
+        self.CreateCreate_Tab.ui.listDatesWeekday.clear()
+        self.CreateCreate_Tab.ui.lineDateInput.setText(self.model.gtfs.date_range)
+        self.CreateCreate_Tab.ui.lineDateInput.setEnabled(True)
+        self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(False)
+        self.model.gtfs.selected_weekday = None
 
     def reset_weekdayDate(self):
         self.CreateCreate_Tab.ui.comboBox.setEnabled(False)
@@ -508,12 +513,10 @@ class Gui(QMainWindow, Publisher, Subscriber):
     def sub_update_stopname_create_list(self):
         self.CreateCreate_Tab.ui.tableView_sorting_stops.setModel(
             TableModelSort(self.model.gtfs.df_filtered_stop_names))
-        logging.debug(self.CreateCreate_Tab.ui.tableView_sorting_stops.dragEnabled())
-        logging.debug(self.CreateCreate_Tab.ui.tableView_sorting_stops.dragDropOverwriteMode())
+        self.CreateCreate_Tab.ui.btnContinueCreate.setEnabled(True)
         # self.CreateCreate_Tab.ui.tableView_sorting_stops.populate()
 
     def sub_update_agency_list(self):
-
         self.CreateSelect_Tab.ui.AgenciesTableView.setModel(TableModel(self.model.gtfs.dfagency))
         self.CreateCreate_Tab.ui.line_Selection_date_range.setText(self.model.gtfs.date_range)
         self.CreateCreate_Tab.ui.lineDateInput.setText(self.model.gtfs.date_range)
@@ -590,14 +593,20 @@ class Gui(QMainWindow, Publisher, Subscriber):
     def notify_restart(self):
         self.CreateImport_Tab.ui.btnImport.setEnabled(True)
         self.CreateImport_Tab.ui.btnRestart.setEnabled(False)
-        self.CreateCreate_Tab.ui.btnStart.setEnabled(False)
-        self.CreateCreate_Tab.ui.btnStop.setEnabled(False)
-        self.CreateCreate_Tab.ui.comboBox.setEnabled(False)
         self.CreateImport_Tab.ui.comboBox_display.setEnabled(True)
-        self.CreateCreate_Tab.ui.comboBox_direction.setEnabled(False)
+
         self.CreateSelect_Tab.ui.listAgencies.clear()
         self.CreateSelect_Tab.ui.listRoutes.clear()
+
+        self.CreateCreate_Tab.ui.btnStart.setEnabled(False)
+        self.CreateCreate_Tab.ui.btnStop.setEnabled(False)
+        self.CreateCreate_Tab.ui.btnContinueCreate.setEnabled(False)
+        self.CreateCreate_Tab.ui.comboBox.setEnabled(False)
+        self.CreateCreate_Tab.ui.comboBox_direction.setEnabled(False)
+        self.CreateCreate_Tab.ui.UseIndividualSorting.setEnabled(False)
+
         self.CreateCreate_Tab.ui.listDatesWeekday.clear()
+        self.CreateCreate_Tab.ui.tableView_sorting_stops.clear()
 
         return self.dispatch("reset_gtfs", "reset_gtfs started! Notify subscriber!")
 
@@ -636,7 +645,9 @@ class Gui(QMainWindow, Publisher, Subscriber):
         logging.debug(f"index {id_us}")
         self.model.gtfs.selectedRoute = id_us
         logging.debug(f"selectedRoute {self.model.gtfs.selectedRoute}")
-        self.sub_update_weekdate_option()
+        """ change initial selection (weekday mode or date mode) """
+        self.sub_initialize_create_view_weekdaydate_option()
+        # self.sub_update_weekdate_option()
         self.CreateCreate_Tab.ui.line_Selection_agency.setText(f"selected agency: {self.model.gtfs.selectedAgency}")
         self.CreateCreate_Tab.ui.line_Selection_trips.setText(f"selected Trip: {self.model.gtfs.selectedRoute}")
 
@@ -653,7 +664,8 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.dispatch("start_create_table", "start_create_table routine started! Notify subscriber!")
 
     def notify_create_table_continue(self):
-        self.dispatch("start_create_table", "start_create_table routine started! Notify subscriber!")
+        # self.model.gtfs.df_filtered_stop_names = self.CreateCreate_Tab.ui.tableView_sorting_stops.model.getData()
+        self.dispatch("start_create_table_continue", "start_create_table_continue routine started! Notify subscriber!")
 
     def notify_load_gtfsdata_event(self):
         self.CreateImport_Tab.ui.btnImport.setEnabled(False)
@@ -676,7 +688,6 @@ class Gui(QMainWindow, Publisher, Subscriber):
 
 def get_current_time():
     """ Helper function to get the current time in seconds. """
-
     now = dt.datetime.now()
     total_time = (now.hour * 3600) + (now.minute * 60) + now.second
     return total_time

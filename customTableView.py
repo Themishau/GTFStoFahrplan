@@ -1,10 +1,11 @@
-from PyQt5.QtCore import    (Qt)
-from PyQt5.QtGui import     (QStandardItemModel, QStandardItem)
-from PyQt5.QtWidgets import (QProxyStyle,QStyleOption,
+from PyQt5.QtCore import (Qt)
+from PyQt5.QtGui import (QStandardItemModel, QStandardItem)
+from PyQt5.QtWidgets import (QProxyStyle, QStyleOption,
                              QTableView, QHeaderView,
                              QItemDelegate,
                              QApplication)
 from SortTableView import TableModelSort
+
 """
 based on
 https://mountcreo.com/article/pyqtpyside-drag-and-drop-qtableview-reordering-rows/
@@ -12,8 +13,6 @@ https://mountcreo.com/article/pyqtpyside-drag-and-drop-qtableview-reordering-row
 
 
 class customTableView(QTableView):
-
-
     class DropmarkerStyle(QProxyStyle):
         def drawPrimitive(self, element, option, painter, widget=None):
             """Draw a line across the entire row rather than just the column we're hovering over.
@@ -26,6 +25,7 @@ class customTableView(QTableView):
                     option_new.rect.setRight(widget.width())
                 option = option_new
             super().drawPrimitive(element, option, painter, widget)
+
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -35,8 +35,6 @@ class customTableView(QTableView):
         self.setDragDropMode(self.InternalMove)
         self.setDragDropOverwriteMode(False)
         self.setStyle(self.DropmarkerStyle())
-
-
 
     def dropEvent(self, event):
         if (event.source() is not self or

@@ -6,8 +6,9 @@ class TableModel(QtCore.QAbstractTableModel):
     def __init__(self, data):
         super(TableModel, self).__init__()
         self._data = data
-        
 
+    def getData(self, data):
+        return self._data
 
     def rowCount(self, parent=None):
         return self._data.shape[0]
