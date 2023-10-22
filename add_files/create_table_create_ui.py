@@ -11,6 +11,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from customTableView import customTableView
 
+
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
@@ -22,54 +23,54 @@ class Ui_Form(object):
         Form.setSizePolicy(sizePolicy)
         Form.setMaximumSize(QtCore.QSize(16777215, 590))
         Form.setStyleSheet("#Form {\n"
-"border-style: solid;\n"
-"border-color:  #f2f7f5;\n"
-"background: #cfe2da; \n"
-"\n"
-"}\n"
-"\n"
-"#Form QListWidget {\n"
-"    background-color: #F0FCF7;\n"
-"   border-radius: 5px;\n"
-"    text-align: center;\n"
-"    color:#41312b;\n"
-"}\n"
-"\n"
-"#Form QPushButton {\n"
-"    background-color: #587b6d;\n"
-"   border-radius: 10px;\n"
-"    padding: 5px 5px 5px 5px;\n"
-"    text-align: center;\n"
-"    color:#f2b198;\n"
-"}\n"
-"\n"
-"#Form QLineEdit {\n"
-"    background-color: #F0FCF7;\n"
-"   border-radius: 10px;\n"
-"    padding: 5px 5px 5px 5px;\n"
-"    text-align: center;\n"
-"    color:#41312b;\n"
-"}\n"
-"\n"
-"#Form QLabel {\n"
-"    text-align: center;\n"
-"    color:#41312b;\n"
-"}\n"
-"\n"
-"#Form QComboBox {\n"
-"    background-color: #587b6d;\n"
-"   border-radius: 10px;\n"
-"    padding: 5px 5px 5px 100px;\n"
-"    text-align: center;\n"
-"    color:#f2b198;\n"
-"    \n"
-"}\n"
-"\n"
-"#Form QPushButton:hover {\n"
-"    background-color: #408d49;\n"
-"   border-radius: 10px;\n"
-"       color:#fde1d6;\n"
-"}")
+                           "border-style: solid;\n"
+                           "border-color:  #f2f7f5;\n"
+                           "background: #cfe2da; \n"
+                           "\n"
+                           "}\n"
+                           "\n"
+                           "#Form QListWidget {\n"
+                           "    background-color: #F0FCF7;\n"
+                           "   border-radius: 5px;\n"
+                           "    text-align: center;\n"
+                           "    color:#41312b;\n"
+                           "}\n"
+                           "\n"
+                           "#Form QPushButton {\n"
+                           "    background-color: #587b6d;\n"
+                           "   border-radius: 10px;\n"
+                           "    padding: 5px 5px 5px 5px;\n"
+                           "    text-align: center;\n"
+                           "    color:#f2b198;\n"
+                           "}\n"
+                           "\n"
+                           "#Form QLineEdit {\n"
+                           "    background-color: #F0FCF7;\n"
+                           "   border-radius: 10px;\n"
+                           "    padding: 5px 5px 5px 5px;\n"
+                           "    text-align: center;\n"
+                           "    color:#41312b;\n"
+                           "}\n"
+                           "\n"
+                           "#Form QLabel {\n"
+                           "    text-align: center;\n"
+                           "    color:#41312b;\n"
+                           "}\n"
+                           "\n"
+                           "#Form QComboBox {\n"
+                           "    background-color: #587b6d;\n"
+                           "   border-radius: 10px;\n"
+                           "    padding: 5px 5px 5px 100px;\n"
+                           "    text-align: center;\n"
+                           "    color:#f2b198;\n"
+                           "    \n"
+                           "}\n"
+                           "\n"
+                           "#Form QPushButton:hover {\n"
+                           "    background-color: #408d49;\n"
+                           "   border-radius: 10px;\n"
+                           "       color:#fde1d6;\n"
+                           "}")
         self.gridLayout = QtWidgets.QGridLayout(Form)
         self.gridLayout.setObjectName("gridLayout")
         self.widget_8 = QtWidgets.QWidget(Form)
@@ -180,8 +181,10 @@ class Ui_Form(object):
         self.btnStop.setStyleSheet("")
         self.btnStop.setObjectName("btnStop")
         self.gridLayout.addWidget(self.btnStop, 2, 1, 1, 1)
-        self.tableView_sorting_stops = QtWidgets.QTableView(Form)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
+        # self.tableView_sorting_stops = QtWidgets.QTableView(Form)
+        self.tableView_sorting_stops = customTableView()
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding,
+                                           QtWidgets.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.tableView_sorting_stops.sizePolicy().hasHeightForWidth())
@@ -230,15 +233,20 @@ class Ui_Form(object):
         self.lineDateInput.setText(_translate("Form", "20211212"))
         self.comboBox.setItemText(0, _translate("Form", "date"))
         self.comboBox.setItemText(1, _translate("Form", "weekday"))
-        self.label_12.setText(_translate("Form", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">mode</span></p></body></html>"))
-        self.label_6.setText(_translate("Form", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Weekday</span></p></body></html>"))
+        self.label_12.setText(_translate("Form",
+                                         "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">mode</span></p></body></html>"))
+        self.label_6.setText(_translate("Form",
+                                        "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Weekday</span></p></body></html>"))
         self.label_2.setText(_translate("Form", "example: 20211212"))
-        self.label_13.setText(_translate("Form", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Date</span></p></body></html>"))
+        self.label_13.setText(_translate("Form",
+                                         "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Date</span></p></body></html>"))
         self.comboBox_direction.setItemText(0, _translate("Form", "direction 1"))
         self.comboBox_direction.setItemText(1, _translate("Form", "direction 2"))
-        self.label_17.setText(_translate("Form", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">detected date range</span></p></body></html>"))
+        self.label_17.setText(_translate("Form",
+                                         "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">detected date range</span></p></body></html>"))
         self.btnStart.setText(_translate("Form", "Create Table"))
         self.UseIndividualSorting.setText(_translate("Form", "Use individual sorting"))
         self.btnStop.setText(_translate("Form", "Stop"))
-        self.label_16.setText(_translate("Form", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Selection</span></p></body></html>"))
+        self.label_16.setText(_translate("Form",
+                                         "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Selection</span></p></body></html>"))
         self.btnContinueCreate.setText(_translate("Form", "Continue Creating Table"))

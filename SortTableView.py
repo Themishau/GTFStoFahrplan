@@ -1,11 +1,14 @@
-import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
+import logging
 
 class TableModelSort(QtCore.QAbstractTableModel):
     def __init__(self, data):
         super(TableModelSort, self).__init__()
         self._data = data
+
+    def getData(self):
+        return self._data
 
     def rowCount(self, parent=None):
         return self._data.shape[0]
@@ -24,7 +27,7 @@ class TableModelSort(QtCore.QAbstractTableModel):
             return self._data.columns[col]
         return None
 
-    def mimeData(self,indices):
+    def mimeData(self, indices):
         """
         Move all data, including hidden/disabled columns
         """
@@ -32,27 +35,20 @@ class TableModelSort(QtCore.QAbstractTableModel):
         new_data = []
 
         for col in range(self.columnCount()):
-            new_data.append(index.sibling(index.row(),col))
+            new_data.append(index.sibling(index.row(), col))
 
         # item = self.data(index.row(),3)
-        item = self.data(index,3)
+        item = self.data(index, 3)
         if item is not None:
             self.was_enabled = item.isEnabled()
-            item.setEnabled(True) # Hack// Fixes copying instead of moving when item is disabled
+            item.setEnabled(True)  # Hack// Fixes copying instead of moving when item is disabled
 
         return super().mimeData(new_data)
-
 
     def dropMimeData(self, data, action, row, col, parent):
         """
         Always move the entire row, and don't allow column "shifting"
         """
-        # response = super().dropMimeData(data, Qt.CopyAction, row, 0, parent)
-        # if row == -1:   #Drop after last row
-        #     row = self.rowCount()-1
-        # item = self.data(row,3)
-        # item.setEnabled(self.was_enabled) # Hack// Fixes copying instead of moving when style column is disabled
-        # return response
         print("dropMimeData(data: %r, action: %r, row: %r, col: %r, parent: %r)" % (
             data.formats(), action, row, col, self._index2str(parent)))
         assert action == QtCore.Qt.MoveAction
@@ -71,7 +67,18 @@ class TableModelSort(QtCore.QAbstractTableModel):
 
     def relocateRow(self, row_source, row_target) -> None:
         row_a, row_b = max(row_source, row_target), min(row_source, row_target)
+        sequence_a = self._data.loc[row_source, 'stop_sequence'].copy()
+        sequence_b = self._data.loc[row_target, 'stop_sequence'].copy()
+        self._data.at[row_source, 'stop_sequence'] = int(sequence_b)
+        self._data.at[row_target, 'stop_sequence'] = int(sequence_a)
         self.beginMoveRows(QtCore.QModelIndex(), row_a, row_a, QtCore.QModelIndex(), row_b)
         # also change column stop_sequence
-        self._data.loc[row_source], self._data.loc[row_target] = self._data.loc[row_target].copy(), self._data.loc[row_source].copy()
+        logging.debug(f'sequence_a: {sequence_a}')
+        logging.debug(f'sequence_b: {sequence_b}')
+        logging.debug(f"self._data.loc[row_source][stop_sequence]: {self._data.loc[row_source]['stop_sequence']}")
+        logging.debug(f"self._data.loc[row_target][stop_sequence]: {self._data.loc[row_target]['stop_sequence']}")
+
+        self._data.loc[row_source], self._data.loc[row_target] = self._data.loc[row_target], self._data.loc[row_source]
+
         self.endMoveRows()
+

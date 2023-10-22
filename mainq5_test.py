@@ -16,6 +16,7 @@ if __name__ == '__main__':
                                        'select_route',
                                        'select_weekday',
                                        'start_create_table',
+                                       'start_create_table_continue',
                                        'reset_gtfs',
                                        'send_message_box',
                                        'get_date_range'], name='controller')
