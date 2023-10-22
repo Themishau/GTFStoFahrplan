@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QWidget
 
-from add_files.download_gtfs_ui import Ui_Form as Ui_Download
+from view.pyui.download_gtfs_ui import Ui_Form as Ui_Download
 
 class DownloadGTFS(QWidget):
     def __init__(self):

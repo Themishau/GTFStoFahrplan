@@ -1,12 +1,11 @@
-from gtfs import gtfs
-from observer import Publisher, Subscriber
+from model.gtfs import gtfs
+from model.observer import Publisher, Subscriber
 import datetime as dt
-import time
 import sys
 import os
 from datetime import datetime
 from PyQt5 import uic
-from PyQt5.Qt import QPoint, QMutex, QWidget, QMessageBox, QDesktopWidget, QApplication, QMainWindow
+from PyQt5.Qt import QPoint, QMutex, QWidget, QMessageBox, QDesktopWidget, QApplication
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QThread, pyqtSignal

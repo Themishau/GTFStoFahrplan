@@ -9,17 +9,17 @@ from PyQt5.Qt import QPoint, QMutex, QThread, QMessageBox, QDesktopWidget, QMain
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QFileDialog
 
-from RoundProgressBar import RoundProgress
-from SelectTableView import TableModel
-from SortTableView import TableModelSort
-from add_files.main_window_ui import Ui_MainWindow
-from create_table_create import CreateTableCreate
-from create_table_import import CreateTableImport
-from create_table_select import CreateTableSelect
-from download_gtfs import DownloadGTFS
-from general_window_information import GeneralInformation
-from gtfs import gtfs
-from observer import Publisher, Subscriber
+from view.RoundProgressBar import RoundProgress
+from view.SelectTableView import TableModel
+from view.SortTableView import TableModelSort
+from view.pyui.main_window_ui import Ui_MainWindow
+from view.create_table_create import CreateTableCreate
+from view.create_table_import import CreateTableImport
+from view.create_table_select import CreateTableSelect
+from view.download_gtfs import DownloadGTFS
+from view.general_window_information import GeneralInformation
+from model.gtfs import gtfs
+from model.observer import Publisher, Subscriber
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",

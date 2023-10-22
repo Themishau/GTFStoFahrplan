@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import (QProxyStyle, QStyleOption,
                              QTableView, QHeaderView,
                              QItemDelegate,
                              QApplication)
-from SortTableView import TableModelSort
+from view.SortTableView import TableModelSort
 
 """
 based on

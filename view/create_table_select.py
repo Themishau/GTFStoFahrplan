@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QAbstractItemView
 
-from add_files.create_table_select_ui import  Ui_Form as Ui_CreateTableSelect
+from view.pyui.create_table_select_ui import  Ui_Form as Ui_CreateTableSelect
 
 
 class CreateTableSelect(QWidget):

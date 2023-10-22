@@ -1,7 +1,6 @@
-from PyQt5.QtWidgets import QWidget, QAbstractItemView
+from PyQt5.QtWidgets import QWidget
 
-
-from add_files.create_table_create_ui import  Ui_Form as Ui_CreateTableCreate
+from view.pyui.create_table_create_ui import  Ui_Form as Ui_CreateTableCreate
 
 
 class CreateTableCreate(QWidget):

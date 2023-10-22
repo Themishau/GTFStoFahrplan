@@ -9,7 +9,7 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from customTableView import customTableView
+from view.customTableView import customTableView
 
 
 class Ui_Form(object):

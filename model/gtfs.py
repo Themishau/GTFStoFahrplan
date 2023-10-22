@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from observer import Publisher, Subscriber
+from model.observer import Publisher, Subscriber
 import time
 import pandas as pd
 from pandasql import sqldf

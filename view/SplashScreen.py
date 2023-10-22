@@ -1,9 +1,7 @@
-import platform
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import (QCoreApplication, QPropertyAnimation, QDate, QDateTime, QMetaObject, QObject, QPoint, QRect, QSize, QTime, QUrl, Qt, QEvent)
-from PyQt5.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont, QFontDatabase, QIcon, QKeySequence, QLinearGradient, QPalette, QPainter, QPixmap, QRadialGradient)
+from PyQt5 import QtCore
+from PyQt5.QtGui import (QColor)
 from PyQt5.QtWidgets import *
-from ui_splash_screen import Ui_SplashScreen
+from view.pyui.ui_splash_screen import Ui_SplashScreen
 
 counter = 0
 class SplashScreen(QMainWindow):
