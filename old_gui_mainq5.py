@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from GUI_Q5 import main
+from old_controller import main
 
 if __name__ == '__main__':
     main(['update_process',

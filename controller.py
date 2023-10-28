@@ -13,11 +13,12 @@ from view.RoundProgressBar import RoundProgress
 from view.SelectTableView import TableModel
 from view.SortTableView import TableModelSort
 from view.pyui.main_window_ui import Ui_MainWindow
+from view.general_window_information import GeneralInformation
 from view.create_table_create import CreateTableCreate
 from view.create_table_import import CreateTableImport
 from view.create_table_select import CreateTableSelect
 from view.download_gtfs import DownloadGTFS
-from view.general_window_information import GeneralInformation
+
 from model.gtfs import gtfs
 from model.observer import Publisher, Subscriber
 

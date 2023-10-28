@@ -7,11 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>700</width>
-    <height>300</height>
+    <height>700</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
@@ -19,7 +19,7 @@
   <property name="maximumSize">
    <size>
     <width>700</width>
-    <height>300</height>
+    <height>700</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -138,6 +138,12 @@ background: #cfe2da;
      </item>
      <item row="12" column="0">
       <widget class="QCheckBox" name="checkBox_savepickle">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="toolTip">
         <string>saves data to faster format</string>
        </property>
