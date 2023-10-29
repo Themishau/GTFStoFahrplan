@@ -35,6 +35,7 @@ class customTableView(QTableView):
         self.setDragDropMode(self.InternalMove)
         self.setDragDropOverwriteMode(False)
         self.setStyle(self.DropmarkerStyle())
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
     def dropEvent(self, event):
         if (event.source() is not self or

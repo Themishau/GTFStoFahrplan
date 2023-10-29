@@ -5,7 +5,7 @@ import sys
 from datetime import datetime
 
 from PyQt5 import QtCore
-from PyQt5.Qt import QPoint, QMutex, QThread, QMessageBox, QDesktopWidget, QMainWindow
+from PyQt5.Qt import QPoint, QThread, QMessageBox, QDesktopWidget, QMainWindow
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QFileDialog
 
@@ -77,7 +77,6 @@ class Model(Publisher, Subscriber):
                           'update_weekdate_option',
                           'update_progress_bar',
                           'message'], 'data')
-        self.mutex = QMutex()
         self.worker = None
         self.notify_functions = {
             'load_gtfsdata_event': [self.sub_load_gtfsdata_event, False],
@@ -128,14 +127,18 @@ class Model(Publisher, Subscriber):
             return False
 
     def sub_load_gtfsdata_event(self):
-        self.gtfs.processing = "loading data"
+        try:
+            self.gtfs.processing = "loading data"
 
-        self.worker = GTFSWorker(['sub_worker_load_gtfsdata'], 'Worker', 'ImportGTFS')
-        self.worker.register('sub_worker_load_gtfsdata', self)
+            self.worker = GTFSWorker(['sub_worker_load_gtfsdata'], 'Worker', 'ImportGTFS')
+            self.worker.register('sub_worker_load_gtfsdata', self)
 
-        self.worker.start()
-        self.worker.finished.connect(self.update_agency_list)
-        self.worker.exit()
+            self.worker.start()
+            self.worker.finished.connect(self.update_agency_list)
+            self.worker.exit()
+        except:
+            return self.dispatch("message",
+                             "Something went wrong while loading data!")
 
     def error_reset_model(self):
         self.dispatch("restart",
@@ -275,7 +278,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.progressRound = RoundProgress()
         self.progressRound.value = 0
         self.progressRound.setMinimumSize(self.progressRound.width, self.progressRound.height)
-        self.ui.gridLayout_7.addWidget(self.progressRound, 3, 0, 1, 1, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        self.ui.gridLayout_7.addWidget(self.progressRound, 4, 0, 1, 1, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
         self.setFixedSize(1350, 900)
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.center()
@@ -414,7 +417,6 @@ class Gui(QMainWindow, Publisher, Subscriber):
 
     def set_btn_checked(self, btn):
         for button in self.menu_btns_dict.keys():
-            logging.debug(f'set_btn_checked: {btn.objectName()}')
             if button != btn:
                 button.setChecked(False)
             else:
@@ -596,8 +598,8 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.CreateImport_Tab.ui.btnRestart.setEnabled(False)
         self.CreateImport_Tab.ui.comboBox_display.setEnabled(True)
 
-        self.CreateSelect_Tab.ui.listAgencies.clear()
-        self.CreateSelect_Tab.ui.listRoutes.clear()
+        self.CreateSelect_Tab.ui.AgenciesTableView.clear()
+        self.CreateSelect_Tab.ui.TripsTableView.clear()
 
         self.CreateCreate_Tab.ui.btnStart.setEnabled(False)
         self.CreateCreate_Tab.ui.btnStop.setEnabled(False)

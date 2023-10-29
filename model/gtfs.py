@@ -424,7 +424,7 @@ class gtfs(Publisher, Subscriber):
         self.dfagency.to_pickle(self.output_path + "dfagency.pkl")
 
         if self.dffeed_info is not None:
-            self.dffeed_info.to_pickle("./dffeed_info.pkl")
+            self.dffeed_info.to_pickle(self.output_path + "dffeed_info.pkl")
 
         with zipfile.ZipFile(self.pickleSavePath, "w", compression=zipfile.ZIP_DEFLATED) as zf:
             zf.write(self.output_path + "dfStops.pkl")
