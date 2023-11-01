@@ -484,7 +484,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.CreateImport_Tab.ui.comboBox_display.setEnabled(True)
         self.CreateCreate_Tab.ui.comboBox_direction.setEnabled(True)
         self.CreateCreate_Tab.ui.btnStart.setEnabled(True)
-        self.CreateCreate_Tab.ui.btnStop.setEnabled(True)
+
 
     def sub_update_weekdate_option(self):
         self.initialize_create_base_option()
@@ -602,7 +602,6 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.CreateSelect_Tab.ui.TripsTableView.clear()
 
         self.CreateCreate_Tab.ui.btnStart.setEnabled(False)
-        self.CreateCreate_Tab.ui.btnStop.setEnabled(False)
         self.CreateCreate_Tab.ui.btnContinueCreate.setEnabled(False)
         self.CreateCreate_Tab.ui.comboBox.setEnabled(False)
         self.CreateCreate_Tab.ui.comboBox_direction.setEnabled(False)

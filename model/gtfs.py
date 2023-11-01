@@ -20,13 +20,6 @@ logging.basicConfig(level=logging.DEBUG,
 
 # noinspection SqlResolve
 class gtfs(Publisher, Subscriber):
-    input_path: str
-    output_path: str
-    gtfs_data_list: list[list[str]]
-    options_dates_weekday: list[str]
-    selected_direction: int
-    runningAsync: int
-
     def __init__(self, events, name):
         super().__init__(events=events, name=name)
         self.notify_functions = {
@@ -326,9 +319,6 @@ class gtfs(Publisher, Subscriber):
         self.datesWeekday_create_sort_stopnames()
         self.dispatch("update_stopname_create_list",
                       "update_stopname_create_list routine started! Notify subscriber!")
-        # self.progress = 80
-        # self.datesWeekday_create_output_fahrplan()
-        # self.progress = 100
 
     def sub_worker_create_output_fahrplan_date_indi_continue(self):
         logging.debug(f"continue to create table with individual sorting")
@@ -1882,3 +1872,4 @@ class gtfs(Publisher, Subscriber):
             self.output_path + str(self.route_short_namedf.route_short_name[0]) + 'dates_' + str(
                 self.now) + 'pivot_table.csv', header=True, quotechar=' ',
             index=True, sep=';', mode='a', encoding='utf8')
+
