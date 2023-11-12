@@ -1,4 +1,4 @@
-from model.gtfs import gtfs
+from model.Base.gtfs import gtfs
 from model.observer import Publisher, Subscriber
 import datetime as dt
 import sys

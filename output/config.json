@@ -7,7 +7,7 @@
   },
   {
    "optionDest": "filenames",
-   "value": "E:/OneDrive/1_Daten/1/Programmieren_Python/GTFSFahrplan/mainq5.py"
+   "value": "E:/OneDrive/1_Daten/1/Programmieren_Python/GTFSFahrplan/main.py"
   },
   {
    "optionDest": "onefile",
@@ -15,7 +15,7 @@
   },
   {
    "optionDest": "console",
-   "value": false
+   "value": true
   },
   {
    "optionDest": "icon_file",
@@ -76,10 +76,6 @@
   {
    "optionDest": "argv_emulation",
    "value": false
-  },
-  {
-   "optionDest": "datas",
-   "value": "E:/OneDrive/1_Daten/1/Programmieren_Python/GTFSFahrplan/add_files;add_files/"
   }
  ],
  "nonPyinstallerOptions": {

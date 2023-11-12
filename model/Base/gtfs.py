@@ -10,7 +10,6 @@ import re
 import logging
 import sys
 import os
-import h5py
 from PyQt5.QtCore import QAbstractTableModel
 
 logging.basicConfig(level=logging.DEBUG,
@@ -91,15 +90,15 @@ class gtfs(Publisher, Subscriber):
         self.filtered_stop_names = ""
 
         """ df-data """
-        self.dfStops = pd.DataFrame({'A': []})
-        self.dfStopTimes = pd.DataFrame({'A': []})
-        self.dfTrips = pd.DataFrame({'A': []})
-        self.dfWeek = pd.DataFrame({'A': []})
-        self.dfDates = pd.DataFrame({'A': []})
-        self.dfRoutes = pd.DataFrame({'A': []})
-        self.dfSelectedRoutes = pd.DataFrame({'A': []})
-        self.dfagency = pd.DataFrame({'A': []})
-        self.dffeed_info = None
+        self.dfStops = pd.DataFrame()
+        self.dfStopTimes = pd.DataFrame()
+        self.dfTrips = pd.DataFrame()
+        self.dfWeek = pd.DataFrame()
+        self.dfDates = pd.DataFrame()
+        self.dfRoutes = pd.DataFrame()
+        self.dfSelectedRoutes = pd.DataFrame()
+        self.dfagency = pd.DataFrame()
+        self.dffeed_info = pd.DataFrame()
         self.now = None
 
         """ loaded data for listbox """
@@ -413,7 +412,7 @@ class gtfs(Publisher, Subscriber):
         self.dfRoutes.to_pickle(self.output_path + "dfRoutes.pkl")
         self.dfagency.to_pickle(self.output_path + "dfagency.pkl")
 
-        if self.dffeed_info is not None:
+        if not self.dffeed_info.empty:
             self.dffeed_info.to_pickle(self.output_path + "dffeed_info.pkl")
 
         with zipfile.ZipFile(self.pickleSavePath, "w", compression=zipfile.ZIP_DEFLATED) as zf:
@@ -432,39 +431,12 @@ class gtfs(Publisher, Subscriber):
         os.remove(self.output_path + "dfDates.pkl")
         os.remove(self.output_path + "dfRoutes.pkl")
         os.remove(self.output_path + "dfagency.pkl")
-        if self.dffeed_info is not None:
+        if not self.dffeed_info.empty:
             os.remove(self.output_path + "dffeed_info.pkl")
-
-    def save_h5(self, h5_filename, data, labels, descr=None,
-                data_dtype='float32', label_dtype='float32'):
-        """Create a compressed .h5 file containing:
-        data    : numpy array
-        labels  : numpy array
-        descr   : text description of the data contained (must be a string)
-        """
-
-        if os.path.exists(h5_filename):
-            # prevent overwriting a file
-            sys.exit('File already exists!')
-
-        with h5py.File(h5_filename, 'w') as f:
-            h5_fout = f.create_dataset(
-                name='data',
-                data=data,
-                compression='gzip', compression_opts=4)
-
-            h5_fout.create_dataset(
-                name='labels',
-                data=labels,
-                compression='gzip', compression_opts=4)
-
-            if descr is not None:
-                h5_fout.create_dataset(
-                    'description', data=descr)
 
     def getDateRange(self):
         logging.debug('len stop_sequences {}'.format(self.dffeed_info))
-        if self.dffeed_info is not None:
+        if not self.dffeed_info.empty:
             self.date_range = str(self.dffeed_info.iloc[0].feed_start_date) + '-' + str(
                 self.dffeed_info.iloc[0].feed_end_date)
         else:

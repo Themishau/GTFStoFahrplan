@@ -19,7 +19,7 @@ from view.create_table_import import CreateTableImport
 from view.create_table_select import CreateTableSelect
 from view.download_gtfs import DownloadGTFS
 
-from model.gtfs import gtfs
+from model.Base.gtfs import gtfs
 from model.observer import Publisher, Subscriber
 
 logging.basicConfig(level=logging.DEBUG,
