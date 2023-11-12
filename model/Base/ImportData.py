@@ -11,7 +11,6 @@ import logging
 import sys
 import os
 from ProgressBar import ProgressBar
-from PyQt5.QtCore import QAbstractTableModel
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
@@ -31,6 +30,9 @@ class ImportData(Publisher, Subscriber):
         self.pickle_export_checked = False
         self.time_format = 1
 
+        """ df property """
+        self.df_date_range_in_gtfs_data = pd.DataFrame()
+
         """ visual internal property """
         self.progress = progress.progress
 
@@ -48,8 +50,6 @@ class ImportData(Publisher, Subscriber):
         self.df_agency = pd.DataFrame()
         self.df_feed_info = pd.DataFrame()
 
-        """ df property """
-        self.df_date_range_in_gtfs_data = pd.DataFrame()
 
     @property
     def input_path(self):
@@ -108,7 +108,6 @@ class ImportData(Publisher, Subscriber):
     def import_gtfs(self) -> bool:
 
         if self.read_gtfs_data() is False:
-            self.notify_error_message(f"could not read data from path: {self.input_path} ")
             self.reset_data_cause_of_error()
             return False
 
