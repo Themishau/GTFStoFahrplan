@@ -32,7 +32,6 @@ class ImportData(Publisher, Subscriber):
         self.time_format = 1
 
         """ visual internal property """
-        # TODO: create a own class for progress
         self.progress = progress.progress
 
         """ loaded raw_gtfs_data """
