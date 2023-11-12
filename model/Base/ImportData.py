@@ -10,7 +10,7 @@ import re
 import logging
 import sys
 import os
-
+from ProgressBar import ProgressBar
 from PyQt5.QtCore import QAbstractTableModel
 
 logging.basicConfig(level=logging.DEBUG,
@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class ImportData(Publisher, Subscriber):
-    def __init__(self, events, name):
+    def __init__(self, events, name, progress: ProgressBar):
         super().__init__(events=events, name=name)
         self.notify_functions = {
             'ImportGTFS': [self.async_task_load_GTFS_data, False]
@@ -33,7 +33,7 @@ class ImportData(Publisher, Subscriber):
 
         """ visual internal property """
         # TODO: create a own class for progress
-        self.progress = 0
+        self.progress = progress.progress
 
         """ loaded raw_gtfs_data """
         self.raw_gtfs_data = []
