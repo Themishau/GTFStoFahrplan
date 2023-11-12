@@ -81,7 +81,7 @@ class ImportData(Publisher, Subscriber):
 
     @property
     def pickle_export_checked(self):
-        return self._progress
+        return self._pickleExport_checked
 
     @pickle_export_checked.setter
     def pickle_export_checked(self, value):

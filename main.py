@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
 from controller import Gui
-from view.SplashScreen import SplashScreen
+from view.splash_screen import SplashScreen
 
 from PyQt5.QtWidgets import *
 

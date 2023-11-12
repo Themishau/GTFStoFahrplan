@@ -9,9 +9,9 @@ from PyQt5.Qt import QPoint, QThread, QMessageBox, QDesktopWidget, QMainWindow
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QFileDialog
 
-from view.RoundProgressBar import RoundProgress
-from view.SelectTableView import TableModel
-from view.SortTableView import TableModelSort
+from view.round_progress_bar import RoundProgress
+from view.select_table_view import TableModel
+from view.sort_table_view import TableModelSort
 from view.pyui.main_window_ui import Ui_MainWindow
 from view.general_window_information import GeneralInformation
 from view.create_table_create import CreateTableCreate
