@@ -89,14 +89,6 @@ class ImportData(Publisher, Subscriber):
         self._pickleExport_checked = value
 
     @property
-    def time_format(self):
-        return self._time_format
-
-    @time_format.setter
-    def time_format(self, value):
-        self._time_format = value
-
-    @property
     def df_date_range_in_gtfs_data(self):
         return self._df_date_range_in_GTFS_data
 
@@ -106,9 +98,11 @@ class ImportData(Publisher, Subscriber):
 
     """ checks """
     def _check_input_fields_based_on_settings(self):
-        ...
+        if self._check_paths() is False:
+            self.notify_error_message(f"could not read data from path: {self.input_path} ")
+            return False
 
-    def _check_paths(self):
+    def _check_paths(self) -> bool:
         ...
 
     """ main import methods """
