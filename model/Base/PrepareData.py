@@ -24,6 +24,7 @@ class ImportData(Publisher, Subscriber):
 
         """ property """
         self.time_format = 1
+
     @property
     def time_format(self):
         return self._time_format
