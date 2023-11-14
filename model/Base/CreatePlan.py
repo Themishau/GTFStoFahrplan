@@ -1,0 +1,63 @@
+# -*- coding: utf-8 -*-
+from model.observer import Publisher, Subscriber
+import time
+import pandas as pd
+from pandasql import sqldf
+import zipfile
+import io
+from datetime import datetime, timedelta
+import re
+import logging
+import sys
+import os
+from enum import Enum, auto
+from ProgressBar import ProgressBar
+
+logging.basicConfig(level=logging.DEBUG,
+                    format="%(asctime)s %(levelname)s %(message)s",
+                    datefmt="%Y-%m-%d %H:%M:%S")
+
+
+
+
+
+class ImportData(Publisher, Subscriber):
+    def __init__(self, events, name, progress: ProgressBar):
+        super().__init__(events=events, name=name)
+        self.reset_create = False
+        self.create_plan_mode = None
+        self.notify_functions = {
+            'create_table': [self.sub_worker_create_output_fahrplan_date, False]
+        }
+
+        class CreatePlanMode(Enum):
+            """ Types of methods """
+            date = 'date'
+            weekday = 'weekday'
+
+        """ property """
+        self.input_path = ""
+        self.pickle_save_path = ""
+        self.pickle_export_checked = False
+        self.time_format = 1
+
+        """ visual internal property """
+        self.progress = progress.progress
+
+        self.weekDayOptionsList = ['0,Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday',
+                                   '1,Monday, Tuesday, Wednesday, Thursday, Friday',
+                                   '2,Monday',
+                                   '3,Tuesday',
+                                   '4,Wednesday',
+                                   '5,Thursday',
+                                   '6,Friday',
+                                   '7,Saturday',
+                                   '8,Sunday']
+
+    @property
+    def progress(self):
+        return self._progress
+
+    @progress.setter
+    def progress(self, value):
+        self._progress = value
