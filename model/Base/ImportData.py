@@ -20,6 +20,7 @@ logging.basicConfig(level=logging.DEBUG,
 class ImportData(Publisher, Subscriber):
     def __init__(self, events, name, progress: ProgressBar):
         super().__init__(events=events, name=name)
+        self.reset_import = False
         self.notify_functions = {
             'ImportGTFS': [self.async_task_load_GTFS_data, False]
         }
@@ -39,6 +40,15 @@ class ImportData(Publisher, Subscriber):
         """ loaded raw_gtfs_data """
         self.raw_gtfs_data = []
 
+        """ """
+        self.stops_dict = {}
+        self.stop_times_dict = {}
+        self.trip_dict = {}
+        self.calendar_week_dict = {}
+        self.calendar_dates_dict = {}
+        self.routes_fahrt_dict = {}
+        self.agency_fahrt_dict = {}
+
         """ dataframe data """
         self.df_Stops = pd.DataFrame()
         self.df_Stop_times = pd.DataFrame()
@@ -49,6 +59,15 @@ class ImportData(Publisher, Subscriber):
         self.df_Selected_routes = pd.DataFrame()
         self.df_agency = pd.DataFrame()
         self.df_feed_info = pd.DataFrame()
+
+
+    @property
+    def reset_import(self):
+        return self._reset_import
+
+    @reset_import.setter
+    def reset_import(self, value):
+        self._reset_import = value
 
 
     @property
@@ -125,6 +144,59 @@ class ImportData(Publisher, Subscriber):
             return True
 
     """ methods """
+
+    """
+    loads dicts and creates dicts.
+    It also set indices, if possible to speed up search
+    """
+    def create_dfs(self):
+
+        self.df_Routes = pd.DataFrame.from_dict(self.routes_fahrt_dict)
+        self.df_Trips = pd.DataFrame.from_dict(self.trip_dict).set_index('trip_id')
+
+        """ lets try to convert every column to speed computing """
+        try:
+            self.dfTrips['trip_id'] = self.dfTrips['trip_id'].astype('int8')
+            self.dfTrips['direction_id'] = self.dfTrips['direction_id'].astype('int8')
+            self.dfTrips['shape_id'] = self.dfTrips['shape_id'].astype('int8')
+            self.dfTrips['wheelchair_accessible'] = self.dfTrips['wheelchair_accessible'].astype('int8')
+            self.dfTrips['bikes_allowed'] = self.dfTrips['bikes_allowed'].astype('int8')
+
+        except KeyError:
+            logging.debug("can not convert dfTrips")
+
+        # DataFrame with every stop (time)
+        self.dfStopTimes = pd.DataFrame.from_dict(self.stopTimesdict).set_index('stop_id')
+
+        try:
+            self.dfStopTimes['stop_sequence'] = self.dfStopTimes['stop_sequence'].astype('int32')
+            self.dfStopTimes['stop_id'] = self.dfStopTimes['stop_id'].astype('int32')
+            self.dfStopTimes['trip_id'] = self.dfStopTimes['trip_id'].astype('string')
+        except KeyError:
+            logging.debug("can not convert dfStopTimes")
+        except OverflowError:
+            logging.debug("can not convert dfStopTimes")
+
+        # DataFrame with every stop
+        self.dfStops = pd.DataFrame.from_dict(self.stopsdict).set_index('stop_id')
+        try:
+            self.dfStops['stop_id'] = self.dfStops['stop_id'].astype('int32')
+        except KeyError:
+            logging.debug("can not convert dfStops: stop_id into int ")
+
+        self.dfWeek = pd.DataFrame.from_dict(self.calendarWeekdict).set_index('service_id')
+        self.dfWeek['start_date'] = self.dfWeek['start_date'].astype('string')
+        self.dfWeek['end_date'] = self.dfWeek['end_date'].astype('string')
+        self.dfDates = pd.DataFrame.from_dict(self.calendarDatesdict).set_index('service_id')
+        self.dfDates['exception_type'] = self.dfDates['exception_type'].astype('int32')
+        self.dfDates['date'] = pd.to_datetime(self.dfDates['date'], format='%Y%m%d')
+        self.dfagency = pd.DataFrame.from_dict(self.agencyFahrtdict)
+
+        if self.feed_infodict:
+            self.dffeed_info = pd.DataFrame.from_dict(self.feed_infodict)
+
+        return True
+
     def analyze_daterange_in_GTFS_data(self):
         if self.df_Week is not None:
             self.df_date_range_in_gtfs_data = self.dfWeek.groupby(['start_date', 'end_date']).size().reset_index()
@@ -155,7 +227,17 @@ class ImportData(Publisher, Subscriber):
     def reset_data_cause_of_error(self):
         pass
 
+    """ reset methods """
 
+    def clean_dicts(self) -> bool:
+        self.stops_dict = {}
+        self.stop_times_dict = {}
+        self.trip_dict = {}
+        self.calendar_week_dict = {}
+        self.calendar_dates_dict = {}
+        self.routes_fahrt_dict = {}
+        self.agency_fahrt_dict = {}
+        return True
 
 
 
