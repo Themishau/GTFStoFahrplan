@@ -50,16 +50,15 @@ class ImportData(Publisher, Subscriber):
         self.agency_fahrt_dict = {}
 
         """ dataframe data """
-        self.df_Stops = pd.DataFrame()
-        self.df_Stop_times = pd.DataFrame()
-        self.df_Trips = pd.DataFrame()
-        self.df_Week = pd.DataFrame()
-        self.df_Dates = pd.DataFrame()
-        self.df_Routes = pd.DataFrame()
-        self.df_Selected_routes = pd.DataFrame()
+        self.df_stops = pd.DataFrame()
+        self.df_stop_times = pd.DataFrame()
+        self.df_trips = pd.DataFrame()
+        self.df_week = pd.DataFrame()
+        self.df_dates = pd.DataFrame()
+        self.df_routes = pd.DataFrame()
+        self.df_selected_routes = pd.DataFrame()
         self.df_agency = pd.DataFrame()
         self.df_feed_info = pd.DataFrame()
-
 
     @property
     def reset_import(self):
@@ -68,7 +67,6 @@ class ImportData(Publisher, Subscriber):
     @reset_import.setter
     def reset_import(self, value):
         self._reset_import = value
-
 
     @property
     def input_path(self):
@@ -100,11 +98,11 @@ class ImportData(Publisher, Subscriber):
 
     @property
     def pickle_export_checked(self):
-        return self._pickleExport_checked
+        return self._pickle_export_checked
 
     @pickle_export_checked.setter
     def pickle_export_checked(self, value):
-        self._pickleExport_checked = value
+        self._pickle_export_checked = value
 
     @property
     def df_date_range_in_gtfs_data(self):
@@ -131,11 +129,8 @@ class ImportData(Publisher, Subscriber):
             return False
 
         if self.pkl_loaded is False:
-            logging.debug("read_gtfs_data")
             self.read_gtfs_data_from_path()
-            logging.debug("read_gtfs_data_from_path")
             self.create_dfs()
-            logging.debug("create_dfs ")
             self.clean_dicts()
             return True
         else:
@@ -147,12 +142,12 @@ class ImportData(Publisher, Subscriber):
 
     """
     loads dicts and creates dicts.
-    It also set indices, if possible to speed up search
+    It also set indices, if possible -> to speed up search
     """
     def create_dfs(self):
 
-        self.df_Routes = pd.DataFrame.from_dict(self.routes_fahrt_dict)
-        self.df_Trips = pd.DataFrame.from_dict(self.trip_dict).set_index('trip_id')
+        self.df_routes = pd.DataFrame.from_dict(self.routes_fahrt_dict)
+        self.df_trips = pd.DataFrame.from_dict(self.trip_dict).set_index('trip_id')
 
         """ lets try to convert every column to speed computing """
         try:
@@ -198,7 +193,7 @@ class ImportData(Publisher, Subscriber):
         return True
 
     def analyze_daterange_in_GTFS_data(self):
-        if self.df_Week is not None:
+        if self.df_week is not None:
             self.df_date_range_in_gtfs_data = self.dfWeek.groupby(['start_date', 'end_date']).size().reset_index()
             return str(self.df_date_range_in_gtfs_data.iloc[0].start_date) + '-' + str(
                 self.df_date_range_in_gtfs_data.iloc[0].end_date)

@@ -18,10 +18,7 @@ logging.basicConfig(level=logging.DEBUG,
                     datefmt="%Y-%m-%d %H:%M:%S")
 
 
-
-
-
-class ImportData(Publisher, Subscriber):
+class CreatePlan(Publisher, Subscriber):
     def __init__(self, events, name, progress: ProgressBar):
         super().__init__(events=events, name=name)
         self.reset_create = False

@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.DEBUG,
                     datefmt="%Y-%m-%d %H:%M:%S")
 
 
-class ImportData(Publisher, Subscriber):
+class PrepareData(Publisher, Subscriber):
     def __init__(self, events, name):
         super().__init__(events=events, name=name)
         self.notify_functions = {
