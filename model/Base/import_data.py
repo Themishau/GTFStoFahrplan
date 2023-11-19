@@ -124,21 +124,19 @@ class import_data(Publisher, Subscriber):
 
 
     """ main import methods """
-    def import_gtfs(self) -> bool:
-
-        if self.read_gtfs_data() is False:
+    def import_gtfs(self):
+        imported_data = self.read_gtfs_data()
+        if imported_data is None:
             self.reset_data_cause_of_error()
-            return False
+            return None
 
         if self.pkl_loaded is False:
             self.read_gtfs_data_from_path()
-            self.create_dfs()
-            self.clean_dicts()
+            df_gtfs_dict = self.create_dfs()
             return True
         else:
             logging.debug("Pickle Data Detected. Loading Pickle Data")
-            self.clean_dicts()
-            return True
+            return
 
     """ methods """
 
@@ -146,7 +144,7 @@ class import_data(Publisher, Subscriber):
     loads dicts and creates dicts.
     It also set indices, if possible -> to speed up search
     """
-    def create_dfs(self):
+    def create_dfs(self, gtfs_dict: dict):
 
         self.df_routes = pd.DataFrame.from_dict(self.routes_fahrt_dict)
         self.df_trips = pd.DataFrame.from_dict(self.trip_dict).set_index('trip_id')
@@ -222,7 +220,8 @@ class import_data(Publisher, Subscriber):
         pass
 
     def reset_data_cause_of_error(self):
-        pass
+        self.progress = 0
+        """Todo: add the other values here """
 
     """ reset methods """
 
