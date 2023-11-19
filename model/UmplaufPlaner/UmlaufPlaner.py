@@ -10,7 +10,7 @@ import re
 import logging
 import sys
 import os
-from ..Base.ImportData import ImportData
+from ..Base.import_data import import_data
 from ..Base.SelectData import SelectData
 from ..Base.PrepareData import PrepareData
 from ..Base.CreatePlan import CreatePlan
@@ -25,9 +25,14 @@ class UmlaufPlaner(Publisher, Subscriber):
     def __init__(self, events, name):
         super().__init__(events=events, name=name)
 
-        self.createPlan_Direction_two = None
-        self.createPlan_Direction_one = None
-        self.exportPlan = None
+        self.create_plan_direction_two = None
+        self.create_plan_direction_one = None
+        self.export_plan = None
+        self.create_plan_direction_one = None
+        self.create_plan_direction_two = None
+        self.prepare_data = None
+        self.select_data = None
+        self.import_Data = None
 
         self.notify_functions = {
             'ImportGTFS': [self.async_task_load_GTFS_data, False],
@@ -36,48 +41,49 @@ class UmlaufPlaner(Publisher, Subscriber):
         }
 
     @property
-    def exportPlan(self):
+    def export_plan(self):
         return self._exportPlan
 
-    @exportPlan.setter
-    def exportPlan(self, value):
+    @export_plan.setter
+    def export_plan(self, value):
         self._exportPlan = value
 
     @property
-    def createPlan_Direction_one(self):
+    def create_plan_direction_one(self):
         return self._createPlan_Direction_one
 
-    @createPlan_Direction_one.setter
-    def createPlan_Direction_one(self, value):
-        self.createPlan_Direction_one = value
+    @create_plan_direction_one.setter
+    def create_plan_direction_one(self, value):
+        self._createPlan_Direction_one = value
 
     @property
-    def createPlan_Direction_two(self):
+    def create_plan_direction_two(self):
         return self._createPlan_Direction_two
 
-    @createPlan_Direction_two.setter
-    def createPlan_Direction_two(self, value):
+    @create_plan_direction_two.setter
+    def create_plan_direction_two(self, value):
         self._createPlan_Direction_two = value
 
+    @property
+    def prepare_data(self):
+        return self._prepare_data
+
+    @prepare_data.setter
+    def prepare_data(self, value):
+        self._prepare_data = value
 
     @property
-    def prepareData(self):
-        return self.
+    def select_data(self):
+        return self._select_data
 
-    @prepareData.setter
-    def prepareData(self):
-
-        @property
-        def selectData(self):
-            return self.
-
-    @selectData.setter
-    def selectData(self):
+    @select_data.setter
+    def _select_data(self, value):
+        self._select_data = value
 
     @property
-    def importData(self):
-        return self.
+    def import_Data(self):
+        return self._import_Data
 
-    @importData.setter
-    def importData(self):
-        return self.
+    @import_Data.setter
+    def import_Data(self, value):
+        self._import_Data = value

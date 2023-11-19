@@ -10,7 +10,7 @@ import re
 import logging
 import sys
 import os
-from ..Base.ImportData import ImportData
+from ..Base.import_data import import_data
 from ..Base.SelectData import SelectData
 from ..Base.PrepareData import PrepareData
 from ..Base.CreatePlan import CreatePlan
@@ -20,26 +20,101 @@ logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
                     datefmt="%Y-%m-%d %H:%M:%S")
 
-class SchedulePlaner(Publisher, Subscriber):
-    def __init__(self,
-                 events,
-                 name,
-                 importData: ImportData,
-                 selectData: SelectData,
-                 prepareData: PrepareData,
-                 createPlan: CreatePlan,
-                 exportPlan: ExportPlan):
 
+class SchedulePlaner(Publisher, Subscriber):
+    def __init__(self, events, name):
         super().__init__(events=events, name=name)
 
-        self.exportPlan = exportPlan
-        self.createPlan = createPlan
-        self.prepareData = prepareData
-        self.selectData = selectData
-        self.importData = importData
+        self.progress = 0
+        self.create_plan_direction_two = None
+        self.create_plan_direction_one = None
+        self.export_plan = None
+        self.create_plan_direction_one = None
+        self.create_plan_direction_two = None
+        self.prepare_data = None
+        self.select_data = None
+        self.import_Data = import_data(['ImportGTFS',
+                                        'update_progress_bar',
+                                        'message'], 'import_data', self.progress)
 
         self.notify_functions = {
-            'ImportGTFS': [self.async_task_load_GTFS_data, False],
-            'ImportGTFS': [self.async_task_load_GTFS_data, False],
+            'import_GTFS': [self.import_gtfs_data, False],
 
         }
+
+    """ methods """
+
+    def import_gtfs_data(self) -> bool:
+        imported_data = import_data.import_gtfs
+
+        if imported_data is None:
+            self.notify_error_message(f"no data in imported_data")
+            return False
+
+
+
+
+
+
+    @property
+    def progress(self):
+        return self._progress
+
+    @progress.setter
+    def progress(self, value):
+        self._progress = value
+        self.dispatch("update_progress_bar", "update_progress_bar")
+
+    @property
+    def export_plan(self):
+        return self._exportPlan
+
+    @export_plan.setter
+    def export_plan(self, value):
+        self._exportPlan = value
+
+    @property
+    def create_plan_direction_one(self):
+        return self._createPlan_Direction_one
+
+    @create_plan_direction_one.setter
+    def create_plan_direction_one(self, value):
+        self._createPlan_Direction_one = value
+
+    @property
+    def create_plan_direction_two(self):
+        return self._createPlan_Direction_two
+
+    @create_plan_direction_two.setter
+    def create_plan_direction_two(self, value):
+        self._createPlan_Direction_two = value
+
+    @property
+    def prepare_data(self):
+        return self._prepare_data
+
+    @prepare_data.setter
+    def prepare_data(self, value):
+        self._prepare_data = value
+
+    @property
+    def select_data(self):
+        return self._select_data
+
+    @select_data.setter
+    def select_data(self, value):
+        self._select_data = value
+
+    @property
+    def import_Data(self):
+        return self._import_Data
+
+    @import_Data.setter
+    def import_Data(self, value):
+        self._import_Data = value
+
+    def notify_not_function(self, event):
+        logging.debug('event not found in class gui: {}'.format(event))
+
+    def notify_error_message(self, message):
+        self.notify_subscriber("error_in_SchedulePlaner_class", message)
