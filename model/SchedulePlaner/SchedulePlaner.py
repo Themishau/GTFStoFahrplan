@@ -10,7 +10,7 @@ import re
 import logging
 import sys
 import os
-from ..Base.importdata import ImportData
+from ..Base.ImportData import ImportData
 from ..Base.SelectData import SelectData
 from ..Base.PrepareData import PrepareData
 from ..Base.CreatePlan import CreatePlan
