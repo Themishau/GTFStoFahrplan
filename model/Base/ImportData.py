@@ -126,6 +126,7 @@ class ImportData(Publisher, Subscriber):
     It also set indices, if possible -> to speed up search
     """
     def create_dfs(self):
+
         if (self.raw_gtfs_data is None):
             return None
 
@@ -144,40 +145,40 @@ class ImportData(Publisher, Subscriber):
             logging.debug("can not convert dfTrips")
 
         # DataFrame with every stop (time)
-        dfStopTimes = pd.DataFrame.from_dict(stopTimesdict).set_index('stop_id')
+        df_stoptimes = pd.DataFrame.from_dict(stop_Timesdict).set_index('stop_id')
 
         try:
-            dfStopTimes['stop_sequence'] = dfStopTimes['stop_sequence'].astype('int32')
-            dfStopTimes['stop_id'] = dfStopTimes['stop_id'].astype('int32')
-            dfStopTimes['trip_id'] = dfStopTimes['trip_id'].astype('string')
+            df_stoptimes['stop_sequence'] = df_stoptimes['stop_sequence'].astype('int32')
+            df_stoptimes['stop_id'] = df_stoptimes['stop_id'].astype('int32')
+            df_stoptimes['trip_id'] = df_stoptimes['trip_id'].astype('string')
         except KeyError:
-            logging.debug("can not convert dfStopTimes")
+            logging.debug("can not convert df_stoptimes")
         except OverflowError:
-            logging.debug("can not convert dfStopTimes")
+            logging.debug("can not convert df_stoptimes")
 
         # DataFrame with every stop
-        dfStops = pd.DataFrame.from_dict(stopsdict).set_index('stop_id')
+        df_stops = pd.DataFrame.from_dict(stops_dict).set_index('stop_id')
         try:
-            self.dfStops['stop_id'] = self.dfStops['stop_id'].astype('int32')
+            self.df_stops['stop_id'] = self.df_stops['stop_id'].astype('int32')
         except KeyError:
-            logging.debug("can not convert dfStops: stop_id into int ")
+            logging.debug("can not convert df_Stops: stop_id into int ")
 
-        self.dfWeek = pd.DataFrame.from_dict(self.calendarWeekdict).set_index('service_id')
-        self.dfWeek['start_date'] = self.dfWeek['start_date'].astype('string')
-        self.dfWeek['end_date'] = self.dfWeek['end_date'].astype('string')
-        self.dfDates = pd.DataFrame.from_dict(self.calendarDatesdict).set_index('service_id')
-        self.dfDates['exception_type'] = self.dfDates['exception_type'].astype('int32')
-        self.dfDates['date'] = pd.to_datetime(self.dfDates['date'], format='%Y%m%d')
-        self.dfagency = pd.DataFrame.from_dict(self.agencyFahrtdict)
+        df_week = pd.DataFrame.from_dict(calendar_week_dict).set_index('service_id')
+        df_week['start_date'] = df_week['start_date'].astype('string')
+        df_week['end_date'] = df_week['end_date'].astype('string')
+        df_dates = pd.DataFrame.from_dict(calendar_dates_dict).set_index('service_id')
+        df_dates['exception_type'] = df_dates['exception_type'].astype('int32')
+        df_dates['date'] = pd.to_datetime(df_dates['date'], format='%Y%m%d')
+        df_agency = pd.DataFrame.from_dict(agency_fahrt_dict)
 
-        if self.feed_infodict:
-            self.dffeed_info = pd.DataFrame.from_dict(self.feed_infodict)
+        if feed_info_dict:
+            df_feed_info = pd.DataFrame.from_dict(feed_info_dict)
 
         return True
 
-    def analyze_daterange_in_GTFS_data(self):
-        if self.df_week is not None:
-            self.df_date_range_in_gtfs_data = self.dfWeek.groupby(['start_date', 'end_date']).size().reset_index()
+    def analyze_daterange_in_GTFS_data(self, df_week):
+        if df_week is not None:
+            self.df_date_range_in_gtfs_data = df_week.groupby(['start_date', 'end_date']).size().reset_index()
             return str(self.df_date_range_in_gtfs_data.iloc[0].start_date) + '-' + str(
                 self.df_date_range_in_gtfs_data.iloc[0].end_date)
 
@@ -322,6 +323,14 @@ class ImportData(Publisher, Subscriber):
                       'feed_infoHeader      = {}'.format(stopsHeader, stop_timesHeader, tripsHeader, calendarHeader,
                                                          calendar_datesHeader, routesHeader, agencyHeader,
                                                          feed_infoHeader))
+
+    def getDateRange(self):
+        logging.debug('len stop_sequences {}'.format(self.dffeed_info))
+        if not self.dffeed_info.empty:
+            self.date_range = str(self.dffeed_info.iloc[0].feed_start_date) + '-' + str(
+                self.dffeed_info.iloc[0].feed_end_date)
+        else:
+            self.date_range = self.analyzeDateRangeInGTFSData()
 
     """ reset methods """
 
