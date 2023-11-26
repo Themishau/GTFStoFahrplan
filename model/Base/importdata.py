@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.DEBUG,
                     datefmt="%Y-%m-%d %H:%M:%S")
 
 
-class import_data(Publisher, Subscriber):
+class ImportData(Publisher, Subscriber):
     def __init__(self, events, name, progress: ProgressBar):
         super().__init__(events=events, name=name)
         self.reset_import = False
@@ -120,8 +120,6 @@ class import_data(Publisher, Subscriber):
 
     def _check_paths(self) -> bool:
         ...
-
-
 
     """ main import methods """
     def import_gtfs(self):

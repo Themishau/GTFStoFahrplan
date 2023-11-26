@@ -10,7 +10,7 @@ import re
 import logging
 import sys
 import os
-from ..Base.import_data import import_data
+from ..Base.importdata import ImportData
 from ..Base.SelectData import SelectData
 from ..Base.PrepareData import PrepareData
 from ..Base.CreatePlan import CreatePlan
@@ -33,9 +33,11 @@ class SchedulePlaner(Publisher, Subscriber):
         self.create_plan_direction_two = None
         self.prepare_data = None
         self.select_data = None
-        self.import_Data = import_data(['ImportGTFS',
-                                        'update_progress_bar',
-                                        'message'], 'import_data', self.progress)
+
+        self.imported_data = None
+        self.import_Data = ImportData(['ImportGTFS',
+                                       'update_progress_bar',
+                                       'message'], 'import_data', self.progress)
 
         self.notify_functions = {
             'import_GTFS': [self.import_gtfs_data, False],
@@ -45,16 +47,19 @@ class SchedulePlaner(Publisher, Subscriber):
     """ methods """
 
     def import_gtfs_data(self) -> bool:
-        imported_data = import_data.import_gtfs
+        imported_data = ImportData.import_gtfs
 
         if imported_data is None:
             self.notify_error_message(f"no data in imported_data")
             return False
 
+        self.imported_data = imported_data
 
+    def initilize_prepare_data(self):
 
-
-
+        self.select_data = SelectData(['ImportGTFS',
+                                       'update_progress_bar',
+                                       'message'], 'import_data', self.progress, self.imported_data)
 
     @property
     def progress(self):
