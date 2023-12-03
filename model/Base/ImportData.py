@@ -37,11 +37,6 @@ class ImportData(Publisher, Subscriber):
         """ visual internal property """
         self.progress = progress.progress
 
-        """ loaded raw_gtfs_data """
-        self.raw_gtfs_data = []
-
-        self.df_gtfs_data = []
-
 
     @property
     def reset_import(self):
@@ -107,17 +102,15 @@ class ImportData(Publisher, Subscriber):
 
     """ main import methods """
     def import_gtfs(self):
+
         imported_data = self.read_gtfs_data()
+
         if imported_data is None:
             self.reset_data_cause_of_error()
             return None
 
-        if self.pkl_loaded is False:
-            self.read_gtfs_data_from_path()
-            return self.create_dfs()
-        else:
-            logging.debug("Pickle Data Detected. Loading Pickle Data")
-            return
+        return imported_data
+
 
     """ methods """
 
@@ -125,13 +118,27 @@ class ImportData(Publisher, Subscriber):
     loads dicts and creates dicts.
     It also set indices, if possible -> to speed up search
     """
-    def create_dfs(self):
+    def create_dfs(self, raw_data):
 
-        if (self.raw_gtfs_data is None):
+        """
+        :param raw_data:
+        dictonary with these keys
+            stopsList
+            stopTimesList
+            tripsList
+            calendarList
+            calendar_datesList
+            routesList
+            agencyList
+            feed_info (optional)
+        :return: dict (df)
+        """
+
+        if raw_data is None:
             return None
 
-        df_routes = pd.DataFrame.from_dict(routes_fahrt_dict)
-        df_trips = pd.DataFrame.from_dict(trip_dict).set_index('trip_id')
+        df_routes = pd.DataFrame.from_dict(raw_data["routesList"])
+        df_trips = pd.DataFrame.from_dict(raw_data["tripsList"]).set_index('trip_id')
 
         """ lets try to convert every column to speed computing """
         try:
@@ -200,9 +207,6 @@ class ImportData(Publisher, Subscriber):
     def notify_error_message(self, message):
         self.notify_subscriber("error_in_import_class", message)
 
-    def read_gtfs_data(self):
-        pass
-
     def reset_data_cause_of_error(self):
         self.progress = 0
         """Todo: add the other values here """
@@ -218,98 +222,97 @@ class ImportData(Publisher, Subscriber):
                     break
 
             if self.pkl_loaded is True:
+                logging.debug('pickle data detected')
+                df_gtfs_data = {}
+
                 with zf.open("Tmp/dfStops.pkl") as stops:
-                    self.dfStops = pd.read_pickle(stops)
+                    df_gtfs_data["dfStops"] = pd.read_pickle(stops)
                 with zf.open("Tmp/dfStopTimes.pkl") as stop_times:
-                    self.dfStopTimes = pd.read_pickle(stop_times)
+                    df_gtfs_data["dfStopTimes"] = pd.read_pickle(stop_times)
                 with zf.open("Tmp/dfTrips.pkl") as trips:
-                    self.dfTrips = pd.read_pickle(trips)
+                    df_gtfs_data["dfTrips"] = pd.read_pickle(trips)
                 with zf.open("Tmp/dfWeek.pkl") as calendar:
-                    self.dfWeek = pd.read_pickle(calendar)
+                    df_gtfs_data["dfWeek"] = pd.read_pickle(calendar)
                 with zf.open("Tmp/dfDates.pkl") as calendar_dates:
-                    self.dfDates = pd.read_pickle(calendar_dates)
+                    df_gtfs_data["dfDates"] = pd.read_pickle(calendar_dates)
                 with zf.open("Tmp/dfRoutes.pkl") as routes:
-                    self.dfRoutes = pd.read_pickle(routes)
+                    df_gtfs_data["dfRoutes"] = pd.read_pickle(routes)
                 with zf.open("Tmp/dfagency.pkl") as agency:
-                    self.dfagency = pd.read_pickle(agency)
+                    df_gtfs_data["dfagency"] = pd.read_pickle(agency)
 
                 try:
                     with zipfile.ZipFile(self.input_path) as zf:
                         with io.TextIOWrapper(zf.open("Tmp/dffeed_info.pkl")) as feed_info:
-                            self.dffeed_info = pd.read_pickle(feed_info)
+                            df_gtfs_data["dffeed_info"] = pd.read_pickle(feed_info)
                 except:
                     logging.debug('no feed info header')
-                    feed_infoHeader = None
+                return df_gtfs_data
 
-        # except:
-        #     logging.debug('Error in Unzipping data ')
-        #     return False
 
         if self.pkl_loaded is False:
+            raw_data = {}
+
             try:
                 with zipfile.ZipFile(self.input_path) as zf:
                     with io.TextIOWrapper(zf.open("stops.txt"), encoding="utf-8") as stops:
-                        stopsList = stops.readlines()[1:]
+                        raw_data["stopsList"] = [stops.readlines()[0].rstrip()]
                     with io.TextIOWrapper(zf.open("stop_times.txt"), encoding="utf-8") as stop_times:
-                        stopTimesList = stop_times.readlines()[1:]
+                        raw_data["stopTimesList"] = [stop_times.readlines()[0].rstrip()]
                     with io.TextIOWrapper(zf.open("trips.txt"), encoding="utf-8") as trips:
-                        tripsList = trips.readlines()[1:]
+                        raw_data["tripsList"] = [trips.readlines()[0].rstrip()]
                     with io.TextIOWrapper(zf.open("calendar.txt"), encoding="utf-8") as calendar:
-                        calendarList = calendar.readlines()[1:]
+                        raw_data["calendarList"] = [calendar.readlines()[0].rstrip()]
                     with io.TextIOWrapper(zf.open("calendar_dates.txt"), encoding="utf-8") as calendar_dates:
-                        calendar_datesList = calendar_dates.readlines()[1:]
+                        raw_data["calendar_datesList"] = [calendar_dates.readlines()[0].rstrip()]
                     with io.TextIOWrapper(zf.open("routes.txt"), encoding="utf-8") as routes:
-                        routesList = routes.readlines()[1:]
+                        raw_data["routesList"] = [routes.readlines()[0].rstrip()]
                     with io.TextIOWrapper(zf.open("agency.txt"), encoding="utf-8") as agency:
-                        agencyList = agency.readlines()[1:]
+                        raw_data["agencyList"] = [agency.readlines()[0].rstrip()]
+            except:
+                logging.debug('Error in Unzipping headers')
+                return None
+
+            try:
+                with zipfile.ZipFile(self.input_path) as zf:
+                    with io.TextIOWrapper(zf.open("stops.txt"), encoding="utf-8") as stops:
+                        raw_data["stopsList"] += stops.readlines()[1:]
+                    with io.TextIOWrapper(zf.open("stop_times.txt"), encoding="utf-8") as stop_times:
+                        raw_data["stopTimesList"] += stop_times.readlines()[1:]
+                    with io.TextIOWrapper(zf.open("trips.txt"), encoding="utf-8") as trips:
+                        raw_data["tripsList"] += trips.readlines()[1:]
+                    with io.TextIOWrapper(zf.open("calendar.txt"), encoding="utf-8") as calendar:
+                        raw_data["calendarList"] += calendar.readlines()[1:]
+                    with io.TextIOWrapper(zf.open("calendar_dates.txt"), encoding="utf-8") as calendar_dates:
+                        raw_data["calendar_datesList"] += calendar_dates.readlines()[1:]
+                    with io.TextIOWrapper(zf.open("routes.txt"), encoding="utf-8") as routes:
+                        raw_data["routesList"] += routes.readlines()[1:]
+                    with io.TextIOWrapper(zf.open("agency.txt"), encoding="utf-8") as agency:
+                        raw_data["agencyList"] += agency.readlines()[1:]
 
             except:
                 logging.debug('Error in Unzipping data ')
-                return False
+                return None
 
-            try:
-                with zipfile.ZipFile(self.input_path) as zf:
-                    with io.TextIOWrapper(zf.open("stops.txt"), encoding="utf-8") as stops:
-                        stopsHeader = stops.readlines()[0].rstrip()
-                    with io.TextIOWrapper(zf.open("stop_times.txt"), encoding="utf-8") as stop_times:
-                        stop_timesHeader = stop_times.readlines()[0].rstrip()
-                    with io.TextIOWrapper(zf.open("trips.txt"), encoding="utf-8") as trips:
-                        tripsHeader = trips.readlines()[0]
-                    with io.TextIOWrapper(zf.open("calendar.txt"), encoding="utf-8") as calendar:
-                        calendarHeader = calendar.readlines()[0].rstrip()
-                    with io.TextIOWrapper(zf.open("calendar_dates.txt"), encoding="utf-8") as calendar_dates:
-                        calendar_datesHeader = calendar_dates.readlines()[0].rstrip()
-                    with io.TextIOWrapper(zf.open("routes.txt"), encoding="utf-8") as routes:
-                        routesHeader = routes.readlines()[0].rstrip()
-                    with io.TextIOWrapper(zf.open("agency.txt"), encoding="utf-8") as agency:
-                        agencyHeader = agency.readlines()[0].rstrip()
-            except:
-                logging.debug('Error in Unzipping headers')
-                return False
 
             try:
                 with zipfile.ZipFile(self.input_path) as zf:
                     with io.TextIOWrapper(zf.open("feed_info.txt"), encoding="utf-8") as feed_info:
-                        feed_infoHeader = feed_info.readlines()[0].rstrip()
+                        raw_data["feed_infoHeader"] = [feed_info.readlines()[0].rstrip()]
             except:
                 logging.debug('no feed info header')
-                feed_infoHeader = None
+                raw_data["feed_infoHeader"] = []
 
             try:
                 with zipfile.ZipFile(self.input_path) as zf:
                     with io.TextIOWrapper(zf.open("feed_info.txt"), encoding="utf-8") as feed_info:
-                        feed_infoList = feed_info.readlines()[1:]
+                        raw_data["feed_info"] +=  feed_info.readlines()[1:]
             except:
                 logging.debug('no feed info data')
-                feed_infoList = None
+                raw_data["feed_infoHeader"] = []
 
-            self.printAllHeaders(stopsHeader, stop_timesHeader, tripsHeader, calendarHeader, calendar_datesHeader,
-                                 routesHeader, agencyHeader, feed_infoHeader)
-            self.raw_gtfs_data = [[stopsHeader, stopsList], [stop_timesHeader, stopTimesList], [tripsHeader, tripsList],
-                                  [calendarHeader, calendarList], [calendar_datesHeader, calendar_datesList],
-                                  [routesHeader, routesList], [agencyHeader, agencyList],
-                                  [feed_infoHeader, feed_infoList]]
-        return True
+            logging.debug(raw_data.keys())
+
+            return self.create_dfs(raw_data)
 
     def printAllHeaders(self, stopsHeader, stop_timesHeader, tripsHeader, calendarHeader, calendar_datesHeader,
                         routesHeader, agencyHeader, feed_infoHeader):
