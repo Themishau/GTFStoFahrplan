@@ -20,6 +20,7 @@ logging.basicConfig(level=logging.DEBUG,
 class ImportData(Publisher, Subscriber):
     def __init__(self, events, name, progress: ProgressBar):
         super().__init__(events=events, name=name)
+        self._pkl_loaded = False
         self.reset_import = False
         self.notify_functions = {
             'ImportGTFS': [self.async_task_load_GTFS_data, False]
@@ -36,7 +37,6 @@ class ImportData(Publisher, Subscriber):
 
         """ visual internal property """
         self.progress = progress.progress
-
 
     @property
     def reset_import(self):
@@ -91,6 +91,7 @@ class ImportData(Publisher, Subscriber):
         self._df_date_range_in_GTFS_data = value
 
     """ checks """
+
     def _check_input_fields_based_on_settings(self):
         if self._check_paths() is False:
             self.notify_error_message(f"could not read data from path: {self.input_path} ")
@@ -101,6 +102,7 @@ class ImportData(Publisher, Subscriber):
         os.path.exists()
 
     """ main import methods """
+
     def import_gtfs(self):
 
         imported_data = self.read_gtfs_data()
@@ -111,106 +113,7 @@ class ImportData(Publisher, Subscriber):
 
         return imported_data
 
-
     """ methods """
-
-    """
-    loads dicts and creates dicts.
-    It also set indices, if possible -> to speed up search
-    """
-    def create_dfs(self, raw_data):
-
-        """
-        :param raw_data:
-        dictonary with these keys
-            stopsList
-            stopTimesList
-            tripsList
-            calendarList
-            calendar_datesList
-            routesList
-            agencyList
-            feed_info (optional)
-        :return: dict (df)
-        """
-
-        if raw_data is None:
-            return None
-
-        df_routes = pd.DataFrame.from_dict(raw_data["routesList"])
-        df_trips = pd.DataFrame.from_dict(raw_data["tripsList"]).set_index('trip_id')
-
-        """ lets try to convert every column to speed computing """
-        try:
-            df_trips['trip_id'] = df_trips['trip_id'].astype('int8')
-            df_trips['direction_id'] = df_trips['direction_id'].astype('int8')
-            df_trips['shape_id'] = df_trips['shape_id'].astype('int8')
-            df_trips['wheelchair_accessible'] = df_trips['wheelchair_accessible'].astype('int8')
-            df_trips['bikes_allowed'] = df_trips['bikes_allowed'].astype('int8')
-
-        except KeyError:
-            logging.debug("can not convert dfTrips")
-
-        # DataFrame with every stop (time)
-        df_stoptimes = pd.DataFrame.from_dict(stop_Timesdict).set_index('stop_id')
-
-        try:
-            df_stoptimes['stop_sequence'] = df_stoptimes['stop_sequence'].astype('int32')
-            df_stoptimes['stop_id'] = df_stoptimes['stop_id'].astype('int32')
-            df_stoptimes['trip_id'] = df_stoptimes['trip_id'].astype('string')
-        except KeyError:
-            logging.debug("can not convert df_stoptimes")
-        except OverflowError:
-            logging.debug("can not convert df_stoptimes")
-
-        # DataFrame with every stop
-        df_stops = pd.DataFrame.from_dict(stops_dict).set_index('stop_id')
-        try:
-            self.df_stops['stop_id'] = self.df_stops['stop_id'].astype('int32')
-        except KeyError:
-            logging.debug("can not convert df_Stops: stop_id into int ")
-
-        df_week = pd.DataFrame.from_dict(calendar_week_dict).set_index('service_id')
-        df_week['start_date'] = df_week['start_date'].astype('string')
-        df_week['end_date'] = df_week['end_date'].astype('string')
-        df_dates = pd.DataFrame.from_dict(calendar_dates_dict).set_index('service_id')
-        df_dates['exception_type'] = df_dates['exception_type'].astype('int32')
-        df_dates['date'] = pd.to_datetime(df_dates['date'], format='%Y%m%d')
-        df_agency = pd.DataFrame.from_dict(agency_fahrt_dict)
-
-        if feed_info_dict:
-            df_feed_info = pd.DataFrame.from_dict(feed_info_dict)
-
-        return True
-
-    def analyze_daterange_in_GTFS_data(self, df_week):
-        if df_week is not None:
-            self.df_date_range_in_gtfs_data = df_week.groupby(['start_date', 'end_date']).size().reset_index()
-            return str(self.df_date_range_in_gtfs_data.iloc[0].start_date) + '-' + str(
-                self.df_date_range_in_gtfs_data.iloc[0].end_date)
-
-    def read_gtfs_data_from_path(self):
-        ...
-
-    """ subscriber methods """
-    def notify_subscriber(self, event, message):
-        logging.debug(f'event: {event}, message {message}')
-        notify_function, parameters = self.notify_functions.get(event, self.notify_not_function)
-        if not parameters:
-            notify_function()
-        else:
-            notify_function(message)
-
-    def notify_not_function(self, event):
-        logging.debug('event not found in class gui: {}'.format(event))
-
-    def notify_error_message(self, message):
-        self.notify_subscriber("error_in_import_class", message)
-
-    def reset_data_cause_of_error(self):
-        self.progress = 0
-        """Todo: add the other values here """
-
 
     def read_gtfs_data(self):
         # try:
@@ -218,10 +121,10 @@ class ImportData(Publisher, Subscriber):
             logging.debug(zf.namelist())
             for file in zf.namelist():
                 if file.endswith('pkl'):
-                    self.pkl_loaded = True
+                    self._pkl_loaded = True
                     break
 
-            if self.pkl_loaded is True:
+            if self._pkl_loaded is True:
                 logging.debug('pickle data detected')
                 df_gtfs_data = {}
 
@@ -248,8 +151,7 @@ class ImportData(Publisher, Subscriber):
                     logging.debug('no feed info header')
                 return df_gtfs_data
 
-
-        if self.pkl_loaded is False:
+        if self._pkl_loaded is False:
             raw_data = {}
 
             try:
@@ -293,7 +195,6 @@ class ImportData(Publisher, Subscriber):
                 logging.debug('Error in Unzipping data ')
                 return None
 
-
             try:
                 with zipfile.ZipFile(self.input_path) as zf:
                     with io.TextIOWrapper(zf.open("feed_info.txt"), encoding="utf-8") as feed_info:
@@ -305,7 +206,7 @@ class ImportData(Publisher, Subscriber):
             try:
                 with zipfile.ZipFile(self.input_path) as zf:
                     with io.TextIOWrapper(zf.open("feed_info.txt"), encoding="utf-8") as feed_info:
-                        raw_data["feed_info"] +=  feed_info.readlines()[1:]
+                        raw_data["feed_info"] += feed_info.readlines()[1:]
             except:
                 logging.debug('no feed info data')
                 raw_data["feed_infoHeader"] = []
@@ -314,8 +215,8 @@ class ImportData(Publisher, Subscriber):
 
             return self.create_dfs(raw_data)
 
-    def printAllHeaders(self, stopsHeader, stop_timesHeader, tripsHeader, calendarHeader, calendar_datesHeader,
-                        routesHeader, agencyHeader, feed_infoHeader):
+    def print_all_headers(self, stopsHeader, stop_timesHeader, tripsHeader, calendarHeader, calendar_datesHeader,
+                          routesHeader, agencyHeader, feed_infoHeader):
         logging.debug('stopsHeader          = {} \n'
                       'stop_timesHeader     = {} \n'
                       'tripsHeader          = {} \n'
@@ -327,13 +228,6 @@ class ImportData(Publisher, Subscriber):
                                                          calendar_datesHeader, routesHeader, agencyHeader,
                                                          feed_infoHeader))
 
-    def getDateRange(self):
-        logging.debug('len stop_sequences {}'.format(self.dffeed_info))
-        if not self.dffeed_info.empty:
-            self.date_range = str(self.dffeed_info.iloc[0].feed_start_date) + '-' + str(
-                self.dffeed_info.iloc[0].feed_end_date)
-        else:
-            self.date_range = self.analyzeDateRangeInGTFSData()
 
     """ reset methods """
 
@@ -347,5 +241,99 @@ class ImportData(Publisher, Subscriber):
         self.agency_fahrt_dict = {}
         return True
 
+    def create_dfs(self, raw_data):
 
+        """
+        loads dicts and creates dicts.
+        It also set indices, if possible -> to speed up search
 
+        :param raw_data:
+        dictonary with these keys
+            stopsList
+            stopTimesList
+            tripsList
+            calendarList
+            calendar_datesList
+            routesList
+            agencyList
+            feed_info (optional)
+        :return: dict (df)
+        """
+
+        if raw_data is None:
+            return None
+
+        df_routes = pd.DataFrame.from_dict(raw_data["routesList"])
+        df_trips = pd.DataFrame.from_dict(raw_data["tripsList"]).set_index('trip_id')
+
+        """ lets try to convert every column to speed computing """
+        try:
+            df_trips['trip_id'] = df_trips['trip_id'].astype('int8')
+            df_trips['direction_id'] = df_trips['direction_id'].astype('int8')
+            df_trips['shape_id'] = df_trips['shape_id'].astype('int8')
+            df_trips['wheelchair_accessible'] = df_trips['wheelchair_accessible'].astype('int8')
+            df_trips['bikes_allowed'] = df_trips['bikes_allowed'].astype('int8')
+
+        except KeyError:
+            logging.debug("can not convert dfTrips")
+
+        # DataFrame with every stop (time)
+        df_stoptimes = pd.DataFrame.from_dict(raw_data["stopTimesList"]).set_index('stop_id')
+
+        try:
+            df_stoptimes['stop_sequence'] = df_stoptimes['stop_sequence'].astype('int32')
+            df_stoptimes['stop_id'] = df_stoptimes['stop_id'].astype('int32')
+            df_stoptimes['trip_id'] = df_stoptimes['trip_id'].astype('string')
+        except KeyError:
+            logging.debug("can not convert df_stoptimes")
+        except OverflowError:
+            logging.debug("can not convert df_stoptimes")
+
+        # DataFrame with every stop
+        df_stops = pd.DataFrame.from_dict(raw_data["stopsList"]).set_index('stop_id')
+        try:
+            df_stops['stop_id'] = df_stops['stop_id'].astype('int32')
+        except KeyError:
+            logging.debug("can not convert df_Stops: stop_id into int ")
+
+        df_week = pd.DataFrame.from_dict(raw_data["calendarList"]).set_index('service_id')
+        df_week['start_date'] = df_week['start_date'].astype('string')
+        df_week['end_date'] = df_week['end_date'].astype('string')
+        df_dates = pd.DataFrame.from_dict(raw_data["calendar_datesList"]).set_index('service_id')
+        df_dates['exception_type'] = df_dates['exception_type'].astype('int32')
+        df_dates['date'] = pd.to_datetime(df_dates['date'], format='%Y%m%d')
+        df_agency = pd.DataFrame.from_dict(raw_data["agencyList"])
+
+        if raw_data["feed_info"]:
+            df_feed_info = pd.DataFrame.from_dict(raw_data["feed_info"])
+
+        return True
+
+    def analyze_daterange_in_GTFS_data(self, df_week):
+        if df_week is not None:
+            self.df_date_range_in_gtfs_data = df_week.groupby(['start_date', 'end_date']).size().reset_index()
+            return str(self.df_date_range_in_gtfs_data.iloc[0].start_date) + '-' + str(
+                self.df_date_range_in_gtfs_data.iloc[0].end_date)
+
+    def read_gtfs_data_from_path(self):
+        ...
+
+    """ subscriber methods """
+
+    def notify_subscriber(self, event, message):
+        logging.debug(f'event: {event}, message {message}')
+        notify_function, parameters = self.notify_functions.get(event, self.notify_not_function)
+        if not parameters:
+            notify_function()
+        else:
+            notify_function(message)
+
+    def notify_not_function(self, event):
+        logging.debug('event not found in class gui: {}'.format(event))
+
+    def notify_error_message(self, message):
+        self.notify_subscriber("error_in_import_class", message)
+
+    def reset_data_cause_of_error(self):
+        self.progress = 0
+        """Todo: add the other values here """
