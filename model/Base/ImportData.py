@@ -97,14 +97,18 @@ class ImportData(Publisher, Subscriber):
             self.notify_error_message(f"could not read data from path: {self.input_path} ")
             return False
 
-    def _check_paths(self) -> bool:
+    def _check_paths(self):
         os.path.isfile()
         os.path.exists()
 
     """ main import methods """
+    def pre_checks(self):
+        return self.input_path is not None
 
     def import_gtfs(self):
-
+        if not self.pre_checks():
+            self.reset_data_cause_of_error()
+            return None
         imported_data = self.read_gtfs_data()
 
         if imported_data is None:
@@ -228,7 +232,6 @@ class ImportData(Publisher, Subscriber):
                                                          calendar_datesHeader, routesHeader, agencyHeader,
                                                          feed_infoHeader))
 
-
     """ reset methods """
 
     def clean_dicts(self) -> bool:
@@ -306,10 +309,26 @@ class ImportData(Publisher, Subscriber):
 
         if raw_data["feed_info"]:
             df_feed_info = pd.DataFrame.from_dict(raw_data["feed_info"])
+            return {"df_routes": df_routes,
+                    "df_trips": df_trips,
+                    "df_stoptimes": df_stoptimes,
+                    "df_stops": df_stops,
+                    "df_week": df_week,
+                    "df_dates": df_dates,
+                    "df_agency": df_agency,
+                    "df_feed_info": df_feed_info
+                    }
 
-        return True
+        return {"df_routes": df_routes,
+                "df_trips": df_trips,
+                "df_stoptimes": df_stoptimes,
+                "df_stops": df_stops,
+                "df_week": df_week,
+                "df_dates": df_dates,
+                "df_agency": df_agency
+                }
 
-    def analyze_daterange_in_GTFS_data(self, df_week):
+    def get_daterange_in_gtfs_data(self, df_week):
         if df_week is not None:
             self.df_date_range_in_gtfs_data = df_week.groupby(['start_date', 'end_date']).size().reset_index()
             return str(self.df_date_range_in_gtfs_data.iloc[0].start_date) + '-' + str(

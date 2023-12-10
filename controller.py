@@ -4,6 +4,8 @@ import os
 import sys
 from datetime import datetime
 
+import threading
+
 from PyQt5 import QtCore
 from PyQt5.Qt import QPoint, QThread, QMessageBox, QDesktopWidget, QMainWindow
 from PyQt5.QtCore import Qt
@@ -113,7 +115,6 @@ class Model(Publisher, Subscriber):
                           'message'], 'data')
 
     def find(self, name, path):
-
         for root, dirs, files in os.walk(path):
             if name in files:
                 return True
@@ -138,7 +139,7 @@ class Model(Publisher, Subscriber):
             self.worker.exit()
         except:
             return self.dispatch("message",
-                             "Something went wrong while loading data!")
+                                 "Something went wrong while loading data!")
 
     def error_reset_model(self):
         self.dispatch("restart",
@@ -485,7 +486,6 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.CreateCreate_Tab.ui.comboBox_direction.setEnabled(True)
         self.CreateCreate_Tab.ui.btnStart.setEnabled(True)
 
-
     def sub_update_weekdate_option(self):
         self.initialize_create_base_option()
         self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(True)
@@ -669,6 +669,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         # self.model.gtfs.df_filtered_stop_names = self.CreateCreate_Tab.ui.tableView_sorting_stops.model.getData()
         self.dispatch("start_create_table_continue", "start_create_table_continue routine started! Notify subscriber!")
 
+    """ Todo change to: start button is disabled till all checks are clear And add text, so user understands what is missing"""
     def notify_load_gtfsdata_event(self):
         self.CreateImport_Tab.ui.btnImport.setEnabled(False)
         self.CreateImport_Tab.ui.btnRestart.setEnabled(True)
