@@ -11,8 +11,8 @@ import logging
 import sys
 import os
 from enum import Enum, auto
-from ProgressBar import ProgressBar
-from ..Base.ImportData import ImportData
+from model.Base.ProgressBar import ProgressBar
+from model.Base.ImportData import ImportData
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",

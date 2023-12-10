@@ -35,9 +35,7 @@ class SchedulePlaner(Publisher, Subscriber):
         self.select_data = None
 
         self.imported_data = None
-        self.import_Data = ImportData(['ImportGTFS',
-                                       'update_progress_bar',
-                                       'message'], 'import_data', self.progress)
+        self.import_Data = None
 
         self.notify_functions = {
             'import_GTFS': [self.import_gtfs_data, False],
@@ -45,6 +43,16 @@ class SchedulePlaner(Publisher, Subscriber):
         }
 
     """ methods """
+
+    def initialize_import_gtfs(self):
+        self.import_Data = ImportData(['ImportGTFS',
+                                       'update_progress_bar',
+                                       'message'], 'import_data', self.progress)
+
+    def initilize_prepare_data(self):
+        self.select_data = SelectData(['ImportGTFS',
+                                       'update_progress_bar',
+                                       'message'], 'import_data', self.progress, self.imported_data)
 
     def import_gtfs_data(self) -> bool:
         imported_data = ImportData.import_gtfs
@@ -54,12 +62,6 @@ class SchedulePlaner(Publisher, Subscriber):
             return False
 
         self.imported_data = imported_data
-
-    def initilize_prepare_data(self):
-
-        self.select_data = SelectData(['ImportGTFS',
-                                       'update_progress_bar',
-                                       'message'], 'import_data', self.progress, self.imported_data)
 
     @property
     def progress(self):

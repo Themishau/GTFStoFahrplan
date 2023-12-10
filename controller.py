@@ -22,6 +22,7 @@ from view.create_table_select import CreateTableSelect
 from view.download_gtfs import DownloadGTFS
 
 from model.Base.gtfs import gtfs
+from model.SchedulePlaner.SchedulePlaner import SchedulePlaner
 from model.observer import Publisher, Subscriber
 
 logging.basicConfig(level=logging.DEBUG,
@@ -126,6 +127,10 @@ class Model(Publisher, Subscriber):
         except FileNotFoundError:
             logging.debug('error setting paths')
             return False
+
+    def model_import_gtfs_data(self):
+        self.schedule_planer.import_gtfs_data()
+
 
     def sub_load_gtfsdata_event(self):
         try:
@@ -671,6 +676,9 @@ class Gui(QMainWindow, Publisher, Subscriber):
 
     """ Todo change to: start button is disabled till all checks are clear And add text, so user understands what is missing"""
     def notify_load_gtfsdata_event(self):
+
+        self.model.model_import_gtfs_data()
+        """
         self.CreateImport_Tab.ui.btnImport.setEnabled(False)
         self.CreateImport_Tab.ui.btnRestart.setEnabled(True)
         if self.model.set_paths(self.CreateImport_Tab.ui.lineInputPath.text(),
@@ -680,6 +688,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         else:
             self.notify_restart()
             self.send_message_box('Error. Could not find GTFS Data.')
+        """
 
     def notify_select_option_button_direction(self):
         return self.dispatch("select_option_button_direction",

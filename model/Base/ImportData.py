@@ -10,7 +10,7 @@ import re
 import logging
 import sys
 import os
-from ProgressBar import ProgressBar
+from model.Base.ProgressBar import ProgressBar
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
