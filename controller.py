@@ -65,6 +65,7 @@ class Model(Publisher, Subscriber):
     def __init__(self, events, name):
         Publisher.__init__(self, events)
         Subscriber.__init__(self, name)
+        self.planer = None
         self.gtfs = gtfs(['ImportGTFS',
                           'fill_agency_list',
                           'create_table_date',
@@ -97,6 +98,7 @@ class Model(Publisher, Subscriber):
                 self.sub_worker_create_output_fahrplan_date_indi_continue, False],
             'sub_worker_create_output_fahrplan_weekday': [self.sub_worker_create_output_fahrplan_weekday, False]
         }
+        self.planer = SchedulePlaner
 
     def sub_reset_gtfs(self):
         self.gtfs = gtfs(['ImportGTFS',
@@ -129,7 +131,7 @@ class Model(Publisher, Subscriber):
             return False
 
     def model_import_gtfs_data(self):
-        self.schedule_planer.import_gtfs_data()
+        self.planer.import_gtfs_data()
 
 
     def sub_load_gtfsdata_event(self):

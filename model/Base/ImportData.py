@@ -12,6 +12,9 @@ import sys
 import os
 from model.Base.ProgressBar import ProgressBar
 
+from threading import Thread
+import concurrent.futures
+
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
                     datefmt="%Y-%m-%d %H:%M:%S")
@@ -102,6 +105,7 @@ class ImportData(Publisher, Subscriber):
         os.path.exists()
 
     """ main import methods """
+
     def pre_checks(self):
         return self.input_path is not None
 
@@ -266,7 +270,33 @@ class ImportData(Publisher, Subscriber):
         if raw_data is None:
             return None
 
-        df_routes = pd.DataFrame.from_dict(raw_data["routesList"])
+        df = {"df_routes": None,
+              "df_trips": None,
+              "df_stoptimes": None,
+              "df_stops": None,
+              "df_week": None,
+              "df_dates": None,
+              "df_agency": None,
+              "df_feed_info": None
+              }
+        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+            df["df_routes"] = executor.submit(self.create_df_routes, raw_data)
+            df["df_trips"] = executor.submit(self.create_df_trips, raw_data)
+            df["df_stoptimes"] = executor.submit(self.create_df_stop_times, raw_data)
+            df["df_stops"] = executor.submit(self.create_df_stops, raw_data)
+            df["df_week"] = executor.submit(self.create_df_week, raw_data)
+            df["df_dates"] = executor.submit(self.create_df_dates, raw_data)
+            df["df_agency"] = executor.submit(self.create_df_agency, raw_data)
+            if raw_data["feed_info"]:
+                df["df_feed_info"] = executor.submit(self.create_df_feed, raw_data)
+
+        return df
+
+    def create_df_routes(self, raw_data):
+
+        return pd.DataFrame.from_dict(raw_data["routesList"])
+
+    def create_df_trips(self, raw_data):
         df_trips = pd.DataFrame.from_dict(raw_data["tripsList"]).set_index('trip_id')
 
         """ lets try to convert every column to speed computing """
@@ -280,6 +310,10 @@ class ImportData(Publisher, Subscriber):
         except KeyError:
             logging.debug("can not convert dfTrips")
 
+        return df_trips
+
+    def create_df_stop_times(self, raw_data):
+
         # DataFrame with every stop (time)
         df_stoptimes = pd.DataFrame.from_dict(raw_data["stopTimesList"]).set_index('stop_id')
 
@@ -291,7 +325,9 @@ class ImportData(Publisher, Subscriber):
             logging.debug("can not convert df_stoptimes")
         except OverflowError:
             logging.debug("can not convert df_stoptimes")
+        return df_stoptimes
 
+    def create_df_stops(self, raw_data):
         # DataFrame with every stop
         df_stops = pd.DataFrame.from_dict(raw_data["stopsList"]).set_index('stop_id')
         try:
@@ -299,34 +335,27 @@ class ImportData(Publisher, Subscriber):
         except KeyError:
             logging.debug("can not convert df_Stops: stop_id into int ")
 
+        return df_stops
+
+    def create_df_week(self, raw_data):
         df_week = pd.DataFrame.from_dict(raw_data["calendarList"]).set_index('service_id')
         df_week['start_date'] = df_week['start_date'].astype('string')
         df_week['end_date'] = df_week['end_date'].astype('string')
+        return df_week
+
+    def create_df_dates(self, raw_data):
         df_dates = pd.DataFrame.from_dict(raw_data["calendar_datesList"]).set_index('service_id')
         df_dates['exception_type'] = df_dates['exception_type'].astype('int32')
         df_dates['date'] = pd.to_datetime(df_dates['date'], format='%Y%m%d')
-        df_agency = pd.DataFrame.from_dict(raw_data["agencyList"])
+        return df_dates
 
+    def create_df_agency(self, raw_data):
+        return pd.DataFrame.from_dict(raw_data["agencyList"])
+
+    def create_df_feed(self, raw_data):
         if raw_data["feed_info"]:
-            df_feed_info = pd.DataFrame.from_dict(raw_data["feed_info"])
-            return {"df_routes": df_routes,
-                    "df_trips": df_trips,
-                    "df_stoptimes": df_stoptimes,
-                    "df_stops": df_stops,
-                    "df_week": df_week,
-                    "df_dates": df_dates,
-                    "df_agency": df_agency,
-                    "df_feed_info": df_feed_info
-                    }
-
-        return {"df_routes": df_routes,
-                "df_trips": df_trips,
-                "df_stoptimes": df_stoptimes,
-                "df_stops": df_stops,
-                "df_week": df_week,
-                "df_dates": df_dates,
-                "df_agency": df_agency
-                }
+            return pd.DataFrame.from_dict(raw_data["feed_info"])
+        return None
 
     def get_daterange_in_gtfs_data(self, df_week):
         if df_week is not None:
@@ -340,7 +369,7 @@ class ImportData(Publisher, Subscriber):
     """ subscriber methods """
 
     def notify_subscriber(self, event, message):
-        logging.debug(f'event: {event}, message {message}')
+        logging.debug(f'class: ImportData, event: {event}, message {message}')
         notify_function, parameters = self.notify_functions.get(event, self.notify_not_function)
         if not parameters:
             notify_function()
