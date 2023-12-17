@@ -65,7 +65,7 @@ class Model(Publisher, Subscriber):
     def __init__(self, events, name):
         Publisher.__init__(self, events)
         Subscriber.__init__(self, name)
-        self.planer = None
+        self.schedule_planer = SchedulePlaner(['ImportGTFS', 'update_progress_bar', 'message'], 'schedule_class')
         self.gtfs = gtfs(['ImportGTFS',
                           'fill_agency_list',
                           'create_table_date',
@@ -98,7 +98,6 @@ class Model(Publisher, Subscriber):
                 self.sub_worker_create_output_fahrplan_date_indi_continue, False],
             'sub_worker_create_output_fahrplan_weekday': [self.sub_worker_create_output_fahrplan_weekday, False]
         }
-        self.planer = SchedulePlaner
 
     def sub_reset_gtfs(self):
         self.gtfs = gtfs(['ImportGTFS',
@@ -131,8 +130,7 @@ class Model(Publisher, Subscriber):
             return False
 
     def model_import_gtfs_data(self):
-        self.planer.import_gtfs_data()
-
+        self.schedule_planer.import_gtfs_data()
 
     def sub_load_gtfsdata_event(self):
         try:
@@ -385,6 +383,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.model.register('data_changed', self)
         self.model.gtfs.register('message', self)
         self.model.gtfs.register('update_progress_bar', self)
+        self.model.schedule_planer.register('update_progress_bar', self)
 
         # init Observer controller -> model
         self.register('load_gtfsdata_event', self.model)
@@ -677,6 +676,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.dispatch("start_create_table_continue", "start_create_table_continue routine started! Notify subscriber!")
 
     """ Todo change to: start button is disabled till all checks are clear And add text, so user understands what is missing"""
+
     def notify_load_gtfsdata_event(self):
 
         self.model.model_import_gtfs_data()
