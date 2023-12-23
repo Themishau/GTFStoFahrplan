@@ -90,7 +90,6 @@ class Model(Publisher, Subscriber):
     def set_up_umlauf_planer(self):
         NotImplemented
 
-
     def find(self, name, path):
         for root, dirs, files in os.walk(path):
             if name in files:
@@ -511,7 +510,8 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.model.set_up_schedule_planer()
 
         if self.model.planer is None:
-            self.model.planer.register('update_routes_list', self)  # Achtung, sich selbst angeben und nicht self.controller
+            self.model.planer.register('update_routes_list',
+                                       self)  # Achtung, sich selbst angeben und nicht self.controller
             self.model.planer.register('update_stopname_create_list', self)
             self.model.planer.register('update_date_range', self)
             self.model.planer.register('update_weekday_list', self)
@@ -520,10 +520,6 @@ class Gui(QMainWindow, Publisher, Subscriber):
             self.model.planer.register('message', self)
             self.model.planer.register('update_progress_bar', self)
             self.model.planer.register('update_progress_bar', self)
-
-
-
-
 
     def set_process(self, task):
         self.model.gtfs.gtfs_process = task
