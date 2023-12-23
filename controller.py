@@ -21,7 +21,7 @@ from view.create_table_import import CreateTableImport
 from view.create_table_select import CreateTableSelect
 from view.download_gtfs import DownloadGTFS
 
-from model.Base.gtfs import gtfs
+# from model.Base.gtfs import gtfs
 from model.SchedulePlaner.SchedulePlaner import SchedulePlaner
 from model.observer import Publisher, Subscriber
 
@@ -65,22 +65,7 @@ class Model(Publisher, Subscriber):
     def __init__(self, events, name):
         Publisher.__init__(self, events)
         Subscriber.__init__(self, name)
-        self.schedule_planer = SchedulePlaner(['ImportGTFS', 'update_progress_bar', 'message'], 'schedule_class')
-        self.gtfs = gtfs(['ImportGTFS',
-                          'fill_agency_list',
-                          'create_table_date',
-                          'create_table_date_individual',
-                          'create_table_date_individual_continue',
-                          'create_table_weekday',
-                          'update_weekday_list',
-                          'update_routes_list',
-                          'update_stopname_create_list',
-                          'update_date_range',
-                          'update_agency_list',
-                          'active_weekdate_options',
-                          'update_weekdate_option',
-                          'update_progress_bar',
-                          'message'], 'data')
+        self.planer = None
         self.worker = None
         self.notify_functions = {
             'load_gtfsdata_event': [self.sub_load_gtfsdata_event, False],
@@ -99,22 +84,12 @@ class Model(Publisher, Subscriber):
             'sub_worker_create_output_fahrplan_weekday': [self.sub_worker_create_output_fahrplan_weekday, False]
         }
 
-    def sub_reset_gtfs(self):
-        self.gtfs = gtfs(['ImportGTFS',
-                          'fill_agency_list',
-                          'create_table_date',
-                          'create_table_date_individual',
-                          'create_table_date_individual_continue',
-                          'create_table_weekday',
-                          'update_weekday_list',
-                          'update_routes_list',
-                          'update_stopname_create_list',
-                          'update_date_range',
-                          'update_agency_list',
-                          'active_weekdate_options',
-                          'update_weekdate_option',
-                          'update_progress_bar',
-                          'message'], 'data')
+    def set_up_schedule_planer(self):
+        self.planer = SchedulePlaner(['ImportGTFS', 'update_progress_bar', 'message'], 'schedule_class')
+
+    def set_up_umlauf_planer(self):
+        NotImplemented
+
 
     def find(self, name, path):
         for root, dirs, files in os.walk(path):
@@ -130,7 +105,7 @@ class Model(Publisher, Subscriber):
             return False
 
     def model_import_gtfs_data(self):
-        self.schedule_planer.import_gtfs_data()
+        self.planer.import_gtfs_data()
 
     def sub_load_gtfsdata_event(self):
         try:
@@ -356,7 +331,6 @@ class Gui(QMainWindow, Publisher, Subscriber):
                                  'restart': [self.notify_restart, False]
                                  }
 
-        # init model with publisher
         self.model = Model(['update_weekday_list',
                             'update_routes_list',
                             'update_date_range',
@@ -369,22 +343,6 @@ class Gui(QMainWindow, Publisher, Subscriber):
                             'data_changed',
                             'restart'], 'model')
 
-        # init Observer model -> controller
-        self.model.register('restart', self)
-        self.model.register('message', self)
-        self.model.register('error_message', self)
-
-        self.model.gtfs.register('update_routes_list', self)  # Achtung, sich selbst angeben und nicht self.controller
-        self.model.gtfs.register('update_stopname_create_list', self)
-        self.model.gtfs.register('update_date_range', self)
-        self.model.gtfs.register('update_weekday_list', self)
-        self.model.gtfs.register('update_agency_list', self)
-        self.model.gtfs.register('update_weekdate_option', self)
-        self.model.register('data_changed', self)
-        self.model.gtfs.register('message', self)
-        self.model.gtfs.register('update_progress_bar', self)
-        self.model.schedule_planer.register('update_progress_bar', self)
-
         # init Observer controller -> model
         self.register('load_gtfsdata_event', self.model)
         self.register('select_agency', self.model)
@@ -392,7 +350,12 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.register('reset_gtfs', self.model)
         self.register('start_create_table', self.model)
         self.register('start_create_table_continue', self.model)
+        self.model.register('data_changed', self)
 
+        # init Observer model -> controller
+        self.model.register('restart', self)
+        self.model.register('message', self)
+        self.model.register('error_message', self)
         self.refresh_time = get_current_time()
         self.ui.toolBox.setCurrentIndex(0)
         self.show_home_window()
@@ -537,10 +500,30 @@ class Gui(QMainWindow, Publisher, Subscriber):
     def sub_update_progress_bar(self):
         self.progressRound.set_value(self.model.gtfs.progress)
 
-    def sub_write_gui_log(self, text):
-        time_now = datetime.now().strftime("%d-%b-%Y (%H:%M:%S)")
-        self.textBrowserText = self.textBrowserText + str(time_now) + ': ' + text + self.lineend
-        self.CreateCreate_Tab.ui.textBrowser.setText(self.textBrowserText)
+    # def sub_write_gui_log(self, text):
+    #     time_now = datetime.now().strftime("%d-%b-%Y (%H:%M:%S)")
+    #     self.textBrowserText = self.textBrowserText + str(time_now) + ': ' + text + self.lineend
+    #     self.CreateCreate_Tab.ui.textBrowser.setText(self.textBrowserText)
+
+    def initilize_schedule_planer(self):
+        # init model with publisher
+
+        self.model.set_up_schedule_planer()
+
+        if self.model.planer is None:
+            self.model.planer.register('update_routes_list', self)  # Achtung, sich selbst angeben und nicht self.controller
+            self.model.planer.register('update_stopname_create_list', self)
+            self.model.planer.register('update_date_range', self)
+            self.model.planer.register('update_weekday_list', self)
+            self.model.planer.register('update_agency_list', self)
+            self.model.planer.register('update_weekdate_option', self)
+            self.model.planer.register('message', self)
+            self.model.planer.register('update_progress_bar', self)
+            self.model.planer.register('update_progress_bar', self)
+
+
+
+
 
     def set_process(self, task):
         self.model.gtfs.gtfs_process = task
