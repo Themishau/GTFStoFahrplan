@@ -360,6 +360,9 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.model.register('restart', self)
         self.model.register('message', self)
         self.model.register('error_message', self)
+
+        self.initilize_schedule_planer()
+
         self.refresh_time = get_current_time()
         self.ui.toolBox.setCurrentIndex(0)
         self.show_home_window()
@@ -511,10 +514,8 @@ class Gui(QMainWindow, Publisher, Subscriber):
 
     def initilize_schedule_planer(self):
         # init model with publisher
-
         self.model.set_up_schedule_planer()
-
-        if self.model.planer is None:
+        if self.model.planer is not None:
             self.model.planer.register('update_routes_list',
                                        self)  # Achtung, sich selbst angeben und nicht self.controller
             self.model.planer.register('update_stopname_create_list', self)
