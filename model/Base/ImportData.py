@@ -26,7 +26,7 @@ class ImportData(Publisher, Subscriber):
         self._pkl_loaded = False
         self.reset_import = False
         self.notify_functions = {
-            'ImportGTFS': [self.async_task_load_GTFS_data, False]
+            'ImportGTFS': [self.import_gtfs, False]
         }
 
         """ property """
@@ -124,7 +124,11 @@ class ImportData(Publisher, Subscriber):
     """ methods """
 
     def read_gtfs_data(self):
-        # try:
+
+        """
+        reads data from self.input_path. Data needs to be formatted as gtfs data
+        :return: dict of raw_gtfs_data and creates a pandas dataframe
+        """
         with zipfile.ZipFile(self.input_path) as zf:
             logging.debug(zf.namelist())
             for file in zf.namelist():

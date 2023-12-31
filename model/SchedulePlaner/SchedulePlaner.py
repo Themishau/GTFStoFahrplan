@@ -44,6 +44,12 @@ class SchedulePlaner(Publisher, Subscriber):
 
     """ methods """
 
+    def initilize_scheduler(self):
+        self.initialize_import_gtfs()
+        self.initilize_prepare_data()
+        self.initilize_export_plan()
+
+
     def initialize_import_gtfs(self):
         self.import_Data = ImportData(['ImportGTFS',
                                        'update_progress_bar',
@@ -53,6 +59,18 @@ class SchedulePlaner(Publisher, Subscriber):
         self.select_data = SelectData(['ImportGTFS',
                                        'update_progress_bar',
                                        'message'], 'import_data', self.progress, self.imported_data)
+
+
+    def initilize_export_plan(self):
+        self.export_plan = ExportPlan(['ExportPlan',
+                                       'update_progress_bar',
+                                       'message'], 'export_plan', self.progress)
+
+    def set_paths(self, input_path, output_path, picklesavepath=""):
+        self.import_Data.input_path = input_path
+        self.import_Data.pickle_save_path = picklesavepath
+
+        self.export_plan.output_path = output_path
 
     def import_gtfs_data(self) -> bool:
         imported_data = ImportData.import_gtfs

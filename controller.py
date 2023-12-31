@@ -97,14 +97,19 @@ class Model(Publisher, Subscriber):
 
     def set_paths(self, input_path, output_path, picklesave_path) -> bool:
         try:
-            self.gtfs.set_paths(input_path, output_path, picklesave_path)
+            self.planer.set_paths(input_path, output_path, picklesave_path)
             return self.find(input_path.split('/')[-1], input_path.replace(input_path.split('/')[-1], ''))
         except FileNotFoundError:
             logging.debug('error setting paths')
             return False
 
     def model_import_gtfs_data(self):
-        self.planer.import_gtfs_data()
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+            executor.submit(self.planer.import_gtfs_data())
+
+    def sub_reset_gtfs(self):
+        self.planer = None
+        self.set_up_schedule_planer()
 
     def sub_load_gtfsdata_event(self):
         try:
@@ -125,7 +130,7 @@ class Model(Publisher, Subscriber):
                       "restart routine started! Notify subscriber!")
 
     def sub_worker_load_gtfsdata(self):
-        self.gtfs.async_task_load_GTFS_data()
+        self.planer.import_gtfs_data()
 
     def sub_worker_update_routes_list(self):
         self.gtfs.get_routes_of_agency()
@@ -657,19 +662,16 @@ class Gui(QMainWindow, Publisher, Subscriber):
     """ Todo change to: start button is disabled till all checks are clear And add text, so user understands what is missing"""
 
     def notify_load_gtfsdata_event(self):
-
-        self.model.model_import_gtfs_data()
-        """
         self.CreateImport_Tab.ui.btnImport.setEnabled(False)
         self.CreateImport_Tab.ui.btnRestart.setEnabled(True)
         if self.model.set_paths(self.CreateImport_Tab.ui.lineInputPath.text(),
                                 self.CreateImport_Tab.ui.lineOutputPath.text(),
                                 self.CreateImport_Tab.ui.picklesavename.text()):
-            return self.dispatch("load_gtfsdata_event", "load_gtfsdata_event routine started! Notify subscriber!")
+            self.model.model_import_gtfs_data()
         else:
             self.notify_restart()
-            self.send_message_box('Error. Could not find GTFS Data.')
-        """
+            self.send_message_box('Error. Could not load data.')
+            return
 
     def notify_select_option_button_direction(self):
         return self.dispatch("select_option_button_direction",
