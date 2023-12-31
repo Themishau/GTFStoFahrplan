@@ -39,11 +39,20 @@ class SchedulePlaner(Publisher, Subscriber):
 
         self.notify_functions = {
             'import_GTFS': [self.import_gtfs_data, False],
-
+            'update_routes_list': [self.sub_not_implemented, False],
+            'update_stopname_create_list': [self.sub_not_implemented, False],
+            'update_date_range': [self.sub_not_implemented, False],
+            'update_weekday_list': [self.sub_not_implemented, False],
+            'update_agency_list': [self.sub_not_implemented, False],
+            'update_weekdate_option': [self.sub_not_implemented, False],
+            'message': [self.sub_not_implemented, False],
+            'update_progress_bar': [self.sub_not_implemented, False]
         }
 
     """ methods """
 
+    def sub_not_implemented(self):
+        logging.debug("sub method not implemented")
     def initilize_scheduler(self):
         self.initialize_import_gtfs()
         self.initilize_prepare_data()

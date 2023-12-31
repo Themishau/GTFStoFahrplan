@@ -85,7 +85,19 @@ class Model(Publisher, Subscriber):
         }
 
     def set_up_schedule_planer(self):
-        self.planer = SchedulePlaner(['ImportGTFS', 'update_progress_bar', 'message'], 'schedule_class')
+        self.planer = SchedulePlaner(['ImportGTFS',
+                                      'update_progress_bar',
+                                      'update_weekday_list',
+                                      'update_routes_list',
+                                      'update_date_range',
+                                      'update_agency_list',
+                                      'active_weekdate_options',
+                                      'update_weekdate_option',
+                                      'update_stopname_create_list',
+                                      'error_message',
+                                      'message',
+                                      'data_changed',
+                                      'restart'], 'schedule_class')
 
     def set_up_umlauf_planer(self):
         NotImplemented
@@ -524,7 +536,6 @@ class Gui(QMainWindow, Publisher, Subscriber):
             self.model.planer.register('update_agency_list', self)
             self.model.planer.register('update_weekdate_option', self)
             self.model.planer.register('message', self)
-            self.model.planer.register('update_progress_bar', self)
             self.model.planer.register('update_progress_bar', self)
 
     def set_process(self, task):
