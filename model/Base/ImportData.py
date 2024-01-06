@@ -21,7 +21,7 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class ImportData(Publisher, Subscriber):
-    def __init__(self, events, name, progress: ProgressBar):
+    def __init__(self, events, name, progress: int):
         super().__init__(events=events, name=name)
         self._pkl_loaded = False
         self.reset_import = False
@@ -39,7 +39,7 @@ class ImportData(Publisher, Subscriber):
         self.df_date_range_in_gtfs_data = pd.DataFrame()
 
         """ visual internal property """
-        self.progress = progress.progress
+        self.progress = progress
 
     @property
     def reset_import(self):

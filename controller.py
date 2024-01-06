@@ -98,6 +98,7 @@ class Model(Publisher, Subscriber):
                                       'message',
                                       'data_changed',
                                       'restart'], 'schedule_class')
+        self.planer.initilize_scheduler()
 
     def set_up_umlauf_planer(self):
         NotImplemented
@@ -517,12 +518,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         # self.model.gtfs.save_h5(h5_filename="C:/Tmp/test.h5", data=self.model.gtfs.dfTrips, labels="trips")
 
     def sub_update_progress_bar(self):
-        self.progressRound.set_value(self.model.gtfs.progress)
-
-    # def sub_write_gui_log(self, text):
-    #     time_now = datetime.now().strftime("%d-%b-%Y (%H:%M:%S)")
-    #     self.textBrowserText = self.textBrowserText + str(time_now) + ': ' + text + self.lineend
-    #     self.CreateCreate_Tab.ui.textBrowser.setText(self.textBrowserText)
+        self.progressRound.set_value(self.model.planer.progress)
 
     def initilize_schedule_planer(self):
         # init model with publisher
@@ -546,7 +542,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         logging.debug(f"individualsorting: {self.model.gtfs.individualsorting}")
 
     def set_pickleExport_checked(self):
-        self.model.gtfs.pickleExport_checked = self.CreateImport_Tab.ui.checkBox_savepickle.isChecked()
+        self.model.planer.pickle_export_checked = self.CreateImport_Tab.ui.checkBox_savepickle.isChecked()
 
     def getFilePath(self):
         try:

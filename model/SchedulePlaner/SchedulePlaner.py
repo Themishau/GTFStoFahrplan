@@ -53,11 +53,11 @@ class SchedulePlaner(Publisher, Subscriber):
 
     def sub_not_implemented(self):
         logging.debug("sub method not implemented")
+
     def initilize_scheduler(self):
         self.initialize_import_gtfs()
         self.initilize_prepare_data()
         self.initilize_export_plan()
-
 
     def initialize_import_gtfs(self):
         self.import_Data = ImportData(['ImportGTFS',
@@ -68,7 +68,6 @@ class SchedulePlaner(Publisher, Subscriber):
         self.select_data = SelectData(['ImportGTFS',
                                        'update_progress_bar',
                                        'message'], 'import_data', self.progress, self.imported_data)
-
 
     def initilize_export_plan(self):
         self.export_plan = ExportPlan(['ExportPlan',
@@ -81,14 +80,22 @@ class SchedulePlaner(Publisher, Subscriber):
 
         self.export_plan.output_path = output_path
 
-    def import_gtfs_data(self) -> bool:
-        imported_data = ImportData.import_gtfs
 
-        if imported_data is None:
-            self.notify_error_message(f"no data in imported_data")
+    def import_gtfs_data(self) -> bool:
+        try:
+
+            imported_data = ImportData.import_gtfs
+
+            if imported_data is None:
+                self.notify_error_message(f"no data in imported_data")
+                return False
+
+            self.imported_data = imported_data
+        except AttributeError:
+            self.notify_error_message("No import object generated.")
             return False
 
-        self.imported_data = imported_data
+
 
     @property
     def progress(self):
