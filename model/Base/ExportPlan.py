@@ -34,3 +34,7 @@ class ExportPlan(Publisher, Subscriber):
     @progress.setter
     def progress(self, value):
         self._progress = value
+
+
+    def sub_worker_create_output_fahrplan_date(self):
+        NotImplementedError

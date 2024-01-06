@@ -83,8 +83,7 @@ class SchedulePlaner(Publisher, Subscriber):
 
     def import_gtfs_data(self) -> bool:
         try:
-
-            imported_data = ImportData.import_gtfs
+            imported_data = self.import_Data.import_gtfs()
 
             if imported_data is None:
                 self.notify_error_message(f"no data in imported_data")

@@ -291,7 +291,7 @@ class ImportData(Publisher, Subscriber):
             df["df_week"] = executor.submit(self.create_df_week, raw_data)
             df["df_dates"] = executor.submit(self.create_df_dates, raw_data)
             df["df_agency"] = executor.submit(self.create_df_agency, raw_data)
-            if raw_data["feed_info"]:
+            if raw_data.get('feed_info') is not None:
                 df["df_feed_info"] = executor.submit(self.create_df_feed, raw_data)
 
         return df
