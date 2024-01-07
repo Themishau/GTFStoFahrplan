@@ -36,8 +36,6 @@ class UmlaufPlaner(Publisher, Subscriber):
 
         self.notify_functions = {
             'ImportGTFS': [self.async_task_load_GTFS_data, False],
-            'ImportGTFS': [self.async_task_load_GTFS_data, False],
-
         }
 
     @property
