@@ -500,7 +500,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.CreateCreate_Tab.ui.listDatesWeekday.addItems(self.model.gtfs.weekDayOptionsList)
 
     def sub_update_routes_list(self):
-        self.CreateSelect_Tab.ui.TripsTableView.setModel(TableModel(self.model.gtfs.dfSelectedRoutes))
+        self.CreateSelect_Tab.ui.TripsTableView.setModel(TableModel(self.model.planer.select_data.df_selected_routes))
 
     def sub_update_stopname_create_list(self):
         self.CreateCreate_Tab.ui.tableView_sorting_stops.setModel(
@@ -509,7 +509,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         # self.CreateCreate_Tab.ui.tableView_sorting_stops.populate()
 
     def sub_update_agency_list(self):
-        self.CreateSelect_Tab.ui.AgenciesTableView.setModel(TableModel(self.model.gtfs.dfagency))
+        self.CreateSelect_Tab.ui.AgenciesTableView.setModel(TableModel(self.model.planer.select_data.imported_data["df_ageny"]))
         self.CreateCreate_Tab.ui.line_Selection_date_range.setText(self.model.gtfs.date_range)
         self.CreateCreate_Tab.ui.lineDateInput.setText(self.model.gtfs.date_range)
         self.show_Create_Select_Window()
