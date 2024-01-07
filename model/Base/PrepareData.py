@@ -24,6 +24,7 @@ class PrepareData(Publisher, Subscriber):
 
         """ property """
         self.time_format = 1
+        self.imported_data = None
 
     @property
     def time_format(self):
@@ -32,3 +33,11 @@ class PrepareData(Publisher, Subscriber):
     @time_format.setter
     def time_format(self, value):
         self._time_format = value
+
+    @property
+    def imported_data(self):
+        return self._imported_data
+
+    @imported_data.setter
+    def imported_data(self, value):
+        self._imported_data = value

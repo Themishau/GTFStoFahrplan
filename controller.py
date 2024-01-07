@@ -117,8 +117,8 @@ class Model(Publisher, Subscriber):
             return False
 
     def model_import_gtfs_data(self):
-        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-            executor.submit(self.planer.import_gtfs_data())
+        x = threading.Thread(target=self.planer.import_gtfs_data(), args=())
+        x.start()
 
     def sub_reset_gtfs(self):
         self.planer = None

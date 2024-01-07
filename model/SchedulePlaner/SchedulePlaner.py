@@ -67,7 +67,7 @@ class SchedulePlaner(Publisher, Subscriber):
     def initilize_prepare_data(self):
         self.select_data = SelectData(['ImportGTFS',
                                        'update_progress_bar',
-                                       'message'], 'import_data', self.progress, self.imported_data)
+                                       'message'], 'import_data', self.progress)
 
     def initilize_export_plan(self):
         self.export_plan = ExportPlan(['ExportPlan',
@@ -152,6 +152,16 @@ class SchedulePlaner(Publisher, Subscriber):
     @import_Data.setter
     def import_Data(self, value):
         self._import_Data = value
+
+    @property
+    def imported_data(self):
+        return self._imported_data
+
+    @imported_data.setter
+    def imported_data(self, value):
+        self._imported_data = value
+
+
 
     def notify_not_function(self, event):
         logging.debug('event not found in class gui: {}'.format(event))

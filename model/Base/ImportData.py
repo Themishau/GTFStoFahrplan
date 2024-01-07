@@ -284,23 +284,26 @@ class ImportData(Publisher, Subscriber):
               "df_feed_info": None
               }
         with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
-            df["df_routes"] = executor.submit(self.create_df_routes, raw_data)
-            df["df_trips"] = executor.submit(self.create_df_trips, raw_data)
-            df["df_stoptimes"] = executor.submit(self.create_df_stop_times, raw_data)
-            df["df_stops"] = executor.submit(self.create_df_stops, raw_data)
-            df["df_week"] = executor.submit(self.create_df_week, raw_data)
-            df["df_dates"] = executor.submit(self.create_df_dates, raw_data)
-            df["df_agency"] = executor.submit(self.create_df_agency, raw_data)
+            processes = [executor.submit(self.create_df_routes, raw_data),
+                         executor.submit(self.create_df_trips, raw_data),
+                         executor.submit(self.create_df_stop_times, raw_data),
+                         executor.submit(self.create_df_stops, raw_data),
+                         executor.submit(self.create_df_week, raw_data),
+                         executor.submit(self.create_df_dates, raw_data),
+                         executor.submit(self.create_df_agency, raw_data)]
             if raw_data.get('feed_info') is not None:
-                df["df_feed_info"] = executor.submit(self.create_df_feed, raw_data)
+                processes.append(executor.submit(self.create_df_feed, raw_data))
 
-        return df
+            results = concurrent.futures.as_completed(processes)
+        return results
 
     def create_df_routes(self, raw_data):
-
+        logging.debug("convert to df: create_df_routes")
         return pd.DataFrame.from_dict(raw_data["routesList"])
 
+
     def create_df_trips(self, raw_data):
+        logging.debug("convert to df: create_df_trips")
         df_trips = pd.DataFrame.from_dict(raw_data["tripsList"]).set_index('trip_id')
 
         """ lets try to convert every column to speed computing """
@@ -313,11 +316,11 @@ class ImportData(Publisher, Subscriber):
 
         except KeyError:
             logging.debug("can not convert dfTrips")
-
+        logging.debug("convert to df: create_df_trips finished")
         return df_trips
 
     def create_df_stop_times(self, raw_data):
-
+        logging.debug("convert to df: create_df_stop_times")
         # DataFrame with every stop (time)
         df_stoptimes = pd.DataFrame.from_dict(raw_data["stopTimesList"]).set_index('stop_id')
 
@@ -329,34 +332,42 @@ class ImportData(Publisher, Subscriber):
             logging.debug("can not convert df_stoptimes")
         except OverflowError:
             logging.debug("can not convert df_stoptimes")
+        logging.debug("convert to df: create_df_stop_times finished")
         return df_stoptimes
 
     def create_df_stops(self, raw_data):
+        logging.debug("convert to df: create_df_stops")
         # DataFrame with every stop
         df_stops = pd.DataFrame.from_dict(raw_data["stopsList"]).set_index('stop_id')
         try:
             df_stops['stop_id'] = df_stops['stop_id'].astype('int32')
         except KeyError:
             logging.debug("can not convert df_Stops: stop_id into int ")
-
+        logging.debug("convert to df: create_df_stops finished")
         return df_stops
 
     def create_df_week(self, raw_data):
+        logging.debug("convert to df: create_df_week")
         df_week = pd.DataFrame.from_dict(raw_data["calendarList"]).set_index('service_id')
         df_week['start_date'] = df_week['start_date'].astype('string')
         df_week['end_date'] = df_week['end_date'].astype('string')
+        logging.debug("convert to df: create_df_week finished")
         return df_week
 
     def create_df_dates(self, raw_data):
+        logging.debug("convert to df: create_df_dates")
         df_dates = pd.DataFrame.from_dict(raw_data["calendar_datesList"]).set_index('service_id')
         df_dates['exception_type'] = df_dates['exception_type'].astype('int32')
         df_dates['date'] = pd.to_datetime(df_dates['date'], format='%Y%m%d')
+        logging.debug("convert to df: create_df_dates finished")
         return df_dates
 
     def create_df_agency(self, raw_data):
+        logging.debug("convert to df: create_df_agency")
         return pd.DataFrame.from_dict(raw_data["agencyList"])
 
     def create_df_feed(self, raw_data):
+        logging.debug("convert to df: create_df_feed")
         if raw_data["feed_info"]:
             return pd.DataFrame.from_dict(raw_data["feed_info"])
         return None
