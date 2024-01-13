@@ -293,13 +293,14 @@ class ImportData(Publisher, Subscriber):
                          executor.submit(self.get_gtfs_dates, raw_data),
                          executor.submit(self.get_gtfs_agency, raw_data)]
             if raw_data.get('feed_info') is not None:
-                processes.append(executor.submit(self.create_df_feed, raw_data))
+                processes.append(executor.submit(self.get_gtfs_feed_info, raw_data))
 
             results = concurrent.futures.as_completed(processes)
             for result in results:
                 for item in result.result():
-                    logging.debug(f"df result: {result} : {item}")
+                    logging.debug(f"dict result: {result} : {item}")
 
+        logging.debug(f"df creation: {results}")
         with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
             processes = [executor.submit(self.create_df_routes, raw_data),
                          executor.submit(self.create_df_trips, raw_data),
@@ -326,14 +327,16 @@ class ImportData(Publisher, Subscriber):
         tripdict = {
         }
 
-        headers = self.raw_gtfs_data[2][0].replace('"', "").split(",")
+        headers = raw_data["tripsList"][0].replace('"', "").split(",")
         itripDate = len(headers)
         header_names = []
         for haltestellen_header in headers:
             tripdict[haltestellen_header] = []
             header_names.append(haltestellen_header)
 
-        for data in self.raw_gtfs_data[2][1]:
+        raw_data["tripsList"].remove(raw_data["tripsList"][0])
+
+        for data in raw_data["tripsList"]:
             data = data.replace(", ", " ")
             data = data.replace('"', "")
             data = data.replace('\n', "")
@@ -341,21 +344,22 @@ class ImportData(Publisher, Subscriber):
             for idx in range(itripDate):
                 tripdict[header_names[idx]].append(tripDate[idx])
 
-        self.tripdict = tripdict
-        return True
+        return tripdict
 
     def get_gtfs_stops(self, raw_data):
 
         stopsdict = {
         }
-        headers = self.raw_gtfs_data[0][0].replace('"', "").split(",")
+        headers = raw_data["stopsList"][0].replace('"', "").split(",")
         istopDate = len(headers)
         header_names = []
         for haltestellen_header in headers:
             stopsdict[haltestellen_header] = []
             header_names.append(haltestellen_header)
 
-        for haltestellen in self.raw_gtfs_data[0][1]:
+        raw_data["stopsList"].remove(raw_data["stopsList"][0])
+
+        for haltestellen in raw_data["stopsList"]:
             haltestellen = haltestellen.replace(", ", " ")
             haltestellen = haltestellen.replace('"', "")
             haltestellen = haltestellen.replace('\n', "")
@@ -364,21 +368,22 @@ class ImportData(Publisher, Subscriber):
             for idx in range(istopDate):
                 stopsdict[header_names[idx]].append(stopData[idx])
 
-        self.stopsdict = stopsdict
-        return True
+        return stopsdict
 
     def get_gtfs_stop_times(self, raw_data):
         stopTimesdict = {
         }
 
-        headers = self.raw_gtfs_data[1][0].replace('"', "").split(",")
+        headers = raw_data["stopTimesList"][0].replace('"', "").split(",")
         istopTimeData = len(headers)
         header_names = []
         for haltestellen_header in headers:
             stopTimesdict[haltestellen_header] = []
             header_names.append(haltestellen_header)
 
-        for data in self.raw_gtfs_data[1][1]:
+        raw_data["calendarList"].remove(raw_data["calendarList"][0])
+
+        for data in raw_data["stopTimesList"]:
             data = data.replace(", ", " ")
             data = data.replace('"', "")
             data = data.replace('\n', "")
@@ -387,21 +392,22 @@ class ImportData(Publisher, Subscriber):
             for idx in range(istopTimeData):
                 stopTimesdict[header_names[idx]].append(stopTimeData[idx])
 
-        self.stopTimesdict = stopTimesdict
-        return True
+        return stopTimesdict
 
     def get_gtfs_week(self, raw_data):
         calendarWeekdict = {
         }
 
-        headers = self.raw_gtfs_data[3][0].replace('"', "").split(",")
+        headers = raw_data["calendarList"][0].replace('"', "").split(",")
         icalendarDate = len(headers)
         header_names = []
         for haltestellen_header in headers:
             calendarWeekdict[haltestellen_header] = []
             header_names.append(haltestellen_header)
 
-        for data in self.raw_gtfs_data[3][1]:
+        raw_data["calendarList"].remove(raw_data["calendarList"][0])
+
+        for data in raw_data["calendarList"]:
             data = data.replace(", ", " ")
             data = data.replace('"', "")
             data = data.replace('\n', "")
@@ -410,21 +416,22 @@ class ImportData(Publisher, Subscriber):
             for idx in range(icalendarDate):
                 calendarWeekdict[header_names[idx]].append(calendarDate[idx])
 
-        self.calendarWeekdict = calendarWeekdict
-        return True
+        return calendarWeekdict
 
     def get_gtfs_dates(self, raw_data):
         calendarDatesdict = {
         }
 
-        headers = self.raw_gtfs_data[4][0].replace('"', "").split(",")
+        headers = raw_data["calendar_datesList"][0].replace('"', "").split(",")
         icalendarDate = len(headers)
         header_names = []
         for haltestellen_header in headers:
             calendarDatesdict[haltestellen_header] = []
             header_names.append(haltestellen_header)
 
-        for data in self.raw_gtfs_data[4][1]:
+        raw_data["calendar_datesList"].remove(raw_data["calendar_datesList"][0])
+
+        for data in raw_data["calendar_datesList"]:
             data = data.replace(", ", " ")
             data = data.replace('"', "")
             data = data.replace('\n', "")
@@ -432,21 +439,22 @@ class ImportData(Publisher, Subscriber):
             for idx in range(icalendarDate):
                 calendarDatesdict[header_names[idx]].append(calendarDatesDate[idx])
 
-        self.calendarDatesdict = calendarDatesdict
-        return True
+        return calendarDatesdict
 
     def get_gtfs_routes(self, raw_data):
         routesFahrtdict = {
         }
 
-        headers = self.raw_gtfs_data[5][0].replace('"', "").split(",")
+        headers = raw_data["routesList"][0].replace('"', "").split(",")
         iroutesFahrt = len(headers)
         header_names = []
         for haltestellen_header in headers:
             routesFahrtdict[haltestellen_header] = []
             header_names.append(haltestellen_header)
 
-        for data in self.raw_gtfs_data[5][1]:
+        raw_data["routesList"].remove(raw_data["routesList"][0])
+
+        for data in raw_data["routesList"]:
             data = data.replace(", ", " ")
             data = data.replace('"', "")
             data = data.replace('\n', "")
@@ -454,21 +462,22 @@ class ImportData(Publisher, Subscriber):
             for idx in range(iroutesFahrt):
                 routesFahrtdict[header_names[idx]].append(routesFahrtData[idx])
 
-        self.routesFahrtdict = routesFahrtdict
-        return True
+        return routesFahrtdict
 
     def get_gtfs_feed_info(self, raw_data):
         feed_infodict = {
         }
 
-        headers = self.raw_gtfs_data[7][0].replace('"', "").split(",")
+        headers = raw_data["feed_infoHeader"][0].replace('"', "").split(",")
         ifeed_infodict = len(headers)
         header_names = []
         for haltestellen_header in headers:
             feed_infodict[haltestellen_header] = []
             header_names.append(haltestellen_header)
 
-        for data in self.raw_gtfs_data[7][1]:
+        raw_data["feed_infoHeader"].remove(raw_data["feed_infoHeader"][0])
+
+        for data in raw_data["feed_infoHeader"]:
             data = data.replace(", ", " ")
             data = data.replace('"', "")
             data = data.replace('\n', "")
@@ -476,22 +485,22 @@ class ImportData(Publisher, Subscriber):
             for idx in range(ifeed_infodict):
                 feed_infodict[header_names[idx]].append(feed_infodictData[idx])
 
-        self.feed_infodict = feed_infodict
-        return True
+        return feed_infodict
 
     def get_gtfs_agency(self, raw_data):
 
         agencyFahrtdict = {
         }
 
-        headers = self.raw_gtfs_data[6][0].replace('"', "").split(",")
+        headers = raw_data["agencyList"][0].replace('"', "").split(",")
         iagencyData = len(headers)
         header_names = []
         for haltestellen_header in headers:
             agencyFahrtdict[haltestellen_header] = []
             header_names.append(haltestellen_header)
+        raw_data["agencyList"].remove(raw_data["agencyList"][0])
 
-        for data in self.raw_gtfs_data[6][1]:
+        for data in raw_data["agencyList"]:
             data = data.replace(", ", " ")
             data = data.replace('"', "")
             data = data.replace('\n', "")
@@ -499,8 +508,7 @@ class ImportData(Publisher, Subscriber):
             for idx in range(iagencyData):
                 agencyFahrtdict[header_names[idx]].append(agencyData[idx])
 
-        self.agencyFahrtdict = agencyFahrtdict
-        return True
+        return agencyFahrtdict
 
     def create_df_trips(self, raw_data):
         logging.debug("convert to df: create_df_trips")
