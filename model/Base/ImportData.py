@@ -223,7 +223,7 @@ class ImportData(Publisher, Subscriber):
                 logging.debug('no feed info data')
                 raw_data["feed_infoHeader"] = []
 
-            logging.debug(raw_data.keys())
+            logging.debug(f"raw_data keys: {raw_data.keys()}")
 
             return self.create_dfs(raw_data)
 
@@ -283,6 +283,7 @@ class ImportData(Publisher, Subscriber):
               "df_agency": None,
               "df_feed_info": None
               }
+
         with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
             processes = [executor.submit(self.create_df_routes, raw_data),
                          executor.submit(self.create_df_trips, raw_data),
@@ -295,12 +296,211 @@ class ImportData(Publisher, Subscriber):
                 processes.append(executor.submit(self.create_df_feed, raw_data))
 
             results = concurrent.futures.as_completed(processes)
+            for result in results:
+                for item in result.result():
+                    logging.debug(f"df result: {result} : {item}")
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+            processes = [executor.submit(self.create_df_routes, raw_data),
+                         executor.submit(self.create_df_trips, raw_data),
+                         executor.submit(self.create_df_stop_times, raw_data),
+                         executor.submit(self.create_df_stops, raw_data),
+                         executor.submit(self.create_df_week, raw_data),
+                         executor.submit(self.create_df_dates, raw_data),
+                         executor.submit(self.create_df_agency, raw_data)]
+            if raw_data.get('feed_info') is not None:
+                processes.append(executor.submit(self.create_df_feed, raw_data))
+
+            results = concurrent.futures.as_completed(processes)
+            for result in results:
+                for item in result.result():
+                    logging.debug(f"df result: {result} : {item}")
+        logging.debug(f"df creation: {results}")
         return results
 
     def create_df_routes(self, raw_data):
         logging.debug("convert to df: create_df_routes")
         return pd.DataFrame.from_dict(raw_data["routesList"])
 
+    def get_gtfs_trip(self):
+        tripdict = {
+        }
+
+        headers = self.raw_gtfs_data[2][0].replace('"', "").split(",")
+        itripDate = len(headers)
+        header_names = []
+        for haltestellen_header in headers:
+            tripdict[haltestellen_header] = []
+            header_names.append(haltestellen_header)
+
+        for data in self.raw_gtfs_data[2][1]:
+            data = data.replace(", ", " ")
+            data = data.replace('"', "")
+            data = data.replace('\n', "")
+            tripDate = data.split(",")
+            for idx in range(itripDate):
+                tripdict[header_names[idx]].append(tripDate[idx])
+
+        self.tripdict = tripdict
+        return True
+
+    def get_gtfs_stop(self):
+
+        stopsdict = {
+        }
+        headers = self.raw_gtfs_data[0][0].replace('"', "").split(",")
+        istopDate = len(headers)
+        header_names = []
+        for haltestellen_header in headers:
+            stopsdict[haltestellen_header] = []
+            header_names.append(haltestellen_header)
+
+        for haltestellen in self.raw_gtfs_data[0][1]:
+            haltestellen = haltestellen.replace(", ", " ")
+            haltestellen = haltestellen.replace('"', "")
+            haltestellen = haltestellen.replace('\n', "")
+            stopData = haltestellen.split(",")
+
+            for idx in range(istopDate):
+                stopsdict[header_names[idx]].append(stopData[idx])
+
+        self.stopsdict = stopsdict
+        return True
+
+    def get_gtfs_stoptime(self):
+        stopTimesdict = {
+        }
+
+        headers = self.raw_gtfs_data[1][0].replace('"', "").split(",")
+        istopTimeData = len(headers)
+        header_names = []
+        for haltestellen_header in headers:
+            stopTimesdict[haltestellen_header] = []
+            header_names.append(haltestellen_header)
+
+        for data in self.raw_gtfs_data[1][1]:
+            data = data.replace(", ", " ")
+            data = data.replace('"', "")
+            data = data.replace('\n', "")
+            stopTimeData = data.split(",")
+
+            for idx in range(istopTimeData):
+                stopTimesdict[header_names[idx]].append(stopTimeData[idx])
+
+        self.stopTimesdict = stopTimesdict
+        return True
+
+    def get_gtfs_calendarWeek(self):
+        calendarWeekdict = {
+        }
+
+        headers = self.raw_gtfs_data[3][0].replace('"', "").split(",")
+        icalendarDate = len(headers)
+        header_names = []
+        for haltestellen_header in headers:
+            calendarWeekdict[haltestellen_header] = []
+            header_names.append(haltestellen_header)
+
+        for data in self.raw_gtfs_data[3][1]:
+            data = data.replace(", ", " ")
+            data = data.replace('"', "")
+            data = data.replace('\n', "")
+            calendarDate = data.split(",")
+
+            for idx in range(icalendarDate):
+                calendarWeekdict[header_names[idx]].append(calendarDate[idx])
+
+        self.calendarWeekdict = calendarWeekdict
+        return True
+
+    def get_gtfs_calendarDates(self):
+        calendarDatesdict = {
+        }
+
+        headers = self.raw_gtfs_data[4][0].replace('"', "").split(",")
+        icalendarDate = len(headers)
+        header_names = []
+        for haltestellen_header in headers:
+            calendarDatesdict[haltestellen_header] = []
+            header_names.append(haltestellen_header)
+
+        for data in self.raw_gtfs_data[4][1]:
+            data = data.replace(", ", " ")
+            data = data.replace('"', "")
+            data = data.replace('\n', "")
+            calendarDatesDate = data.split(",")
+            for idx in range(icalendarDate):
+                calendarDatesdict[header_names[idx]].append(calendarDatesDate[idx])
+
+        self.calendarDatesdict = calendarDatesdict
+        return True
+
+    def get_gtfs_routes(self):
+        routesFahrtdict = {
+        }
+
+        headers = self.raw_gtfs_data[5][0].replace('"', "").split(",")
+        iroutesFahrt = len(headers)
+        header_names = []
+        for haltestellen_header in headers:
+            routesFahrtdict[haltestellen_header] = []
+            header_names.append(haltestellen_header)
+
+        for data in self.raw_gtfs_data[5][1]:
+            data = data.replace(", ", " ")
+            data = data.replace('"', "")
+            data = data.replace('\n', "")
+            routesFahrtData = data.split(",")
+            for idx in range(iroutesFahrt):
+                routesFahrtdict[header_names[idx]].append(routesFahrtData[idx])
+
+        self.routesFahrtdict = routesFahrtdict
+        return True
+
+    def get_gtfs_feed_info(self):
+        feed_infodict = {
+        }
+
+        headers = self.raw_gtfs_data[7][0].replace('"', "").split(",")
+        ifeed_infodict = len(headers)
+        header_names = []
+        for haltestellen_header in headers:
+            feed_infodict[haltestellen_header] = []
+            header_names.append(haltestellen_header)
+
+        for data in self.raw_gtfs_data[7][1]:
+            data = data.replace(", ", " ")
+            data = data.replace('"', "")
+            data = data.replace('\n', "")
+            feed_infodictData = data.split(",")
+            for idx in range(ifeed_infodict):
+                feed_infodict[header_names[idx]].append(feed_infodictData[idx])
+
+        self.feed_infodict = feed_infodict
+        return True
+
+    def get_gtfs_agencies(self):
+
+        agencyFahrtdict = {
+        }
+
+        headers = self.raw_gtfs_data[6][0].replace('"', "").split(",")
+        iagencyData = len(headers)
+        header_names = []
+        for haltestellen_header in headers:
+            agencyFahrtdict[haltestellen_header] = []
+            header_names.append(haltestellen_header)
+
+        for data in self.raw_gtfs_data[6][1]:
+            data = data.replace(", ", " ")
+            data = data.replace('"', "")
+            data = data.replace('\n', "")
+            agencyData = data.split(",")
+            for idx in range(iagencyData):
+                agencyFahrtdict[header_names[idx]].append(agencyData[idx])
+
+        self.agencyFahrtdict = agencyFahrtdict
+        return True
 
     def create_df_trips(self, raw_data):
         logging.debug("convert to df: create_df_trips")
@@ -349,17 +549,24 @@ class ImportData(Publisher, Subscriber):
     def create_df_week(self, raw_data):
         logging.debug("convert to df: create_df_week")
         df_week = pd.DataFrame.from_dict(raw_data["calendarList"]).set_index('service_id')
-        df_week['start_date'] = df_week['start_date'].astype('string')
-        df_week['end_date'] = df_week['end_date'].astype('string')
-        logging.debug("convert to df: create_df_week finished")
+        try:
+            df_week['start_date'] = df_week['start_date'].astype('string')
+            df_week['end_date'] = df_week['end_date'].astype('string')
+        except KeyError:
+            logging.debug("can not convert df_week")
+        logging.debug("convert to df: df_week finished")
         return df_week
 
     def create_df_dates(self, raw_data):
         logging.debug("convert to df: create_df_dates")
+
         df_dates = pd.DataFrame.from_dict(raw_data["calendar_datesList"]).set_index('service_id')
-        df_dates['exception_type'] = df_dates['exception_type'].astype('int32')
-        df_dates['date'] = pd.to_datetime(df_dates['date'], format='%Y%m%d')
-        logging.debug("convert to df: create_df_dates finished")
+        try:
+            df_dates['exception_type'] = df_dates['exception_type'].astype('int32')
+            df_dates['date'] = pd.to_datetime(df_dates['date'], format='%Y%m%d')
+        except KeyError:
+            logging.debug("can not convert df_dateS")
+            logging.debug("convert to df: create_df_dates finished")
         return df_dates
 
     def create_df_agency(self, raw_data):

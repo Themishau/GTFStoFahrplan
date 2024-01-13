@@ -59,7 +59,8 @@ class SelectData(Publisher, Subscriber):
     @agencies_list.setter
     def agencies_list(self, value):
         self._agencies_list = value
-        self.dispatch("update_agency_list",
+        if value is not None:
+            self.dispatch("update_agency_list",
                       "update_agency_list routine started! Notify subscriber!")
 
     @property

@@ -65,9 +65,7 @@ class SchedulePlaner(Publisher, Subscriber):
                                        'message'], 'import_data', self.progress)
 
     def initilize_prepare_data(self):
-        self.select_data = SelectData(['ImportGTFS',
-                                       'update_progress_bar',
-                                       'message'], 'import_data', self.progress)
+        self.select_data = SelectData(['ImportGTFS','update_progress_bar', 'message'], 'select_data', self.progress)
 
     def initilize_export_plan(self):
         self.export_plan = ExportPlan(['ExportPlan',
