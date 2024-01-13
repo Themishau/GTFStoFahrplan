@@ -285,13 +285,13 @@ class ImportData(Publisher, Subscriber):
               }
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
-            processes = [executor.submit(self.create_df_routes, raw_data),
-                         executor.submit(self.create_df_trips, raw_data),
-                         executor.submit(self.create_df_stop_times, raw_data),
-                         executor.submit(self.create_df_stops, raw_data),
-                         executor.submit(self.create_df_week, raw_data),
-                         executor.submit(self.create_df_dates, raw_data),
-                         executor.submit(self.create_df_agency, raw_data)]
+            processes = [executor.submit(self.get_gtfs_routes, raw_data),
+                         executor.submit(self.get_gtfs_trips, raw_data),
+                         executor.submit(self.get_gtfs_stop_times, raw_data),
+                         executor.submit(self.get_gtfs_stops, raw_data),
+                         executor.submit(self.get_gtfs_week, raw_data),
+                         executor.submit(self.get_gtfs_dates, raw_data),
+                         executor.submit(self.get_gtfs_agency, raw_data)]
             if raw_data.get('feed_info') is not None:
                 processes.append(executor.submit(self.create_df_feed, raw_data))
 
@@ -322,7 +322,7 @@ class ImportData(Publisher, Subscriber):
         logging.debug("convert to df: create_df_routes")
         return pd.DataFrame.from_dict(raw_data["routesList"])
 
-    def get_gtfs_trip(self):
+    def get_gtfs_trips(self, raw_data):
         tripdict = {
         }
 
@@ -344,7 +344,7 @@ class ImportData(Publisher, Subscriber):
         self.tripdict = tripdict
         return True
 
-    def get_gtfs_stop(self):
+    def get_gtfs_stops(self, raw_data):
 
         stopsdict = {
         }
@@ -367,7 +367,7 @@ class ImportData(Publisher, Subscriber):
         self.stopsdict = stopsdict
         return True
 
-    def get_gtfs_stoptime(self):
+    def get_gtfs_stop_times(self, raw_data):
         stopTimesdict = {
         }
 
@@ -390,7 +390,7 @@ class ImportData(Publisher, Subscriber):
         self.stopTimesdict = stopTimesdict
         return True
 
-    def get_gtfs_calendarWeek(self):
+    def get_gtfs_week(self, raw_data):
         calendarWeekdict = {
         }
 
@@ -413,7 +413,7 @@ class ImportData(Publisher, Subscriber):
         self.calendarWeekdict = calendarWeekdict
         return True
 
-    def get_gtfs_calendarDates(self):
+    def get_gtfs_dates(self, raw_data):
         calendarDatesdict = {
         }
 
@@ -435,7 +435,7 @@ class ImportData(Publisher, Subscriber):
         self.calendarDatesdict = calendarDatesdict
         return True
 
-    def get_gtfs_routes(self):
+    def get_gtfs_routes(self, raw_data):
         routesFahrtdict = {
         }
 
@@ -457,7 +457,7 @@ class ImportData(Publisher, Subscriber):
         self.routesFahrtdict = routesFahrtdict
         return True
 
-    def get_gtfs_feed_info(self):
+    def get_gtfs_feed_info(self, raw_data):
         feed_infodict = {
         }
 
@@ -479,7 +479,7 @@ class ImportData(Publisher, Subscriber):
         self.feed_infodict = feed_infodict
         return True
 
-    def get_gtfs_agencies(self):
+    def get_gtfs_agency(self, raw_data):
 
         agencyFahrtdict = {
         }
