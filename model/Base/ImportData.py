@@ -296,28 +296,32 @@ class ImportData(Publisher, Subscriber):
                 processes.append(executor.submit(self.get_gtfs_feed_info, raw_data))
 
             results = concurrent.futures.as_completed(processes)
+            raw_dict_data = {}
             for result in results:
-                for item in result.result():
-                    logging.debug(f"dict result: {result} : {item}")
+                temp_result = result.result()
+                raw_dict_data[temp_result[0]] = temp_result[1]
 
-        logging.debug(f"df creation: {results}")
+        logging.debug(f"raw_dict_data creation: {raw_dict_data.keys()}")
+
         with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
-            processes = [executor.submit(self.create_df_routes, raw_data),
-                         executor.submit(self.create_df_trips, raw_data),
-                         executor.submit(self.create_df_stop_times, raw_data),
-                         executor.submit(self.create_df_stops, raw_data),
-                         executor.submit(self.create_df_week, raw_data),
-                         executor.submit(self.create_df_dates, raw_data),
-                         executor.submit(self.create_df_agency, raw_data)]
-            if raw_data.get('feed_info') is not None:
-                processes.append(executor.submit(self.create_df_feed, raw_data))
+            processes = [executor.submit(self.create_df_routes, raw_dict_data),
+                         executor.submit(self.create_df_trips, raw_dict_data),
+                         executor.submit(self.create_df_stop_times, raw_dict_data),
+                         executor.submit(self.create_df_stops, raw_dict_data),
+                         executor.submit(self.create_df_week, raw_dict_data),
+                         executor.submit(self.create_df_dates, raw_dict_data),
+                         executor.submit(self.create_df_agency, raw_dict_data)]
+            if raw_dict_data.get('feed_info') is not None:
+                processes.append(executor.submit(self.create_df_feed, raw_dict_data))
 
             results = concurrent.futures.as_completed(processes)
+            df_collection = {}
             for result in results:
-                for item in result.result():
-                    logging.debug(f"df result: {result} : {item}")
-        logging.debug(f"df creation: {results}")
-        return results
+                temp_result = result.result()
+                df_collection[temp_result[0]] = temp_result[1]
+
+        logging.debug(f"df_collection creation: {df_collection.keys()}")
+        return df_collection
 
     def create_df_routes(self, raw_data):
         logging.debug("convert to df: create_df_routes")
@@ -344,7 +348,7 @@ class ImportData(Publisher, Subscriber):
             for idx in range(itripDate):
                 tripdict[header_names[idx]].append(tripDate[idx])
 
-        return tripdict
+        return "tripdict", tripdict
 
     def get_gtfs_stops(self, raw_data):
 
@@ -368,7 +372,7 @@ class ImportData(Publisher, Subscriber):
             for idx in range(istopDate):
                 stopsdict[header_names[idx]].append(stopData[idx])
 
-        return stopsdict
+        return "stopsdict", stopsdict
 
     def get_gtfs_stop_times(self, raw_data):
         stopTimesdict = {
@@ -392,7 +396,7 @@ class ImportData(Publisher, Subscriber):
             for idx in range(istopTimeData):
                 stopTimesdict[header_names[idx]].append(stopTimeData[idx])
 
-        return stopTimesdict
+        return "stopTimesdict", stopTimesdict
 
     def get_gtfs_week(self, raw_data):
         calendarWeekdict = {
@@ -416,7 +420,7 @@ class ImportData(Publisher, Subscriber):
             for idx in range(icalendarDate):
                 calendarWeekdict[header_names[idx]].append(calendarDate[idx])
 
-        return calendarWeekdict
+        return "calendarWeekdict", calendarWeekdict
 
     def get_gtfs_dates(self, raw_data):
         calendarDatesdict = {
@@ -439,7 +443,7 @@ class ImportData(Publisher, Subscriber):
             for idx in range(icalendarDate):
                 calendarDatesdict[header_names[idx]].append(calendarDatesDate[idx])
 
-        return calendarDatesdict
+        return "calendarDatesdict", calendarDatesdict
 
     def get_gtfs_routes(self, raw_data):
         routesFahrtdict = {
@@ -462,7 +466,7 @@ class ImportData(Publisher, Subscriber):
             for idx in range(iroutesFahrt):
                 routesFahrtdict[header_names[idx]].append(routesFahrtData[idx])
 
-        return routesFahrtdict
+        return "routesFahrtdict", routesFahrtdict
 
     def get_gtfs_feed_info(self, raw_data):
         feed_infodict = {
@@ -485,7 +489,7 @@ class ImportData(Publisher, Subscriber):
             for idx in range(ifeed_infodict):
                 feed_infodict[header_names[idx]].append(feed_infodictData[idx])
 
-        return feed_infodict
+        return "feed_infodict", feed_infodict
 
     def get_gtfs_agency(self, raw_data):
 
@@ -508,7 +512,7 @@ class ImportData(Publisher, Subscriber):
             for idx in range(iagencyData):
                 agencyFahrtdict[header_names[idx]].append(agencyData[idx])
 
-        return agencyFahrtdict
+        return "agencyFahrtdict", agencyFahrtdict
 
     def create_df_trips(self, raw_data):
         logging.debug("convert to df: create_df_trips")

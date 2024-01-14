@@ -4,8 +4,7 @@ import os
 import sys
 from datetime import datetime
 
-import threading
-import concurrent
+from threading import Thread
 from PyQt5 import QtCore
 from PyQt5.Qt import QPoint, QThread, QMessageBox, QDesktopWidget, QMainWindow
 from PyQt5.QtCore import Qt
@@ -117,8 +116,7 @@ class Model(Publisher, Subscriber):
             return False
 
     def model_import_gtfs_data(self):
-        x = threading.Thread(target=self.planer.import_gtfs_data(), args=())
-        x.start()
+        self.planer.import_gtfs_data()
 
     def sub_reset_gtfs(self):
         self.planer = None
@@ -675,7 +673,8 @@ class Gui(QMainWindow, Publisher, Subscriber):
         if self.model.set_paths(self.CreateImport_Tab.ui.lineInputPath.text(),
                                 self.CreateImport_Tab.ui.lineOutputPath.text(),
                                 self.CreateImport_Tab.ui.picklesavename.text()):
-            self.model.model_import_gtfs_data()
+            Thread(target=self.model.model_import_gtfs_data()).start()
+            logging.debug("started import test")
         else:
             self.notify_restart()
             self.send_message_box('Error. Could not load data.')
