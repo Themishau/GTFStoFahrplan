@@ -6,7 +6,7 @@ from datetime import datetime
 
 from threading import Thread
 from PyQt5 import QtCore
-from PyQt5.Qt import QPoint, QThread, QMessageBox, QDesktopWidget, QMainWindow
+from PyQt5.Qt import QPoint, QThread, QMessageBox, QDesktopWidget, QMainWindow, QObject
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QFileDialog
 
@@ -58,12 +58,19 @@ class GTFSWorker(QThread, Publisher, Subscriber):
             self.dispatch("sub_worker_create_output_fahrplan_weekday",
                           "sub_worker_create_output_fahrplan_weekday routine started! Notify subscriber!")
 
+class Worker(QObject):
+    def __init__(self, param):
+        super().__init__()
+        self.param = param
+
+    def run(self):
+        # Use self.param in your long-running task
+        print("Running task with parameter:", self.param)
 
 # noinspection PyUnresolvedReferences
-class Model(Publisher, Subscriber):
+class Model(QObject, Publisher, Subscriber):
     def __init__(self, events, name):
-        Publisher.__init__(self, events)
-        Subscriber.__init__(self, name)
+        super().__init__(events=events, name=name)
         self.planer = None
         self.worker = None
         self.notify_functions = {
@@ -128,8 +135,6 @@ class Model(Publisher, Subscriber):
 
             self.worker = GTFSWorker(['sub_worker_load_gtfsdata'], 'Worker', 'ImportGTFS')
             self.worker.register('sub_worker_load_gtfsdata', self)
-
-            self.worker.start()
             self.worker.finished.connect(self.update_agency_list)
             self.worker.exit()
         except:
@@ -269,6 +274,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         super().__init__(events=events, name=name)
         # uic.loadUi(self.resource_path('add_files\\GTFSQT5Q.ui'), self)
         # pixmap = QPixmap(self.resource_path('add_files\\5282.jpg'))
+        self.thread = None
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.progressRound = RoundProgress()
@@ -673,7 +679,11 @@ class Gui(QMainWindow, Publisher, Subscriber):
         if self.model.set_paths(self.CreateImport_Tab.ui.lineInputPath.text(),
                                 self.CreateImport_Tab.ui.lineOutputPath.text(),
                                 self.CreateImport_Tab.ui.picklesavename.text()):
-            Thread(target=self.model.model_import_gtfs_data()).start()
+            self.thread = QThread()
+            self.model.moveToThread(self.thread)
+            self.thread.started.connect(self.model.model_import_gtfs_data)
+            self.thread.start()
+            # Thread(target=self.model.model_import_gtfs_data()).start()
             logging.debug("started import test")
         else:
             self.notify_restart()
