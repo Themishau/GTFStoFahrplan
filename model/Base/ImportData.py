@@ -300,7 +300,6 @@ class ImportData(Publisher, Subscriber):
             for result in results:
                 temp_result = result.result()
                 raw_dict_data[temp_result[0]] = temp_result[1]
-
         logging.debug(f"raw_dict_data creation: {raw_dict_data.keys()}")
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
@@ -318,14 +317,10 @@ class ImportData(Publisher, Subscriber):
             df_collection = {}
             for result in results:
                 temp_result = result.result()
-                df_collection[temp_result[0]] = temp_result[1]
+                df_collection[temp_result.name] = temp_result
 
         logging.debug(f"df_collection creation: {df_collection.keys()}")
         return df_collection
-
-    def create_df_routes(self, raw_data):
-        logging.debug("convert to df: create_df_routes")
-        return pd.DataFrame.from_dict(raw_data["routesList"])
 
     def get_gtfs_trips(self, raw_data):
         tripdict = {
@@ -348,7 +343,7 @@ class ImportData(Publisher, Subscriber):
             for idx in range(itripDate):
                 tripdict[header_names[idx]].append(tripDate[idx])
 
-        return "tripdict", tripdict
+        return "Trips", tripdict
 
     def get_gtfs_stops(self, raw_data):
 
@@ -372,7 +367,7 @@ class ImportData(Publisher, Subscriber):
             for idx in range(istopDate):
                 stopsdict[header_names[idx]].append(stopData[idx])
 
-        return "stopsdict", stopsdict
+        return "Stops", stopsdict
 
     def get_gtfs_stop_times(self, raw_data):
         stopTimesdict = {
@@ -385,7 +380,7 @@ class ImportData(Publisher, Subscriber):
             stopTimesdict[haltestellen_header] = []
             header_names.append(haltestellen_header)
 
-        raw_data["calendarList"].remove(raw_data["calendarList"][0])
+        raw_data["stopTimesList"].remove(raw_data["stopTimesList"][0])
 
         for data in raw_data["stopTimesList"]:
             data = data.replace(", ", " ")
@@ -396,7 +391,7 @@ class ImportData(Publisher, Subscriber):
             for idx in range(istopTimeData):
                 stopTimesdict[header_names[idx]].append(stopTimeData[idx])
 
-        return "stopTimesdict", stopTimesdict
+        return "Stoptimes", stopTimesdict
 
     def get_gtfs_week(self, raw_data):
         calendarWeekdict = {
@@ -420,7 +415,7 @@ class ImportData(Publisher, Subscriber):
             for idx in range(icalendarDate):
                 calendarWeekdict[header_names[idx]].append(calendarDate[idx])
 
-        return "calendarWeekdict", calendarWeekdict
+        return "Calendarweeks", calendarWeekdict
 
     def get_gtfs_dates(self, raw_data):
         calendarDatesdict = {
@@ -443,7 +438,7 @@ class ImportData(Publisher, Subscriber):
             for idx in range(icalendarDate):
                 calendarDatesdict[header_names[idx]].append(calendarDatesDate[idx])
 
-        return "calendarDatesdict", calendarDatesdict
+        return "Calendardates", calendarDatesdict
 
     def get_gtfs_routes(self, raw_data):
         routesFahrtdict = {
@@ -466,7 +461,7 @@ class ImportData(Publisher, Subscriber):
             for idx in range(iroutesFahrt):
                 routesFahrtdict[header_names[idx]].append(routesFahrtData[idx])
 
-        return "routesFahrtdict", routesFahrtdict
+        return "Routes", routesFahrtdict
 
     def get_gtfs_feed_info(self, raw_data):
         feed_infodict = {
@@ -489,7 +484,7 @@ class ImportData(Publisher, Subscriber):
             for idx in range(ifeed_infodict):
                 feed_infodict[header_names[idx]].append(feed_infodictData[idx])
 
-        return "feed_infodict", feed_infodict
+        return "Feedinfos", feed_infodict
 
     def get_gtfs_agency(self, raw_data):
 
@@ -512,12 +507,20 @@ class ImportData(Publisher, Subscriber):
             for idx in range(iagencyData):
                 agencyFahrtdict[header_names[idx]].append(agencyData[idx])
 
-        return "agencyFahrtdict", agencyFahrtdict
+        return "Agencies", agencyFahrtdict
+
+    # region creation dataframes
+
+    def create_df_routes(self, raw_data):
+        logging.debug("convert to df: create_df_routes")
+        df_routes = pd.DataFrame.from_dict(raw_data["Routes"])
+        df_routes.name = "Routes"
+        return df_routes
 
     def create_df_trips(self, raw_data):
         logging.debug("convert to df: create_df_trips")
-        df_trips = pd.DataFrame.from_dict(raw_data["tripsList"]).set_index('trip_id')
-
+        df_trips = pd.DataFrame.from_dict(raw_data["Trips"]).set_index('trip_id')
+        df_trips.name = "Trips"
         """ lets try to convert every column to speed computing """
         try:
             df_trips['trip_id'] = df_trips['trip_id'].astype('int8')
@@ -534,8 +537,8 @@ class ImportData(Publisher, Subscriber):
     def create_df_stop_times(self, raw_data):
         logging.debug("convert to df: create_df_stop_times")
         # DataFrame with every stop (time)
-        df_stoptimes = pd.DataFrame.from_dict(raw_data["stopTimesList"]).set_index('stop_id')
-
+        df_stoptimes = pd.DataFrame.from_dict(raw_data["Stoptimes"]).set_index('stop_id')
+        df_stoptimes.name = "Stoptimes"
         try:
             df_stoptimes['stop_sequence'] = df_stoptimes['stop_sequence'].astype('int32')
             df_stoptimes['stop_id'] = df_stoptimes['stop_id'].astype('int32')
@@ -550,7 +553,8 @@ class ImportData(Publisher, Subscriber):
     def create_df_stops(self, raw_data):
         logging.debug("convert to df: create_df_stops")
         # DataFrame with every stop
-        df_stops = pd.DataFrame.from_dict(raw_data["stopsList"]).set_index('stop_id')
+        df_stops = pd.DataFrame.from_dict(raw_data["Stops"]).set_index('stop_id')
+        df_stops.name = "Stops"
         try:
             df_stops['stop_id'] = df_stops['stop_id'].astype('int32')
         except KeyError:
@@ -560,7 +564,8 @@ class ImportData(Publisher, Subscriber):
 
     def create_df_week(self, raw_data):
         logging.debug("convert to df: create_df_week")
-        df_week = pd.DataFrame.from_dict(raw_data["calendarList"]).set_index('service_id')
+        df_week = pd.DataFrame.from_dict(raw_data["Calendarweeks"]).set_index('service_id')
+        df_week.name = "Calendarweeks"
         try:
             df_week['start_date'] = df_week['start_date'].astype('string')
             df_week['end_date'] = df_week['end_date'].astype('string')
@@ -572,7 +577,8 @@ class ImportData(Publisher, Subscriber):
     def create_df_dates(self, raw_data):
         logging.debug("convert to df: create_df_dates")
 
-        df_dates = pd.DataFrame.from_dict(raw_data["calendar_datesList"]).set_index('service_id')
+        df_dates = pd.DataFrame.from_dict(raw_data["Calendardates"]).set_index('service_id')
+        df_dates.name = "Calendardates"
         try:
             df_dates['exception_type'] = df_dates['exception_type'].astype('int32')
             df_dates['date'] = pd.to_datetime(df_dates['date'], format='%Y%m%d')
@@ -583,13 +589,19 @@ class ImportData(Publisher, Subscriber):
 
     def create_df_agency(self, raw_data):
         logging.debug("convert to df: create_df_agency")
-        return pd.DataFrame.from_dict(raw_data["agencyList"])
+        df_agencies = pd.DataFrame.from_dict(raw_data["Agencies"])
+        df_agencies.name = "Agencies"
+        return df_agencies
 
     def create_df_feed(self, raw_data):
         logging.debug("convert to df: create_df_feed")
         if raw_data["feed_info"]:
-            return pd.DataFrame.from_dict(raw_data["feed_info"])
+            df_feedinfo = pd.DataFrame.from_dict(raw_data["Feedinfos"])
+            df_feedinfo.name = "Feedinfos"
+            return df_feedinfo
         return None
+
+    # region end
 
     def get_daterange_in_gtfs_data(self, df_week):
         if df_week is not None:

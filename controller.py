@@ -679,16 +679,29 @@ class Gui(QMainWindow, Publisher, Subscriber):
         if self.model.set_paths(self.CreateImport_Tab.ui.lineInputPath.text(),
                                 self.CreateImport_Tab.ui.lineOutputPath.text(),
                                 self.CreateImport_Tab.ui.picklesavename.text()):
-            self.thread = QThread()
-            self.model.moveToThread(self.thread)
-            self.thread.started.connect(self.model.model_import_gtfs_data)
-            self.thread.start()
+            self.start_function_async(getattr(self.model, "model_import_gtfs_data"))
+
+            # self.thread = QThread()
+            # self.model.moveToThread(self.thread)
+            # self.thread.started.connect(self.model.model_import_gtfs_data)
+            # self.thread.start()
             # Thread(target=self.model.model_import_gtfs_data()).start()
             logging.debug("started import test")
         else:
             self.notify_restart()
             self.send_message_box('Error. Could not load data.')
             return
+
+    def start_function_async(self, function_name):
+        """
+        pass argument via getattr (object_name: self.model, function_name: foo)
+        :param function_name: getattr (object_name: self.model, function_name: foo)
+        :return:
+        """
+        self.thread = QThread()
+        self.model.moveToThread(self.thread)
+        self.thread.started.connect(function_name)
+        self.thread.start()
 
     def notify_select_option_button_direction(self):
         return self.dispatch("select_option_button_direction",
