@@ -56,7 +56,7 @@ class SchedulePlaner(Publisher, Subscriber):
 
     def initilize_scheduler(self):
         self.initialize_import_gtfs()
-        self.initilize_prepare_data()
+        self.initilize_select_data()
         self.initilize_export_plan()
 
     def initialize_import_gtfs(self):
@@ -64,7 +64,7 @@ class SchedulePlaner(Publisher, Subscriber):
                                        'update_progress_bar',
                                        'message'], 'import_data', self.progress)
 
-    def initilize_prepare_data(self):
+    def initilize_select_data(self):
         self.select_data = SelectData(['ImportGTFS','update_progress_bar', 'message'], 'select_data', self.progress)
 
     def initilize_export_plan(self):
@@ -78,7 +78,6 @@ class SchedulePlaner(Publisher, Subscriber):
 
         self.export_plan.output_path = output_path
 
-
     def import_gtfs_data(self) -> bool:
         try:
             imported_data = self.import_Data.import_gtfs()
@@ -91,8 +90,6 @@ class SchedulePlaner(Publisher, Subscriber):
         except AttributeError:
             self.notify_error_message("No import object generated.")
             return False
-
-
 
     @property
     def progress(self):
@@ -158,6 +155,11 @@ class SchedulePlaner(Publisher, Subscriber):
     @imported_data.setter
     def imported_data(self, value):
         self._imported_data = value
+        if value is not None:
+            self.select_data.imported_data = value
+            self.prepare_data.imported_data = value
+            self.export_plan.imported_data = value
+
 
 
 

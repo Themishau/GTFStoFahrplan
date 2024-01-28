@@ -70,13 +70,15 @@ class SelectData(Publisher, Subscriber):
     @imported_data.setter
     def imported_data(self, value):
         self._imported_data = value
+        if value is not None:
+            self.read_gtfs_agencies()
 
     def get_routes_of_agency(self) -> None:
         if self.selected_agency is not None:
             self.select_gtfs_routes_from_agency()
 
     def select_gtfs_routes_from_agency(self):
-        df_routes = self.imported_data["df_routes"]
+        df_routes = self.imported_data["Routes"]
         input_var = [{'agency_id': self.selected_agency}]
         var_test = pd.DataFrame(input_var).set_index('agency_id')
         cond_routes_of_agency = '''
@@ -94,7 +96,7 @@ class SelectData(Publisher, Subscriber):
         return True
 
     def read_gtfs_agencies(self):
-        df_agency = self.imported_data["df_agency"]
+        df_agency = self.imported_data["Agencies"]
         cond_agencies = '''
                     select *
                     from df_agency 
