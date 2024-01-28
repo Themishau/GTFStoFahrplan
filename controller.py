@@ -373,6 +373,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.register('start_create_table_continue', self.model)
         self.model.register('data_changed', self)
 
+
         # init Observer model -> controller
         self.model.register('restart', self)
         self.model.register('message', self)
@@ -528,12 +529,12 @@ class Gui(QMainWindow, Publisher, Subscriber):
         # init model with publisher
         self.model.set_up_schedule_planer()
         if self.model.planer is not None:
-            self.model.planer.register('update_routes_list',
-                                       self)  # Achtung, sich selbst angeben und nicht self.controller
-            self.model.planer.register('update_stopname_create_list', self)
+            self.model.planer.select_data.register('update_routes_list', self)  # Achtung, sich selbst angeben und nicht self.controller
+            self.model.planer.select_data.register('update_agency_list', self)
+
             self.model.planer.register('update_date_range', self)
             self.model.planer.register('update_weekday_list', self)
-            self.model.planer.register('update_agency_list', self)
+            self.model.planer.register('update_stopname_create_list', self)
             self.model.planer.register('update_weekdate_option', self)
             self.model.planer.register('message', self)
             self.model.planer.register('update_progress_bar', self)
