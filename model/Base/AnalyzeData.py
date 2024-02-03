@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.DEBUG,
                     datefmt="%Y-%m-%d %H:%M:%S")
 
 
-class SelectData(Publisher, Subscriber):
+class AnalyzeData(Publisher, Subscriber):
     def __init__(self, events, name, progress: int):
         super().__init__(events=events, name=name)
         self.imported_data = None
@@ -63,7 +63,7 @@ class SelectData(Publisher, Subscriber):
         self._agencies_list = value
         if value is not None:
             self.dispatch("update_agency_list",
-                      "update_agency_list routine started! Notify subscriber!")
+                          "update_agency_list routine started! Notify subscriber!")
 
     @property
     def imported_data(self):

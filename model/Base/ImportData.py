@@ -76,6 +76,7 @@ class ImportData(Publisher, Subscriber):
     @progress.setter
     def progress(self, value):
         self._progress = value
+        self.dispatch("update_progress_bar", f"{value}")
 
     @property
     def pickle_export_checked(self):
@@ -110,7 +111,9 @@ class ImportData(Publisher, Subscriber):
         return self.input_path is not None
 
     def import_gtfs(self):
+        self.progress = 0
         if not self.pre_checks():
+            self.progress = 20
             self.reset_data_cause_of_error()
             return None
         imported_data = self.read_gtfs_data()
@@ -118,7 +121,7 @@ class ImportData(Publisher, Subscriber):
         if imported_data is None:
             self.reset_data_cause_of_error()
             return None
-
+        self.progress = 100
         return imported_data
 
     """ methods """
@@ -155,6 +158,7 @@ class ImportData(Publisher, Subscriber):
                 with zf.open("Tmp/dfagency.pkl") as agency:
                     df_gtfs_data["dfagency"] = pd.read_pickle(agency)
 
+                self.progress = 80
                 try:
                     with zipfile.ZipFile(self.input_path) as zf:
                         with io.TextIOWrapper(zf.open("Tmp/dffeed_info.pkl")) as feed_info:
@@ -165,7 +169,7 @@ class ImportData(Publisher, Subscriber):
 
         if self._pkl_loaded is False:
             raw_data = {}
-
+            self.progress = 30
             try:
                 with zipfile.ZipFile(self.input_path) as zf:
                     with io.TextIOWrapper(zf.open("stops.txt"), encoding="utf-8") as stops:
@@ -185,7 +189,7 @@ class ImportData(Publisher, Subscriber):
             except:
                 logging.debug('Error in Unzipping headers')
                 return None
-
+            self.progress = 40
             try:
                 with zipfile.ZipFile(self.input_path) as zf:
                     with io.TextIOWrapper(zf.open("stops.txt"), encoding="utf-8") as stops:
@@ -270,7 +274,7 @@ class ImportData(Publisher, Subscriber):
             feed_info (optional)
         :return: dict (df)
         """
-
+        self.progress = 50
         if raw_data is None:
             return None
 
@@ -301,7 +305,7 @@ class ImportData(Publisher, Subscriber):
                 temp_result = result.result()
                 raw_dict_data[temp_result[0]] = temp_result[1]
         logging.debug(f"raw_dict_data creation: {raw_dict_data.keys()}")
-
+        self.progress = 60
         with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
             processes = [executor.submit(self.create_df_routes, raw_dict_data),
                          executor.submit(self.create_df_trips, raw_dict_data),
@@ -318,7 +322,7 @@ class ImportData(Publisher, Subscriber):
             for result in results:
                 temp_result = result.result()
                 df_collection[temp_result.name] = temp_result
-
+        self.progress = 90
         logging.debug(f"df_collection creation: {df_collection.keys()}")
         return df_collection
 

@@ -11,10 +11,12 @@ import logging
 import sys
 import os
 from ..Base.ImportData import ImportData
+from ..Base.AnalyzeData import AnalyzeData
 from ..Base.SelectData import SelectData
 from ..Base.PrepareData import PrepareData
 from ..Base.CreatePlan import CreatePlan
 from ..Base.ExportPlan import ExportPlan
+
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
@@ -46,7 +48,7 @@ class SchedulePlaner(Publisher, Subscriber):
             'update_agency_list': [self.sub_not_implemented, False],
             'update_weekdate_option': [self.sub_not_implemented, False],
             'message': [self.sub_not_implemented, False],
-            'update_progress_bar': [self.sub_not_implemented, False]
+            'update_progress_bar': [self.update_progress_bar, True]
         }
 
     """ methods """
@@ -54,10 +56,21 @@ class SchedulePlaner(Publisher, Subscriber):
     def sub_not_implemented(self):
         logging.debug("sub method not implemented")
 
+    def update_progress_bar(self, value):
+        self.progress = int(value)
+
     def initilize_scheduler(self):
         self.initialize_import_gtfs()
         self.initilize_select_data()
         self.initilize_export_plan()
+        self.registerProgressUpdateSubscriptions()
+
+    def registerProgressUpdateSubscriptions(self):
+        self.import_Data.register('update_progress_bar', self)
+        self.select_data.register('update_progress_bar', self)
+        # self.prepare_data.register('update_progress_bar', self)
+        # self.export_plan.register('update_progress_bar', self)
+
 
     def initialize_import_gtfs(self):
         self.import_Data = ImportData(['ImportGTFS',
@@ -65,7 +78,11 @@ class SchedulePlaner(Publisher, Subscriber):
                                        'message'], 'import_data', self.progress)
 
     def initilize_select_data(self):
-        self.select_data = SelectData(['ImportGTFS','update_progress_bar', 'message'], 'select_data', self.progress)
+        self.select_data = SelectData(['ImportGTFS',
+                                       'update_progress_bar',
+                                       'update_routes_list',
+                                       'update_agency_list',
+                                       'message'], 'select_data', self.progress)
 
     def initilize_export_plan(self):
         self.export_plan = ExportPlan(['ExportPlan',
@@ -160,11 +177,16 @@ class SchedulePlaner(Publisher, Subscriber):
             self.prepare_data.imported_data = value
             self.export_plan.imported_data = value
 
-
-
-
     def notify_not_function(self, event):
         logging.debug('event not found in class gui: {}'.format(event))
 
     def notify_error_message(self, message):
-        self.notify_subscriber("error_in_SchedulePlaner_class", message)
+        self.dispatch("error_in_SchedulePlaner_class", message)
+
+    def notify_subscriber(self, event, message):
+        logging.debug(f'event: {event}, message {message}')
+        notify_function, parameters = self.notify_functions.get(event, self.notify_not_function)
+        if not parameters:
+            notify_function()
+        else:
+            notify_function(message)

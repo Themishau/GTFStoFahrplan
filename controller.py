@@ -220,9 +220,8 @@ class Model(QObject, Publisher, Subscriber):
 
     def update_agency_list(self):
         if self.gtfs.pickleExport_checked is True:
-            self.gtfs.save_pickle()
-        self.gtfs.read_gtfs_agencies()
-        self.worker = None
+            logging.debug("save not imolemented yet")
+        self.model.planer.read_gtfs_agencies()
 
     def update_date_range(self):
         self.worker = None
@@ -514,7 +513,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
         # self.CreateCreate_Tab.ui.tableView_sorting_stops.populate()
 
     def sub_update_agency_list(self):
-        self.CreateSelect_Tab.ui.AgenciesTableView.setModel(TableModel(self.model.planer.select_data.imported_data["df_ageny"]))
+        self.CreateSelect_Tab.ui.AgenciesTableView.setModel(TableModel(self.model.planer.select_data.imported_data["Agencies"]))
         self.CreateCreate_Tab.ui.line_Selection_date_range.setText(self.model.gtfs.date_range)
         self.CreateCreate_Tab.ui.lineDateInput.setText(self.model.gtfs.date_range)
         self.show_Create_Select_Window()
@@ -530,14 +529,13 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.model.set_up_schedule_planer()
         if self.model.planer is not None:
             self.model.planer.select_data.register('update_routes_list', self)  # Achtung, sich selbst angeben und nicht self.controller
-            self.model.planer.select_data.register('update_agency_list', self)
-
             self.model.planer.register('update_date_range', self)
             self.model.planer.register('update_weekday_list', self)
             self.model.planer.register('update_stopname_create_list', self)
             self.model.planer.register('update_weekdate_option', self)
             self.model.planer.register('message', self)
             self.model.planer.register('update_progress_bar', self)
+            self.model.planer.select_data.register('update_agency_list', self)  # Achtung, sich selbst angeben und nicht self.controller
 
     def set_process(self, task):
         self.model.gtfs.gtfs_process = task
