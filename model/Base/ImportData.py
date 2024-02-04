@@ -11,6 +11,8 @@ import logging
 import sys
 import os
 from model.Base.ProgressBar import ProgressBar
+from GTFSEnums import GtfsColumnNames, GtfsDfNames
+
 
 from threading import Thread
 import concurrent.futures
