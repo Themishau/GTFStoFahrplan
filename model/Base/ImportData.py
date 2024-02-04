@@ -25,10 +25,6 @@ class ImportData(Publisher, Subscriber):
         super().__init__(events=events, name=name)
         self._pkl_loaded = False
         self.reset_import = False
-        self.notify_functions = {
-            'ImportGTFS': [self.import_gtfs, False]
-        }
-
         """ property """
         self.input_path = ""
         self.pickle_save_path = ""
@@ -41,6 +37,25 @@ class ImportData(Publisher, Subscriber):
         """ visual internal property """
         self.progress = progress
 
+        self.notify_functions = {
+            'ImportGTFS': [self.import_gtfs, False]
+        }
+
+    """ subscriber methods """
+
+    def notify_subscriber(self, event, message):
+        logging.debug(f'class: ImportData, event: {event}, message {message}')
+        notify_function, parameters = self.notify_functions.get(event, self.notify_not_function)
+        if not parameters:
+            notify_function()
+        else:
+            notify_function(message)
+
+    def notify_not_function(self, event):
+        logging.debug('event not found in class gui: {}'.format(event))
+
+    def notify_error_message(self, message):
+        self.notify_subscriber("error_in_import_class", message)
     @property
     def reset_import(self):
         return self._reset_import
@@ -277,16 +292,6 @@ class ImportData(Publisher, Subscriber):
         self.progress = 50
         if raw_data is None:
             return None
-
-        df = {"df_routes": None,
-              "df_trips": None,
-              "df_stoptimes": None,
-              "df_stops": None,
-              "df_week": None,
-              "df_dates": None,
-              "df_agency": None,
-              "df_feed_info": None
-              }
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
             processes = [executor.submit(self.get_gtfs_routes, raw_data),
@@ -615,22 +620,6 @@ class ImportData(Publisher, Subscriber):
 
     def read_gtfs_data_from_path(self):
         ...
-
-    """ subscriber methods """
-
-    def notify_subscriber(self, event, message):
-        logging.debug(f'class: ImportData, event: {event}, message {message}')
-        notify_function, parameters = self.notify_functions.get(event, self.notify_not_function)
-        if not parameters:
-            notify_function()
-        else:
-            notify_function(message)
-
-    def notify_not_function(self, event):
-        logging.debug('event not found in class gui: {}'.format(event))
-
-    def notify_error_message(self, message):
-        self.notify_subscriber("error_in_import_class", message)
 
     def reset_data_cause_of_error(self):
         self.progress = 0

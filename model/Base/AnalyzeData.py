@@ -23,27 +23,25 @@ class AnalyzeData(Publisher, Subscriber):
     def __init__(self, events, name, progress: int):
         super().__init__(events=events, name=name)
         self.imported_data = None
-        self.agencies_list = None
-        self.df_selected_routes = None
-
-        self.selected_agency = None
-        self.selected_route = None
-        self.selected_weekday = None
-        self.selected_dates = None
-
-        self.header_for_export_data = None
-        self.df_header_for_export_data = None
-        self.last_time = time.time()
-        self.df_direction = None
-
-        self.reset_select_data = False
-        self.create_plan_mode = None
         self.progress = progress
+        self.date_range = None
+        self.notify_functions = {}
 
-        self.notify_functions = {
-            'update_agency_list': [self.read_gtfs_agencies, False],
-            'update_routes_list': [self.get_routes_of_agency, False]
-        }
+    """ subscriber methods """
+
+    def notify_subscriber(self, event, message):
+        logging.debug(f'class: ImportData, event: {event}, message {message}')
+        notify_function, parameters = self.notify_functions.get(event, self.notify_not_function)
+        if not parameters:
+            notify_function()
+        else:
+            notify_function(message)
+
+    def notify_not_function(self, event):
+        logging.debug('event not found in class gui: {}'.format(event))
+
+    def notify_error_message(self, message):
+        self.notify_subscriber("error_in_import_class", message)
 
     @property
     def progress(self):
@@ -55,17 +53,6 @@ class AnalyzeData(Publisher, Subscriber):
         self.dispatch("update_progress_bar", "update_progress_bar routine started! Notify subscriber!")
 
     @property
-    def agencies_list(self):
-        return self._agencies_list
-
-    @agencies_list.setter
-    def agencies_list(self, value):
-        self._agencies_list = value
-        if value is not None:
-            self.dispatch("update_agency_list",
-                          "update_agency_list routine started! Notify subscriber!")
-
-    @property
     def imported_data(self):
         return self._imported_data
 
@@ -73,42 +60,17 @@ class AnalyzeData(Publisher, Subscriber):
     def imported_data(self, value):
         self._imported_data = value
         if value is not None:
-            self.read_gtfs_agencies()
+            self.getDateRange()
 
-    def get_routes_of_agency(self) -> None:
-        if self.selected_agency is not None:
-            self.find_routes_from_agency()
+    def getDateRange(self):
+        if not self.imported_data["Feedinfos"].empty:
+            self.date_range = str(self.imported_data["Feedinfos"].feed_start_date) + '-' + str(
+                self.imported_data["Feedinfos"].feed_end_date)
+        else:
+            self.date_range = self.analyzeDateRangeInGTFSData()
 
-    def find_routes_from_agency(self):
-        df_routes = self.imported_data["Routes"]
-        input_var = [{'agency_id': self.selected_agency}]
-        var_test = pd.DataFrame(input_var).set_index('agency_id')
-        cond_routes_of_agency = '''
-                    select *
-                    from df_routes 
-                    left join var_test
-                    where var_test.agency_id = df_routes.agency_id
-                    order by df_routes.route_short_name;
-                   '''
-        routes_list = sqldf(cond_routes_of_agency, locals())
-        """
-        todo
-        """
-        self.df_selected_routes = routes_list
-        return True
-
-    def read_gtfs_agencies(self):
-        df_agency = self.imported_data["Agencies"]
-        cond_agencies = '''
-                    select *
-                    from df_agency 
-                    order by df_agency.agency_id;
-                   '''
-        agency_list = sqldf(cond_agencies, locals())
-        agency_list = agency_list.values.tolist()
-        agency_str_list = []
-        for lists in agency_list:
-            agency_str_list.append('{},{}'.format(lists[0], lists[1]))
-        self.agencies_list = agency_str_list
-        # print (agency_list.values.tolist())
-        return True
+    def analyzeDateRangeInGTFSData(self):
+        if self.imported_data["Calendarweeks"] is not None:
+            self.dfdateRangeInGTFSData = self.dfWeek.groupby(['start_date', 'end_date']).size().reset_index()
+            return str(self.dfdateRangeInGTFSData.iloc[0].start_date) + '-' + str(
+                self.dfdateRangeInGTFSData.iloc[0].end_date)

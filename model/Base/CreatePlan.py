@@ -10,7 +10,7 @@ import re
 import logging
 import sys
 import os
-from enum import Enum, auto
+from GTFSEnums import CreatePlanMode
 from model.Base.ProgressBar import ProgressBar
 
 logging.basicConfig(level=logging.DEBUG,
@@ -26,11 +26,6 @@ class CreatePlan(Publisher, Subscriber):
         self.notify_functions = {
             'create_table': [self.sub_worker_create_output_fahrplan_date, False]
         }
-
-        class CreatePlanMode(Enum):
-            """ Types of methods """
-            date = 'date'
-            weekday = 'weekday'
 
         """ property """
         self.input_path = ""
