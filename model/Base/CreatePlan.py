@@ -10,7 +10,7 @@ import re
 import logging
 import sys
 import os
-from GTFSEnums import CreatePlanMode
+from ..Base.GTFSEnums import CreatePlanMode
 from model.Base.ProgressBar import ProgressBar
 
 logging.basicConfig(level=logging.DEBUG,

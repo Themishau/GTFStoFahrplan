@@ -16,7 +16,7 @@ from ..Base.SelectData import SelectData
 from ..Base.PrepareData import PrepareData
 from ..Base.CreatePlan import CreatePlan
 from ..Base.ExportPlan import ExportPlan
-
+from ..Base.GTFSEnums import GtfsColumnNames, GtfsDfNames
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",

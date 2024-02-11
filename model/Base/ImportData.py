@@ -11,7 +11,7 @@ import logging
 import sys
 import os
 from model.Base.ProgressBar import ProgressBar
-from GTFSEnums import GtfsColumnNames, GtfsDfNames
+from model.Base.GTFSEnums import GtfsColumnNames, GtfsDfNames
 
 
 from threading import Thread
@@ -161,19 +161,19 @@ class ImportData(Publisher, Subscriber):
                 df_gtfs_data = {}
 
                 with zf.open("Tmp/dfStops.pkl") as stops:
-                    df_gtfs_data["dfStops"] = pd.read_pickle(stops)
+                    df_gtfs_data[GtfsDfNames.Stops] = pd.read_pickle(stops)
                 with zf.open("Tmp/dfStopTimes.pkl") as stop_times:
-                    df_gtfs_data["dfStopTimes"] = pd.read_pickle(stop_times)
+                    df_gtfs_data[GtfsDfNames.Stoptimes] = pd.read_pickle(stop_times)
                 with zf.open("Tmp/dfTrips.pkl") as trips:
-                    df_gtfs_data["dfTrips"] = pd.read_pickle(trips)
+                    df_gtfs_data[GtfsDfNames.Trips] = pd.read_pickle(trips)
                 with zf.open("Tmp/dfWeek.pkl") as calendar:
-                    df_gtfs_data["dfWeek"] = pd.read_pickle(calendar)
+                    df_gtfs_data[GtfsDfNames.Calendarweeks] = pd.read_pickle(calendar)
                 with zf.open("Tmp/dfDates.pkl") as calendar_dates:
-                    df_gtfs_data["dfDates"] = pd.read_pickle(calendar_dates)
+                    df_gtfs_data[GtfsDfNames.Calendardates] = pd.read_pickle(calendar_dates)
                 with zf.open("Tmp/dfRoutes.pkl") as routes:
-                    df_gtfs_data["dfRoutes"] = pd.read_pickle(routes)
+                    df_gtfs_data[GtfsDfNames.Routes] = pd.read_pickle(routes)
                 with zf.open("Tmp/dfagency.pkl") as agency:
-                    df_gtfs_data["dfagency"] = pd.read_pickle(agency)
+                    df_gtfs_data[GtfsDfNames.Agencies] = pd.read_pickle(agency)
 
                 self.progress = 80
                 try:
@@ -190,19 +190,19 @@ class ImportData(Publisher, Subscriber):
             try:
                 with zipfile.ZipFile(self.input_path) as zf:
                     with io.TextIOWrapper(zf.open("stops.txt"), encoding="utf-8") as stops:
-                        raw_data["stopsList"] = [stops.readlines()[0].rstrip()]
+                        raw_data[GtfsColumnNames.stopsList] = [stops.readlines()[0].rstrip()]
                     with io.TextIOWrapper(zf.open("stop_times.txt"), encoding="utf-8") as stop_times:
-                        raw_data["stopTimesList"] = [stop_times.readlines()[0].rstrip()]
+                        raw_data[GtfsColumnNames.stopTimesList] = [stop_times.readlines()[0].rstrip()]
                     with io.TextIOWrapper(zf.open("trips.txt"), encoding="utf-8") as trips:
-                        raw_data["tripsList"] = [trips.readlines()[0].rstrip()]
+                        raw_data[GtfsColumnNames.tripsList] = [trips.readlines()[0].rstrip()]
                     with io.TextIOWrapper(zf.open("calendar.txt"), encoding="utf-8") as calendar:
-                        raw_data["calendarList"] = [calendar.readlines()[0].rstrip()]
+                        raw_data[GtfsColumnNames.calendarList] = [calendar.readlines()[0].rstrip()]
                     with io.TextIOWrapper(zf.open("calendar_dates.txt"), encoding="utf-8") as calendar_dates:
-                        raw_data["calendar_datesList"] = [calendar_dates.readlines()[0].rstrip()]
+                        raw_data[GtfsColumnNames.calendar_datesList] = [calendar_dates.readlines()[0].rstrip()]
                     with io.TextIOWrapper(zf.open("routes.txt"), encoding="utf-8") as routes:
-                        raw_data["routesList"] = [routes.readlines()[0].rstrip()]
+                        raw_data[GtfsColumnNames.routesList] = [routes.readlines()[0].rstrip()]
                     with io.TextIOWrapper(zf.open("agency.txt"), encoding="utf-8") as agency:
-                        raw_data["agencyList"] = [agency.readlines()[0].rstrip()]
+                        raw_data[GtfsColumnNames.agencyList] = [agency.readlines()[0].rstrip()]
             except:
                 logging.debug('Error in Unzipping headers')
                 return None
@@ -210,19 +210,19 @@ class ImportData(Publisher, Subscriber):
             try:
                 with zipfile.ZipFile(self.input_path) as zf:
                     with io.TextIOWrapper(zf.open("stops.txt"), encoding="utf-8") as stops:
-                        raw_data["stopsList"] += stops.readlines()[1:]
+                        raw_data[GtfsColumnNames.stopsList] += stops.readlines()[1:]
                     with io.TextIOWrapper(zf.open("stop_times.txt"), encoding="utf-8") as stop_times:
-                        raw_data["stopTimesList"] += stop_times.readlines()[1:]
+                        raw_data[GtfsColumnNames.stopTimesList] += stop_times.readlines()[1:]
                     with io.TextIOWrapper(zf.open("trips.txt"), encoding="utf-8") as trips:
-                        raw_data["tripsList"] += trips.readlines()[1:]
+                        raw_data[GtfsColumnNames.tripsList] += trips.readlines()[1:]
                     with io.TextIOWrapper(zf.open("calendar.txt"), encoding="utf-8") as calendar:
-                        raw_data["calendarList"] += calendar.readlines()[1:]
+                        raw_data[GtfsColumnNames.calendarList] += calendar.readlines()[1:]
                     with io.TextIOWrapper(zf.open("calendar_dates.txt"), encoding="utf-8") as calendar_dates:
-                        raw_data["calendar_datesList"] += calendar_dates.readlines()[1:]
+                        raw_data[GtfsColumnNames.calendar_datesList] += calendar_dates.readlines()[1:]
                     with io.TextIOWrapper(zf.open("routes.txt"), encoding="utf-8") as routes:
-                        raw_data["routesList"] += routes.readlines()[1:]
+                        raw_data[GtfsColumnNames.routesList] += routes.readlines()[1:]
                     with io.TextIOWrapper(zf.open("agency.txt"), encoding="utf-8") as agency:
-                        raw_data["agencyList"] += agency.readlines()[1:]
+                        raw_data[GtfsColumnNames.agencyList] += agency.readlines()[1:]
 
             except:
                 logging.debug('Error in Unzipping data ')
@@ -231,18 +231,18 @@ class ImportData(Publisher, Subscriber):
             try:
                 with zipfile.ZipFile(self.input_path) as zf:
                     with io.TextIOWrapper(zf.open("feed_info.txt"), encoding="utf-8") as feed_info:
-                        raw_data["feed_infoHeader"] = [feed_info.readlines()[0].rstrip()]
+                        raw_data[GtfsColumnNames.feed_info] = [feed_info.readlines()[0].rstrip()]
             except:
                 logging.debug('no feed info header')
-                raw_data["feed_infoHeader"] = []
+                raw_data[GtfsColumnNames.feed_info] = []
 
             try:
                 with zipfile.ZipFile(self.input_path) as zf:
                     with io.TextIOWrapper(zf.open("feed_info.txt"), encoding="utf-8") as feed_info:
-                        raw_data["feed_info"] += feed_info.readlines()[1:]
+                        raw_data[GtfsColumnNames.feed_info] += feed_info.readlines()[1:]
             except:
                 logging.debug('no feed info data')
-                raw_data["feed_infoHeader"] = []
+                raw_data[GtfsColumnNames.feed_info] = []
 
             logging.debug(f"raw_data keys: {raw_data.keys()}")
 
@@ -251,27 +251,17 @@ class ImportData(Publisher, Subscriber):
     def print_all_headers(self, stopsHeader, stop_timesHeader, tripsHeader, calendarHeader, calendar_datesHeader,
                           routesHeader, agencyHeader, feed_infoHeader):
         logging.debug('stopsHeader          = {} \n'
-                      'stop_timesHeader     = {} \n'
-                      'tripsHeader          = {} \n'
-                      'calendarHeader       = {} \n'
-                      'calendar_datesHeader = {} \n'
-                      'routesHeader         = {} \n'
-                      'agencyHeader         = {} \n'
-                      'feed_infoHeader      = {}'.format(stopsHeader, stop_timesHeader, tripsHeader, calendarHeader,
+        'stop_timesHeader     = {} \n'
+         'tripsHeader          = {} \n'
+        'calendarHeader       = {} \n'
+        'calendar_datesHeader = {} \n'
+         'routesHeader         = {} \n'
+        'agencyHeader         = {} \n'
+        'feed_infoHeader      = {}'.format(stopsHeader, stop_timesHeader, tripsHeader, calendarHeader,
                                                          calendar_datesHeader, routesHeader, agencyHeader,
                                                          feed_infoHeader))
 
     """ reset methods """
-
-    def clean_dicts(self) -> bool:
-        self.stops_dict = {}
-        self.stop_times_dict = {}
-        self.trip_dict = {}
-        self.calendar_week_dict = {}
-        self.calendar_dates_dict = {}
-        self.routes_fahrt_dict = {}
-        self.agency_fahrt_dict = {}
-        return True
 
     def create_dfs(self, raw_data):
 
@@ -303,7 +293,7 @@ class ImportData(Publisher, Subscriber):
                          executor.submit(self.get_gtfs_week, raw_data),
                          executor.submit(self.get_gtfs_dates, raw_data),
                          executor.submit(self.get_gtfs_agency, raw_data)]
-            if raw_data.get('feed_info') is not None:
+            if raw_data.get(GtfsColumnNames.feed_info) is not None:
                 processes.append(executor.submit(self.get_gtfs_feed_info, raw_data))
 
             results = concurrent.futures.as_completed(processes)
@@ -321,7 +311,7 @@ class ImportData(Publisher, Subscriber):
                          executor.submit(self.create_df_week, raw_dict_data),
                          executor.submit(self.create_df_dates, raw_dict_data),
                          executor.submit(self.create_df_agency, raw_dict_data)]
-            if raw_dict_data.get('feed_info') is not None:
+            if raw_dict_data.get(GtfsColumnNames.feed_info) is not None:
                 processes.append(executor.submit(self.create_df_feed, raw_dict_data))
 
             results = concurrent.futures.as_completed(processes)
@@ -337,16 +327,16 @@ class ImportData(Publisher, Subscriber):
         tripdict = {
         }
 
-        headers = raw_data["tripsList"][0].replace('"', "").split(",")
+        headers = raw_data[GtfsColumnNames.tripsList][0].replace('"', "").split(",")
         itripDate = len(headers)
         header_names = []
         for haltestellen_header in headers:
             tripdict[haltestellen_header] = []
             header_names.append(haltestellen_header)
 
-        raw_data["tripsList"].remove(raw_data["tripsList"][0])
+        raw_data[GtfsColumnNames.tripsList].remove(raw_data[GtfsColumnNames.tripsList][0])
 
-        for data in raw_data["tripsList"]:
+        for data in raw_data[GtfsColumnNames.tripsList]:
             data = data.replace(", ", " ")
             data = data.replace('"', "")
             data = data.replace('\n', "")
@@ -360,16 +350,16 @@ class ImportData(Publisher, Subscriber):
 
         stopsdict = {
         }
-        headers = raw_data["stopsList"][0].replace('"', "").split(",")
+        headers = raw_data[GtfsColumnNames.stopsList][0].replace('"', "").split(",")
         istopDate = len(headers)
         header_names = []
         for haltestellen_header in headers:
             stopsdict[haltestellen_header] = []
             header_names.append(haltestellen_header)
 
-        raw_data["stopsList"].remove(raw_data["stopsList"][0])
+        raw_data[GtfsColumnNames.stopsList].remove(raw_data[GtfsColumnNames.stopsList][0])
 
-        for haltestellen in raw_data["stopsList"]:
+        for haltestellen in raw_data[GtfsColumnNames.stopsList]:
             haltestellen = haltestellen.replace(", ", " ")
             haltestellen = haltestellen.replace('"', "")
             haltestellen = haltestellen.replace('\n', "")
@@ -384,16 +374,16 @@ class ImportData(Publisher, Subscriber):
         stopTimesdict = {
         }
 
-        headers = raw_data["stopTimesList"][0].replace('"', "").split(",")
+        headers = raw_data[GtfsColumnNames.stopTimesList][0].replace('"', "").split(",")
         istopTimeData = len(headers)
         header_names = []
         for haltestellen_header in headers:
             stopTimesdict[haltestellen_header] = []
             header_names.append(haltestellen_header)
 
-        raw_data["stopTimesList"].remove(raw_data["stopTimesList"][0])
+        raw_data[GtfsColumnNames.stopTimesList].remove(raw_data[GtfsColumnNames.stopTimesList][0])
 
-        for data in raw_data["stopTimesList"]:
+        for data in raw_data[GtfsColumnNames.stopTimesList]:
             data = data.replace(", ", " ")
             data = data.replace('"', "")
             data = data.replace('\n', "")
@@ -408,16 +398,16 @@ class ImportData(Publisher, Subscriber):
         calendarWeekdict = {
         }
 
-        headers = raw_data["calendarList"][0].replace('"', "").split(",")
+        headers = raw_data[GtfsColumnNames.calendarList][0].replace('"', "").split(",")
         icalendarDate = len(headers)
         header_names = []
         for haltestellen_header in headers:
             calendarWeekdict[haltestellen_header] = []
             header_names.append(haltestellen_header)
 
-        raw_data["calendarList"].remove(raw_data["calendarList"][0])
+        raw_data[GtfsColumnNames.calendarList].remove(raw_data[GtfsColumnNames.calendarList][0])
 
-        for data in raw_data["calendarList"]:
+        for data in raw_data[GtfsColumnNames.calendarList]:
             data = data.replace(", ", " ")
             data = data.replace('"', "")
             data = data.replace('\n', "")
@@ -432,16 +422,16 @@ class ImportData(Publisher, Subscriber):
         calendarDatesdict = {
         }
 
-        headers = raw_data["calendar_datesList"][0].replace('"', "").split(",")
+        headers = raw_data[GtfsColumnNames.calendar_datesList][0].replace('"', "").split(",")
         icalendarDate = len(headers)
         header_names = []
         for haltestellen_header in headers:
             calendarDatesdict[haltestellen_header] = []
             header_names.append(haltestellen_header)
 
-        raw_data["calendar_datesList"].remove(raw_data["calendar_datesList"][0])
+        raw_data[GtfsColumnNames.calendar_datesList].remove(raw_data[GtfsColumnNames.calendar_datesList][0])
 
-        for data in raw_data["calendar_datesList"]:
+        for data in raw_data[GtfsColumnNames.calendar_datesList]:
             data = data.replace(", ", " ")
             data = data.replace('"', "")
             data = data.replace('\n', "")
@@ -455,16 +445,16 @@ class ImportData(Publisher, Subscriber):
         routesFahrtdict = {
         }
 
-        headers = raw_data["routesList"][0].replace('"', "").split(",")
+        headers = raw_data[GtfsColumnNames.routesList][0].replace('"', "").split(",")
         iroutesFahrt = len(headers)
         header_names = []
         for haltestellen_header in headers:
             routesFahrtdict[haltestellen_header] = []
             header_names.append(haltestellen_header)
 
-        raw_data["routesList"].remove(raw_data["routesList"][0])
+        raw_data[GtfsColumnNames.routesList].remove(raw_data[GtfsColumnNames.routesList][0])
 
-        for data in raw_data["routesList"]:
+        for data in raw_data[GtfsColumnNames.routesList]:
             data = data.replace(", ", " ")
             data = data.replace('"', "")
             data = data.replace('\n', "")
@@ -478,16 +468,16 @@ class ImportData(Publisher, Subscriber):
         feed_infodict = {
         }
 
-        headers = raw_data["feed_infoHeader"][0].replace('"', "").split(",")
+        headers = raw_data[GtfsColumnNames.feed_info][0].replace('"', "").split(",")
         ifeed_infodict = len(headers)
         header_names = []
         for haltestellen_header in headers:
             feed_infodict[haltestellen_header] = []
             header_names.append(haltestellen_header)
 
-        raw_data["feed_infoHeader"].remove(raw_data["feed_infoHeader"][0])
+        raw_data[GtfsColumnNames.feed_info].remove(raw_data[GtfsColumnNames.feed_info][0])
 
-        for data in raw_data["feed_infoHeader"]:
+        for data in raw_data[GtfsColumnNames.feed_info]:
             data = data.replace(", ", " ")
             data = data.replace('"', "")
             data = data.replace('\n', "")
@@ -502,15 +492,15 @@ class ImportData(Publisher, Subscriber):
         agencyFahrtdict = {
         }
 
-        headers = raw_data["agencyList"][0].replace('"', "").split(",")
+        headers = raw_data[GtfsColumnNames.agencyList][0].replace('"', "").split(",")
         iagencyData = len(headers)
         header_names = []
         for haltestellen_header in headers:
             agencyFahrtdict[haltestellen_header] = []
             header_names.append(haltestellen_header)
-        raw_data["agencyList"].remove(raw_data["agencyList"][0])
+        raw_data[GtfsColumnNames.agencyList].remove(raw_data[GtfsColumnNames.agencyList][0])
 
-        for data in raw_data["agencyList"]:
+        for data in raw_data[GtfsColumnNames.agencyList]:
             data = data.replace(", ", " ")
             data = data.replace('"', "")
             data = data.replace('\n', "")

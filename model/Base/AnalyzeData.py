@@ -13,6 +13,7 @@ import os
 from enum import Enum, auto
 from model.Base.ProgressBar import ProgressBar
 from model.Base.ImportData import ImportData
+from model.Base.GTFSEnums import GtfsColumnNames, GtfsDfNames
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
@@ -63,14 +64,15 @@ class AnalyzeData(Publisher, Subscriber):
             self.getDateRange()
 
     def getDateRange(self):
-        if not self.imported_data["Feedinfos"].empty:
-            self.date_range = str(self.imported_data["Feedinfos"].feed_start_date) + '-' + str(
-                self.imported_data["Feedinfos"].feed_end_date)
-        else:
+        if GtfsDfNames.Feedinfos in self.imported_data:
             self.date_range = self.analyzeDateRangeInGTFSData()
+        else:
+            self.date_range = str(self.imported_data[GtfsDfNames.Feedinfos].feed_start_date) + '-' + str(
+                self.imported_data[GtfsDfNames.Feedinfos].feed_end_date)
+
 
     def analyzeDateRangeInGTFSData(self):
-        if self.imported_data["Calendarweeks"] is not None:
+        if self.imported_data[GtfsDfNames.Calendarweeks] is not None:
             self.dfdateRangeInGTFSData = self.dfWeek.groupby(['start_date', 'end_date']).size().reset_index()
             return str(self.dfdateRangeInGTFSData.iloc[0].start_date) + '-' + str(
                 self.dfdateRangeInGTFSData.iloc[0].end_date)
