@@ -35,12 +35,17 @@ class Publisher(object):
     def register(self, event, who, callback=None):
         if callback is None:
             callback = getattr(who, 'notify_subscriber')
+        logging.debug(f"register {event} to {self.events} ")
         self.get_subscribers(event)[who] = callback
 
     def unregister(self, event, who):
         del self.get_subscribers(event)[who]
 
     def dispatch(self, event, message):
-        logging.debug(f"{self} {self.get_subscribers(event).items()} dispatch(self, event, message) {event} {message} ")
-        for subscriber, callback in self.get_subscribers(event).items():
-            callback(event, message)
+        try:
+            logging.debug(f"{self} {self.get_subscribers(event).items()} dispatch(self, event, message) {event} {message} ")
+            for subscriber, callback in self.get_subscribers(event).items():
+                callback(event, message)
+        except KeyError:
+            logging.debug(f"these are the events listed {self.events} {event} is mmissing ")
+

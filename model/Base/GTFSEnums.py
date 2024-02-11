@@ -27,3 +27,20 @@ class GtfsDfNames(Enum):
     Calendardates = 'Calendardates'
     Agencies = 'Agencies'
     Feedinfos = 'Feedinfos'
+
+
+class SchedulePlanerFunctionEnum(Enum):
+    import_GTFS = 'import_GTFS'
+    update_routes_list = 'update_routes_list'
+    update_stopname_create_list = 'update_stopname_create_list'
+    update_date_range = 'update_date_range'
+    update_weekday_list = 'update_weekday_list'
+    update_agency_list = 'update_agency_list'
+    update_weekdate_option = 'update_weekdate_option'
+    message = 'message'
+    update_progress_bar = 'update_progress_bar'
+
+
+class ImportDataFuncitonEnum(Enum):
+    import_GTFS = 'import_GTFS'
+    update_progress_bar = 'update_progress_bar'

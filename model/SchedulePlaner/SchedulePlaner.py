@@ -16,7 +16,7 @@ from ..Base.SelectData import SelectData
 from ..Base.PrepareData import PrepareData
 from ..Base.CreatePlan import CreatePlan
 from ..Base.ExportPlan import ExportPlan
-from ..Base.GTFSEnums import GtfsColumnNames, GtfsDfNames
+from ..Base.GTFSEnums import *
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
@@ -41,15 +41,15 @@ class SchedulePlaner(Publisher, Subscriber):
         self.import_Data = None
 
         self.notify_functions = {
-            'import_GTFS': [self.import_gtfs_data, False],
-            'update_routes_list': [self.sub_not_implemented, False],
-            'update_stopname_create_list': [self.sub_not_implemented, False],
-            'update_date_range': [self.sub_not_implemented, False],
-            'update_weekday_list': [self.sub_not_implemented, False],
-            'update_agency_list': [self.sub_not_implemented, False],
-            'update_weekdate_option': [self.sub_not_implemented, False],
-            'message': [self.sub_not_implemented, False],
-            'update_progress_bar': [self.update_progress_bar, True]
+            ImportDataFuncitonEnum.import_GTFS: [self.import_gtfs_data, False],
+            SchedulePlanerFunctionEnum.update_routes_list: [self.sub_not_implemented, False],
+            SchedulePlanerFunctionEnum.update_stopname_create_list: [self.sub_not_implemented, False],
+            SchedulePlanerFunctionEnum.update_date_range: [self.sub_not_implemented, False],
+            SchedulePlanerFunctionEnum.update_weekday_list: [self.sub_not_implemented, False],
+            SchedulePlanerFunctionEnum.update_agency_list: [self.sub_not_implemented, False],
+            SchedulePlanerFunctionEnum.update_weekdate_option: [self.sub_not_implemented, False],
+            SchedulePlanerFunctionEnum.message: [self.sub_not_implemented, False],
+            SchedulePlanerFunctionEnum.update_progress_bar: [self.update_progress_bar, True]
         }
 
     """ methods """
@@ -82,21 +82,19 @@ class SchedulePlaner(Publisher, Subscriber):
         self.registerProgressUpdateSubscriptions()
 
     def registerProgressUpdateSubscriptions(self):
-        self.import_Data.register('update_progress_bar', self)
-        self.select_data.register('update_progress_bar', self)
-        self.analyze_data.register('update_progress_bar', self)
+        self.import_Data.register(SchedulePlanerFunctionEnum.update_progress_bar, self)
+        self.select_data.register(SchedulePlanerFunctionEnum.update_progress_bar, self)
+        self.analyze_data.register(SchedulePlanerFunctionEnum.update_progress_bar, self)
         # self.prepare_data.register('update_progress_bar', self)
         # self.export_plan.register('update_progress_bar', self)
 
 
     def initialize_import_data(self):
-        self.import_Data = ImportData(['ImportGTFS',
-                                       'update_progress_bar',
-                                       'message'], 'import_data', self.progress)
+        self.import_Data = ImportData([SchedulePlanerFunctionEnum.update_progress_bar], 'import_data', self.progress)
 
     def initialize_select_data(self):
         self.select_data = SelectData(['ImportGTFS',
-                                       'update_progress_bar',
+                                       SchedulePlanerFunctionEnum.update_progress_bar,
                                        'update_routes_list',
                                        'update_agency_list',
                                        'message'], 'select_data', self.progress)

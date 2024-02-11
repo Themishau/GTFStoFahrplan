@@ -20,6 +20,8 @@ from view.create_table_import import CreateTableImport
 from view.create_table_select import CreateTableSelect
 from view.download_gtfs import DownloadGTFS
 
+from model.Base.GTFSEnums import *
+
 # from model.Base.gtfs import gtfs
 from model.SchedulePlaner.SchedulePlaner import SchedulePlaner
 from model.observer import Publisher, Subscriber
@@ -91,19 +93,15 @@ class Model(QObject, Publisher, Subscriber):
         }
 
     def set_up_schedule_planer(self):
-        self.planer = SchedulePlaner(['ImportGTFS',
-                                      'update_progress_bar',
-                                      'update_weekday_list',
-                                      'update_routes_list',
-                                      'update_date_range',
-                                      'update_agency_list',
-                                      'active_weekdate_options',
-                                      'update_weekdate_option',
-                                      'update_stopname_create_list',
-                                      'error_message',
-                                      'message',
-                                      'data_changed',
-                                      'restart'], 'schedule_class')
+        self.planer = SchedulePlaner([SchedulePlanerFunctionEnum.import_GTFS,
+        SchedulePlanerFunctionEnum.update_routes_list,
+        SchedulePlanerFunctionEnum.update_stopname_create_list,
+        SchedulePlanerFunctionEnum.update_date_range,
+        SchedulePlanerFunctionEnum.update_weekday_list,
+        SchedulePlanerFunctionEnum.update_agency_list,
+        SchedulePlanerFunctionEnum.update_weekdate_option,
+        SchedulePlanerFunctionEnum.message,
+        SchedulePlanerFunctionEnum.update_progress_bar], 'schedule_class')
         self.planer.initilize_scheduler()
 
     def set_up_umlauf_planer(self):
