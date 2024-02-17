@@ -95,7 +95,7 @@ class Model(QObject, Publisher, Subscriber):
         }
 
     def set_up_schedule_planer(self):
-        self.planer = SchedulePlaner([UpdateGuiEnum.import_GTFS,
+        self.planer = SchedulePlaner([SchedulePlanerTriggerActionsEnum.import_GTFS,
                                       UpdateGuiEnum.update_routes_list,
                                       UpdateGuiEnum.update_stopname_create_list,
                                       UpdateGuiEnum.update_date_range,
@@ -341,14 +341,14 @@ class Gui(QMainWindow, Publisher, Subscriber):
 
         self.lineend = '\n'
         self.textBrowserText = ''
-        self.notify_functions = {'update_routes_list': [self.sub_update_routes_list, False],
-                                 'update_weekday_list': [self.sub_update_weekdate_option, False],
-                                 'update_agency_list': [self.sub_update_agency_list, False],
-                                 'update_weekdate_option': [self.sub_update_weekdate_option, False],
-                                 'update_stopname_create_list': [self.sub_update_stopname_create_list, False],
-                                 'message': [self.send_message_box, True],
-                                 'update_progress_bar': [self.sub_update_progress_bar, False],
-                                 'restart': [self.notify_restart, False]
+        self.notify_functions = {UpdateGuiEnum.update_routes_list: [self.sub_update_routes_list, False],
+                                 UpdateGuiEnum.update_weekday_list: [self.sub_update_weekdate_option, False],
+                                 UpdateGuiEnum.update_agency_list: [self.sub_update_agency_list, False],
+                                 UpdateGuiEnum.update_weekdate_option: [self.sub_update_weekdate_option, False],
+                                 UpdateGuiEnum.update_stopname_create_list: [self.sub_update_stopname_create_list, False],
+                                 UpdateGuiEnum.message: [self.send_message_box, True],
+                                 UpdateGuiEnum.update_progress_bar: [self.sub_update_progress_bar, False],
+                                 ControllerTriggerActionsEnum.restart: [self.notify_restart, False]
                                  }
 
         self.model = Model(['update_weekday_list',
@@ -528,14 +528,14 @@ class Gui(QMainWindow, Publisher, Subscriber):
         # init model with publisher
         self.model.set_up_schedule_planer()
         if self.model.planer is not None:
-            self.model.planer.select_data.register(SchedulePlanerFunctionEnum.update_routes_list, self)
-            self.model.planer.register(SchedulePlanerFunctionEnum.update_date_range, self)
-            self.model.planer.register(SchedulePlanerFunctionEnum.update_weekday_list, self)
-            self.model.planer.register(SchedulePlanerFunctionEnum.update_stopname_create_list, self)
-            self.model.planer.register(SchedulePlanerFunctionEnum.update_weekdate_option, self)
-            self.model.planer.register(SchedulePlanerFunctionEnum.message, self)
-            self.model.planer.register(SchedulePlanerFunctionEnum.update_progress_bar, self)
-            self.model.planer.select_data.register(SchedulePlanerFunctionEnum.update_agency_list, self)
+            self.model.planer.select_data.register(UpdateGuiEnum.update_routes_list, self)
+            self.model.planer.register(UpdateGuiEnum.update_date_range, self)
+            self.model.planer.register(UpdateGuiEnum.update_weekday_list, self)
+            self.model.planer.register(UpdateGuiEnum.update_stopname_create_list, self)
+            self.model.planer.register(UpdateGuiEnum.update_weekdate_option, self)
+            self.model.planer.register(UpdateGuiEnum.message, self)
+            self.model.planer.register(UpdateGuiEnum.update_progress_bar, self)
+            self.model.planer.select_data.register(UpdateGuiEnum.update_agency_list, self)
 
     def set_process(self, task):
         self.model.gtfs.gtfs_process = task

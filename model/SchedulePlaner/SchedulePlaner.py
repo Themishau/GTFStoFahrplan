@@ -98,7 +98,7 @@ class SchedulePlaner(Publisher, Subscriber):
 
     def initialize_analyze_data(self):
         self.analyze_data = AnalyzeData([UpdateGuiEnum.update_date_range,
-                                                UpdateGuiEnum.update_progress_bar], 'analyze_data', self.progress)
+                                         UpdateGuiEnum.update_progress_bar], 'analyze_data', self.progress)
 
     def initialize_export_plan(self):
         self.export_plan = ExportPlan([SchedulePlanerTriggerActionsEnum.export_plan,
@@ -130,7 +130,7 @@ class SchedulePlaner(Publisher, Subscriber):
     @progress.setter
     def progress(self, value):
         self._progress = value
-        self.dispatch(UpdateGuiEnum.update_progress_bar, UpdateGuiEnum.update_progress_bar)
+        self.dispatch(UpdateGuiEnum.update_progress_bar, UpdateGuiEnum.update_progress_bar.value)
 
     @property
     def export_plan(self):

@@ -11,7 +11,7 @@ import logging
 import sys
 import os
 from model.Base.ProgressBar import ProgressBar
-from model.Base.GTFSEnums import GtfsColumnNames, GtfsDfNames, SchedulePlanerFunctionEnum
+from model.Base.GTFSEnums import *
 
 
 from threading import Thread
@@ -93,7 +93,7 @@ class ImportData(Publisher, Subscriber):
     @progress.setter
     def progress(self, value):
         self._progress = value
-        self.dispatch(SchedulePlanerFunctionEnum.update_progress_bar, f"{value}")
+        self.dispatch(UpdateGuiEnum.update_progress_bar, f"{value}")
 
     @property
     def pickle_export_checked(self):
