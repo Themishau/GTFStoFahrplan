@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # https://www.protechtraining.com/blog/post/tutorial-the-observer-pattern-in-python-879
 import logging
+from Base.GTFSEnums import *
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
@@ -12,6 +13,10 @@ class Subscriber(object):
         logging.debug("Subscriber name {}".format(self.name))
 
     def notify_subscriber(self, event, message):
+        logging.debug("no override")
+        logging.debug('{}'.format(self.name))
+
+    def trigger_action(self, event, message):
         logging.debug("no override")
         logging.debug('{}'.format(self.name))
 
@@ -35,7 +40,19 @@ class Publisher(object):
     def register(self, event, who, callback=None):
         if callback is None:
             callback = getattr(who, 'notify_subscriber')
-        logging.debug(f"register {event} to {self.events} ")
+        else:
+            callback = getattr(who, callback)
+        logging.debug(f"register {callback} event: {event} to {self.events} \n")
+        self.get_subscribers(event)[who] = callback
+
+    def register_self_trigger_action(self, event, who):
+        callback = getattr(who, SubscriberTypes.trigger_action.value)
+        logging.debug(f"register {callback} event: {event} to {self.events} \n")
+        self.get_subscribers(event)[who] = callback
+
+    def register_self_update_gui(self, event, who):
+        callback = getattr(who, SubscriberTypes.update_gui.value)
+        logging.debug(f"register {callback} event: {event} to {self.events} \n")
         self.get_subscribers(event)[who] = callback
 
     def unregister(self, event, who):

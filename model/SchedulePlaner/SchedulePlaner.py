@@ -42,14 +42,14 @@ class SchedulePlaner(Publisher, Subscriber):
 
         self.notify_functions = {
             ImportDataFuncitonEnum.import_GTFS: [self.import_gtfs_data, False],
-            SchedulePlanerFunctionEnum.update_routes_list: [self.sub_not_implemented, False],
-            SchedulePlanerFunctionEnum.update_stopname_create_list: [self.sub_not_implemented, False],
-            SchedulePlanerFunctionEnum.update_date_range: [self.sub_not_implemented, False],
-            SchedulePlanerFunctionEnum.update_weekday_list: [self.sub_not_implemented, False],
-            SchedulePlanerFunctionEnum.update_agency_list: [self.sub_not_implemented, False],
-            SchedulePlanerFunctionEnum.update_weekdate_option: [self.sub_not_implemented, False],
-            SchedulePlanerFunctionEnum.message: [self.sub_not_implemented, False],
-            SchedulePlanerFunctionEnum.update_progress_bar: [self.update_progress_bar, True]
+            UpdateGuiEnum.update_routes_list: [self.sub_not_implemented, False],
+            UpdateGuiEnum.update_stopname_create_list: [self.sub_not_implemented, False],
+            UpdateGuiEnum.update_date_range: [self.sub_not_implemented, False],
+            UpdateGuiEnum.update_weekday_list: [self.sub_not_implemented, False],
+            UpdateGuiEnum.update_agency_list: [self.sub_not_implemented, False],
+            UpdateGuiEnum.update_weekdate_option: [self.sub_not_implemented, False],
+            UpdateGuiEnum.message: [self.sub_not_implemented, False],
+            UpdateGuiEnum.update_progress_bar: [self.update_progress_bar, True]
         }
 
     """ methods """
@@ -82,30 +82,27 @@ class SchedulePlaner(Publisher, Subscriber):
         self.registerProgressUpdateSubscriptions()
 
     def registerProgressUpdateSubscriptions(self):
-        self.import_Data.register(SchedulePlanerFunctionEnum.update_progress_bar, self)
-        self.select_data.register(SchedulePlanerFunctionEnum.update_progress_bar, self)
-        self.analyze_data.register(SchedulePlanerFunctionEnum.update_progress_bar, self)
+        self.import_Data.register_self_update_gui(UpdateGuiEnum.update_progress_bar, self)
+        self.select_data.register_self_update_gui(UpdateGuiEnum.update_progress_bar, self)
+        self.analyze_data.register_self_update_gui(UpdateGuiEnum.update_progress_bar, self)
         # self.prepare_data.register('update_progress_bar', self)
         # self.export_plan.register('update_progress_bar', self)
 
-
     def initialize_import_data(self):
-        self.import_Data = ImportData([SchedulePlanerFunctionEnum.update_progress_bar], 'import_data', self.progress)
+        self.import_Data = ImportData([UpdateGuiEnum.update_progress_bar], 'import_data', self.progress)
 
     def initialize_select_data(self):
-        self.select_data = SelectData(['ImportGTFS',
-                                       SchedulePlanerFunctionEnum.update_progress_bar,
-                                       'update_routes_list',
-                                       'update_agency_list',
-                                       'message'], 'select_data', self.progress)
+        self.select_data = SelectData([UpdateGuiEnum.update_progress_bar,
+                                       UpdateGuiEnum.update_routes_list,
+                                       UpdateGuiEnum.update_agency_list], 'select_data', self.progress)
+
     def initialize_analyze_data(self):
-        self.analyze_data = AnalyzeData(['update_progress_bar',
-                                       'message'], 'analyze_data', self.progress)
+        self.analyze_data = AnalyzeData([UpdateGuiEnum.update_date_range,
+                                                UpdateGuiEnum.update_progress_bar], 'analyze_data', self.progress)
 
     def initialize_export_plan(self):
-        self.export_plan = ExportPlan(['ExportPlan',
-                                       'update_progress_bar',
-                                       'message'], 'export_plan', self.progress)
+        self.export_plan = ExportPlan([SchedulePlanerTriggerActionsEnum.export_plan,
+                                       UpdateGuiEnum.update_progress_bar], 'export_plan', self.progress)
 
     def set_paths(self, input_path, output_path, picklesavepath=""):
         self.import_Data.input_path = input_path
@@ -118,12 +115,12 @@ class SchedulePlaner(Publisher, Subscriber):
             imported_data = self.import_Data.import_gtfs()
 
             if imported_data is None:
-                self.notify_error_message(f"no data in imported_data")
+                self.notify_error_message(ErrorMessageRessources.import_data_error.value)
                 return False
 
             self.imported_data = imported_data
         except AttributeError:
-            self.notify_error_message("No import object generated.")
+            self.notify_error_message(ErrorMessageRessources.no_import_object_generated.value)
             return False
 
     @property
@@ -133,7 +130,7 @@ class SchedulePlaner(Publisher, Subscriber):
     @progress.setter
     def progress(self, value):
         self._progress = value
-        self.dispatch("update_progress_bar", "update_progress_bar")
+        self.dispatch(UpdateGuiEnum.update_progress_bar, UpdateGuiEnum.update_progress_bar)
 
     @property
     def export_plan(self):

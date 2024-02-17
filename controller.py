@@ -60,6 +60,7 @@ class GTFSWorker(QThread, Publisher, Subscriber):
             self.dispatch("sub_worker_create_output_fahrplan_weekday",
                           "sub_worker_create_output_fahrplan_weekday routine started! Notify subscriber!")
 
+
 class Worker(QObject):
     def __init__(self, param):
         super().__init__()
@@ -68,6 +69,7 @@ class Worker(QObject):
     def run(self):
         # Use self.param in your long-running task
         print("Running task with parameter:", self.param)
+
 
 # noinspection PyUnresolvedReferences
 class Model(QObject, Publisher, Subscriber):
@@ -93,15 +95,15 @@ class Model(QObject, Publisher, Subscriber):
         }
 
     def set_up_schedule_planer(self):
-        self.planer = SchedulePlaner([SchedulePlanerFunctionEnum.import_GTFS,
-        SchedulePlanerFunctionEnum.update_routes_list,
-        SchedulePlanerFunctionEnum.update_stopname_create_list,
-        SchedulePlanerFunctionEnum.update_date_range,
-        SchedulePlanerFunctionEnum.update_weekday_list,
-        SchedulePlanerFunctionEnum.update_agency_list,
-        SchedulePlanerFunctionEnum.update_weekdate_option,
-        SchedulePlanerFunctionEnum.message,
-        SchedulePlanerFunctionEnum.update_progress_bar], 'schedule_class')
+        self.planer = SchedulePlaner([UpdateGuiEnum.import_GTFS,
+                                      UpdateGuiEnum.update_routes_list,
+                                      UpdateGuiEnum.update_stopname_create_list,
+                                      UpdateGuiEnum.update_date_range,
+                                      UpdateGuiEnum.update_weekday_list,
+                                      UpdateGuiEnum.update_agency_list,
+                                      UpdateGuiEnum.update_weekdate_option,
+                                      UpdateGuiEnum.message,
+                                      UpdateGuiEnum.update_progress_bar], 'scheduler')
         self.planer.initilize_scheduler()
 
     def set_up_umlauf_planer(self):
@@ -370,7 +372,6 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.register('start_create_table_continue', self.model)
         self.model.register('data_changed', self)
 
-
         # init Observer model -> controller
         self.model.register('restart', self)
         self.model.register('message', self)
@@ -511,7 +512,8 @@ class Gui(QMainWindow, Publisher, Subscriber):
         # self.CreateCreate_Tab.ui.tableView_sorting_stops.populate()
 
     def sub_update_agency_list(self):
-        self.CreateSelect_Tab.ui.AgenciesTableView.setModel(TableModel(self.model.planer.select_data.imported_data["Agencies"]))
+        self.CreateSelect_Tab.ui.AgenciesTableView.setModel(
+            TableModel(self.model.planer.select_data.imported_data["Agencies"]))
         self.CreateCreate_Tab.ui.line_Selection_date_range.setText(self.model.gtfs.date_range)
         self.CreateCreate_Tab.ui.lineDateInput.setText(self.model.gtfs.date_range)
         self.show_Create_Select_Window()
@@ -526,14 +528,14 @@ class Gui(QMainWindow, Publisher, Subscriber):
         # init model with publisher
         self.model.set_up_schedule_planer()
         if self.model.planer is not None:
-            self.model.planer.select_data.register('update_routes_list', self)  # Achtung, sich selbst angeben und nicht self.controller
-            self.model.planer.register('update_date_range', self)
-            self.model.planer.register('update_weekday_list', self)
-            self.model.planer.register('update_stopname_create_list', self)
-            self.model.planer.register('update_weekdate_option', self)
-            self.model.planer.register('message', self)
-            self.model.planer.register('update_progress_bar', self)
-            self.model.planer.select_data.register('update_agency_list', self)  # Achtung, sich selbst angeben und nicht self.controller
+            self.model.planer.select_data.register(SchedulePlanerFunctionEnum.update_routes_list, self)
+            self.model.planer.register(SchedulePlanerFunctionEnum.update_date_range, self)
+            self.model.planer.register(SchedulePlanerFunctionEnum.update_weekday_list, self)
+            self.model.planer.register(SchedulePlanerFunctionEnum.update_stopname_create_list, self)
+            self.model.planer.register(SchedulePlanerFunctionEnum.update_weekdate_option, self)
+            self.model.planer.register(SchedulePlanerFunctionEnum.message, self)
+            self.model.planer.register(SchedulePlanerFunctionEnum.update_progress_bar, self)
+            self.model.planer.select_data.register(SchedulePlanerFunctionEnum.update_agency_list, self)
 
     def set_process(self, task):
         self.model.gtfs.gtfs_process = task
@@ -677,12 +679,6 @@ class Gui(QMainWindow, Publisher, Subscriber):
                                 self.CreateImport_Tab.ui.lineOutputPath.text(),
                                 self.CreateImport_Tab.ui.picklesavename.text()):
             self.start_function_async(getattr(self.model, "model_import_gtfs_data"))
-
-            # self.thread = QThread()
-            # self.model.moveToThread(self.thread)
-            # self.thread.started.connect(self.model.model_import_gtfs_data)
-            # self.thread.start()
-            # Thread(target=self.model.model_import_gtfs_data()).start()
             logging.debug("started import test")
         else:
             self.notify_restart()
