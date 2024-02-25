@@ -12,9 +12,9 @@ class Subscriber(object):
         self.name = name
         logging.debug("Subscriber name {}".format(self.name))
 
-    def notify_subscriber(self, event, message):
-        logging.debug("no override")
-        logging.debug('{}'.format(self.name))
+    # def notify_subscriber(self, event, message):
+    #     logging.debug("no override")
+    #     logging.debug('{}'.format(self.name))
 
     def trigger_action(self, event, message):
         logging.debug("no override")

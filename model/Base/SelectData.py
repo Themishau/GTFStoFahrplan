@@ -10,7 +10,7 @@ import re
 import logging
 import sys
 import os
-from enum import Enum, auto
+from model.Base.GTFSEnums import *
 from model.Base.ProgressBar import ProgressBar
 from model.Base.ImportData import ImportData
 
@@ -52,7 +52,7 @@ class SelectData(Publisher, Subscriber):
     @progress.setter
     def progress(self, value):
         self._progress = value
-        self.dispatch("update_progress_bar", "update_progress_bar routine started! Notify subscriber!")
+        self.dispatch(UpdateGuiEnum.update_progress_bar, "update_progress_bar routine started! Notify subscriber!")
 
     @property
     def agencies_list(self):
@@ -62,7 +62,7 @@ class SelectData(Publisher, Subscriber):
     def agencies_list(self, value):
         self._agencies_list = value
         if value is not None:
-            self.dispatch("update_agency_list",
+            self.dispatch(UpdateGuiEnum.update_agency_list,
                       "update_agency_list routine started! Notify subscriber!")
 
     @property

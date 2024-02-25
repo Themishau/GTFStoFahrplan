@@ -55,6 +55,17 @@ class SchedulePlanerTriggerActionsEnum(Enum):
     get_agency_list = 'get_agency_list'
     create_plan = 'create_plan'
     export_plan = 'export_plan'
+    schedule_planer_load_gtfsdata_event = 'schedule_planer_load_gtfsdata_event'
+    schedule_planer_select_agency = 'schedule_planer_select_agency'
+    schedule_planer_select_weekday = 'schedule_planer_select_weekday'
+    schedule_planer_reset_schedule_planer = 'schedule_planer_reset_gtfs'
+    schedule_planer_start_create_table = 'schedule_planer_start_create_table'
+    schedule_planer_start_create_table_continue = 'schedule_planer_start_create_table_continue'
+    schedule_planer_update_routes_list = 'schedule_planer_update_routes_list'
+    schedule_planer_create_output_fahrplan_date = 'schedule_planer_create_output_fahrplan_date'
+    schedule_planer_create_output_fahrplan_date_indi = 'schedule_planer_create_output_fahrplan_date_indi'
+    schedule_planer_create_output_fahrplan_date_indi_continue = 'schedule_planer_create_output_fahrplan_date_indi_continue'
+    schedule_planer_create_output_fahrplan_weekday = 'schedule_planer_create_output_fahrplan_weekday'
 
 
 class ControllerTriggerActionsEnum(Enum):
