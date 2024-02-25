@@ -1,5 +1,11 @@
 from enum import Enum, auto
 
+'''
+This file contains all used types and names
+
+For learning reasons, I implemented a Subscriber/Observer
+
+'''
 
 class CreatePlanMode(Enum):
     """ Types of methods """
@@ -33,6 +39,10 @@ class SubscriberTypes(Enum):
     update_gui = 'update_gui'
     trigger_action = 'trigger_action'
 
+
+'''
+Enums to show all available Subscriber and Observer methods
+'''
 
 class SchedulePlanerFunctionEnum(Enum):
     nothing = 'nothing'
