@@ -46,7 +46,18 @@ class UpdateGuiEnum(Enum):
     update_agency_list = 'update_agency_list'
     update_weekdate_option = 'update_weekdate_option'
     update_progress_bar = 'update_progress_bar'
+    show_error = 'show_error'
     message = 'message'
+    data_changed = 'data_changed'
+    restart = 'restart'
+
+class ModelTriggerActionsEnum(Enum):
+    planer_start_load_data = 'planer_start_load_data'
+    planer_select_agency = 'planer_select_agency'
+    planer_select_weekday = 'planer_select_weekday'
+    planer_reset_gtfs = 'planer_reset_gtfs'
+    planer_start_create_table = 'planer_start_create_table'
+    planer_start_create_table_continue = 'planer_start_create_table_continue'
 
 
 class SchedulePlanerTriggerActionsEnum(Enum):
@@ -80,6 +91,7 @@ class ImportDataFuncitonEnum(Enum):
 class ErrorMessageRessources(Enum):
     import_data_error = 'no data in imported_data.'
     no_import_object_generated = 'No import object generated.'
+    error_in_SchedulePlaner_class = 'error_in_SchedulePlaner_class'
 
 
 class InfoMessageRessources(Enum):

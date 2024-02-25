@@ -30,6 +30,7 @@ logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
                     datefmt="%Y-%m-%d %H:%M:%S")
 delimiter = " "
+lineend = '\n'
 
 
 # noinspection PyUnresolvedReferences
@@ -78,14 +79,22 @@ class Model(QObject, Publisher, Subscriber):
         self.planer = None
         self.worker = None
         self.notify_functions = {
-            SchedulePlanerTriggerActionsEnum.schedule_planer_reset_schedule_planer: [self.trigger_action_reset_schedule_planer, False],
-            SchedulePlanerTriggerActionsEnum.schedule_planer_start_create_table: [self.schedule_planer_trigger_action_start_create_table, False],
-            SchedulePlanerTriggerActionsEnum.schedule_planer_start_create_table_continue: [self.schedule_planer_trigger_action_start_create_table_continue, False],
-            SchedulePlanerTriggerActionsEnum.schedule_planer_update_routes_list: [self.schedule_planer_trigger_action_update_routes_gui_selection, False],
-            SchedulePlanerTriggerActionsEnum.schedule_planer_create_output_fahrplan_date: [self.schedule_planer_trigger_action_create_output_schedule_plan_for_date, False],
-            SchedulePlanerTriggerActionsEnum.schedule_planer_create_output_fahrplan_date_indi: [self.schedule_planer_trigger_action_sub_worker_create_output_fahrplan_date_indi, False],
-            SchedulePlanerTriggerActionsEnum.schedule_planer_create_output_fahrplan_date_indi_continue: [self.schedule_planer_trigger_action_sub_worker_create_output_fahrplan_date_indi_continue, False],
-            SchedulePlanerTriggerActionsEnum.schedule_planer_create_output_fahrplan_weekday: [self.schedule_planer_trigger_action_sub_worker_create_output_fahrplan_weekday, False]
+            SchedulePlanerTriggerActionsEnum.schedule_planer_reset_schedule_planer: [
+                self.trigger_action_reset_schedule_planer, False],
+            SchedulePlanerTriggerActionsEnum.schedule_planer_start_create_table: [
+                self.schedule_planer_trigger_action_start_create_table, False],
+            SchedulePlanerTriggerActionsEnum.schedule_planer_start_create_table_continue: [
+                self.schedule_planer_trigger_action_start_create_table_continue, False],
+            SchedulePlanerTriggerActionsEnum.schedule_planer_update_routes_list: [
+                self.schedule_planer_trigger_action_update_routes_gui_selection, False],
+            SchedulePlanerTriggerActionsEnum.schedule_planer_create_output_fahrplan_date: [
+                self.schedule_planer_trigger_action_create_output_schedule_plan_for_date, False],
+            SchedulePlanerTriggerActionsEnum.schedule_planer_create_output_fahrplan_date_indi: [
+                self.schedule_planer_trigger_action_create_output_fahrplan_date_indi, False],
+            SchedulePlanerTriggerActionsEnum.schedule_planer_create_output_fahrplan_date_indi_continue: [
+                self.schedule_planer_trigger_action_create_output_fahrplan_date_indi_continue, False],
+            SchedulePlanerTriggerActionsEnum.schedule_planer_create_output_fahrplan_weekday: [
+                self.schedule_planer_trigger_action_create_output_fahrplan_weekday, False]
         }
 
     def set_up_schedule_planer(self):
@@ -97,7 +106,8 @@ class Model(QObject, Publisher, Subscriber):
                                       UpdateGuiEnum.update_agency_list,
                                       UpdateGuiEnum.update_weekdate_option,
                                       UpdateGuiEnum.message,
-                                      UpdateGuiEnum.update_progress_bar], 'scheduler')
+                                      UpdateGuiEnum.update_progress_bar,
+                                      UpdateGuiEnum.show_error], name='scheduler')
         self.planer.initilize_scheduler()
 
     def set_up_umlauf_planer(self):
@@ -171,6 +181,16 @@ class Model(QObject, Publisher, Subscriber):
 
     def schedule_planer_trigger_action_create_output_schedule_plan_for_date(self):
         NotImplemented()
+
+    def schedule_planer_trigger_action_create_output_fahrplan_date_indi(self):
+        NotImplemented
+
+    def schedule_planer_trigger_action_create_output_fahrplan_date_indi_continue(self):
+        NotImplemented
+
+    def schedule_planer_trigger_action_create_output_fahrplan_weekday(self):
+        NotImplemented
+
     def sub_start_create_table(self):
         self.gtfs.processing = "create table"
         logging.debug(f'create table date: {self.gtfs.selected_dates}')
@@ -254,67 +274,71 @@ class Model(QObject, Publisher, Subscriber):
 class Gui(QMainWindow, Publisher, Subscriber):
     def __init__(self, events, name):
         super().__init__(events=events, name=name)
+        # I listen to these functions
+        self.notify_functions = {UpdateGuiEnum.update_routes_list: [self.sub_update_routes_list, False],
+                                 UpdateGuiEnum.update_weekday_list: [self.sub_update_weekdate_option, False],
+                                 UpdateGuiEnum.update_agency_list: [self.sub_update_agency_list, False],
+                                 UpdateGuiEnum.update_weekdate_option: [self.sub_update_weekdate_option, False],
+                                 UpdateGuiEnum.update_stopname_create_list: [self.sub_update_stopname_create_list,
+                                                                             False],
+                                 UpdateGuiEnum.message: [self.send_message_box, True],
+                                 UpdateGuiEnum.update_progress_bar: [self.sub_update_progress_bar, False],
+                                 ControllerTriggerActionsEnum.restart: [self.notify_restart, False]
+                                 }
 
+        self.model = Model([UpdateGuiEnum.update_weekday_list,
+                            UpdateGuiEnum.update_routes_list,
+                            UpdateGuiEnum.update_date_range,
+                            UpdateGuiEnum.update_agency_list,
+                            UpdateGuiEnum.update_weekdate_option,
+                            UpdateGuiEnum.update_stopname_create_list,
+                            UpdateGuiEnum.show_error,
+                            UpdateGuiEnum.message,
+                            UpdateGuiEnum.update_progress_bar,
+                            UpdateGuiEnum.data_changed,
+                            UpdateGuiEnum.restart
+                            ], name='model')
+
+        # we use this thread, to start processes not in the main gui thread
         self.thread = None
+
         self.ui = Ui_MainWindow()
+        self.messageBox_model = QMessageBox()
         self.ui.setupUi(self)
 
         self.initialize_window()
         self.initialize_modified_progress_bar()
         self.initialize_tabs()
         self.initialize_buttons_links()
-
-        self.messageBox_model = QMessageBox()
-
-        self.lineend = '\n'
-        self.textBrowserText = ''
-        self.notify_functions = {UpdateGuiEnum.update_routes_list: [self.sub_update_routes_list, False],
-                                 UpdateGuiEnum.update_weekday_list: [self.sub_update_weekdate_option, False],
-                                 UpdateGuiEnum.update_agency_list: [self.sub_update_agency_list, False],
-                                 UpdateGuiEnum.update_weekdate_option: [self.sub_update_weekdate_option, False],
-                                 UpdateGuiEnum.update_stopname_create_list: [self.sub_update_stopname_create_list, False],
-                                 UpdateGuiEnum.message: [self.send_message_box, True],
-                                 UpdateGuiEnum.update_progress_bar: [self.sub_update_progress_bar, False],
-                                 ControllerTriggerActionsEnum.restart: [self.notify_restart, False]
-                                 }
-
-        self.model = Model(['update_weekday_list',
-                            'update_routes_list',
-                            'update_date_range',
-                            'update_agency_list',
-                            'active_weekdate_options',
-                            'update_weekdate_option',
-                            'update_stopname_create_list',
-                            'error_message',
-                            'message',
-                            'data_changed',
-                            'restart'], 'model')
-
-        # init Observer controller -> model
-        self.register_self_trigger_action('load_gtfsdata_event', self.model)
-        self.register_self_trigger_action('select_agency', self.model)
-        self.register_self_trigger_action('select_weekday', self.model)
-        self.register_self_trigger_action('reset_gtfs', self.model)
-        self.register_self_trigger_action('start_create_table', self.model)
-        self.register_self_trigger_action('start_create_table_continue', self.model)
-        self.model.register('data_changed', self)
-
-        # init Observer model -> controller
-        self.model.register('restart', self)
-        self.model.register('message', self)
-        self.model.register_self_update_gui('error_message', self)
-
+        self.initialize_model()
         self.initilize_schedule_planer()
 
         self.refresh_time = get_current_time()
         self.ui.toolBox.setCurrentIndex(0)
+
         self.show_home_window()
+
+    def initialize_model(self):
+        # init Observer controller -> model
+        self.register_self_trigger_action(ModelTriggerActionsEnum.planer_start_load_data, self.model)
+        self.register_self_trigger_action(ModelTriggerActionsEnum.planer_select_agency, self.model)
+        self.register_self_trigger_action(ModelTriggerActionsEnum.planer_select_weekday, self.model)
+        self.register_self_trigger_action(ModelTriggerActionsEnum.planer_reset_gtfs, self.model)
+        self.register_self_trigger_action(ModelTriggerActionsEnum.planer_start_create_table, self.model)
+        self.register_self_trigger_action(ModelTriggerActionsEnum.planer_start_create_table_continue, self.model)
+
+        self.model.register_self_update_gui(UpdateGuiEnum.data_changed, self)
+        # init Observer model -> controller
+        self.model.register_self_update_gui(UpdateGuiEnum.restart, self)
+        self.model.register_self_update_gui(UpdateGuiEnum.message, self)
+        self.model.register_self_update_gui(UpdateGuiEnum.show_error, self)
 
     def initialize_window(self):
         self.setFixedSize(1350, 900)
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.center()
         self.oldPos = self.pos()
+
     def initialize_modified_progress_bar(self):
         # add the modified progress ui element
         self.progressRound = RoundProgress()
@@ -374,7 +398,6 @@ class Gui(QMainWindow, Publisher, Subscriber):
         self.CreateCreate_Tab.ui.comboBox.activated[str].connect(self.onChanged)
         self.CreateCreate_Tab.ui.comboBox_direction.activated[str].connect(self.onChangedDirectionMode)
         self.CreateCreate_Tab.ui.line_Selection_format.setText('time format 1')
-
 
     def show_GTFSDownload_window(self):
         self.set_btn_checked(self.downloadGTFSNavPush_btn)
@@ -529,6 +552,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
             self.model.planer.register(UpdateGuiEnum.message, self)
             self.model.planer.register(UpdateGuiEnum.update_progress_bar, self)
             self.model.planer.select_data.register(UpdateGuiEnum.update_agency_list, self)
+            self.model.planer.register(UpdateGuiEnum.show_error, self)
 
     def set_process(self, task):
         self.model.gtfs.gtfs_process = task
@@ -609,6 +633,14 @@ class Gui(QMainWindow, Publisher, Subscriber):
     # based on linked event subscriber are going to be notified
     def notify_subscriber(self, event, message):
         logging.debug(f'CONTROLLER event: {event}, message {message}')
+        notify_function, parameters = self.notify_functions.get(event, self.notify_not_function)
+        if not parameters:
+            notify_function()
+        else:
+            notify_function(message)
+
+    def update_gui(self, event, message):
+        logging.debug(f'event: {event}, message {message}')
         notify_function, parameters = self.notify_functions.get(event, self.notify_not_function)
         if not parameters:
             notify_function()

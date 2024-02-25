@@ -40,7 +40,6 @@ class ImportData(Publisher, Subscriber):
         self.progress = progress
 
         self.notify_functions = {
-            'ImportGTFS': [self.import_gtfs, False]
         }
 
     """ subscriber methods """
@@ -93,7 +92,7 @@ class ImportData(Publisher, Subscriber):
     @progress.setter
     def progress(self, value):
         self._progress = value
-        self.dispatch(UpdateGuiEnum.update_progress_bar, f"{value}")
+        self.dispatch(UpdateGuiEnum.update_progress_bar, f"{self._progress}")
 
     @property
     def pickle_export_checked(self):

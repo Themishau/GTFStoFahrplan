@@ -49,7 +49,8 @@ class SchedulePlaner(Publisher, Subscriber):
             UpdateGuiEnum.update_agency_list: [self.sub_not_implemented, False],
             UpdateGuiEnum.update_weekdate_option: [self.sub_not_implemented, False],
             UpdateGuiEnum.message: [self.sub_not_implemented, False],
-            UpdateGuiEnum.update_progress_bar: [self.update_progress_bar, True]
+            UpdateGuiEnum.update_progress_bar: [self.update_progress_bar, True],
+            UpdateGuiEnum.show_error: [self.notify_error_message, True]
         }
 
     """ methods """
@@ -58,9 +59,17 @@ class SchedulePlaner(Publisher, Subscriber):
         logging.debug('event not found in class gui: {}'.format(event))
 
     def notify_error_message(self, message):
-        self.dispatch("error_in_SchedulePlaner_class", message)
+        self.dispatch(UpdateGuiEnum.show_error, message)
 
     def notify_subscriber(self, event, message):
+        logging.debug(f'event: {event}, message {message}')
+        notify_function, parameters = self.notify_functions.get(event, self.notify_not_function)
+        if not parameters:
+            notify_function()
+        else:
+            notify_function(message)
+
+    def update_gui(self, event, message):
         logging.debug(f'event: {event}, message {message}')
         notify_function, parameters = self.notify_functions.get(event, self.notify_not_function)
         if not parameters:
@@ -89,20 +98,20 @@ class SchedulePlaner(Publisher, Subscriber):
         # self.export_plan.register('update_progress_bar', self)
 
     def initialize_import_data(self):
-        self.import_Data = ImportData([UpdateGuiEnum.update_progress_bar], 'import_data', self.progress)
+        self.import_Data = ImportData([UpdateGuiEnum.update_progress_bar], name= 'import_data', progress= self.progress)
 
     def initialize_select_data(self):
         self.select_data = SelectData([UpdateGuiEnum.update_progress_bar,
                                        UpdateGuiEnum.update_routes_list,
-                                       UpdateGuiEnum.update_agency_list], 'select_data', self.progress)
+                                       UpdateGuiEnum.update_agency_list], name='select_data',progress= self.progress)
 
     def initialize_analyze_data(self):
         self.analyze_data = AnalyzeData([UpdateGuiEnum.update_date_range,
-                                         UpdateGuiEnum.update_progress_bar], 'analyze_data', self.progress)
+                                         UpdateGuiEnum.update_progress_bar], name='analyze_data', progress=self.progress)
 
     def initialize_export_plan(self):
         self.export_plan = ExportPlan([SchedulePlanerTriggerActionsEnum.export_plan,
-                                       UpdateGuiEnum.update_progress_bar], 'export_plan', self.progress)
+                                       UpdateGuiEnum.update_progress_bar], name='export_plan',progress= self.progress)
 
     def set_paths(self, input_path, output_path, picklesavepath=""):
         self.import_Data.input_path = input_path
@@ -130,7 +139,7 @@ class SchedulePlaner(Publisher, Subscriber):
     @progress.setter
     def progress(self, value):
         self._progress = value
-        self.dispatch(UpdateGuiEnum.update_progress_bar, UpdateGuiEnum.update_progress_bar.value)
+        self.dispatch(UpdateGuiEnum.update_progress_bar, f'{self._progress}')
 
     @property
     def export_plan(self):

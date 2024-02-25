@@ -64,7 +64,7 @@ class AnalyzeData(Publisher, Subscriber):
             self.getDateRange()
 
     def getDateRange(self):
-        if GtfsDfNames.Feedinfos in self.imported_data:
+        if not GtfsDfNames.Feedinfos in self.imported_data:
             self.date_range = self.analyzeDateRangeInGTFSData()
         else:
             self.date_range = str(self.imported_data[GtfsDfNames.Feedinfos].feed_start_date) + '-' + str(

@@ -17,12 +17,12 @@ class Subscriber(object):
     #     logging.debug('{}'.format(self.name))
 
     def trigger_action(self, event, message):
-        logging.debug("no override")
-        logging.debug('{}'.format(self.name))
+        logging.debug("trigger_action")
+        logging.debug(f'message{message}')
 
     def update_gui(self, event, message):
-        logging.debug("no override")
-        logging.debug('{}'.format(self.name))
+        logging.debug("update_gui")
+        logging.debug(f'message {message}')
 
     def print_me(self):
         logging.debug(self.name)
@@ -64,7 +64,7 @@ class Publisher(object):
 
     def dispatch(self, event, message):
         try:
-            logging.debug(f"dispatch: {self} {self.get_subscribers(event).items()} dispatch(self, event, message) {event} {message} ")
+            logging.debug(f"dispatch: {self} {self.get_subscribers(event).items()},  dispatch(self, event, message): {event} {message} ")
             for subscriber, callback in self.get_subscribers(event).items():
                 callback(event, message)
         except KeyError:
