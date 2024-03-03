@@ -26,6 +26,7 @@ class AnalyzeData(Publisher, Subscriber):
         self.imported_data = None
         self.progress = progress
         self.date_range = None
+        self.date_range_df_format = None
         self.notify_functions = {}
 
     """ subscriber methods """
@@ -73,6 +74,6 @@ class AnalyzeData(Publisher, Subscriber):
 
     def analyzeDateRangeInGTFSData(self):
         if self.imported_data[GtfsDfNames.Calendarweeks] is not None:
-            self.dfdateRangeInGTFSData = self.dfWeek.groupby(['start_date', 'end_date']).size().reset_index()
-            return str(self.dfdateRangeInGTFSData.iloc[0].start_date) + '-' + str(
-                self.dfdateRangeInGTFSData.iloc[0].end_date)
+            self.date_range_df_format = self.imported_data[GtfsDfNames.Calendarweeks].groupby(['start_date', 'end_date']).size().reset_index()
+            return str(self.date_range_df_format.iloc[0].start_date) + '-' + str(
+                self.date_range_df_format.iloc[0].end_date)

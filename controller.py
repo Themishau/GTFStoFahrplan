@@ -283,6 +283,7 @@ class Gui(QMainWindow, Publisher, Subscriber):
                                                                              False],
                                  UpdateGuiEnum.message: [self.send_message_box, True],
                                  UpdateGuiEnum.update_progress_bar: [self.sub_update_progress_bar, False],
+                                 UpdateGuiEnum.show_error: [self.send_message_box, True],
                                  ControllerTriggerActionsEnum.restart: [self.notify_restart, False]
                                  }
 
@@ -633,6 +634,14 @@ class Gui(QMainWindow, Publisher, Subscriber):
     # based on linked event subscriber are going to be notified
     def notify_subscriber(self, event, message):
         logging.debug(f'CONTROLLER event: {event}, message {message}')
+        notify_function, parameters = self.notify_functions.get(event, self.notify_not_function)
+        if not parameters:
+            notify_function()
+        else:
+            notify_function(message)
+
+    def trigger_action(self, event, message):
+        logging.debug(f'event: {event}, message {message}')
         notify_function, parameters = self.notify_functions.get(event, self.notify_not_function)
         if not parameters:
             notify_function()

@@ -61,7 +61,7 @@ class SchedulePlaner(Publisher, Subscriber):
     def notify_error_message(self, message):
         self.dispatch(UpdateGuiEnum.show_error, message)
 
-    def notify_subscriber(self, event, message):
+    def trigger_action(self, event, message):
         logging.debug(f'event: {event}, message {message}')
         notify_function, parameters = self.notify_functions.get(event, self.notify_not_function)
         if not parameters:
@@ -115,7 +115,7 @@ class SchedulePlaner(Publisher, Subscriber):
 
     def set_paths(self, input_path, output_path, picklesavepath=""):
         self.import_Data.input_path = input_path
-        self.import_Data.pickle_save_path = picklesavepath
+        self.import_Data.pickle_save_path_filename = picklesavepath
 
         self.export_plan.output_path = output_path
 
