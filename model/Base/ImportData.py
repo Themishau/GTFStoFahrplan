@@ -26,10 +26,11 @@ class ImportData(Publisher, Subscriber):
     def __init__(self, events, name, progress: int):
         super().__init__(events=events, name=name)
         self._pkl_loaded = False
+        self._pickle_save_path = ""
         self.reset_import = False
         """ property """
         self.input_path = ""
-        self.pickle_save_path = ""
+        self.pickle_save_path_filename = ""
         self.pickle_export_checked = False
         self.time_format = 1
 
@@ -38,9 +39,9 @@ class ImportData(Publisher, Subscriber):
 
         """ visual internal property """
         self.progress = progress
+        self.current_process_string = ""
 
         self.notify_functions = {
-            'ImportGTFS': [self.import_gtfs, False]
         }
 
     """ subscriber methods """
@@ -75,13 +76,14 @@ class ImportData(Publisher, Subscriber):
         self._input_path = value
 
     @property
-    def pickle_save_path(self):
+    def pickle_save_path_filename(self):
         return self._pickleSavePath
 
-    @pickle_save_path.setter
-    def pickle_save_path(self, value):
+    @pickle_save_path_filename.setter
+    def pickle_save_path_filename(self, value):
         if value is not None:
             self._pickleSavePath = value
+            self._pickle_save_path = value.replace(value.split('/')[-1], '')
         else:
             self.dispatch("message",
                           "Folder not found. Please check!")
@@ -93,7 +95,7 @@ class ImportData(Publisher, Subscriber):
     @progress.setter
     def progress(self, value):
         self._progress = value
-        self.dispatch(UpdateGuiEnum.update_progress_bar, f"{value}")
+        self.dispatch(UpdateGuiEnum.update_progress_bar, f"{self._progress}")
 
     @property
     def pickle_export_checked(self):
@@ -138,6 +140,8 @@ class ImportData(Publisher, Subscriber):
         if imported_data is None:
             self.reset_data_cause_of_error()
             return None
+
+        self.save_pickle(imported_data)
         self.progress = 100
         return imported_data
 
@@ -344,7 +348,7 @@ class ImportData(Publisher, Subscriber):
             for idx in range(itripDate):
                 tripdict[header_names[idx]].append(tripDate[idx])
 
-        return "Trips", tripdict
+        return GtfsDfNames.Trips, tripdict
 
     def get_gtfs_stops(self, raw_data):
 
@@ -368,7 +372,7 @@ class ImportData(Publisher, Subscriber):
             for idx in range(istopDate):
                 stopsdict[header_names[idx]].append(stopData[idx])
 
-        return "Stops", stopsdict
+        return GtfsDfNames.Stops, stopsdict
 
     def get_gtfs_stop_times(self, raw_data):
         stopTimesdict = {
@@ -392,7 +396,7 @@ class ImportData(Publisher, Subscriber):
             for idx in range(istopTimeData):
                 stopTimesdict[header_names[idx]].append(stopTimeData[idx])
 
-        return "Stoptimes", stopTimesdict
+        return GtfsDfNames.Stoptimes, stopTimesdict
 
     def get_gtfs_week(self, raw_data):
         calendarWeekdict = {
@@ -416,7 +420,7 @@ class ImportData(Publisher, Subscriber):
             for idx in range(icalendarDate):
                 calendarWeekdict[header_names[idx]].append(calendarDate[idx])
 
-        return "Calendarweeks", calendarWeekdict
+        return GtfsDfNames.Calendarweeks, calendarWeekdict
 
     def get_gtfs_dates(self, raw_data):
         calendarDatesdict = {
@@ -439,7 +443,7 @@ class ImportData(Publisher, Subscriber):
             for idx in range(icalendarDate):
                 calendarDatesdict[header_names[idx]].append(calendarDatesDate[idx])
 
-        return "Calendardates", calendarDatesdict
+        return GtfsDfNames.Calendardates, calendarDatesdict
 
     def get_gtfs_routes(self, raw_data):
         routesFahrtdict = {
@@ -462,7 +466,7 @@ class ImportData(Publisher, Subscriber):
             for idx in range(iroutesFahrt):
                 routesFahrtdict[header_names[idx]].append(routesFahrtData[idx])
 
-        return "Routes", routesFahrtdict
+        return GtfsDfNames.Routes, routesFahrtdict
 
     def get_gtfs_feed_info(self, raw_data):
         feed_infodict = {
@@ -485,7 +489,7 @@ class ImportData(Publisher, Subscriber):
             for idx in range(ifeed_infodict):
                 feed_infodict[header_names[idx]].append(feed_infodictData[idx])
 
-        return "Feedinfos", feed_infodict
+        return GtfsDfNames.Feedinfos, feed_infodict
 
     def get_gtfs_agency(self, raw_data):
 
@@ -508,20 +512,20 @@ class ImportData(Publisher, Subscriber):
             for idx in range(iagencyData):
                 agencyFahrtdict[header_names[idx]].append(agencyData[idx])
 
-        return "Agencies", agencyFahrtdict
+        return GtfsDfNames.Agencies, agencyFahrtdict
 
     # region creation dataframes
 
     def create_df_routes(self, raw_data):
         logging.debug("convert to df: create_df_routes")
-        df_routes = pd.DataFrame.from_dict(raw_data["Routes"])
-        df_routes.name = "Routes"
+        df_routes = pd.DataFrame.from_dict(raw_data[GtfsDfNames.Routes])
+        df_routes.name = GtfsDfNames.Routes
         return df_routes
 
     def create_df_trips(self, raw_data):
         logging.debug("convert to df: create_df_trips")
-        df_trips = pd.DataFrame.from_dict(raw_data["Trips"]).set_index('trip_id')
-        df_trips.name = "Trips"
+        df_trips = pd.DataFrame.from_dict(raw_data[GtfsDfNames.Trips]).set_index('trip_id')
+        df_trips.name = GtfsDfNames.Trips
         """ lets try to convert every column to speed computing """
         try:
             df_trips['trip_id'] = df_trips['trip_id'].astype('int8')
@@ -538,8 +542,8 @@ class ImportData(Publisher, Subscriber):
     def create_df_stop_times(self, raw_data):
         logging.debug("convert to df: create_df_stop_times")
         # DataFrame with every stop (time)
-        df_stoptimes = pd.DataFrame.from_dict(raw_data["Stoptimes"]).set_index('stop_id')
-        df_stoptimes.name = "Stoptimes"
+        df_stoptimes = pd.DataFrame.from_dict(raw_data[GtfsDfNames.Stoptimes]).set_index('stop_id')
+        df_stoptimes.name = GtfsDfNames.Stoptimes
         try:
             df_stoptimes['stop_sequence'] = df_stoptimes['stop_sequence'].astype('int32')
             df_stoptimes['stop_id'] = df_stoptimes['stop_id'].astype('int32')
@@ -554,8 +558,8 @@ class ImportData(Publisher, Subscriber):
     def create_df_stops(self, raw_data):
         logging.debug("convert to df: create_df_stops")
         # DataFrame with every stop
-        df_stops = pd.DataFrame.from_dict(raw_data["Stops"]).set_index('stop_id')
-        df_stops.name = "Stops"
+        df_stops = pd.DataFrame.from_dict(raw_data[GtfsDfNames.Stops]).set_index('stop_id')
+        df_stops.name = GtfsDfNames.Stops
         try:
             df_stops['stop_id'] = df_stops['stop_id'].astype('int32')
         except KeyError:
@@ -565,8 +569,8 @@ class ImportData(Publisher, Subscriber):
 
     def create_df_week(self, raw_data):
         logging.debug("convert to df: create_df_week")
-        df_week = pd.DataFrame.from_dict(raw_data["Calendarweeks"]).set_index('service_id')
-        df_week.name = "Calendarweeks"
+        df_week = pd.DataFrame.from_dict(raw_data[GtfsDfNames.Calendarweeks]).set_index('service_id')
+        df_week.name = GtfsDfNames.Calendarweeks
         try:
             df_week['start_date'] = df_week['start_date'].astype('string')
             df_week['end_date'] = df_week['end_date'].astype('string')
@@ -578,8 +582,8 @@ class ImportData(Publisher, Subscriber):
     def create_df_dates(self, raw_data):
         logging.debug("convert to df: create_df_dates")
 
-        df_dates = pd.DataFrame.from_dict(raw_data["Calendardates"]).set_index('service_id')
-        df_dates.name = "Calendardates"
+        df_dates = pd.DataFrame.from_dict(raw_data[GtfsDfNames.Calendardates]).set_index('service_id')
+        df_dates.name = GtfsDfNames.Calendardates
         try:
             df_dates['exception_type'] = df_dates['exception_type'].astype('int32')
             df_dates['date'] = pd.to_datetime(df_dates['date'], format='%Y%m%d')
@@ -590,25 +594,19 @@ class ImportData(Publisher, Subscriber):
 
     def create_df_agency(self, raw_data):
         logging.debug("convert to df: create_df_agency")
-        df_agencies = pd.DataFrame.from_dict(raw_data["Agencies"])
-        df_agencies.name = "Agencies"
+        df_agencies = pd.DataFrame.from_dict(raw_data[GtfsDfNames.Agencies])
+        df_agencies.name = GtfsDfNames.Agencies
         return df_agencies
 
     def create_df_feed(self, raw_data):
         logging.debug("convert to df: create_df_feed")
         if raw_data["feed_info"]:
-            df_feedinfo = pd.DataFrame.from_dict(raw_data["Feedinfos"])
-            df_feedinfo.name = "Feedinfos"
+            df_feedinfo = pd.DataFrame.from_dict(raw_data[GtfsDfNames.Feedinfos])
+            df_feedinfo.name = GtfsDfNames.Feedinfos
             return df_feedinfo
         return None
 
     # region end
-
-    def get_daterange_in_gtfs_data(self, df_week):
-        if df_week is not None:
-            self.df_date_range_in_gtfs_data = df_week.groupby(['start_date', 'end_date']).size().reset_index()
-            return str(self.df_date_range_in_gtfs_data.iloc[0].start_date) + '-' + str(
-                self.df_date_range_in_gtfs_data.iloc[0].end_date)
 
     def read_gtfs_data_from_path(self):
         ...
@@ -616,3 +614,40 @@ class ImportData(Publisher, Subscriber):
     def reset_data_cause_of_error(self):
         self.progress = 0
         """Todo: add the other values here """
+
+    def save_pickle(self, imported_df_data):
+        """
+        example to retrieve data: self.imported_df_data[GtfsDfNames.Calendarweeks]
+        :param imported_df_data:
+        :return:
+        """
+
+        imported_df_data[GtfsDfNames.Stops].to_pickle(self._pickle_save_path + "dfStops.pkl")
+        imported_df_data[GtfsDfNames.Stoptimes].to_pickle(self._pickle_save_path + "dfStopTimes.pkl")
+        imported_df_data[GtfsDfNames.Trips].to_pickle(self._pickle_save_path + "dfTrips.pkl")
+        imported_df_data[GtfsDfNames.Calendarweeks].to_pickle(self._pickle_save_path + "dfWeek.pkl")
+        imported_df_data[GtfsDfNames.Calendardates].to_pickle(self._pickle_save_path + "dfDates.pkl")
+        imported_df_data[GtfsDfNames.Routes].to_pickle(self._pickle_save_path + "dfRoutes.pkl")
+        imported_df_data[GtfsDfNames.Agencies].to_pickle(self._pickle_save_path + "dfagency.pkl")
+
+        if GtfsDfNames.Feedinfos in imported_df_data:
+            imported_df_data[GtfsDfNames.Stops].to_pickle(self._pickle_save_path + "dffeed_info.pkl")
+
+        with zipfile.ZipFile(self.pickle_save_path_filename, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+            zf.write(self._pickle_save_path + "dfStops.pkl")
+            zf.write(self._pickle_save_path + "dfStopTimes.pkl")
+            zf.write(self._pickle_save_path + "dfTrips.pkl")
+            zf.write(self._pickle_save_path + "dfWeek.pkl")
+            zf.write(self._pickle_save_path + "dfDates.pkl")
+            zf.write(self._pickle_save_path + "dfRoutes.pkl")
+            zf.write(self._pickle_save_path + "dfagency.pkl")
+
+        os.remove(self._pickle_save_path + "dfStops.pkl")
+        os.remove(self._pickle_save_path + "dfStopTimes.pkl")
+        os.remove(self._pickle_save_path + "dfTrips.pkl")
+        os.remove(self._pickle_save_path + "dfWeek.pkl")
+        os.remove(self._pickle_save_path + "dfDates.pkl")
+        os.remove(self._pickle_save_path + "dfRoutes.pkl")
+        os.remove(self._pickle_save_path + "dfagency.pkl")
+        if GtfsDfNames.Feedinfos in imported_df_data:
+            os.remove(self._pickle_save_path + "dffeed_info.pkl")
