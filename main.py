@@ -18,6 +18,6 @@ if __name__ == '__main__':
                                             ModelTriggerActionsEnum.planer_start_create_table_continue
                                             ], name='controller')
     # show a nice loading window first
-    window = SplashScreen(application_window)
+    window = SplashScreen(application_window.view)
 
     sys.exit(gtfs_app.exec_())

@@ -305,34 +305,38 @@ class Controller(Publisher, Subscriber):
         self.initialize_buttons_links()
         self.initialize_model()
         self.initilize_schedule_planer()
-        self.show_home_window()
+        self.view.show_home_window()
 
     def initialize_buttons_links(self):
 
         # connect gui elements to methods in the controller
         self.view.CreateImport_Tab.ui.btnImport.clicked.connect(self.start_import_gtfs_data)
         self.view.CreateImport_Tab.ui.btnRestart.clicked.connect(self.notify_restart)
-        self.view.CreateCreate_Tab.ui.btnStart.clicked.connect(self.notify_create_table)
-        self.view.CreateCreate_Tab.ui.btnContinueCreate.clicked.connect(self.notify_create_table_continue)
-        self.view.file_path.clicked.connect(self.update_file_input_path)
-        self.view.CreateImport_Tab.ui.btnGetPickleFile.clicked.connect(self.update_pickle_file_path)
+        self.view.CreateImport_Tab.ui.checkBox_savepickle.clicked.connect(self.set_pickleExport_checked)
 
-        self.view.CreateImport_Tab.ui.btnGetOutputDir.clicked.connect(self.update_output_file_path)
+        self.view.CreateImport_Tab.ui.btnGetFile.clicked.connect(self.view.get_file_path)
+        self.view.input_file_path.connect(self.update_file_input_path)
+
+        self.view.CreateImport_Tab.ui.btnGetPickleFile.clicked.connect(self.view.get_pickle_save_path)
+        self.view.CreateImport_Tab.ui.btnGetOutputDir.clicked.connect(self.view.get_output_dir_path)
+
         self.view.ui.pushButton_2.clicked.connect(self.view.show_Create_Import_Window)
         self.view.ui.pushButton_3.clicked.connect(self.view.show_Create_Select_Window)
         self.view.ui.pushButton_4.clicked.connect(self.view.show_Create_Create_Window)
         self.view.ui.pushButton_5.clicked.connect(self.view.show_home_window)
         self.view.ui.pushButton_6.clicked.connect(self.view.show_GTFSDownload_window)
 
-        self.view.timeFormatChanged.connect(self.onChangedTimeFormatMode)
-        self.view.CreateImport_Tab.ui.checkBox_savepickle.clicked.connect(self.set_pickleExport_checked)
+        self.view.export_plan_time_format.connect(self.onChangedTimeFormatMode)
         self.view.CreateSelect_Tab.ui.AgenciesTableView.clicked.connect(self.notify_AgenciesTableView_agency)
         self.view.CreateSelect_Tab.ui.TripsTableView.clicked.connect(self.notify_TripsTableView)
+
+        self.view.CreateCreate_Tab.ui.btnStart.clicked.connect(self.notify_create_table)
+        self.view.CreateCreate_Tab.ui.btnContinueCreate.clicked.connect(self.notify_create_table_continue)
         self.view.CreateCreate_Tab.ui.UseIndividualSorting.clicked.connect(self.set_individualsorting)
         self.view.CreateCreate_Tab.ui.listDatesWeekday.clicked.connect(self.notify_select_weekday_option)
         self.view.CreateCreate_Tab.ui.comboBox.activated[str].connect(self.onChanged)
         self.view.CreateCreate_Tab.ui.comboBox_direction.activated[str].connect(self.onChangedDirectionMode)
-        self.view.CreateCreate_Tab.ui.line_Selection_format.setText('time format 1')
+
 
     def initialize_model(self):
         # init Observer controller -> model
@@ -383,11 +387,12 @@ class Controller(Publisher, Subscriber):
             self.model.gtfs.selected_dates = None
 
     def onChangedTimeFormatMode(self, text):
+        logging.debug(text)
         if text == 'time format 1':
-            self.model.timeformat = 1
+            self.model.planer.select_data.selected_timeformat = 1
         elif text == 'time format 2':
-            self.model.timeformat = 2
-        self.CreateCreate_Tab.ui.line_Selection_format.setText(text)
+            self.model.planer.select_data.selected_timeformat = 2
+        self.view.CreateCreate_Tab.ui.line_Selection_format.setText(text)
 
     def onChangedDirectionMode(self, text):
         if text == 'direction 1':
@@ -608,9 +613,8 @@ class Controller(Publisher, Subscriber):
 
 
 class View(QMainWindow):
-    timeFormatChanged = pyqtSignal(str)
-    file_path = pyqtSignal(tuple[str, str])
-
+    input_file_path = pyqtSignal(tuple)
+    export_plan_time_format = pyqtSignal(str)
     def __init__(self):
         super().__init__()
         self.ui = Ui_MainWindow()
@@ -623,6 +627,8 @@ class View(QMainWindow):
         self.CreateSelect_Tab = CreateTableSelect()
         self.CreateCreate_Tab = CreateTableCreate()
         self.DownloadGTFS_Tab = DownloadGTFS()
+
+
 
         # Connect UI elements to controller methods
         self.createTableImport_btn = self.ui.pushButton_2
@@ -640,6 +646,7 @@ class View(QMainWindow):
         self.initialize_window()
         self.initialize_modified_progress_bar()
         self.initialize_tabs()
+        self.init_signals()
         self.ui.toolBox.setCurrentIndex(0)
 
         # signals
@@ -649,6 +656,10 @@ class View(QMainWindow):
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.center()
         self.oldPos = self.pos()
+
+    def init_signals(self):
+        self.CreateImport_Tab.ui.comboBox_display.activated[str].connect(self.export_plan_time_format.emit)
+        self.CreateImport_Tab.ui.comboBox_display.activated[str].connect(self.export_plan_time_format.emit)
 
     def center(self):
         qr = self.frameGeometry()
@@ -670,22 +681,17 @@ class View(QMainWindow):
         self.ui.stackedWidget.addWidget(self.DownloadGTFS_Tab)
         self.ui.stackedWidget.addWidget(self.CreateMainTab)
 
-        self.init_signals()
-
-    def init_signals(self):
-        self.CreateCreate_Tab.ui.comboBox_display.activated[str].connect(self.timeFormatChanged.emit)
-
     def show_GTFSDownload_window(self):
         self.set_btn_checked(self.downloadGTFSNavPush_btn)
-        self.view.ui.stackedWidget.setCurrentWidget(self.view.DownloadGTFS_Tab)
+        self.ui.stackedWidget.setCurrentWidget(self.DownloadGTFS_Tab)
 
     def show_home_window(self):
         self.set_btn_checked(self.generalNavPush_btn)
-        self.view.ui.stackedWidget.setCurrentWidget(self.view.CreateMainTab)
+        self.ui.stackedWidget.setCurrentWidget(self.CreateMainTab)
 
     def show_Create_Import_Window(self):
         self.set_btn_checked(self.createTableImport_btn)
-        self.view.ui.stackedWidget.setCurrentWidget(self.view.CreateImport_Tab)
+        self.ui.stackedWidget.setCurrentWidget(self.CreateImport_Tab)
 
     """
     TODO: is this bugged? 
@@ -693,11 +699,11 @@ class View(QMainWindow):
 
     def show_Create_Select_Window(self):
         self.set_btn_checked(self.createTableSelect_btn)
-        self.ui.stackedWidget.setCurrentWidget(self.view.CreateSelect_Tab)
+        self.ui.stackedWidget.setCurrentWidget(self.CreateSelect_Tab)
 
     def show_Create_Create_Window(self):
         self.set_btn_checked(self.createTableCreate_btn)
-        self.ui.stackedWidget.setCurrentWidget(self.view.CreateCreate_Tab)
+        self.ui.stackedWidget.setCurrentWidget(self.CreateCreate_Tab)
         self.ui.stackedWidget.resize(500, 500)
 
     def set_btn_checked(self, btn):
@@ -707,22 +713,22 @@ class View(QMainWindow):
             else:
                 button.setChecked(True)
 
-    def getFilePath(self):
+    def get_file_path(self):
         try:
-            self.file_path = QFileDialog.getOpenFileName(parent=self,
-                                                         caption='Select GTFS Zip File',
-                                                         directory='C:/Tmp',
-                                                         filter='Zip File (*.zip)',
-                                                         initialFilter='Zip File (*.zip)')
+            self.input_file_path = QFileDialog.getOpenFileName(parent=self,
+                                                               caption='Select GTFS Zip File',
+                                                               directory='C:/Tmp',
+                                                               filter='Zip File (*.zip)',
+                                                               initialFilter='Zip File (*.zip)')
 
         except:
-            self.file_path = QFileDialog.getOpenFileName(parent=self,
-                                                         caption='Select GTFS Zip File',
-                                                         directory=os.getcwd(),
-                                                         filter='Zip File (*.zip)',
-                                                         initialFilter='Zip File (*.zip)')
-        if self.file_path[0] > '':
-            self.CreateImport_Tab.ui.lineInputPath.setText(self.file_path[0])
+            self.input_file_path = QFileDialog.getOpenFileName(parent=self,
+                                                               caption='Select GTFS Zip File',
+                                                               directory=os.getcwd(),
+                                                               filter='Zip File (*.zip)',
+                                                               initialFilter='Zip File (*.zip)')
+        if self.input_file_path[0] > '':
+            self.CreateImport_Tab.ui.lineInputPath.setText(self.input_file_path[0])
 
     def getDirPath(self):
         file_path = QFileDialog.getExistingDirectory(self,
@@ -730,14 +736,14 @@ class View(QMainWindow):
         if file_path > '':
             self.CreateImport_Tab.ui.GTFSInputPath.setText(file_path)
 
-    def getOutputDirPath(self):
+    def get_output_dir_path(self):
         file_path = QFileDialog.getExistingDirectory(self,
                                                      caption='Select GTFS Zip File',
                                                      directory='C:/Tmp')
         if file_path > '':
             self.CreateImport_Tab.ui.lineOutputPath.setText(f'{file_path}/')
 
-    def getPickleSavePath(self):
+    def get_pickle_save_path(self):
         try:
             file_path = QFileDialog.getSaveFileName(parent=self,
                                                     caption='Select GTFS Zip File',

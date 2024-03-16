@@ -30,7 +30,7 @@ class SelectData(Publisher, Subscriber):
         self.selected_route = None
         self.selected_weekday = None
         self.selected_dates = None
-        self.selected_timeformat = None
+        self.selected_timeformat = 1
 
         self.header_for_export_data = None
         self.df_header_for_export_data = None
@@ -73,6 +73,7 @@ class SelectData(Publisher, Subscriber):
     @selected_timeformat.setter
     def selected_timeformat(self, value):
         self._selected_timeformat = value
+        logging.debug(value)
 
     @property
     def imported_data(self):
