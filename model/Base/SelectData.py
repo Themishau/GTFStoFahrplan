@@ -30,6 +30,7 @@ class SelectData(Publisher, Subscriber):
         self.selected_route = None
         self.selected_weekday = None
         self.selected_dates = None
+        self.selected_timeformat = None
 
         self.header_for_export_data = None
         self.df_header_for_export_data = None
@@ -64,6 +65,14 @@ class SelectData(Publisher, Subscriber):
         if value is not None:
             self.dispatch(UpdateGuiEnum.update_agency_list,
                       "update_agency_list routine started! Notify subscriber!")
+
+    @property
+    def selected_timeformat(self):
+        return self._selected_timeformat
+
+    @selected_timeformat.setter
+    def selected_timeformat(self, value):
+        self._selected_timeformat = value
 
     @property
     def imported_data(self):
