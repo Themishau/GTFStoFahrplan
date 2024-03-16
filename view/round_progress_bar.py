@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import *
 https://www.youtube.com/watch?v=E7lhFwcDpMI
 """
 class RoundProgress(QWidget):
+    valueChanged = pyqtSignal(int)
     def __init__(self, *args, **kwargs):
         QWidget.__init__(self, *args, **kwargs)
         self.value = 0
@@ -26,6 +27,7 @@ class RoundProgress(QWidget):
     def set_value(self, value):
         self.value = value
         self.repaint()
+        self.valueChanged.emit(value)
 
     def paintEvent(self, event):
         print(event)

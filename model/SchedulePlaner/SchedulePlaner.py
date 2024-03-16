@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from model.observer import Publisher, Subscriber
+from PyQt5.QtCore import pyqtSignal, QObject
 import time
 import pandas as pd
 from pandasql import sqldf
@@ -23,7 +24,8 @@ logging.basicConfig(level=logging.DEBUG,
                     datefmt="%Y-%m-%d %H:%M:%S")
 
 
-class SchedulePlaner(Publisher, Subscriber):
+class SchedulePlaner(QObject, Publisher, Subscriber):
+    progress_changed = pyqtSignal(int)
     def __init__(self, events, name):
         super().__init__(events=events, name=name)
 
@@ -39,6 +41,7 @@ class SchedulePlaner(Publisher, Subscriber):
 
         self.imported_data = None
         self.import_Data = None
+
 
         self.notify_functions = {
             ImportDataFuncitonEnum.import_GTFS: [self.import_gtfs_data, False],
@@ -116,7 +119,6 @@ class SchedulePlaner(Publisher, Subscriber):
     def set_paths(self, input_path, output_path, picklesavepath=""):
         self.import_Data.input_path = input_path
         self.import_Data.pickle_save_path_filename = picklesavepath
-
         self.export_plan.output_path = output_path
 
     def import_gtfs_data(self) -> bool:
@@ -139,7 +141,7 @@ class SchedulePlaner(Publisher, Subscriber):
     @progress.setter
     def progress(self, value):
         self._progress = value
-        self.dispatch(UpdateGuiEnum.update_progress_bar, f'{self._progress}')
+        self.progress_changed.emit(value)
 
     @property
     def export_plan(self):

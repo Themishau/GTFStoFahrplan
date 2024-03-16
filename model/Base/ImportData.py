@@ -69,6 +69,7 @@ class ImportData(QObject, Publisher, Subscriber):
     @input_path.setter
     def input_path(self, value):
         self._input_path = value
+        logging.debug(value)
 
     @property
     def pickle_save_path_filename(self):
@@ -79,6 +80,7 @@ class ImportData(QObject, Publisher, Subscriber):
         if value is not None:
             self._pickleSavePath = value
             self._pickle_save_path = value.replace(value.split('/')[-1], '')
+            logging.debug(value)
         else:
             self.dispatch("message",
                           "Folder not found. Please check!")

@@ -23,6 +23,7 @@ class ExportPlan(Publisher, Subscriber):
         super().__init__(events=events, name=name)
         self.reset_create = False
         self.create_plan_mode = None
+        self.output_path = ""
         self.notify_functions = {
             'create_table': [self.sub_worker_create_output_fahrplan_date, False]
         }
@@ -38,3 +39,12 @@ class ExportPlan(Publisher, Subscriber):
 
     def sub_worker_create_output_fahrplan_date(self):
         NotImplementedError
+
+    @property
+    def output_path(self):
+        return self._output_path
+
+    @output_path.setter
+    def output_path(self, value):
+        self._output_path = value
+        logging.debug(value)

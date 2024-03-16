@@ -312,13 +312,18 @@ class Controller(Publisher, Subscriber):
         # connect gui elements to methods in the controller
         self.view.CreateImport_Tab.ui.btnImport.clicked.connect(self.start_import_gtfs_data)
         self.view.CreateImport_Tab.ui.btnRestart.clicked.connect(self.notify_restart)
-        self.view.CreateImport_Tab.ui.checkBox_savepickle.clicked.connect(self.set_pickleExport_checked)
+        self.view.CreateImport_Tab.ui.checkBox_savepickle.stateChanged.connect(self.set_pickleExport_checked)
 
         self.view.CreateImport_Tab.ui.btnGetFile.clicked.connect(self.view.get_file_path)
         self.view.input_file_path.connect(self.update_file_input_path)
 
         self.view.CreateImport_Tab.ui.btnGetPickleFile.clicked.connect(self.view.get_pickle_save_path)
+        self.view.pickle_file_path.connect(self.update_pickle_file_path)
+
         self.view.CreateImport_Tab.ui.btnGetOutputDir.clicked.connect(self.view.get_output_dir_path)
+        self.view.output_file_path.connect(self.update_output_file_path)
+
+        self.view.progressRound.valueChanged.connect(self.update_progress_bar)
 
         self.view.ui.pushButton_2.clicked.connect(self.view.show_Create_Import_Window)
         self.view.ui.pushButton_3.clicked.connect(self.view.show_Create_Select_Window)
@@ -454,8 +459,11 @@ class Controller(Publisher, Subscriber):
         logging.debug("done with creating dfs")
         # self.model.gtfs.save_h5(h5_filename="C:/Tmp/test.h5", data=self.model.gtfs.dfTrips, labels="trips")
 
+    def update_progress_bar(self):
+        self.view.progressRound.set_value(self.model.planer.progress)
+
     def sub_update_progress_bar(self):
-        self.progressRound.set_value(self.model.planer.progress)
+        self.view.progressRound.set_value(self.model.planer.progress)
 
     def initilize_schedule_planer(self):
         # init model with publisher
@@ -479,30 +487,15 @@ class Controller(Publisher, Subscriber):
         logging.debug(f"individualsorting: {self.model.gtfs.individualsorting}")
 
     def set_pickleExport_checked(self):
-        self.model.planer.pickle_export_checked = self.CreateImport_Tab.ui.checkBox_savepickle.isChecked()
+        self.model.planer.pickle_export_checked = self.view.CreateImport_Tab.ui.checkBox_savepickle.isChecked()
 
     def notify_restart(self):
-        self.CreateImport_Tab.ui.btnImport.setEnabled(True)
-        self.CreateImport_Tab.ui.btnRestart.setEnabled(False)
-        self.CreateImport_Tab.ui.comboBox_display.setEnabled(True)
-
-        self.CreateSelect_Tab.ui.AgenciesTableView.clear()
-        self.CreateSelect_Tab.ui.TripsTableView.clear()
-
-        self.CreateCreate_Tab.ui.btnStart.setEnabled(False)
-        self.CreateCreate_Tab.ui.btnContinueCreate.setEnabled(False)
-        self.CreateCreate_Tab.ui.comboBox.setEnabled(False)
-        self.CreateCreate_Tab.ui.comboBox_direction.setEnabled(False)
-        self.CreateCreate_Tab.ui.UseIndividualSorting.setEnabled(False)
-
-        self.CreateCreate_Tab.ui.listDatesWeekday.clear()
-        self.CreateCreate_Tab.ui.tableView_sorting_stops.clear()
-
+        self.view.reset_view()
         return self.dispatch("reset_gtfs", "reset_gtfs started! Notify subscriber!")
 
     # based on linked event subscriber are going to be notified
     def notify_subscriber(self, event, message):
-        logging.debug(f'CONTROLLER event: {event}, message {message}')
+        logging.debug(f'notify_subscriber event: {event}, message {message}')
         notify_function, parameters = self.notify_functions.get(event, self.notify_not_function)
         if not parameters:
             notify_function()
@@ -510,7 +503,7 @@ class Controller(Publisher, Subscriber):
             notify_function(message)
 
     def trigger_action(self, event, message):
-        logging.debug(f'event: {event}, message {message}')
+        logging.debug(f'trigger_action event: {event}, message {message}')
         notify_function, parameters = self.notify_functions.get(event, self.notify_not_function)
         if not parameters:
             notify_function()
@@ -518,7 +511,7 @@ class Controller(Publisher, Subscriber):
             notify_function(message)
 
     def update_gui(self, event, message):
-        logging.debug(f'event: {event}, message {message}')
+        logging.debug(f'update_gui event: {event}, message {message}')
         notify_function, parameters = self.notify_functions.get(event, self.notify_not_function)
         if not parameters:
             notify_function()
@@ -579,10 +572,10 @@ class Controller(Publisher, Subscriber):
         self.model.planer.import_Data.input_path = self.view.CreateImport_Tab.ui.lineInputPath.text()
 
     def update_pickle_file_path(self):
-        self.model.planer.export_plan.output_path = self.view.CreateImport_Tab.ui.lineOutputPath.text()
+        self.model.planer.import_Data.pickle_save_path_filename = self.view.CreateImport_Tab.ui.picklesavename.text()
 
     def update_output_file_path(self):
-        self.model.planer.import_Data.pickle_save_path_filename = self.view.CreateImport_Tab.ui.picklesavename.text()
+        self.model.planer.export_plan.output_path = self.view.CreateImport_Tab.ui.lineOutputPath.text()
 
     @staticmethod
     def find(name, path):
@@ -600,8 +593,8 @@ class Controller(Publisher, Subscriber):
             self.model.start_function_async("model_import_gtfs_data")
             logging.debug("started import test")
         else:
-            self.notify_restart()
             self.send_message_box('Error. Could not load data.')
+            self.notify_restart()
             return
 
     def notify_select_option_button_direction(self):
@@ -613,8 +606,11 @@ class Controller(Publisher, Subscriber):
 
 
 class View(QMainWindow):
-    input_file_path = pyqtSignal(tuple)
+    input_file_path = pyqtSignal(str)
+    pickle_file_path = pyqtSignal(str)
+    output_file_path = pyqtSignal(str)
     export_plan_time_format = pyqtSignal(str)
+
     def __init__(self):
         super().__init__()
         self.ui = Ui_MainWindow()
@@ -659,7 +655,9 @@ class View(QMainWindow):
 
     def init_signals(self):
         self.CreateImport_Tab.ui.comboBox_display.activated[str].connect(self.export_plan_time_format.emit)
-        self.CreateImport_Tab.ui.comboBox_display.activated[str].connect(self.export_plan_time_format.emit)
+        self.CreateImport_Tab.ui.lineInputPath.textChanged.connect(self.input_file_path.emit)
+        self.CreateImport_Tab.ui.lineOutputPath.textChanged.connect(self.output_file_path.emit)
+        self.CreateImport_Tab.ui.picklesavename.textChanged.connect(self.pickle_file_path.emit)
 
     def center(self):
         qr = self.frameGeometry()
@@ -730,36 +728,46 @@ class View(QMainWindow):
         if self.input_file_path[0] > '':
             self.CreateImport_Tab.ui.lineInputPath.setText(self.input_file_path[0])
 
-    def getDirPath(self):
-        file_path = QFileDialog.getExistingDirectory(self,
-                                                     caption='Select GTFS Zip File', )
-        if file_path > '':
-            self.CreateImport_Tab.ui.GTFSInputPath.setText(file_path)
-
     def get_output_dir_path(self):
-        file_path = QFileDialog.getExistingDirectory(self,
+        self.output_file_path = QFileDialog.getExistingDirectory(self,
                                                      caption='Select GTFS Zip File',
                                                      directory='C:/Tmp')
-        if file_path > '':
-            self.CreateImport_Tab.ui.lineOutputPath.setText(f'{file_path}/')
+        if self.output_file_path > '':
+            self.CreateImport_Tab.ui.lineOutputPath.setText(f'{self.output_file_path}/')
 
     def get_pickle_save_path(self):
         try:
-            file_path = QFileDialog.getSaveFileName(parent=self,
+            self.pickle_file_path = QFileDialog.getSaveFileName(parent=self,
                                                     caption='Select GTFS Zip File',
                                                     directory='C:/Tmp',
                                                     filter='Zip File (*.zip)',
                                                     initialFilter='Zip File (*.zip)')
 
         except:
-            file_path = QFileDialog.getSaveFileName(parent=self,
+            self.pickle_file_path = QFileDialog.getSaveFileName(parent=self,
                                                     caption='Select GTFS Zip File',
                                                     directory=os.getcwd(),
                                                     filter='Zip File (*.zip)',
                                                     initialFilter='Zip File (*.zip)')
-        if file_path[0] > '':
-            self.CreateImport_Tab.ui.picklesavename.setText(file_path[0])
+        if self.pickle_file_path[0] > '':
+            self.CreateImport_Tab.ui.picklesavename.setText(self.pickle_file_path[0])
 
+    def reset_view(self):
+        self.CreateImport_Tab.ui.btnImport.setEnabled(True)
+        self.CreateImport_Tab.ui.btnRestart.setEnabled(False)
+        self.CreateImport_Tab.ui.comboBox_display.setEnabled(True)
+
+        self.CreateSelect_Tab.ui.AgenciesTableView.clear()
+        self.CreateSelect_Tab.ui.TripsTableView.clear()
+
+        self.CreateCreate_Tab.ui.btnStart.setEnabled(False)
+        self.CreateCreate_Tab.ui.btnContinueCreate.setEnabled(False)
+        self.CreateCreate_Tab.ui.comboBox.setEnabled(False)
+        self.CreateCreate_Tab.ui.comboBox_direction.setEnabled(False)
+        self.CreateCreate_Tab.ui.UseIndividualSorting.setEnabled(False)
+
+        self.CreateCreate_Tab.ui.listDatesWeekday.clear()
+        self.CreateCreate_Tab.ui.tableView_sorting_stops.clear()
 
 def get_current_time():
     """ Helper function to get the current time in seconds. """
