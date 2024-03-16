@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from model.observer import Publisher, Subscriber
+from PyQt5.QtCore import pyqtSignal, QObject
 import pandas as pd
 import zipfile
 import io
@@ -16,7 +17,7 @@ logging.basicConfig(level=logging.DEBUG,
                     datefmt="%Y-%m-%d %H:%M:%S")
 
 
-class ImportData(Publisher, Subscriber):
+class ImportData(QObject, Publisher, Subscriber):
     def __init__(self, events, name, progress: int):
         super().__init__(events=events, name=name)
         self._pkl_loaded = False
