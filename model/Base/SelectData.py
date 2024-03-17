@@ -45,6 +45,27 @@ class SelectData(QObject):
         self.create_plan_mode = None
         self.progress = progress
 
+        self.options_dates_weekday = ['Dates', 'Weekday']
+        self.week_day_options = {0: [0, 'Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday'],
+                                 1: [1, 'Monday, Tuesday, Wednesday, Thursday, Friday'],
+                                 2: [2, 'Monday'],
+                                 3: [3, 'Tuesday'],
+                                 4: [4, 'Wednesday'],
+                                 5: [5, 'Thursday'],
+                                 6: [6, 'Friday'],
+                                 7: [7, 'Saturday'],
+                                 8: [8, 'Sunday'],
+                                 }
+        self.week_day_options_list = ['0,Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday',
+                                   '1,Monday, Tuesday, Wednesday, Thursday, Friday',
+                                   '2,Monday',
+                                   '3,Tuesday',
+                                   '4,Wednesday',
+                                   '5,Thursday',
+                                   '6,Friday',
+                                   '7,Saturday',
+                                   '8,Sunday']
+
     @property
     def progress(self):
         return self._progress

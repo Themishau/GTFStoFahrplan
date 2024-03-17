@@ -258,6 +258,9 @@ class ViewModel(QObject):
     pickle_file_path = pyqtSignal(str)
     output_file_path = pyqtSignal(str)
     export_plan_time_format = pyqtSignal(str)
+    reset_view = pyqtSignal()
+    update_create_plan_mode = pyqtSignal(str)
+    update_direction_mode = pyqtSignal(str)
 
     def __init__(self, app, model):
         super().__init__()
@@ -276,19 +279,16 @@ class ViewModel(QObject):
                                  }
         self.initilize_schedule_planer()
 
-    def onChanged(self, text):
+    def onChangedCreatePlanMode(self, text):
+        # change property in
+        self.update_create_plan_mode.emit(text)
         if text == 'date':
-            self.view.CreateCreate_Tab.ui.listDatesWeekday.clear()
-            self.view.CreateCreate_Tab.ui.lineDateInput.setText(self.model.planer.select_data.date_range)
-            self.view.CreateCreate_Tab.ui.lineDateInput.setEnabled(True)
-            self.view.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(False)
-            self.model.gtfs.selected_weekday = None
+            self.model.planer.select_data.date_range =
+            self.model.planer.select_data.selected_weekday = None
         elif text == 'weekday':
-            self.view.CreateCreate_Tab.ui.listDatesWeekday.addItems(self.model.planer.select_data.weekDayOptionsList)
-            self.view.CreateCreate_Tab.ui.lineDateInput.clear()
-            self.view.CreateCreate_Tab.ui.lineDateInput.setEnabled(False)
-            self.view.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(True)
-            self.model.gtfs.selected_dates = None
+            self.model.planer.select_data.
+            self.model.planer.select_data.selected_dates = None
+
 
     def onChangeInputFilePath(self, path):
         self.model.planer.import_Data.input_path = path
@@ -349,7 +349,7 @@ class ViewModel(QObject):
 
     def sub_update_weekday_list(self):
         self.CreateCreate_Tab.ui.listDatesWeekday.clear()
-        self.CreateCreate_Tab.ui.listDatesWeekday.addItems(self.model.gtfs.weekDayOptionsList)
+        self.CreateCreate_Tab.ui.listDatesWeekday.addItems(self.model.gtfs.week_day_options_list)
 
     def sub_update_routes_list(self):
         self.CreateSelect_Tab.ui.TripsTableView.setModel(TableModel(self.model.planer.select_data.df_selected_routes))
@@ -384,9 +384,9 @@ class ViewModel(QObject):
     def set_pickleExport_checked(self):
         self.model.planer.pickle_export_checked = self.view.CreateImport_Tab.ui.checkBox_savepickle.isChecked()
 
-    def notify_restart(self):
+    def restart(self):
         self.view.reset_view()
-        return self.dispatch("reset_gtfs", "reset_gtfs started! Notify subscriber!")
+        self.model.reset_model()
 
     # based on linked event subscriber are going to be notified
     def notify_subscriber(self, event, message):
@@ -417,7 +417,7 @@ class ViewModel(QObject):
         logging.debug('event not found in class gui: {}'.format(event))
 
     def notify_select_weekday_option(self):
-        if self.model.gtfs.weekDayOptionsList is None:
+        if self.model.gtfs.week_day_options_list is None:
             return False
         self.model.gtfs.selected_weekday = self.CreateCreate_Tab.ui.listDatesWeekday.currentItem().text().split(',')[0]
         self.dispatch("select_weekday", "select_weekday routine started! Notify subscriber!")
@@ -536,7 +536,7 @@ class View(QMainWindow):
     def initialize_buttons_links(self):
         # connect gui elements to methods in the controller
         self.CreateImport_Tab.ui.btnImport.clicked.connect(self.viewModel.start_import_gtfs_data)
-        self.CreateImport_Tab.ui.btnRestart.clicked.connect(self.restart)
+        self.CreateImport_Tab.ui.btnRestart.clicked.connect(self.viewModel.restart)
 
         self.CreateImport_Tab.ui.btnGetFile.clicked.connect(self.get_file_path)
         self.viewModel.input_file_path.connect(self.update_file_input_path)
@@ -566,8 +566,12 @@ class View(QMainWindow):
         self.CreateCreate_Tab.ui.btnContinueCreate.clicked.connect(self.notify_create_table_continue)
         self.CreateCreate_Tab.ui.UseIndividualSorting.clicked.connect(self.set_individualsorting)
         self.CreateCreate_Tab.ui.listDatesWeekday.clicked.connect(self.notify_select_weekday_option)
-        self.CreateCreate_Tab.ui.comboBox.activated[str].connect(self.onChanged)
-        self.CreateCreate_Tab.ui.comboBox_direction.activated[str].connect(self.onChangedDirectionMode)
+
+        self.CreateCreate_Tab.ui.comboBox.activated[str].connect(self.viewModel.onChangedCreatePlanMode)
+        self.viewModel.update_create_plan_mode.connect(self.update_create_plan_mode)
+
+        self.CreateCreate_Tab.ui.comboBox_direction.activated[str].connect(self.viewModel.onChangedDirectionMode)
+        self.viewModel.update_direction_mode.connect(self.update_direction_mode)
 
     def update_file_input_path(self, input_path):
         self.CreateImport_Tab.ui.lineInputPath.setText(input_path)
@@ -581,6 +585,22 @@ class View(QMainWindow):
     def update_time_format(self, time_format):
         self.CreateCreate_Tab.ui.line_Selection_format.setText(time_format)
 
+    def update_direction_mode(self, mode):
+        self.CreateCreate_Tab.ui.comboBox_direction.setCurrentText(mode)
+
+    def update_create_plan_mode(self, mode):
+        self.CreateCreate_Tab.ui.comboBox_mode.setCurrentText(mode)
+        if mode == 'date':
+            self.CreateCreate_Tab.ui.listDatesWeekday.clear()
+            self.CreateCreate_Tab.ui.lineDateInput.setText(self.viewModel.model.planer.select_data.date_range)
+            self.CreateCreate_Tab.ui.lineDateInput.setEnabled(True)
+            self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(False)
+        elif mode == 'weekday':
+            self.CreateCreate_Tab.ui.listDatesWeekday.addItems(self.viewModel.model.planer.select_data.week_day_options_list)
+            self.CreateCreate_Tab.ui.lineDateInput.clear()
+            self.CreateCreate_Tab.ui.lineDateInput.setEnabled(False)
+            self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(True)
+
     def initialize_window(self):
         self.setFixedSize(1350, 900)
         self.setWindowFlags(Qt.FramelessWindowHint)
@@ -588,10 +608,10 @@ class View(QMainWindow):
         self.oldPos = self.pos()
 
     def init_signals(self):
-        self.CreateImport_Tab.ui.comboBox_display.activated[str].connect(self.export_plan_time_format.emit)
-        self.CreateImport_Tab.ui.lineInputPath.textChanged.connect(self.input_file_path.emit)
-        self.CreateImport_Tab.ui.lineOutputPath.textChanged.connect(self.output_file_path.emit)
-        self.CreateImport_Tab.ui.picklesavename.textChanged.connect(self.pickle_file_path.emit)
+        self.CreateImport_Tab.ui.comboBox_display.activated[str].connect(self.viewModel.export_plan_time_format.emit)
+        self.CreateImport_Tab.ui.lineInputPath.textChanged.connect(self.viewModel.input_file_path.emit)
+        self.CreateImport_Tab.ui.lineOutputPath.textChanged.connect(self.viewModel.output_file_path.emit)
+        self.CreateImport_Tab.ui.picklesavename.textChanged.connect(self.viewModel.pickle_file_path.emit)
 
     def mousePressEvent(self, event):
         self.oldPos = event.globalPos()
@@ -679,31 +699,31 @@ class View(QMainWindow):
                                                           filter='Zip File (*.zip)',
                                                           initialFilter='Zip File (*.zip)')
         if input_file_path[0] > '':
-            self.viewModel.
+            self.viewModel.onChangeInputFilePath(input_file_path)
 
     def get_output_dir_path(self):
-        self.output_file_path = QFileDialog.getExistingDirectory(self,
-                                                                 caption='Select GTFS Zip File',
-                                                                 directory='C:/Tmp')
-        if self.output_file_path > '':
-            self.CreateImport_Tab.ui.lineOutputPath.setText(f'{self.output_file_path}/')
+        output_file_path = QFileDialog.getExistingDirectory(self,
+                                                            caption='Select GTFS Zip File',
+                                                            directory='C:/Tmp')
+        if output_file_path > '':
+            self.viewModel.onChangeOutputFilePath(output_file_path)
 
     def get_pickle_save_path(self):
         try:
-            self.pickle_file_path = QFileDialog.getSaveFileName(parent=self,
+            pickle_file_path = QFileDialog.getSaveFileName(parent=self,
                                                                 caption='Select GTFS Zip File',
                                                                 directory='C:/Tmp',
                                                                 filter='Zip File (*.zip)',
                                                                 initialFilter='Zip File (*.zip)')
 
         except:
-            self.pickle_file_path = QFileDialog.getSaveFileName(parent=self,
+            pickle_file_path = QFileDialog.getSaveFileName(parent=self,
                                                                 caption='Select GTFS Zip File',
                                                                 directory=os.getcwd(),
                                                                 filter='Zip File (*.zip)',
                                                                 initialFilter='Zip File (*.zip)')
-        if self.pickle_file_path[0] > '':
-            self.CreateImport_Tab.ui.picklesavename.setText(self.pickle_file_path[0])
+        if pickle_file_path[0] > '':
+            self.viewModel.onChangePickleFilePath(pickle_file_path)
 
     def reset_view(self):
         self.CreateImport_Tab.ui.btnImport.setEnabled(True)
