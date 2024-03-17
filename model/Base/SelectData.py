@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+from PyQt5.QtCore import QCoreApplication, QObject
+
+from Event.ViewEvents import *
 from model.observer import Publisher, Subscriber
 import time
 import pandas as pd
@@ -19,9 +22,10 @@ logging.basicConfig(level=logging.DEBUG,
                     datefmt="%Y-%m-%d %H:%M:%S")
 
 
-class SelectData(Publisher, Subscriber):
-    def __init__(self, events, name, progress: int):
-        super().__init__(events=events, name=name)
+class SelectData(QObject):
+    def __init__(self, app, progress: int):
+        super().__init__()
+        self.app = app
         self.imported_data = None
         self.agencies_list = None
         self.df_selected_routes = None
@@ -30,6 +34,7 @@ class SelectData(Publisher, Subscriber):
         self.selected_route = None
         self.selected_weekday = None
         self.selected_dates = None
+        self.selected_timeformat = 1
 
         self.header_for_export_data = None
         self.df_header_for_export_data = None
@@ -40,10 +45,26 @@ class SelectData(Publisher, Subscriber):
         self.create_plan_mode = None
         self.progress = progress
 
-        self.notify_functions = {
-            'update_agency_list': [self.read_gtfs_agencies, False],
-            'update_routes_list': [self.get_routes_of_agency, False]
-        }
+        self.options_dates_weekday = ['Dates', 'Weekday']
+        self.week_day_options = {0: [0, 'Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday'],
+                                 1: [1, 'Monday, Tuesday, Wednesday, Thursday, Friday'],
+                                 2: [2, 'Monday'],
+                                 3: [3, 'Tuesday'],
+                                 4: [4, 'Wednesday'],
+                                 5: [5, 'Thursday'],
+                                 6: [6, 'Friday'],
+                                 7: [7, 'Saturday'],
+                                 8: [8, 'Sunday'],
+                                 }
+        self.week_day_options_list = ['0,Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday',
+                                   '1,Monday, Tuesday, Wednesday, Thursday, Friday',
+                                   '2,Monday',
+                                   '3,Tuesday',
+                                   '4,Wednesday',
+                                   '5,Thursday',
+                                   '6,Friday',
+                                   '7,Saturday',
+                                   '8,Sunday']
 
     @property
     def progress(self):
@@ -52,7 +73,7 @@ class SelectData(Publisher, Subscriber):
     @progress.setter
     def progress(self, value):
         self._progress = value
-        self.dispatch(UpdateGuiEnum.update_progress_bar, "update_progress_bar routine started! Notify subscriber!")
+        QCoreApplication.postEvent(self.app, ProgressUpdateEvent(self._progress))
 
     @property
     def agencies_list(self):
@@ -62,8 +83,16 @@ class SelectData(Publisher, Subscriber):
     def agencies_list(self, value):
         self._agencies_list = value
         if value is not None:
-            self.dispatch(UpdateGuiEnum.update_agency_list,
-                      "update_agency_list routine started! Notify subscriber!")
+            QCoreApplication.postEvent(self.app, UpdateAgencyListEvent(self._agencies_list))
+
+    @property
+    def selected_timeformat(self):
+        return self._selected_timeformat
+
+    @selected_timeformat.setter
+    def selected_timeformat(self, value):
+        self._selected_timeformat = value
+        logging.debug(value)
 
     @property
     def imported_data(self):

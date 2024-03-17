@@ -1,18 +1,13 @@
 # -*- coding: utf-8 -*-
+from Event.ViewEvents import ProgressUpdateEvent
 from model.observer import Publisher, Subscriber
-import time
+from PyQt5.QtCore import pyqtSignal, QObject, QCoreApplication
 import pandas as pd
-from pandasql import sqldf
 import zipfile
 import io
-from datetime import datetime, timedelta
-import re
 import logging
-import sys
 import os
-from model.Base.ProgressBar import ProgressBar
 from model.Base.GTFSEnums import *
-
 
 from threading import Thread
 import concurrent.futures
@@ -22,9 +17,10 @@ logging.basicConfig(level=logging.DEBUG,
                     datefmt="%Y-%m-%d %H:%M:%S")
 
 
-class ImportData(Publisher, Subscriber):
-    def __init__(self, events, name, progress: int):
-        super().__init__(events=events, name=name)
+class ImportData(QObject):
+    def __init__(self, app, progress: int):
+        super().__init__()
+        self.app = app
         self._pkl_loaded = False
         self._pickle_save_path = ""
         self.reset_import = False
@@ -41,24 +37,6 @@ class ImportData(Publisher, Subscriber):
         self.progress = progress
         self.current_process_string = ""
 
-        self.notify_functions = {
-        }
-
-    """ subscriber methods """
-
-    def notify_subscriber(self, event, message):
-        logging.debug(f'class: ImportData, event: {event}, message {message}')
-        notify_function, parameters = self.notify_functions.get(event, self.notify_not_function)
-        if not parameters:
-            notify_function()
-        else:
-            notify_function(message)
-
-    def notify_not_function(self, event):
-        logging.debug('event not found in class gui: {}'.format(event))
-
-    def notify_error_message(self, message):
-        self.notify_subscriber("error_in_import_class", message)
     @property
     def reset_import(self):
         return self._reset_import
@@ -84,6 +62,7 @@ class ImportData(Publisher, Subscriber):
         if value is not None:
             self._pickleSavePath = value
             self._pickle_save_path = value.replace(value.split('/')[-1], '')
+            logging.debug(value)
         else:
             self.dispatch("message",
                           "Folder not found. Please check!")
@@ -95,7 +74,8 @@ class ImportData(Publisher, Subscriber):
     @progress.setter
     def progress(self, value):
         self._progress = value
-        self.dispatch(UpdateGuiEnum.update_progress_bar, f"{self._progress}")
+        event = ProgressUpdateEvent(self._progress)
+        QCoreApplication.postEvent(self.app, event)
 
     @property
     def pickle_export_checked(self):
@@ -255,13 +235,13 @@ class ImportData(Publisher, Subscriber):
     def print_all_headers(self, stopsHeader, stop_timesHeader, tripsHeader, calendarHeader, calendar_datesHeader,
                           routesHeader, agencyHeader, feed_infoHeader):
         logging.debug('stopsHeader          = {} \n'
-        'stop_timesHeader     = {} \n'
-         'tripsHeader          = {} \n'
-        'calendarHeader       = {} \n'
-        'calendar_datesHeader = {} \n'
-         'routesHeader         = {} \n'
-        'agencyHeader         = {} \n'
-        'feed_infoHeader      = {}'.format(stopsHeader, stop_timesHeader, tripsHeader, calendarHeader,
+                      'stop_timesHeader     = {} \n'
+                      'tripsHeader          = {} \n'
+                      'calendarHeader       = {} \n'
+                      'calendar_datesHeader = {} \n'
+                      'routesHeader         = {} \n'
+                      'agencyHeader         = {} \n'
+                      'feed_infoHeader      = {}'.format(stopsHeader, stop_timesHeader, tripsHeader, calendarHeader,
                                                          calendar_datesHeader, routesHeader, agencyHeader,
                                                          feed_infoHeader))
 
@@ -617,11 +597,12 @@ class ImportData(Publisher, Subscriber):
 
     def save_pickle(self, imported_df_data):
         """
-        example to retrieve data: self.imported_df_data[GtfsDfNames.Calendarweeks]
-        :param imported_df_data:
-        :return:
+        Save the imported dataframes as pickle files and create a zip file containing all pickled dataframes.
+        :param imported_df_data: Dictionary containing dataframes to be saved
+        :return: None
         """
 
+        # Save individual dataframes as pickle files
         imported_df_data[GtfsDfNames.Stops].to_pickle(self._pickle_save_path + "dfStops.pkl")
         imported_df_data[GtfsDfNames.Stoptimes].to_pickle(self._pickle_save_path + "dfStopTimes.pkl")
         imported_df_data[GtfsDfNames.Trips].to_pickle(self._pickle_save_path + "dfTrips.pkl")
@@ -630,9 +611,11 @@ class ImportData(Publisher, Subscriber):
         imported_df_data[GtfsDfNames.Routes].to_pickle(self._pickle_save_path + "dfRoutes.pkl")
         imported_df_data[GtfsDfNames.Agencies].to_pickle(self._pickle_save_path + "dfagency.pkl")
 
+        # Save feed info dataframe if available
         if GtfsDfNames.Feedinfos in imported_df_data:
             imported_df_data[GtfsDfNames.Stops].to_pickle(self._pickle_save_path + "dffeed_info.pkl")
 
+        # Create a zip file containing all pickled dataframes
         with zipfile.ZipFile(self.pickle_save_path_filename, "w", compression=zipfile.ZIP_DEFLATED) as zf:
             zf.write(self._pickle_save_path + "dfStops.pkl")
             zf.write(self._pickle_save_path + "dfStopTimes.pkl")
@@ -642,6 +625,7 @@ class ImportData(Publisher, Subscriber):
             zf.write(self._pickle_save_path + "dfRoutes.pkl")
             zf.write(self._pickle_save_path + "dfagency.pkl")
 
+        # Remove individual pickle files after zipping
         os.remove(self._pickle_save_path + "dfStops.pkl")
         os.remove(self._pickle_save_path + "dfStopTimes.pkl")
         os.remove(self._pickle_save_path + "dfTrips.pkl")
@@ -649,5 +633,6 @@ class ImportData(Publisher, Subscriber):
         os.remove(self._pickle_save_path + "dfDates.pkl")
         os.remove(self._pickle_save_path + "dfRoutes.pkl")
         os.remove(self._pickle_save_path + "dfagency.pkl")
+        # Remove feed info pickle file if available
         if GtfsDfNames.Feedinfos in imported_df_data:
             os.remove(self._pickle_save_path + "dffeed_info.pkl")
