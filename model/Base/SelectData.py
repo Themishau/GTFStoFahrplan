@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+from PyQt5.QtCore import QCoreApplication, QObject
+
+from Event.ViewEvents import *
 from model.observer import Publisher, Subscriber
 import time
 import pandas as pd
@@ -19,9 +22,10 @@ logging.basicConfig(level=logging.DEBUG,
                     datefmt="%Y-%m-%d %H:%M:%S")
 
 
-class SelectData(Publisher, Subscriber):
-    def __init__(self, events, name, progress: int):
-        super().__init__(events=events, name=name)
+class SelectData(QObject):
+    def __init__(self, app, progress: int):
+        super().__init__()
+        self.app = app
         self.imported_data = None
         self.agencies_list = None
         self.df_selected_routes = None
@@ -41,11 +45,6 @@ class SelectData(Publisher, Subscriber):
         self.create_plan_mode = None
         self.progress = progress
 
-        self.notify_functions = {
-            'update_agency_list': [self.read_gtfs_agencies, False],
-            'update_routes_list': [self.get_routes_of_agency, False]
-        }
-
     @property
     def progress(self):
         return self._progress
@@ -53,7 +52,7 @@ class SelectData(Publisher, Subscriber):
     @progress.setter
     def progress(self, value):
         self._progress = value
-        self.dispatch(UpdateGuiEnum.update_progress_bar, "update_progress_bar routine started! Notify subscriber!")
+        QCoreApplication.postEvent(self.app, ProgressUpdateEvent(self._progress))
 
     @property
     def agencies_list(self):
@@ -63,8 +62,7 @@ class SelectData(Publisher, Subscriber):
     def agencies_list(self, value):
         self._agencies_list = value
         if value is not None:
-            self.dispatch(UpdateGuiEnum.update_agency_list,
-                      "update_agency_list routine started! Notify subscriber!")
+            QCoreApplication.postEvent(self.app, UpdateAgencyListEvent(self._agencies_list))
 
     @property
     def selected_timeformat(self):

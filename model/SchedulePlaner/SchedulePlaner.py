@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+from Event.ViewEvents import ProgressUpdateEvent
 from model.observer import Publisher, Subscriber
-from PyQt5.QtCore import pyqtSignal, QObject
+from PyQt5.QtCore import pyqtSignal, QObject, QCoreApplication
 import time
 import pandas as pd
 from pandasql import sqldf
@@ -14,20 +15,20 @@ import os
 from ..Base.ImportData import ImportData
 from ..Base.AnalyzeData import AnalyzeData
 from ..Base.SelectData import SelectData
-from ..Base.PrepareData import PrepareData
 from ..Base.CreatePlan import CreatePlan
 from ..Base.ExportPlan import ExportPlan
 from ..Base.GTFSEnums import *
+from Event.ViewEvents import *
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
                     datefmt="%Y-%m-%d %H:%M:%S")
 
 
-class SchedulePlaner(QObject, Publisher, Subscriber):
-    progress_changed = pyqtSignal(int)
-    def __init__(self, events, name):
-        super().__init__(events=events, name=name)
+class SchedulePlaner(QObject):
+    def __init__(self, app):
+        super().__init__()
+        self.app = app
 
         self.progress = 0
         self.create_plan_direction_two = None
@@ -42,43 +43,10 @@ class SchedulePlaner(QObject, Publisher, Subscriber):
         self.imported_data = None
         self.import_Data = None
 
-
-        self.notify_functions = {
-            ImportDataFuncitonEnum.import_GTFS: [self.import_gtfs_data, False],
-            UpdateGuiEnum.update_routes_list: [self.sub_not_implemented, False],
-            UpdateGuiEnum.update_stopname_create_list: [self.sub_not_implemented, False],
-            UpdateGuiEnum.update_date_range: [self.sub_not_implemented, False],
-            UpdateGuiEnum.update_weekday_list: [self.sub_not_implemented, False],
-            UpdateGuiEnum.update_agency_list: [self.sub_not_implemented, False],
-            UpdateGuiEnum.update_weekdate_option: [self.sub_not_implemented, False],
-            UpdateGuiEnum.message: [self.sub_not_implemented, False],
-            UpdateGuiEnum.update_progress_bar: [self.update_progress_bar, True],
-            UpdateGuiEnum.show_error: [self.notify_error_message, True]
-        }
-
     """ methods """
 
     def notify_not_function(self, event):
         logging.debug('event not found in class gui: {}'.format(event))
-
-    def notify_error_message(self, message):
-        self.dispatch(UpdateGuiEnum.show_error, message)
-
-    def trigger_action(self, event, message):
-        logging.debug(f'event: {event}, message {message}')
-        notify_function, parameters = self.notify_functions.get(event, self.notify_not_function)
-        if not parameters:
-            notify_function()
-        else:
-            notify_function(message)
-
-    def update_gui(self, event, message):
-        logging.debug(f'event: {event}, message {message}')
-        notify_function, parameters = self.notify_functions.get(event, self.notify_not_function)
-        if not parameters:
-            notify_function()
-        else:
-            notify_function(message)
 
     def sub_not_implemented(self):
         logging.debug("sub method not implemented")
@@ -91,30 +59,18 @@ class SchedulePlaner(QObject, Publisher, Subscriber):
         self.initialize_analyze_data()
         self.initialize_select_data()
         self.initialize_export_plan()
-        self.registerProgressUpdateSubscriptions()
-
-    def registerProgressUpdateSubscriptions(self):
-        self.import_Data.register_self_update_gui(UpdateGuiEnum.update_progress_bar, self)
-        self.select_data.register_self_update_gui(UpdateGuiEnum.update_progress_bar, self)
-        self.analyze_data.register_self_update_gui(UpdateGuiEnum.update_progress_bar, self)
-        # self.prepare_data.register('update_progress_bar', self)
-        # self.export_plan.register('update_progress_bar', self)
 
     def initialize_import_data(self):
-        self.import_Data = ImportData([UpdateGuiEnum.update_progress_bar], name= 'import_data', progress= self.progress)
+        self.import_Data = ImportData(self.app, progress= self.progress)
 
     def initialize_select_data(self):
-        self.select_data = SelectData([UpdateGuiEnum.update_progress_bar,
-                                       UpdateGuiEnum.update_routes_list,
-                                       UpdateGuiEnum.update_agency_list], name='select_data',progress= self.progress)
+        self.select_data = SelectData(self.app,progress= self.progress)
 
     def initialize_analyze_data(self):
-        self.analyze_data = AnalyzeData([UpdateGuiEnum.update_date_range,
-                                         UpdateGuiEnum.update_progress_bar], name='analyze_data', progress=self.progress)
+        self.analyze_data = AnalyzeData(self.app, progress=self.progress)
 
     def initialize_export_plan(self):
-        self.export_plan = ExportPlan([SchedulePlanerTriggerActionsEnum.export_plan,
-                                       UpdateGuiEnum.update_progress_bar], name='export_plan',progress= self.progress)
+        self.export_plan = ExportPlan(self.app,progress= self.progress)
 
     def set_paths(self, input_path, output_path, picklesavepath=""):
         self.import_Data.input_path = input_path
@@ -126,12 +82,12 @@ class SchedulePlaner(QObject, Publisher, Subscriber):
             imported_data = self.import_Data.import_gtfs()
 
             if imported_data is None:
-                self.notify_error_message(ErrorMessageRessources.import_data_error.value)
+                QCoreApplication.postEvent(self.app, ShowErrorMessageEvent(ErrorMessageRessources.import_data_error.value))
                 return False
 
             self.imported_data = imported_data
         except AttributeError:
-            self.notify_error_message(ErrorMessageRessources.no_import_object_generated.value)
+            QCoreApplication.postEvent(self.app, ShowErrorMessageEvent(ErrorMessageRessources.no_import_object_generated.value))
             return False
 
     @property
@@ -141,7 +97,6 @@ class SchedulePlaner(QObject, Publisher, Subscriber):
     @progress.setter
     def progress(self, value):
         self._progress = value
-        self.progress_changed.emit(value)
 
     @property
     def export_plan(self):

@@ -73,11 +73,13 @@ class Worker(QObject):
 
 
 # noinspection PyUnresolvedReferences
-class Model(QObject, Publisher, Subscriber):
-    def __init__(self, events, name):
-        super().__init__(events=events, name=name)
+class Model(QObject):
+    def __init__(self, event_loop):
+        super().__init__()
+        self.event_loop = event_loop
+
         self.planer = None
-        self.worker = None
+
         # we use this thread, to start processes not in the main gui thread
         self.thread = None
         self.notify_functions = {
@@ -100,16 +102,7 @@ class Model(QObject, Publisher, Subscriber):
         }
 
     def set_up_schedule_planer(self):
-        self.planer = SchedulePlaner([SchedulePlanerTriggerActionsEnum.import_GTFS,
-                                      UpdateGuiEnum.update_routes_list,
-                                      UpdateGuiEnum.update_stopname_create_list,
-                                      UpdateGuiEnum.update_date_range,
-                                      UpdateGuiEnum.update_weekday_list,
-                                      UpdateGuiEnum.update_agency_list,
-                                      UpdateGuiEnum.update_weekdate_option,
-                                      UpdateGuiEnum.message,
-                                      UpdateGuiEnum.update_progress_bar,
-                                      UpdateGuiEnum.show_error], name='scheduler')
+        self.planer = SchedulePlaner(self.event_loop)
         self.planer.initilize_scheduler()
 
     def set_up_umlauf_planer(self):
@@ -259,22 +252,16 @@ class Model(QObject, Publisher, Subscriber):
         return self.dispatch("message",
                              "Table created!")
 
-    def notify_subscriber(self, event, message):
-        logging.debug(f'event: {event}, message {message}')
-        notify_function, parameters = self.notify_functions.get(event, self.notify_not_function)
-        if not parameters:
-            notify_function()
-        else:
-            notify_function(message)
 
-    def notify_not_function(self, event):
-        logging.debug('event not found in class gui: {}'.format(event))
-
-
-class Controller(Publisher, Subscriber):
-    def __init__(self, events, name):
-        super().__init__(events=events, name=name)
-        # I listen to these functions
+class ViewModel(QObject):
+    input_file_path = pyqtSignal(str)
+    pickle_file_path = pyqtSignal(str)
+    output_file_path = pyqtSignal(str)
+    export_plan_time_format = pyqtSignal(str)
+    def __init__(self, app, model):
+        super().__init__()
+        self.app = app
+        self.model = model
         self.notify_functions = {UpdateGuiEnum.update_routes_list: [self.sub_update_routes_list, False],
                                  UpdateGuiEnum.update_weekday_list: [self.sub_update_weekdate_option, False],
                                  UpdateGuiEnum.update_agency_list: [self.sub_update_agency_list, False],
@@ -286,109 +273,21 @@ class Controller(Publisher, Subscriber):
                                  UpdateGuiEnum.show_error: [self.send_message_box, True],
                                  ControllerTriggerActionsEnum.restart: [self.notify_restart, False]
                                  }
-
-        self.model = Model([UpdateGuiEnum.update_weekday_list,
-                            UpdateGuiEnum.update_routes_list,
-                            UpdateGuiEnum.update_date_range,
-                            UpdateGuiEnum.update_agency_list,
-                            UpdateGuiEnum.update_weekdate_option,
-                            UpdateGuiEnum.update_stopname_create_list,
-                            UpdateGuiEnum.show_error,
-                            UpdateGuiEnum.message,
-                            UpdateGuiEnum.update_progress_bar,
-                            UpdateGuiEnum.data_changed,
-                            UpdateGuiEnum.restart
-                            ], name='model')
-
-        self.view = View()
-
-        self.initialize_buttons_links()
-        self.initialize_model()
         self.initilize_schedule_planer()
-        self.view.show_home_window()
 
-    def initialize_buttons_links(self):
-
-        # connect gui elements to methods in the controller
-        self.view.CreateImport_Tab.ui.btnImport.clicked.connect(self.start_import_gtfs_data)
-        self.view.CreateImport_Tab.ui.btnRestart.clicked.connect(self.notify_restart)
-        self.view.CreateImport_Tab.ui.checkBox_savepickle.stateChanged.connect(self.set_pickleExport_checked)
-
-        self.view.CreateImport_Tab.ui.btnGetFile.clicked.connect(self.view.get_file_path)
-        self.view.input_file_path.connect(self.update_file_input_path)
-
-        self.view.CreateImport_Tab.ui.btnGetPickleFile.clicked.connect(self.view.get_pickle_save_path)
-        self.view.pickle_file_path.connect(self.update_pickle_file_path)
-
-        self.view.CreateImport_Tab.ui.btnGetOutputDir.clicked.connect(self.view.get_output_dir_path)
-        self.view.output_file_path.connect(self.update_output_file_path)
-
-        self.view.progressRound.valueChanged.connect(self.update_progress_bar)
-
-        self.view.ui.pushButton_2.clicked.connect(self.view.show_Create_Import_Window)
-        self.view.ui.pushButton_3.clicked.connect(self.view.show_Create_Select_Window)
-        self.view.ui.pushButton_4.clicked.connect(self.view.show_Create_Create_Window)
-        self.view.ui.pushButton_5.clicked.connect(self.view.show_home_window)
-        self.view.ui.pushButton_6.clicked.connect(self.view.show_GTFSDownload_window)
-
-        self.view.export_plan_time_format.connect(self.onChangedTimeFormatMode)
-        self.view.CreateSelect_Tab.ui.AgenciesTableView.clicked.connect(self.notify_AgenciesTableView_agency)
-        self.view.CreateSelect_Tab.ui.TripsTableView.clicked.connect(self.notify_TripsTableView)
-
-        self.view.CreateCreate_Tab.ui.btnStart.clicked.connect(self.notify_create_table)
-        self.view.CreateCreate_Tab.ui.btnContinueCreate.clicked.connect(self.notify_create_table_continue)
-        self.view.CreateCreate_Tab.ui.UseIndividualSorting.clicked.connect(self.set_individualsorting)
-        self.view.CreateCreate_Tab.ui.listDatesWeekday.clicked.connect(self.notify_select_weekday_option)
-        self.view.CreateCreate_Tab.ui.comboBox.activated[str].connect(self.onChanged)
-        self.view.CreateCreate_Tab.ui.comboBox_direction.activated[str].connect(self.onChangedDirectionMode)
-
-
-    def initialize_model(self):
-        # init Observer controller -> model
-        self.register_self_trigger_action(ModelTriggerActionsEnum.planer_start_load_data, self.model)
-        self.register_self_trigger_action(ModelTriggerActionsEnum.planer_select_agency, self.model)
-        self.register_self_trigger_action(ModelTriggerActionsEnum.planer_select_weekday, self.model)
-        self.register_self_trigger_action(ModelTriggerActionsEnum.planer_reset_gtfs, self.model)
-        self.register_self_trigger_action(ModelTriggerActionsEnum.planer_start_create_table, self.model)
-        self.register_self_trigger_action(ModelTriggerActionsEnum.planer_start_create_table_continue, self.model)
-
-        self.model.register_self_update_gui(UpdateGuiEnum.data_changed, self)
-        # init Observer model -> controller
-        self.model.register_self_update_gui(UpdateGuiEnum.restart, self)
-        self.model.register_self_update_gui(UpdateGuiEnum.message, self)
-        self.model.register_self_update_gui(UpdateGuiEnum.show_error, self)
-
-    # noinspection PyUnresolvedReferences
-    @staticmethod
-    def resource_path(relative_path):
-        """ Get absolute path to resource, works for dev and for PyInstaller """
-        try:
-            # PyInstaller creates a temp folder and stores path in _MEIPASS
-            base_path = sys._MEIPASS
-        except Exception:
-            base_path = os.path.abspath(".")
-        return os.path.join(base_path, relative_path)
-
-    def mousePressEvent(self, event):
-        self.oldPos = event.globalPos()
-
-    def mouseMoveEvent(self, event):
-        delta = QPoint(event.globalPos() - self.oldPos)
-        self.move(self.x() + delta.x(), self.y() + delta.y())
-        self.oldPos = event.globalPos()
 
     def onChanged(self, text):
         if text == 'date':
-            self.CreateCreate_Tab.ui.listDatesWeekday.clear()
-            self.CreateCreate_Tab.ui.lineDateInput.setText(self.model.gtfs.date_range)
-            self.CreateCreate_Tab.ui.lineDateInput.setEnabled(True)
-            self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(False)
+            self.view.CreateCreate_Tab.ui.listDatesWeekday.clear()
+            self.view.CreateCreate_Tab.ui.lineDateInput.setText(self.model.planer.select_data.date_range)
+            self.view.CreateCreate_Tab.ui.lineDateInput.setEnabled(True)
+            self.view.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(False)
             self.model.gtfs.selected_weekday = None
         elif text == 'weekday':
-            self.CreateCreate_Tab.ui.listDatesWeekday.addItems(self.model.gtfs.weekDayOptionsList)
-            self.CreateCreate_Tab.ui.lineDateInput.clear()
-            self.CreateCreate_Tab.ui.lineDateInput.setEnabled(False)
-            self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(True)
+            self.view.CreateCreate_Tab.ui.listDatesWeekday.addItems(self.model.planer.select_data.weekDayOptionsList)
+            self.view.CreateCreate_Tab.ui.lineDateInput.clear()
+            self.view.CreateCreate_Tab.ui.lineDateInput.setEnabled(False)
+            self.view.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(True)
             self.model.gtfs.selected_dates = None
 
     def onChangedTimeFormatMode(self, text):
@@ -397,7 +296,8 @@ class Controller(Publisher, Subscriber):
             self.model.planer.select_data.selected_timeformat = 1
         elif text == 'time format 2':
             self.model.planer.select_data.selected_timeformat = 2
-        self.view.CreateCreate_Tab.ui.line_Selection_format.setText(text)
+        self.export_plan_time_format.emit(text)
+
 
     def onChangedDirectionMode(self, text):
         if text == 'direction 1':
@@ -459,25 +359,9 @@ class Controller(Publisher, Subscriber):
         logging.debug("done with creating dfs")
         # self.model.gtfs.save_h5(h5_filename="C:/Tmp/test.h5", data=self.model.gtfs.dfTrips, labels="trips")
 
-    def update_progress_bar(self):
-        self.view.progressRound.set_value(self.model.planer.progress)
-
-    def sub_update_progress_bar(self):
-        self.view.progressRound.set_value(self.model.planer.progress)
-
     def initilize_schedule_planer(self):
         # init model with publisher
         self.model.set_up_schedule_planer()
-        if self.model.planer is not None:
-            self.model.planer.select_data.register(UpdateGuiEnum.update_routes_list, self)
-            self.model.planer.register(UpdateGuiEnum.update_date_range, self)
-            self.model.planer.register(UpdateGuiEnum.update_weekday_list, self)
-            self.model.planer.register(UpdateGuiEnum.update_stopname_create_list, self)
-            self.model.planer.register(UpdateGuiEnum.update_weekdate_option, self)
-            self.model.planer.register(UpdateGuiEnum.message, self)
-            self.model.planer.register(UpdateGuiEnum.update_progress_bar, self)
-            self.model.planer.select_data.register(UpdateGuiEnum.update_agency_list, self)
-            self.model.planer.register(UpdateGuiEnum.show_error, self)
 
     def set_process(self, task):
         self.model.gtfs.gtfs_process = task
@@ -488,6 +372,7 @@ class Controller(Publisher, Subscriber):
 
     def set_pickleExport_checked(self):
         self.model.planer.pickle_export_checked = self.view.CreateImport_Tab.ui.checkBox_savepickle.isChecked()
+
 
     def notify_restart(self):
         self.view.reset_view()
@@ -568,15 +453,6 @@ class Controller(Publisher, Subscriber):
 
     """ Todo change to: start button is disabled till all checks are clear And add text, so user understands what is missing"""
 
-    def update_file_input_path(self):
-        self.model.planer.import_Data.input_path = self.view.CreateImport_Tab.ui.lineInputPath.text()
-
-    def update_pickle_file_path(self):
-        self.model.planer.import_Data.pickle_save_path_filename = self.view.CreateImport_Tab.ui.picklesavename.text()
-
-    def update_output_file_path(self):
-        self.model.planer.export_plan.output_path = self.view.CreateImport_Tab.ui.lineOutputPath.text()
-
     @staticmethod
     def find(name, path):
         for root, dirs, files in os.walk(path):
@@ -606,13 +482,14 @@ class Controller(Publisher, Subscriber):
 
 
 class View(QMainWindow):
-    input_file_path = pyqtSignal(str)
-    pickle_file_path = pyqtSignal(str)
-    output_file_path = pyqtSignal(str)
-    export_plan_time_format = pyqtSignal(str)
-
-    def __init__(self):
+    def __init__(self, viewModel):
         super().__init__()
+        self.viewModel = viewModel
+        self.event_handlers = {UpdateGuiEnum.update_progress_bar: self.handle_progress_update,
+                               UpdateGuiEnum.update_weekday_list: self.handle,
+                               }
+
+        self.progressRound = None
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
@@ -623,8 +500,6 @@ class View(QMainWindow):
         self.CreateSelect_Tab = CreateTableSelect()
         self.CreateCreate_Tab = CreateTableCreate()
         self.DownloadGTFS_Tab = DownloadGTFS()
-
-
 
         # Connect UI elements to controller methods
         self.createTableImport_btn = self.ui.pushButton_2
@@ -642,10 +517,60 @@ class View(QMainWindow):
         self.initialize_window()
         self.initialize_modified_progress_bar()
         self.initialize_tabs()
+        self.initialize_buttons_links()
         self.init_signals()
         self.ui.toolBox.setCurrentIndex(0)
 
-        # signals
+        self.show_home_window()
+
+    def initialize_buttons_links(self):
+        # connect gui elements to methods in the controller
+        self.CreateImport_Tab.ui.btnImport.clicked.connect(self.viewModel.start_import_gtfs_data)
+        self.CreateImport_Tab.ui.btnRestart.clicked.connect(self.restart)
+
+        self.CreateImport_Tab.ui.btnGetFile.clicked.connect(self.get_file_path)
+        self.viewModel.input_file_path.connect(self.update_file_input_path)
+
+        self.CreateImport_Tab.ui.btnGetPickleFile.clicked.connect(self.get_pickle_save_path)
+        self.viewModel.pickle_file_path.connect(self.update_pickle_file_path)
+
+        self.CreateImport_Tab.ui.btnGetOutputDir.clicked.connect(self.get_output_dir_path)
+        self.viewModel.output_file_path.connect(self.update_output_file_path)
+
+        self.CreateImport_Tab.ui.checkBox_savepickle.stateChanged.connect(self.viewModel.set_pickleExport_checked)
+        self.viewModel.export_pickle_checked.connect(self.update_pickle_export_checked)
+
+        self.CreateImport_Tab.ui.comboBox_display.activated[str].connect(self.viewModel.onChangedTimeFormatMode)
+        self.viewModel.export_plan_time_format.connect(self.update_time_format)
+
+
+        self.ui.pushButton_2.clicked.connect(self.show_Create_Import_Window)
+        self.ui.pushButton_3.clicked.connect(self.show_Create_Select_Window)
+        self.ui.pushButton_4.clicked.connect(self.show_Create_Create_Window)
+        self.ui.pushButton_5.clicked.connect(self.show_home_window)
+        self.ui.pushButton_6.clicked.connect(self.show_GTFSDownload_window)
+
+        self.CreateSelect_Tab.ui.AgenciesTableView.clicked.connect(self.viewModel.notify_AgenciesTableView_agency)
+        self.CreateSelect_Tab.ui.TripsTableView.clicked.connect(self.notify_TripsTableView)
+
+        self.CreateCreate_Tab.ui.btnStart.clicked.connect(self.notify_create_table)
+        self.CreateCreate_Tab.ui.btnContinueCreate.clicked.connect(self.notify_create_table_continue)
+        self.CreateCreate_Tab.ui.UseIndividualSorting.clicked.connect(self.set_individualsorting)
+        self.CreateCreate_Tab.ui.listDatesWeekday.clicked.connect(self.notify_select_weekday_option)
+        self.CreateCreate_Tab.ui.comboBox.activated[str].connect(self.onChanged)
+        self.CreateCreate_Tab.ui.comboBox_direction.activated[str].connect(self.onChangedDirectionMode)
+
+    def update_file_input_path(self, input_path):
+        self.CreateImport_Tab.ui.lineInputPath.setText(input_path)
+
+    def update_pickle_file_path(self, pickle_path):
+        self.CreateImport_Tab.ui.picklesavename.setText(pickle_path)
+
+    def update_output_file_path(self, output_path):
+        self.CreateImport_Tab.ui.lineOutputPath.setText(output_path)
+
+    def update_time_format(self, time_format):
+        self.CreateCreate_Tab.ui.line_Selection_format.setText(time_format)
 
     def initialize_window(self):
         self.setFixedSize(1350, 900)
@@ -659,11 +584,30 @@ class View(QMainWindow):
         self.CreateImport_Tab.ui.lineOutputPath.textChanged.connect(self.output_file_path.emit)
         self.CreateImport_Tab.ui.picklesavename.textChanged.connect(self.pickle_file_path.emit)
 
+    def mousePressEvent(self, event):
+        self.oldPos = event.globalPos()
+
+    def mouseMoveEvent(self, event):
+        delta = QPoint(event.globalPos() - self.oldPos)
+        self.move(self.x() + delta.x(), self.y() + delta.y())
+        self.oldPos = event.globalPos()
+
     def center(self):
         qr = self.frameGeometry()
         cp = QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
         self.move(qr.topLeft())
+
+    def event(self, event):
+        # Use the event type to look up the handler function in the dictionary
+        handler = self.event_handlers.get(event.event_type)
+        if handler:
+            return handler(event)
+        return super().event(event)
+
+    def handle_progress_update(self, event):
+        self.progressRound.set_value(event.progress)
+        return True
 
     def initialize_modified_progress_bar(self):
         # add the modified progress ui element
@@ -713,42 +657,42 @@ class View(QMainWindow):
 
     def get_file_path(self):
         try:
-            self.input_file_path = QFileDialog.getOpenFileName(parent=self,
+            input_file_path = QFileDialog.getOpenFileName(parent=self,
                                                                caption='Select GTFS Zip File',
                                                                directory='C:/Tmp',
                                                                filter='Zip File (*.zip)',
                                                                initialFilter='Zip File (*.zip)')
 
         except:
-            self.input_file_path = QFileDialog.getOpenFileName(parent=self,
+            input_file_path = QFileDialog.getOpenFileName(parent=self,
                                                                caption='Select GTFS Zip File',
                                                                directory=os.getcwd(),
                                                                filter='Zip File (*.zip)',
                                                                initialFilter='Zip File (*.zip)')
-        if self.input_file_path[0] > '':
-            self.CreateImport_Tab.ui.lineInputPath.setText(self.input_file_path[0])
+        if input_file_path[0] > '':
+            self.viewModel.
 
     def get_output_dir_path(self):
         self.output_file_path = QFileDialog.getExistingDirectory(self,
-                                                     caption='Select GTFS Zip File',
-                                                     directory='C:/Tmp')
+                                                                 caption='Select GTFS Zip File',
+                                                                 directory='C:/Tmp')
         if self.output_file_path > '':
             self.CreateImport_Tab.ui.lineOutputPath.setText(f'{self.output_file_path}/')
 
     def get_pickle_save_path(self):
         try:
             self.pickle_file_path = QFileDialog.getSaveFileName(parent=self,
-                                                    caption='Select GTFS Zip File',
-                                                    directory='C:/Tmp',
-                                                    filter='Zip File (*.zip)',
-                                                    initialFilter='Zip File (*.zip)')
+                                                                caption='Select GTFS Zip File',
+                                                                directory='C:/Tmp',
+                                                                filter='Zip File (*.zip)',
+                                                                initialFilter='Zip File (*.zip)')
 
         except:
             self.pickle_file_path = QFileDialog.getSaveFileName(parent=self,
-                                                    caption='Select GTFS Zip File',
-                                                    directory=os.getcwd(),
-                                                    filter='Zip File (*.zip)',
-                                                    initialFilter='Zip File (*.zip)')
+                                                                caption='Select GTFS Zip File',
+                                                                directory=os.getcwd(),
+                                                                filter='Zip File (*.zip)',
+                                                                initialFilter='Zip File (*.zip)')
         if self.pickle_file_path[0] > '':
             self.CreateImport_Tab.ui.picklesavename.setText(self.pickle_file_path[0])
 
@@ -768,6 +712,7 @@ class View(QMainWindow):
 
         self.CreateCreate_Tab.ui.listDatesWeekday.clear()
         self.CreateCreate_Tab.ui.tableView_sorting_stops.clear()
+
 
 def get_current_time():
     """ Helper function to get the current time in seconds. """
