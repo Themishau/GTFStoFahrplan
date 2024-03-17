@@ -12,6 +12,13 @@ class ProgressUpdateEvent(QEvent):
         self.progress = progress
         self.event_type = UpdateGuiEnum.update_progress_bar
 
+class ImportPathChangedEvent(QEvent):
+    def __init__(self, path):
+        global costum_event_incrementer
+        super().__init__(QEvent.Type(QEvent.User + costum_event_incrementer))
+        costum_event_incrementer += 1
+        self.path = path
+        self.event_type = UpdateGuiEnum.update_import_path
 
 class ShowErrorMessageEvent(QEvent):
     def __init__(self, message):

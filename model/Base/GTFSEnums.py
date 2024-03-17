@@ -49,6 +49,7 @@ class SchedulePlanerFunctionEnum(Enum):
 
 
 class UpdateGuiEnum(Enum):
+    update_import_path = 'update_import_path'
     update_routes_list = 'update_routes_list'
     update_stopname_create_list = 'update_stopname_create_list'
     update_date_range = 'update_date_range'

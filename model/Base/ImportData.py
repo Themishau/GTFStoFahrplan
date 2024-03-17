@@ -52,7 +52,6 @@ class ImportData(QObject):
     @input_path.setter
     def input_path(self, value):
         self._input_path = value
-        logging.debug(value)
 
     @property
     def pickle_save_path_filename(self):

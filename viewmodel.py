@@ -258,6 +258,7 @@ class ViewModel(QObject):
     pickle_file_path = pyqtSignal(str)
     output_file_path = pyqtSignal(str)
     export_plan_time_format = pyqtSignal(str)
+
     def __init__(self, app, model):
         super().__init__()
         self.app = app
@@ -275,7 +276,6 @@ class ViewModel(QObject):
                                  }
         self.initilize_schedule_planer()
 
-
     def onChanged(self, text):
         if text == 'date':
             self.view.CreateCreate_Tab.ui.listDatesWeekday.clear()
@@ -290,6 +290,18 @@ class ViewModel(QObject):
             self.view.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(True)
             self.model.gtfs.selected_dates = None
 
+    def onChangeInputFilePath(self, path):
+        self.model.planer.import_Data.input_path = path
+        self.input_file_path.emit(path)
+
+    def onChangedPicklePath(self, path):
+        self.model.planer.import_Data.pickle_save_path_filename = path
+        self.pickle_file_path.emit(path)
+
+    def onChangeOutputFilePath(self, path):
+        self.model.planer.export_plan.output_path = path
+        self.output_file_path.emit(path)
+
     def onChangedTimeFormatMode(self, text):
         logging.debug(text)
         if text == 'time format 1':
@@ -297,7 +309,6 @@ class ViewModel(QObject):
         elif text == 'time format 2':
             self.model.planer.select_data.selected_timeformat = 2
         self.export_plan_time_format.emit(text)
-
 
     def onChangedDirectionMode(self, text):
         if text == 'direction 1':
@@ -372,7 +383,6 @@ class ViewModel(QObject):
 
     def set_pickleExport_checked(self):
         self.model.planer.pickle_export_checked = self.view.CreateImport_Tab.ui.checkBox_savepickle.isChecked()
-
 
     def notify_restart(self):
         self.view.reset_view()
@@ -543,7 +553,6 @@ class View(QMainWindow):
         self.CreateImport_Tab.ui.comboBox_display.activated[str].connect(self.viewModel.onChangedTimeFormatMode)
         self.viewModel.export_plan_time_format.connect(self.update_time_format)
 
-
         self.ui.pushButton_2.clicked.connect(self.show_Create_Import_Window)
         self.ui.pushButton_3.clicked.connect(self.show_Create_Select_Window)
         self.ui.pushButton_4.clicked.connect(self.show_Create_Create_Window)
@@ -658,17 +667,17 @@ class View(QMainWindow):
     def get_file_path(self):
         try:
             input_file_path = QFileDialog.getOpenFileName(parent=self,
-                                                               caption='Select GTFS Zip File',
-                                                               directory='C:/Tmp',
-                                                               filter='Zip File (*.zip)',
-                                                               initialFilter='Zip File (*.zip)')
+                                                          caption='Select GTFS Zip File',
+                                                          directory='C:/Tmp',
+                                                          filter='Zip File (*.zip)',
+                                                          initialFilter='Zip File (*.zip)')
 
         except:
             input_file_path = QFileDialog.getOpenFileName(parent=self,
-                                                               caption='Select GTFS Zip File',
-                                                               directory=os.getcwd(),
-                                                               filter='Zip File (*.zip)',
-                                                               initialFilter='Zip File (*.zip)')
+                                                          caption='Select GTFS Zip File',
+                                                          directory=os.getcwd(),
+                                                          filter='Zip File (*.zip)',
+                                                          initialFilter='Zip File (*.zip)')
         if input_file_path[0] > '':
             self.viewModel.
 
