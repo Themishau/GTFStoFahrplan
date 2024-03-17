@@ -7,12 +7,12 @@ from view.select_table_view import TableModel
 from view.sort_table_view import TableModelSort
 from model.Base.GTFSEnums import *
 
-
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
                     datefmt="%Y-%m-%d %H:%M:%S")
 delimiter = " "
 lineend = '\n'
+
 
 class ViewModel(QObject):
     input_file_path = pyqtSignal(str)
@@ -40,7 +40,7 @@ class ViewModel(QObject):
                                  }
         self.initilize_schedule_planer()
 
-    def onChangedCreatePlanMode(self, text):
+    def on_changed_create_plan_mode(self, text):
         # change property in
         self.update_create_plan_mode.emit(text)
         if text == 'date':
@@ -50,20 +50,19 @@ class ViewModel(QObject):
             self.model.planer.select_data.
             self.model.planer.select_data.selected_dates = None
 
-
-    def onChangeInputFilePath(self, path):
+    def on_change_input_file_path(self, path):
         self.model.planer.import_Data.input_path = path
         self.input_file_path.emit(path)
 
-    def onChangedPicklePath(self, path):
+    def on_changed_pickle_path(self, path):
         self.model.planer.import_Data.pickle_save_path_filename = path
         self.pickle_file_path.emit(path)
 
-    def onChangeOutputFilePath(self, path):
+    def on_change_output_file_path(self, path):
         self.model.planer.export_plan.output_path = path
         self.output_file_path.emit(path)
 
-    def onChangedTimeFormatMode(self, text):
+    def on_changed_time_format_mode(self, text):
         logging.debug(text)
         if text == 'time format 1':
             self.model.planer.select_data.selected_timeformat = 1
@@ -71,65 +70,12 @@ class ViewModel(QObject):
             self.model.planer.select_data.selected_timeformat = 2
         self.export_plan_time_format.emit(text)
 
-    def onChangedDirectionMode(self, text):
+    def on_changed_direction_mode(self, text):
         if text == 'direction 1':
             self.model.gtfs.selected_direction = 0
         elif text == 'direction 2':
             self.model.gtfs.selected_direction = 1
 
-    def send_message_box(self, text):
-        self.view.messageBox_model.setStandardButtons(QMessageBox.Ok)
-        self.view.messageBox_model.setText(text)
-        self.view.messageBox_model.exec_()
-
-    def initialize_create_base_option(self):
-        self.CreateCreate_Tab.ui.comboBox.setEnabled(True)
-        self.CreateImport_Tab.ui.comboBox_display.setEnabled(True)
-        self.CreateCreate_Tab.ui.comboBox_direction.setEnabled(True)
-        self.CreateCreate_Tab.ui.btnStart.setEnabled(True)
-
-    def sub_update_weekdate_option(self):
-        self.initialize_create_base_option()
-        self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(True)
-        self.sub_update_weekday_list()
-
-    def sub_initialize_create_view_weekdaydate_option(self):
-        self.initialize_create_base_option()
-        self.CreateCreate_Tab.ui.listDatesWeekday.clear()
-        self.CreateCreate_Tab.ui.lineDateInput.setText(self.model.gtfs.date_range)
-        self.CreateCreate_Tab.ui.lineDateInput.setEnabled(True)
-        self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(False)
-        self.model.gtfs.selected_weekday = None
-
-    def reset_weekdayDate(self):
-        self.CreateCreate_Tab.ui.comboBox.setEnabled(False)
-        self.CreateImport_Tab.ui.comboBox_display.setEnabled(True)
-        self.CreateCreate_Tab.ui.comboBox_direction.setEnabled(False)
-        self.CreateCreate_Tab.ui.lineDateInput.setEnabled(False)
-        self.CreateCreate_Tab.ui.listDatesWeekday.clear()
-
-    def sub_update_weekday_list(self):
-        self.CreateCreate_Tab.ui.listDatesWeekday.clear()
-        self.CreateCreate_Tab.ui.listDatesWeekday.addItems(self.model.gtfs.week_day_options_list)
-
-    def sub_update_routes_list(self):
-        self.CreateSelect_Tab.ui.TripsTableView.setModel(TableModel(self.model.planer.select_data.df_selected_routes))
-
-    def sub_update_stopname_create_list(self):
-        self.CreateCreate_Tab.ui.tableView_sorting_stops.setModel(
-            TableModelSort(self.model.gtfs.df_filtered_stop_names))
-        self.CreateCreate_Tab.ui.btnContinueCreate.setEnabled(True)
-        # self.CreateCreate_Tab.ui.tableView_sorting_stops.populate()
-
-    def sub_update_agency_list(self):
-        self.CreateSelect_Tab.ui.AgenciesTableView.setModel(
-            TableModel(self.model.planer.select_data.imported_data["Agencies"]))
-        self.CreateCreate_Tab.ui.line_Selection_date_range.setText(self.model.gtfs.date_range)
-        self.CreateCreate_Tab.ui.lineDateInput.setText(self.model.gtfs.date_range)
-        self.show_Create_Select_Window()
-        # self.model.start_get_date_range()
-        logging.debug("done with creating dfs")
-        # self.model.gtfs.save_h5(h5_filename="C:/Tmp/test.h5", data=self.model.gtfs.dfTrips, labels="trips")
 
     def initilize_schedule_planer(self):
         # init model with publisher

@@ -1,10 +1,7 @@
 import logging
-
 from PyQt5.Qt import QThread, QObject
-
 from model.Base.GTFSEnums import *
 from model.SchedulePlaner.SchedulePlaner import SchedulePlaner
-
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
