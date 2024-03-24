@@ -26,7 +26,8 @@ class View(QMainWindow):
         super().__init__()
         self.viewModel = viewModel
         self.event_handlers = {UpdateGuiEnum.update_progress_bar: self.handle_progress_update,
-                               UpdateGuiEnum.update_weekday_list: self.handle,
+                               UpdateGuiEnum.update_weekday_list: self.handle_update_weekdate_option,
+                               UpdateGuiEnum.update_agency_list: self.handle_update_agency_list,
                                }
 
         self.progressRound = None
@@ -70,8 +71,11 @@ class View(QMainWindow):
         self.ui.pushButton_6.clicked.connect(self.show_GTFSDownload_window)
 
         self.CreateImport_Tab.ui.btnImport.clicked.connect(self.viewModel.start_import_gtfs_data)
+        self.viewModel.importing_started.connect(self.update_importing_start)
+
         self.CreateImport_Tab.ui.btnRestart.clicked.connect(self.viewModel.restart)
 
+        # view gets updated if view model changed model successfully
         self.CreateImport_Tab.ui.btnGetFile.clicked.connect(self.get_file_path)
         self.viewModel.input_file_path.connect(self.update_file_input_path)
 
@@ -87,8 +91,9 @@ class View(QMainWindow):
         self.CreateImport_Tab.ui.comboBox_display.activated[str].connect(self.viewModel.on_changed_time_format_mode)
         self.viewModel.export_plan_time_format.connect(self.update_time_format)
 
-        self.CreateSelect_Tab.ui.AgenciesTableView.clicked.connect(self.viewModel.notify_AgenciesTableView_agency)
-        self.viewModel.
+        self.CreateSelect_Tab.ui.AgenciesTableView.clicked.connect(self.viewModel.retrieve_selected_agency_table_record)
+        self.viewModel.update_preparatio.connect(self.update_preparation)
+
         self.CreateSelect_Tab.ui.TripsTableView.clicked.connect(self.notify_TripsTableView)
         self.viewModel.
 
@@ -106,6 +111,24 @@ class View(QMainWindow):
 
         self.CreateCreate_Tab.ui.comboBox_direction.activated[str].connect(self.viewModel.on_changed_direction_mode)
         self.viewModel.update_direction_mode.connect(self.update_direction_mode)
+
+    def update_importing_start(self):
+        self.CreateImport_Tab.ui.btnImport.setEnabled(False)
+        self.CreateImport_Tab.ui.btnRestart.setEnabled(True)
+        self.CreateImport_Tab.ui.btnGetFile.setEnabled(False)
+        self.CreateImport_Tab.ui.btnGetPickleFile.setEnabled(False)
+        self.CreateImport_Tab.ui.btnGetOutputDir.setEnabled(False)
+        self.CreateImport_Tab.ui.checkBox_savepickle.setEnabled(False)
+
+    def retrieve_selected_agency_table_record(self):
+        index = self.CreateSelect_Tab.ui.AgenciesTableView.selectedIndexes()[0]
+        logging.debug(f"index {index}")
+        id_us = self.CreateSelect_Tab.ui.AgenciesTableView.model().data(index)
+        logging.debug(f"index {id_us}")
+        self.viewModel.on_changed_selected_record_agency(id_us)
+
+    def update_preparation(self):
+        self.reset_weekdayDate()
 
     def update_file_input_path(self, input_path):
         self.CreateImport_Tab.ui.lineInputPath.setText(input_path)
@@ -229,7 +252,7 @@ class View(QMainWindow):
         self.CreateCreate_Tab.ui.comboBox_direction.setEnabled(True)
         self.CreateCreate_Tab.ui.btnStart.setEnabled(True)
 
-    def sub_update_weekdate_option(self):
+    def handle_update_weekdate_option(self, event):
         self.initialize_create_base_option()
         self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(True)
         self.sub_update_weekday_list()
@@ -262,9 +285,9 @@ class View(QMainWindow):
         self.CreateCreate_Tab.ui.btnContinueCreate.setEnabled(True)
         # self.CreateCreate_Tab.ui.tableView_sorting_stops.populate()
 
-    def sub_update_agency_list(self):
+    def handle_update_agency_list(self, event):
         self.CreateSelect_Tab.ui.AgenciesTableView.setModel(
-            TableModel(self.model.planer.select_data.imported_data["Agencies"]))
+            TableModel(self.viewModel.model.planer.select_data.imported_data["Agencies"]))
         self.CreateCreate_Tab.ui.line_Selection_date_range.setText(self.model.gtfs.date_range)
         self.CreateCreate_Tab.ui.lineDateInput.setText(self.model.gtfs.date_range)
         self.show_Create_Select_Window()

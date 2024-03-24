@@ -2,7 +2,9 @@ import datetime as dt
 import logging
 import os
 from PyQt5.Qt import QMessageBox, QObject
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import pyqtSignal, QCoreApplication
+
+from Event.ViewEvents import ShowErrorMessageEvent
 from view.select_table_view import TableModel
 from view.sort_table_view import TableModelSort
 from model.Base.GTFSEnums import *
@@ -22,6 +24,9 @@ class ViewModel(QObject):
     reset_view = pyqtSignal()
     update_create_plan_mode = pyqtSignal(str)
     update_direction_mode = pyqtSignal(str)
+    update_pickle_export_checked = pyqtSignal(bool)
+    update_preparation = pyqtSignal()
+    update_importing_start = pyqtSignal()
 
     def __init__(self, app, model):
         super().__init__()
@@ -40,15 +45,19 @@ class ViewModel(QObject):
                                  }
         self.initilize_schedule_planer()
 
+    def on_changed_pickle_export_checked(self, checked):
+        self.model.planer.import_Data.pickle_export_checked = checked
+        self.update_pickle_export_checked.emit(checked)
+
     def on_changed_create_plan_mode(self, text):
-        # change property in
-        self.update_create_plan_mode.emit(text)
         if text == 'date':
-            self.model.planer.select_data.date_range =
+            # self.model.planer.select_data.date_range =
             self.model.planer.select_data.selected_weekday = None
         elif text == 'weekday':
-            self.model.planer.select_data.
+            # self.model.planer.select_data.selected_weekday =
             self.model.planer.select_data.selected_dates = None
+        # change property in view
+        self.update_create_plan_mode.emit(text)
 
     def on_change_input_file_path(self, path):
         self.model.planer.import_Data.input_path = path
@@ -129,14 +138,10 @@ class ViewModel(QObject):
         self.model.gtfs.selected_weekday = self.CreateCreate_Tab.ui.listDatesWeekday.currentItem().text().split(',')[0]
         self.dispatch("select_weekday", "select_weekday routine started! Notify subscriber!")
 
-    def notify_AgenciesTableView_agency(self):
-        index = self.CreateSelect_Tab.ui.AgenciesTableView.selectedIndexes()[0]
-        logging.debug(f"index {index}")
-        id_us = self.CreateSelect_Tab.ui.AgenciesTableView.model().data(index)
-        logging.debug(f"index {id_us}")
-        self.model.gtfs.selectedAgency = id_us
+    def on_changed_selected_record_agency(self, index):
+        self.model.gtfs.selectedAgency = index
         logging.debug(f"selectedAgency {self.model.gtfs.selectedAgency}")
-        self.reset_weekdayDate()
+
         self.dispatch("select_agency", "select_agency routine started! Notify subscriber!")
 
     def notify_TripsTableView(self):
@@ -177,16 +182,15 @@ class ViewModel(QObject):
                 return True
 
     def start_import_gtfs_data(self):
-        self.view.CreateImport_Tab.ui.btnImport.setEnabled(False)
-        self.view.CreateImport_Tab.ui.btnRestart.setEnabled(True)
         if (self.find(self.model.planer.import_Data.input_path.split('/')[-1],
                       self.model.planer.import_Data.input_path.replace(
                           self.model.planer.import_Data.input_path.split('/')[-1], ''))
         ):
-            self.model.start_function_async("model_import_gtfs_data")
+            self.model.start_function_async(ModelTriggerActionsEnum.planer_start_load_data.value)
             logging.debug("started import test")
         else:
-            self.send_message_box('Error. Could not load data.')
+            event = ShowErrorMessageEvent("Error. Could not load data.")
+            QCoreApplication.postEvent(self.app, event)
             self.notify_restart()
             return
 

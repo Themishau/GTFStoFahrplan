@@ -96,7 +96,7 @@ class Model(QObject):
         self.thread.started.connect(getattr(self, function_name))
         self.thread.start()
 
-    def model_import_gtfs_data(self):
+    def planer_start_load_data(self):
         self.planer.import_gtfs_data()
 
     def trigger_action_reset_schedule_planer(self):

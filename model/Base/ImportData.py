@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from Event.ViewEvents import ProgressUpdateEvent
+from Event.ViewEvents import ProgressUpdateEvent, ShowErrorMessageEvent
 from model.observer import Publisher, Subscriber
 from PyQt5.QtCore import pyqtSignal, QObject, QCoreApplication
 import pandas as pd
@@ -64,8 +64,8 @@ class ImportData(QObject):
             self._pickle_save_path = value.replace(value.split('/')[-1], '')
             logging.debug(value)
         else:
-            self.dispatch("message",
-                          "Folder not found. Please check!")
+            event = ShowErrorMessageEvent("Folder not found. Please check!")
+            QCoreApplication.postEvent(self.app, event)
 
     @property
     def progress(self):
@@ -97,7 +97,8 @@ class ImportData(QObject):
 
     def _check_input_fields_based_on_settings(self):
         if self._check_paths() is False:
-            self.notify_error_message(f"could not read data from path: {self.input_path} ")
+            event = ShowErrorMessageEvent(f"could not read data from path: {self.input_path}")
+            QCoreApplication.postEvent(self.app, event)
             return False
 
     def _check_paths(self):
