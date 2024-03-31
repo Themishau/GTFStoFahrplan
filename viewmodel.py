@@ -27,6 +27,7 @@ class ViewModel(QObject):
     update_pickle_export_checked = pyqtSignal(bool)
     update_preparation = pyqtSignal()
     update_importing_start = pyqtSignal()
+    update_create_plan_continue = pyqtSignal()
     create_table_finshed = pyqtSignal()
 
     def __init__(self, app, model):
@@ -148,18 +149,8 @@ class ViewModel(QObject):
 
         self.dispatch("select_agency", "select_agency routine started! Notify subscriber!")
 
-    def on_changed_selected_record_trip(self, ):
-        index = self.CreateSelect_Tab.ui.TripsTableView.selectedIndexes()[2]
-        logging.debug(f"index {index}")
-        id_us = self.CreateSelect_Tab.ui.TripsTableView.model().data(index)
-        logging.debug(f"index {id_us}")
+    def on_changed_selected_record_trip(self, id_us):
         self.model.gtfs.selectedRoute = id_us
-        logging.debug(f"selectedRoute {self.model.gtfs.selectedRoute}")
-        """ change initial selection (weekday mode or date mode) """
-        self.sub_initialize_create_view_weekdaydate_option()
-        # self.sub_update_weekdate_option()
-        self.CreateCreate_Tab.ui.line_Selection_agency.setText(f"selected agency: {self.model.gtfs.selectedAgency}")
-        self.CreateCreate_Tab.ui.line_Selection_trips.setText(f"selected Trip: {self.model.gtfs.selectedRoute}")
 
     def notify_StopNameTableView(self):
         logging.debug(f"click stop")
@@ -173,11 +164,8 @@ class ViewModel(QObject):
 
         self.dispatch("start_create_table", "start_create_table routine started! Notify subscriber!")
 
-    def notify_create_table_continue(self):
-        # self.model.gtfs.df_filtered_stop_names = self.CreateCreate_Tab.ui.tableView_sorting_stops.model.getData()
-        self.dispatch("start_create_table_continue", "start_create_table_continue routine started! Notify subscriber!")
-
-    """ Todo change to: start button is disabled till all checks are clear And add text, so user understands what is missing"""
+    def create_table_continue(self):
+        self.model.start_function_async(ModelTriggerActionsEnum.planer_start_create_table_continue.value)
 
     @staticmethod
     def find(name, path):
