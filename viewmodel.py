@@ -27,6 +27,7 @@ class ViewModel(QObject):
     update_pickle_export_checked = pyqtSignal(bool)
     update_preparation = pyqtSignal()
     update_importing_start = pyqtSignal()
+    create_table_finshed = pyqtSignal()
 
     def __init__(self, app, model):
         super().__init__()
@@ -85,6 +86,8 @@ class ViewModel(QObject):
         elif text == 'direction 2':
             self.model.gtfs.selected_direction = 1
 
+    def on_changed_selected_weekday(self, text):
+        self.model.planer.select_data.selected_weekday = text
 
     def initilize_schedule_planer(self):
         # init model with publisher
@@ -132,10 +135,11 @@ class ViewModel(QObject):
     def notify_not_function(self, event):
         logging.debug('event not found in class gui: {}'.format(event))
 
-    def notify_select_weekday_option(self):
+    def select_weekday_option(self, selected_weekday):
         if self.model.gtfs.week_day_options_list is None:
             return False
-        self.model.gtfs.selected_weekday = self.CreateCreate_Tab.ui.listDatesWeekday.currentItem().text().split(',')[0]
+        self.model.gtfs.selected_weekday = selected_weekday
+
         self.dispatch("select_weekday", "select_weekday routine started! Notify subscriber!")
 
     def on_changed_selected_record_agency(self, index):
@@ -144,7 +148,7 @@ class ViewModel(QObject):
 
         self.dispatch("select_agency", "select_agency routine started! Notify subscriber!")
 
-    def notify_TripsTableView(self):
+    def on_changed_selected_record_trip(self, ):
         index = self.CreateSelect_Tab.ui.TripsTableView.selectedIndexes()[2]
         logging.debug(f"index {index}")
         id_us = self.CreateSelect_Tab.ui.TripsTableView.model().data(index)
@@ -191,8 +195,10 @@ class ViewModel(QObject):
         else:
             event = ShowErrorMessageEvent("Error. Could not load data.")
             QCoreApplication.postEvent(self.app, event)
-            self.notify_restart()
             return
+
+    def start_create_table(self):
+        self.model.start_function_async(ModelTriggerActionsEnum.planer_start_create_table.value)
 
     def notify_select_option_button_direction(self):
         return self.dispatch("select_option_button_direction",

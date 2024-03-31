@@ -85,26 +85,30 @@ class View(QMainWindow):
         self.CreateImport_Tab.ui.btnGetOutputDir.clicked.connect(self.get_output_dir_path)
         self.viewModel.output_file_path.connect(self.update_output_file_path)
 
-        self.CreateImport_Tab.ui.checkBox_savepickle.stateChanged.connect(self.viewModel.set_pickleExport_checked)
+        self.CreateImport_Tab.ui.checkBox_savepickle.stateChanged.connect(self.viewModel.on_changed_pickle_export_checked)
         self.viewModel.export_pickle_checked.connect(self.update_pickle_export_checked)
 
         self.CreateImport_Tab.ui.comboBox_display.activated[str].connect(self.viewModel.on_changed_time_format_mode)
         self.viewModel.export_plan_time_format.connect(self.update_time_format)
 
         self.CreateSelect_Tab.ui.AgenciesTableView.clicked.connect(self.viewModel.retrieve_selected_agency_table_record)
-        self.viewModel.update_preparatio.connect(self.update_preparation)
+        self.viewModel.update_preparation.connect(self.update_preparation)
 
-        self.CreateSelect_Tab.ui.TripsTableView.clicked.connect(self.notify_TripsTableView)
-        self.viewModel.
+        self.CreateSelect_Tab.ui.TripsTableView.clicked.connect(self.get_changed_selected_record_trip)
+        self.viewModel.update_selected_trip.connect(self.update_selected_trip)
 
-        self.CreateCreate_Tab.ui.btnStart.clicked.connect(self.notify_create_table)
-        self.viewModel.
+        self.CreateCreate_Tab.ui.btnStart.clicked.connect(self.viewModel.start_create_table)
+        self.viewModel.create_table_finshed.connect(self.update_create_table)
+
         self.CreateCreate_Tab.ui.btnContinueCreate.clicked.connect(self.notify_create_table_continue)
         self.viewModel.
         self.CreateCreate_Tab.ui.UseIndividualSorting.clicked.connect(self.set_individualsorting)
         self.viewModel.
         self.CreateCreate_Tab.ui.listDatesWeekday.clicked.connect(self.notify_select_weekday_option)
         self.viewModel.
+
+        self.CreateCreate_Tab.ui.lineDateInput.editingFinished.connect(self.notify_input_date)
+        self.CreateCreate_Tab.ui.listDatesWeekday.clicked.connect(self.notify_select_weekday_option)
 
         self.CreateCreate_Tab.ui.comboBox.activated[str].connect(self.viewModel.on_changed_create_plan_mode)
         self.viewModel.update_create_plan_mode.connect(self.update_create_plan_mode)
@@ -127,6 +131,9 @@ class View(QMainWindow):
         logging.debug(f"index {id_us}")
         self.viewModel.on_changed_selected_record_agency(id_us)
 
+    def update_create_table(self):
+        self.send_message_box(f"Success. Create table successfully. Saved here: {self.viewModel.model.planer.export_plan.output_path}")
+
     def update_preparation(self):
         self.reset_weekdayDate()
 
@@ -138,6 +145,9 @@ class View(QMainWindow):
 
     def update_output_file_path(self, output_path):
         self.CreateImport_Tab.ui.lineOutputPath.setText(output_path)
+
+    def update_pickle_export_checked(self, checked):
+        self.CreateImport_Tab.ui.checkBox_savepickle.setChecked(checked)
 
     def update_time_format(self, time_format):
         self.CreateCreate_Tab.ui.line_Selection_format.setText(time_format)
@@ -158,6 +168,11 @@ class View(QMainWindow):
             self.CreateCreate_Tab.ui.lineDateInput.clear()
             self.CreateCreate_Tab.ui.lineDateInput.setEnabled(False)
             self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(True)
+
+    def update_selected_trip(self):
+        self.initialize_create_view_weekdaydate_option()
+        self.CreateCreate_Tab.ui.line_Selection_agency.setText(f"selected agency: {self.viewModel.model.gtfs.selectedAgency}")
+        self.CreateCreate_Tab.ui.line_Selection_trips.setText(f"selected Trip: {self.viewModel.model.gtfs.selectedRoute}")
 
     def initialize_window(self):
         self.setFixedSize(1350, 900)
@@ -257,13 +272,16 @@ class View(QMainWindow):
         self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(True)
         self.sub_update_weekday_list()
 
-    def sub_initialize_create_view_weekdaydate_option(self):
+    def initialize_create_view_weekdaydate_option(self):
         self.initialize_create_base_option()
         self.CreateCreate_Tab.ui.listDatesWeekday.clear()
-        self.CreateCreate_Tab.ui.lineDateInput.setText(self.model.gtfs.date_range)
+        self.CreateCreate_Tab.ui.lineDateInput.setText(self.viewModel.model.gtfs.date_range)
         self.CreateCreate_Tab.ui.lineDateInput.setEnabled(True)
         self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(False)
-        self.model.gtfs.selected_weekday = None
+        self.viewModel.select_weekday_option(None)
+
+    def get_selected_weekday(self):
+        self.viewModel.select_weekday_option(self.CreateCreate_Tab.ui.listDatesWeekday.currentItem().text().split(',')[0])
 
     def reset_weekdayDate(self):
         self.CreateCreate_Tab.ui.comboBox.setEnabled(False)
@@ -335,6 +353,13 @@ class View(QMainWindow):
                                                            initialFilter='Zip File (*.zip)')
         if pickle_file_path[0] > '':
             self.viewModel.onChangePickleFilePath(pickle_file_path)
+
+    def get_changed_selected_record_trip(self):
+        index = self.CreateSelect_Tab.ui.TripsTableView.selectedIndexes()[2]
+        logging.debug(f"index {index}")
+        id_us = self.CreateSelect_Tab.ui.TripsTableView.model().data(index)
+        logging.debug(f"index {id_us}")
+        self.viewModel.on_changed_selected_record_trip(id_us)
 
     def reset_view(self):
         self.CreateImport_Tab.ui.btnImport.setEnabled(True)
