@@ -102,6 +102,7 @@ class View(QMainWindow):
 
         self.CreateCreate_Tab.ui.btnContinueCreate.clicked.connect(self.viewModel.create_table_continue)
         self.viewModel.update_create_plan_continue.connect(self.update_create_plan_continue)
+
         self.CreateCreate_Tab.ui.UseIndividualSorting.clicked.connect(self.set_individualsorting)
         self.viewModel.
         self.CreateCreate_Tab.ui.listDatesWeekday.clicked.connect(self.notify_select_weekday_option)
