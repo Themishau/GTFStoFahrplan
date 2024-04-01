@@ -1,49 +1,22 @@
 # -*- coding: utf-8 -*-
-from model.observer import Publisher, Subscriber
-import time
-import pandas as pd
-from pandasql import sqldf
-import zipfile
-import io
-from datetime import datetime, timedelta
-import re
+from PyQt5.QtCore import QCoreApplication, QObject
 import logging
-import sys
-import os
-from enum import Enum, auto
-from model.Base.ProgressBar import ProgressBar
-from model.Base.ImportData import ImportData
-from model.Base.GTFSEnums import GtfsColumnNames, GtfsDfNames
-
+from model.Base.GTFSEnums import GtfsDfNames
+from Event.ViewEvents import *
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
                     datefmt="%Y-%m-%d %H:%M:%S")
 
 
-class AnalyzeData(Publisher, Subscriber):
-    def __init__(self, events, name, progress: int):
-        super().__init__(events=events, name=name)
+class AnalyzeData(QObject):
+    def __init__(self, app, progress: int):
+        super().__init__()
+        self.app = app
         self.imported_data = None
         self.progress = progress
         self.date_range = None
         self.date_range_df_format = None
         self.notify_functions = {}
-
-    """ subscriber methods """
-
-    def notify_subscriber(self, event, message):
-        logging.debug(f'class: ImportData, event: {event}, message {message}')
-        notify_function, parameters = self.notify_functions.get(event, self.notify_not_function)
-        if not parameters:
-            notify_function()
-        else:
-            notify_function(message)
-
-    def notify_not_function(self, event):
-        logging.debug('event not found in class gui: {}'.format(event))
-
-    def notify_error_message(self, message):
-        self.notify_subscriber("error_in_import_class", message)
 
     @property
     def progress(self):
@@ -52,7 +25,7 @@ class AnalyzeData(Publisher, Subscriber):
     @progress.setter
     def progress(self, value):
         self._progress = value
-        self.dispatch("update_progress_bar", "update_progress_bar routine started! Notify subscriber!")
+        QCoreApplication.postEvent(self.app, ProgressUpdateEvent(self._progress))
 
     @property
     def imported_data(self):

@@ -67,7 +67,7 @@ class SchedulePlaner(QObject):
         self.select_data = SelectData(self.app,progress= self.progress)
 
     def initialize_analyze_data(self):
-        self.analyze_data = AnalyzeData(self.app, progress=self.progress)
+        self.analyze_data = AnalyzeData(self.app, progress= self.progress)
 
     def initialize_export_plan(self):
         self.export_plan = ExportPlan(self.app,progress= self.progress)
@@ -86,6 +86,7 @@ class SchedulePlaner(QObject):
                 return False
 
             self.imported_data = imported_data
+            QCoreApplication.postEvent(self.app, ImportFinishedEvent())
         except AttributeError:
             QCoreApplication.postEvent(self.app, ShowErrorMessageEvent(ErrorMessageRessources.no_import_object_generated.value))
             return False

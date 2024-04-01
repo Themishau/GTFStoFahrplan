@@ -25,26 +25,18 @@ class ViewModel(QObject):
     update_create_plan_mode = pyqtSignal(str)
     update_direction_mode = pyqtSignal(str)
     update_pickle_export_checked = pyqtSignal(bool)
-    update_preparation = pyqtSignal()
-    update_importing_start = pyqtSignal()
+    update_selected_agency = pyqtSignal()
+    update_selected_trip = pyqtSignal(str)
     update_create_plan_continue = pyqtSignal()
+    update_select_data = pyqtSignal(str)
+    update_weekdate_option = pyqtSignal(str)
+    update_individualsorting = pyqtSignal(bool)
     create_table_finshed = pyqtSignal()
 
     def __init__(self, app, model):
         super().__init__()
         self.app = app
         self.model = model
-        self.notify_functions = {UpdateGuiEnum.update_routes_list: [self.sub_update_routes_list, False],
-                                 UpdateGuiEnum.update_weekday_list: [self.sub_update_weekdate_option, False],
-                                 UpdateGuiEnum.update_agency_list: [self.sub_update_agency_list, False],
-                                 UpdateGuiEnum.update_weekdate_option: [self.sub_update_weekdate_option, False],
-                                 UpdateGuiEnum.update_stopname_create_list: [self.sub_update_stopname_create_list,
-                                                                             False],
-                                 UpdateGuiEnum.message: [self.send_message_box, True],
-                                 UpdateGuiEnum.update_progress_bar: [self.sub_update_progress_bar, False],
-                                 UpdateGuiEnum.show_error: [self.send_message_box, True],
-                                 ControllerTriggerActionsEnum.restart: [self.notify_restart, False]
-                                 }
         self.initilize_schedule_planer()
 
     def on_changed_pickle_export_checked(self, checked):
@@ -64,6 +56,10 @@ class ViewModel(QObject):
     def on_change_input_file_path(self, path):
         self.model.planer.import_Data.input_path = path
         self.input_file_path.emit(path)
+
+    def on_changed_weekdate_option(self, text):
+        self.model.planer.select_data.selected_weekday = text
+        self.update_weekdate_option.emit(text)
 
     def on_changed_pickle_path(self, path):
         self.model.planer.import_Data.pickle_save_path_filename = path
@@ -97,15 +93,16 @@ class ViewModel(QObject):
     def set_process(self, task):
         self.model.gtfs.gtfs_process = task
 
-    def set_individualsorting(self):
-        self.model.gtfs.individualsorting = not self.model.gtfs.individualsorting
-        logging.debug(f"individualsorting: {self.model.gtfs.individualsorting}")
+    def on_changed_individualsorting(self, value):
+        self.model.gtfs.individualsorting = value
+        self.update_individualsorting.emit(value)
+
 
     def set_pickleExport_checked(self):
         self.model.planer.pickle_export_checked = self.view.CreateImport_Tab.ui.checkBox_savepickle.isChecked()
 
     def restart(self):
-        self.view.reset_view()
+        self.reset_view()
         self.model.reset_model()
 
     # based on linked event subscriber are going to be notified
@@ -141,28 +138,24 @@ class ViewModel(QObject):
             return False
         self.model.gtfs.selected_weekday = selected_weekday
 
-        self.dispatch("select_weekday", "select_weekday routine started! Notify subscriber!")
 
     def on_changed_selected_record_agency(self, index):
         self.model.gtfs.selectedAgency = index
         logging.debug(f"selectedAgency {self.model.gtfs.selectedAgency}")
+        self.update_selected_agency.emit(index)
 
-        self.dispatch("select_agency", "select_agency routine started! Notify subscriber!")
 
     def on_changed_selected_record_trip(self, id_us):
         self.model.gtfs.selectedRoute = id_us
 
+
+    def on_changed_selected_dates(self, selected_dates):
+        self.model.gtfs.selected_dates = selected_dates
+        self.update_select_data.emit(selected_dates)
+
     def notify_StopNameTableView(self):
         logging.debug(f"click stop")
 
-    def notify_create_table(self):
-        if self.model.gtfs.selected_weekday is None:
-            self.model.gtfs.selected_dates = self.CreateCreate_Tab.ui.lineDateInput.text()
-            self.model.gtfs.selected_weekday = None
-        else:
-            self.model.gtfs.selected_dates = None
-
-        self.dispatch("start_create_table", "start_create_table routine started! Notify subscriber!")
 
     def create_table_continue(self):
         self.model.start_function_async(ModelTriggerActionsEnum.planer_start_create_table_continue.value)
@@ -192,8 +185,7 @@ class ViewModel(QObject):
         return self.dispatch("select_option_button_direction",
                              "select_option_button_direction routine started! Notify subscriber!")
 
-    def notify_close_program(self):
-        return self.dispatch("close_program", "close_program routine started! Notify subscriber!")
+
 
 
 def get_current_time():

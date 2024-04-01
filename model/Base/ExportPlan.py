@@ -1,32 +1,24 @@
 # -*- coding: utf-8 -*-
-from model.observer import Publisher, Subscriber
-import time
-import pandas as pd
-from pandasql import sqldf
-import zipfile
-import io
-from datetime import datetime, timedelta
-import re
+from PyQt5.QtCore import QObject, QCoreApplication
+from Event.ViewEvents import ProgressUpdateEvent, ShowErrorMessageEvent
 import logging
-import sys
-import os
-from enum import Enum, auto
-from model.Base.ProgressBar import ProgressBar
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
                     datefmt="%Y-%m-%d %H:%M:%S")
 
 
-class ExportPlan(Publisher, Subscriber):
-    def __init__(self, events, name, progress: ProgressBar):
-        super().__init__(events=events, name=name)
+class ExportPlan(QObject):
+    def __init__(self, app, progress: int):
+        super().__init__()
+        self.app = app
         self.reset_create = False
         self.create_plan_mode = None
         self.output_path = ""
         self.notify_functions = {
             'create_table': [self.sub_worker_create_output_fahrplan_date, False]
         }
+        self.progress = progress
 
     @property
     def progress(self):
@@ -35,7 +27,8 @@ class ExportPlan(Publisher, Subscriber):
     @progress.setter
     def progress(self, value):
         self._progress = value
-
+        event = ProgressUpdateEvent(self._progress)
+        QCoreApplication.postEvent(self.app, event)
 
     def sub_worker_create_output_fahrplan_date(self):
         NotImplementedError
