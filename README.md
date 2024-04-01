@@ -34,10 +34,8 @@ Before using GTFStoFahrplan, make sure you have GTFS data available. GTFS data c
 Once you have the GTFS data, you can run the script with the following command:
 
 ```
-
-python gtfs_to_fahrplan.py /path/to/gtfs_data
-
-Replace /path/to/gtfs_data with the path to your GTFS data directory.
+start via main.py
+use the UI to create Fahrpläne :)
 ```
 
 The script will generate Fahrplan-compatible files in the same directory as your GTFS data.
