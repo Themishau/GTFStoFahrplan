@@ -57,6 +57,7 @@ class UpdateGuiEnum(Enum):
     update_agency_list = 'update_agency_list'
     update_weekdate_option = 'update_weekdate_option'
     update_progress_bar = 'update_progress_bar'
+    import_finished = 'import_finished'
     show_error = 'show_error'
     message = 'message'
     data_changed = 'data_changed'

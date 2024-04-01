@@ -9,46 +9,6 @@ logging.basicConfig(level=logging.DEBUG,
 delimiter = " "
 lineend = '\n'
 
-
-# noinspection PyUnresolvedReferences
-class GTFSWorker(QThread, Publisher, Subscriber):
-
-    def __init__(self, events, name, process):
-        super().__init__(events=events, name=name)
-        self.process = process
-
-    def run(self):
-        # try:
-        if self.process == 'ImportGTFS':
-            self.dispatch("sub_worker_load_gtfsdata",
-                          "sub_worker_load_gtfsdata routine started! Notify subscriber!")
-        elif self.process == 'fill_agency_list':
-            self.dispatch("sub_worker_update_routes_list",
-                          "sub_worker_update_routes_list routine started! Notify subscriber!")
-        elif self.process == 'create_table_date':
-            self.dispatch("sub_worker_create_output_fahrplan_date",
-                          "sub_worker_create_output_fahrplan_date routine started! Notify subscriber!")
-        elif self.process == 'create_table_date_individual':
-            self.dispatch("sub_worker_create_output_fahrplan_date_indi",
-                          "sub_worker_create_output_fahrplan_date_indi routine started! Notify subscriber!")
-        elif self.process == 'create_table_date_individual_continue':
-            self.dispatch("sub_worker_create_output_fahrplan_date_indi_continue",
-                          "sub_worker_create_output_fahrplan_date_indi_continue routine started! Notify subscriber!")
-        elif self.process == 'create_table_weekday':
-            self.dispatch("sub_worker_create_output_fahrplan_weekday",
-                          "sub_worker_create_output_fahrplan_weekday routine started! Notify subscriber!")
-
-
-class Worker(QObject):
-    def __init__(self, param):
-        super().__init__()
-        self.param = param
-
-    def run(self):
-        # Use self.param in your long-running task
-        print("Running task with parameter:", self.param)
-
-
 # noinspection PyUnresolvedReferences
 class Model(QObject):
     def __init__(self, event_loop):

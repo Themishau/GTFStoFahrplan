@@ -12,6 +12,12 @@ class ProgressUpdateEvent(QEvent):
         self.progress = progress
         self.event_type = UpdateGuiEnum.update_progress_bar
 
+class ImportFinishedEvent(QEvent):
+    def __init__(self):
+        global costum_event_incrementer
+        super().__init__(QEvent.Type(QEvent.User + costum_event_incrementer))
+        costum_event_incrementer += 1
+        self.event_type = UpdateGuiEnum.import_finished
 class ImportPathChangedEvent(QEvent):
     def __init__(self, path):
         global costum_event_incrementer
@@ -36,3 +42,11 @@ class UpdateAgencyListEvent(QEvent):
         costum_event_incrementer += 1
         self.message = message
         self.event_type = UpdateGuiEnum.update_agency_list
+
+class UpdateWeekdayListEvent(QEvent):
+    def __init__(self, message):
+        global costum_event_incrementer
+        super().__init__(QEvent.Type(QEvent.User + costum_event_incrementer))
+        costum_event_incrementer += 1
+        self.message = message
+        self.event_type = UpdateGuiEnum.update_weekday_list
