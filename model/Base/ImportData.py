@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from Event.ViewEvents import ProgressUpdateEvent, ShowErrorMessageEvent
 from model.observer import Publisher, Subscriber
 from PyQt5.QtCore import pyqtSignal, QObject, QCoreApplication
 import pandas as pd
@@ -19,6 +18,8 @@ logging.basicConfig(level=logging.DEBUG,
 
 class ImportData(QObject):
     progress_Update = pyqtSignal(int)
+    error_occured = pyqtSignal(str)
+
     def __init__(self, app, progress: int):
         super().__init__()
         self.app = app
@@ -65,8 +66,7 @@ class ImportData(QObject):
             self._pickle_save_path = value.replace(value.split('/')[-1], '')
             logging.debug(value)
         else:
-            event = ShowErrorMessageEvent("Folder not found. Please check!")
-            QCoreApplication.postEvent(self.app, event)
+            self.error_occured("Folder not found. Please check!")
 
     @property
     def progress(self):
@@ -97,8 +97,7 @@ class ImportData(QObject):
 
     def _check_input_fields_based_on_settings(self):
         if self._check_paths() is False:
-            event = ShowErrorMessageEvent(f"could not read data from path: {self.input_path}")
-            QCoreApplication.postEvent(self.app, event)
+            self.error_occured(f"could not read data from path: {self.input_path}")
             return False
 
     def _check_paths(self):
@@ -162,6 +161,7 @@ class ImportData(QObject):
                     df_gtfs_data[GtfsDfNames.Agencies] = pd.read_pickle(agency)
 
                 self.progress = 80
+
                 try:
                     with zipfile.ZipFile(self.input_path) as zf:
                         with io.TextIOWrapper(zf.open("Tmp/dffeed_info.pkl")) as feed_info:
@@ -172,7 +172,9 @@ class ImportData(QObject):
 
         if self._pkl_loaded is False:
             raw_data = {}
+
             self.progress = 30
+
             try:
                 with zipfile.ZipFile(self.input_path) as zf:
                     with io.TextIOWrapper(zf.open("stops.txt"), encoding="utf-8") as stops:
@@ -192,7 +194,9 @@ class ImportData(QObject):
             except:
                 logging.debug('Error in Unzipping headers')
                 return None
+
             self.progress = 40
+
             try:
                 with zipfile.ZipFile(self.input_path) as zf:
                     with io.TextIOWrapper(zf.open("stops.txt"), encoding="utf-8") as stops:
@@ -288,7 +292,9 @@ class ImportData(QObject):
                 temp_result = result.result()
                 raw_dict_data[temp_result[0]] = temp_result[1]
         logging.debug(f"raw_dict_data creation: {raw_dict_data.keys()}")
+
         self.progress = 60
+
         with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
             processes = [executor.submit(self.create_df_routes, raw_dict_data),
                          executor.submit(self.create_df_trips, raw_dict_data),
@@ -305,7 +311,9 @@ class ImportData(QObject):
             for result in results:
                 temp_result = result.result()
                 df_collection[temp_result.name] = temp_result
+
         self.progress = 90
+
         logging.debug(f"df_collection creation: {df_collection.keys()}")
         return df_collection
 

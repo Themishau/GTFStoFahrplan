@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
-from PyQt5.QtCore import QCoreApplication, QObject
+from PyQt5.QtCore import pyqtSignal, QObject, QCoreApplication
 import logging
 from model.Base.GTFSEnums import GtfsDfNames
-from Event.ViewEvents import *
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
                     datefmt="%Y-%m-%d %H:%M:%S")
 
 
 class AnalyzeData(QObject):
+    progress_Update = pyqtSignal(int)
+    error_occured = pyqtSignal(str)
     def __init__(self, app, progress: int):
         super().__init__()
         self.app = app
@@ -25,7 +26,7 @@ class AnalyzeData(QObject):
     @progress.setter
     def progress(self, value):
         self._progress = value
-        QCoreApplication.postEvent(self.app, ProgressUpdateEvent(self._progress))
+        self.progress_Update.emit(self._progress)
 
     @property
     def imported_data(self):

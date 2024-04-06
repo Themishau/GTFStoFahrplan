@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from Event.ViewEvents import ProgressUpdateEvent
 from model.observer import Publisher, Subscriber
 from PyQt5.QtCore import pyqtSignal, QObject, QCoreApplication
 import time
@@ -18,7 +17,6 @@ from ..Base.SelectData import SelectData
 from ..Base.CreatePlan import CreatePlan
 from ..Base.ExportPlan import ExportPlan
 from ..Base.GTFSEnums import *
-from Event.ViewEvents import *
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
@@ -26,6 +24,9 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class SchedulePlaner(QObject):
+    progress_Update = pyqtSignal(int)
+    error_occured = pyqtSignal(str)
+    import_finished = pyqtSignal(bool)
     def __init__(self, app):
         super().__init__()
         self.app = app
@@ -53,6 +54,7 @@ class SchedulePlaner(QObject):
 
     def update_progress_bar(self, value):
         self.progress = int(value)
+        self.progress_Update.emit(self.progress)
 
     def initilize_scheduler(self):
         self.initialize_import_data()
@@ -62,6 +64,8 @@ class SchedulePlaner(QObject):
 
     def initialize_import_data(self):
         self.import_Data = ImportData(self.app, progress= self.progress)
+        self.import_Data.progress_Update.connect(self.update_progress_bar)
+        self.import_Data.error_occured.connect(self.sub_not_implemented)
 
     def initialize_select_data(self):
         self.select_data = SelectData(self.app,progress= self.progress)
@@ -82,13 +86,13 @@ class SchedulePlaner(QObject):
             imported_data = self.import_Data.import_gtfs()
 
             if imported_data is None:
-                QCoreApplication.postEvent(self.app, ShowErrorMessageEvent(ErrorMessageRessources.import_data_error.value))
+                self.error_occured.emit(ErrorMessageRessources.import_data_error.value)
                 return False
 
             self.imported_data = imported_data
-            QCoreApplication.postEvent(self.app, ImportFinishedEvent())
+            self.import_finished.emit(True)
         except AttributeError:
-            QCoreApplication.postEvent(self.app, ShowErrorMessageEvent(ErrorMessageRessources.no_import_object_generated.value))
+            self.error_occured.emit(ErrorMessageRessources.no_import_object_generated.value)
             return False
 
     @property
