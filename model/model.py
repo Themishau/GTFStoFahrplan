@@ -52,7 +52,7 @@ class Model(QObject):
         :return:
         """
         self.thread = QThread()
-        self.model.moveToThread(self.thread)
+        self.moveToThread(self.thread)
         self.thread.started.connect(getattr(self, function_name))
         self.thread.start()
 

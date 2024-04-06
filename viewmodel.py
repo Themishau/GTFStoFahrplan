@@ -3,8 +3,6 @@ import logging
 import os
 from PyQt5.Qt import QMessageBox, QObject
 from PyQt5.QtCore import pyqtSignal, QCoreApplication
-
-from Event.ViewEvents import ShowErrorMessageEvent
 from view.select_table_view import TableModel
 from view.sort_table_view import TableModelSort
 from model.Base.GTFSEnums import *
@@ -54,16 +52,16 @@ class ViewModel(QObject):
         self.update_create_plan_mode.emit(text)
 
     def on_change_input_file_path(self, path):
-        self.model.planer.import_Data.input_path = path
-        self.input_file_path.emit(path)
+        self.model.planer.import_Data.input_path = path[0]
+        self.input_file_path.emit(path[0])
 
     def on_changed_weekdate_option(self, text):
         self.model.planer.select_data.selected_weekday = text
         self.update_weekdate_option.emit(text)
 
     def on_changed_pickle_path(self, path):
-        self.model.planer.import_Data.pickle_save_path_filename = path
-        self.pickle_file_path.emit(path)
+        self.model.planer.import_Data.pickle_save_path_filename = path[0]
+        self.pickle_file_path.emit(path[0])
 
     def on_change_output_file_path(self, path):
         self.model.planer.export_plan.output_path = path
@@ -96,10 +94,6 @@ class ViewModel(QObject):
     def on_changed_individualsorting(self, value):
         self.model.gtfs.individualsorting = value
         self.update_individualsorting.emit(value)
-
-
-    def set_pickleExport_checked(self):
-        self.model.planer.pickle_export_checked = self.view.CreateImport_Tab.ui.checkBox_savepickle.isChecked()
 
     def restart(self):
         self.reset_view()

@@ -109,35 +109,59 @@ class SelectData(QObject):
             self.find_routes_from_agency()
 
     def find_routes_from_agency(self):
-        df_routes = self.imported_data["Routes"]
+        # df_routes = self.imported_data[GtfsDfNames.Routes]
+        # input_var = [{'agency_id': self.selected_agency}]
+        # var_test = pd.DataFrame(input_var).set_index('agency_id')
+        # cond_routes_of_agency = '''
+        #             select *
+        #             from df_routes
+        #             left join var_test
+        #             where var_test.agency_id = df_routes.agency_id
+        #             order by df_routes.route_short_name;
+        #            '''
+        # routes_list = sqldf(cond_routes_of_agency, locals())
+        #
+        # self.df_selected_routes = routes_list
+
+        df_routes = self.imported_data[GtfsDfNames.Routes]
+
+        # Create a DataFrame from input_var and set 'agency_id' as the index
         input_var = [{'agency_id': self.selected_agency}]
         var_test = pd.DataFrame(input_var).set_index('agency_id')
-        cond_routes_of_agency = '''
-                    select *
-                    from df_routes 
-                    left join var_test
-                    where var_test.agency_id = df_routes.agency_id
-                    order by df_routes.route_short_name;
-                   '''
-        routes_list = sqldf(cond_routes_of_agency, locals())
-        """
-        todo
-        """
+
+        # Perform a left join between df_routes and var_test on 'agency_id'
+        # Filter rows where 'agency_id' in var_test matches 'agency_id' in df_routes
+        # Order the result by 'route_short_name'
+        routes_list = df_routes.merge(var_test, left_on='agency_id', right_index=True, how='left')
+        routes_list = routes_list[routes_list['agency_id'].notna()].sort_values(by='route_short_name')
+
+        # Assign the filtered and sorted DataFrame to self.df_selected_routes
         self.df_selected_routes = routes_list
         return True
 
     def read_gtfs_agencies(self):
-        df_agency = self.imported_data["Agencies"]
-        cond_agencies = '''
-                    select *
-                    from df_agency 
-                    order by df_agency.agency_id;
-                   '''
-        agency_list = sqldf(cond_agencies, locals())
-        agency_list = agency_list.values.tolist()
-        agency_str_list = []
-        for lists in agency_list:
-            agency_str_list.append('{},{}'.format(lists[0], lists[1]))
-        self.agencies_list = agency_str_list
+        # df_agency = self.imported_data[GtfsDfNames.Agencies]
+        # cond_agencies = '''
+        #             select *
+        #             from df_agency
+        #             order by df_agency.agency_id;
+        #            '''
+        # agency_list = sqldf(cond_agencies, locals())
+        # agency_list = agency_list.values.tolist()
+        # agency_str_list = []
+
+        # for lists in agency_list:
+        #     agency_str_list.append('{},{}'.format(lists[0], lists[1]))
+        # self.agencies_list = agency_str_list
         # print (agency_list.values.tolist())
+
+        df_agency = self.imported_data[GtfsDfNames.Agencies]
+        # Order the DataFrame by agency_id
+        df_agency_ordered = df_agency.sort_values(by='agency_id')
+        # Convert the DataFrame to a list of lists
+        agency_list = df_agency_ordered.values.tolist()
+        # Format each row into a string and store in agency_str_list
+        agency_str_list = [f'{row[0]},{row[1]}' for row in agency_list]
+        # Assign the list of strings to self.agencies_list
+        self.agencies_list = agency_str_list
         return True

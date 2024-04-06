@@ -18,6 +18,7 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class ImportData(QObject):
+    progress_Update = pyqtSignal(int)
     def __init__(self, app, progress: int):
         super().__init__()
         self.app = app
@@ -74,8 +75,7 @@ class ImportData(QObject):
     @progress.setter
     def progress(self, value):
         self._progress = value
-        event = ProgressUpdateEvent(self._progress)
-        QCoreApplication.postEvent(self.app, event)
+        self.progress_Update.emit(self._progress)
 
     @property
     def pickle_export_checked(self):
@@ -122,7 +122,8 @@ class ImportData(QObject):
             self.reset_data_cause_of_error()
             return None
 
-        self.save_pickle(imported_data)
+        if self.pickle_export_checked is True and self.pickle_save_path_filename is not None:
+            self.save_pickle(imported_data)
         self.progress = 100
         return imported_data
 

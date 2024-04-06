@@ -25,11 +25,6 @@ class View(QMainWindow):
     def __init__(self, viewModel):
         super().__init__()
         self.viewModel = viewModel
-        self.event_handlers = {UpdateGuiEnum.update_progress_bar: self.handle_progress_update,
-                               UpdateGuiEnum.update_weekday_list: self.handle_update_weekdate_option_list,
-                               UpdateGuiEnum.update_agency_list: self.handle_update_agency_list,
-                               UpdateGuiEnum.import_finished: self.handle_import_finished
-                               }
 
         self.progressRound = None
         self.ui = Ui_MainWindow()
@@ -85,7 +80,7 @@ class View(QMainWindow):
         self.CreateImport_Tab.ui.btnGetOutputDir.clicked.connect(self.get_output_dir_path)
         self.viewModel.output_file_path.connect(self.update_output_file_path)
 
-        self.CreateImport_Tab.ui.checkBox_savepickle.stateChanged.connect(self.viewModel.on_changed_pickle_export_checked)
+        self.CreateImport_Tab.ui.checkBox_savepickle.clicked.connect(self.viewModel.on_changed_pickle_export_checked)
         self.viewModel.update_pickle_export_checked.connect(self.update_pickle_export_checked)
 
         self.CreateImport_Tab.ui.comboBox_display.activated[str].connect(self.viewModel.on_changed_time_format_mode)
@@ -208,11 +203,13 @@ class View(QMainWindow):
         self.move(qr.topLeft())
 
     def event(self, event):
-        if hasattr(event, 'event_type'):
-        # Use the event type to look up the handler function in the dictionary
+        if event.type() >= QEvent.User:
+            # Call the appropriate handler based on the event type
             handler = self.event_handlers.get(event.event_type, None)
             if handler:
-                return handler(event)
+                handler(event)
+                return True
+        # If not handled, call the base class event method
         return super().event(event)
 
     def handle_progress_update(self, event):
@@ -363,7 +360,7 @@ class View(QMainWindow):
                                                            filter='Zip File (*.zip)',
                                                            initialFilter='Zip File (*.zip)')
         if pickle_file_path[0] > '':
-            self.viewModel.onChangePickleFilePath(pickle_file_path)
+            self.viewModel.on_changed_pickle_path(pickle_file_path)
 
     def get_changed_selected_record_trip(self):
         index = self.CreateSelect_Tab.ui.TripsTableView.selectedIndexes()[2]

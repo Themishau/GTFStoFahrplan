@@ -30,7 +30,7 @@ class CreatePlan(Publisher, Subscriber):
         """ property """
         self.input_path = ""
         self.pickle_save_path = ""
-        self.pickle_export_checked = False
+
         self.time_format = 1
 
         """ visual internal property """
