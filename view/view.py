@@ -111,6 +111,7 @@ class View(QMainWindow):
         self.CreateCreate_Tab.ui.comboBox_direction.activated[str].connect(self.viewModel.on_changed_direction_mode)
         self.viewModel.update_direction_mode.connect(self.update_direction_mode)
 
+        self.viewModel.update_progress_value.connect(self.update_progress_bar)
         self.viewModel.send_error_message.connect(self.send_message_box)
 
     def update_selected_agency(self, row):
@@ -213,8 +214,8 @@ class View(QMainWindow):
         # If not handled, call the base class event method
         return super().event(event)
 
-    def handle_progress_update(self, event):
-        self.progressRound.set_value(event.progress)
+    def update_progress_bar(self, value):
+        self.progressRound.set_value(value)
         return True
 
     def initialize_modified_progress_bar(self):
