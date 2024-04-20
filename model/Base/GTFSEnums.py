@@ -104,6 +104,7 @@ class ErrorMessageRessources(Enum):
     import_data_error = 'no data in imported_data.'
     no_import_object_generated = 'No import object generated.'
     error_in_SchedulePlaner_class = 'error_in_SchedulePlaner_class'
+    error_load_data = 'Error. Could not load data.'
 
 
 class InfoMessageRessources(Enum):

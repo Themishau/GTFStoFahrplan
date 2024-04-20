@@ -178,8 +178,7 @@ class ViewModel(QObject):
             self.model.start_function_async(ModelTriggerActionsEnum.planer_start_load_data.value)
             logging.debug("started import test")
         else:
-            event = ShowErrorMessageEvent("Error. Could not load data.")
-            QCoreApplication.postEvent(self.app, event)
+            self.send_error_message(ErrorMessageRessources.error_load_data)
             return
 
     def start_create_table(self):
