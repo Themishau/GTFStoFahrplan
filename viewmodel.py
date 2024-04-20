@@ -29,7 +29,10 @@ class ViewModel(QObject):
     update_select_data = pyqtSignal(str)
     update_weekdate_option = pyqtSignal(str)
     update_individualsorting = pyqtSignal(bool)
+    update_progress_value = pyqtSignal(int)
+    send_error_message = pyqtSignal(str)
     create_table_finshed = pyqtSignal()
+
 
     def __init__(self, app, model):
         super().__init__()
@@ -84,9 +87,16 @@ class ViewModel(QObject):
     def on_changed_selected_weekday(self, text):
         self.model.planer.select_data.selected_weekday = text
 
+    def on_changed_progress_value(self, value):
+        self.update_progress_value.emit(value)
+
     def initilize_schedule_planer(self):
         # init model with publisher
         self.model.set_up_schedule_planer()
+        self.model.set_up_signals()
+
+    def set_up_signals(self):
+        self.model.planer.progress_Update.connect(self.on_changed_progress_value)
 
     def set_process(self, task):
         self.model.gtfs.gtfs_process = task

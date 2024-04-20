@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-from PyQt5.QtCore import QCoreApplication, QObject
+from PyQt5.QtCore import pyqtSignal, QObject, QCoreApplication
 
-from Event.ViewEvents import *
 from model.observer import Publisher, Subscriber
 import time
 import pandas as pd
@@ -23,6 +22,9 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class SelectData(QObject):
+    progress_update = pyqtSignal(int)
+    update_agency_list = pyqtSignal()
+    error_occured = pyqtSignal(str)
     def __init__(self, app, progress: int):
         super().__init__()
         self.app = app
@@ -73,7 +75,7 @@ class SelectData(QObject):
     @progress.setter
     def progress(self, value):
         self._progress = value
-        QCoreApplication.postEvent(self.app, ProgressUpdateEvent(self._progress))
+        self.progress_update.emit(self.progress)
 
     @property
     def agencies_list(self):
@@ -83,7 +85,7 @@ class SelectData(QObject):
     def agencies_list(self, value):
         self._agencies_list = value
         if value is not None:
-            QCoreApplication.postEvent(self.app, UpdateAgencyListEvent(self._agencies_list))
+            self.update_agency_list.emit()
 
     @property
     def selected_timeformat(self):
