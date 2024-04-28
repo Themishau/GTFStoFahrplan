@@ -15,6 +15,7 @@ import os
 from model.Base.GTFSEnums import *
 from model.Base.ProgressBar import ProgressBar
 from model.Base.ImportData import ImportData
+from ..DTO.General_Transit_Feed_Specification import GtfsListDto, GtfsDataFrameDto
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
@@ -28,7 +29,7 @@ class SelectData(QObject):
     def __init__(self, app, progress: int):
         super().__init__()
         self.app = app
-        self.imported_data = None
+        self.gtfs_data_frame_dto = None
         self.agencies_list = None
         self.df_selected_routes = None
 
@@ -97,12 +98,12 @@ class SelectData(QObject):
         logging.debug(value)
 
     @property
-    def imported_data(self):
-        return self._imported_data
+    def gtfs_data_frame_dto(self):
+        return self._gtfs_data_frame_dto
 
-    @imported_data.setter
-    def imported_data(self, value):
-        self._imported_data = value
+    @gtfs_data_frame_dto.setter
+    def gtfs_data_frame_dto(self, value: GtfsDataFrameDto):
+        self._gtfs_data_frame_dto = value
         if value is not None:
             self.read_gtfs_agencies()
 
@@ -125,7 +126,7 @@ class SelectData(QObject):
         #
         # self.df_selected_routes = routes_list
 
-        df_routes = self.imported_data[GtfsDfNames.Routes]
+        df_routes = self.gtfs_data_frame_dto.Routes
 
         # Create a DataFrame from input_var and set 'agency_id' as the index
         input_var = [{'agency_id': self.selected_agency}]
@@ -157,7 +158,7 @@ class SelectData(QObject):
         # self.agencies_list = agency_str_list
         # print (agency_list.values.tolist())
 
-        df_agency = self.imported_data[GtfsDfNames.Agencies]
+        df_agency = self.gtfs_data_frame_dto[GtfsDfNames.Agencies]
         # Order the DataFrame by agency_id
         df_agency_ordered = df_agency.sort_values(by='agency_id')
         # Convert the DataFrame to a list of lists

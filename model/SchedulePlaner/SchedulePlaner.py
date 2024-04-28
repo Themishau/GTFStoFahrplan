@@ -17,6 +17,7 @@ from ..Base.SelectData import SelectData
 from ..Base.CreatePlan import CreatePlan
 from ..Base.ExportPlan import ExportPlan
 from ..Base.GTFSEnums import *
+from ..DTO.General_Transit_Feed_Specification import GtfsListDto, GtfsDataFrameDto
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
@@ -29,6 +30,7 @@ class SchedulePlaner(QObject):
     import_finished = pyqtSignal(bool)
     def __init__(self, app):
         super().__init__()
+        self.gtfs_data_frame_dto = None
         self.app = app
 
         self.progress = 0
@@ -41,7 +43,6 @@ class SchedulePlaner(QObject):
         self.prepare_data = None
         self.select_data = None
 
-        self.imported_data = None
         self.import_Data = None
 
     """ methods """
@@ -83,13 +84,12 @@ class SchedulePlaner(QObject):
 
     def import_gtfs_data(self) -> bool:
         try:
-            imported_data = self.import_Data.import_gtfs()
+            self.gtfs_data_frame_dto = self.import_Data.import_gtfs()
 
-            if imported_data is None:
+            if self.gtfs_data_frame_dto is None:
                 self.error_occured.emit(ErrorMessageRessources.import_data_error.value)
                 return False
 
-            self.imported_data = imported_data
             self.import_finished.emit(True)
         except AttributeError:
             self.error_occured.emit(ErrorMessageRessources.no_import_object_generated.value)
@@ -152,14 +152,15 @@ class SchedulePlaner(QObject):
         self._import_Data = value
 
     @property
-    def imported_data(self):
-        return self._imported_data
+    def gtfs_data_frame_dto(self):
+        return self._gtfs_data_frame_dto
 
-    @imported_data.setter
-    def imported_data(self, value):
-        self._imported_data = value
+    @gtfs_data_frame_dto.setter
+    def gtfs_data_frame_dto(self, value: GtfsDataFrameDto):
+        self._gtfsDataFrameDto = value
         if value is not None:
-            self.analyze_data.imported_data = value
-            self.select_data.imported_data = value
-            self.prepare_data.imported_data = value
-            self.export_plan.imported_data = value
+            self.analyze_data.gtfs_data_frame_dto = value
+            self.select_data.gtfs_data_frame_dto = value
+            self.prepare_data.gtfs_data_frame_dto = value
+            self.export_plan.gtfs_data_frame_dto = value
+

@@ -2,6 +2,9 @@
 from PyQt5.QtCore import pyqtSignal, QObject, QCoreApplication
 import logging
 from model.Base.GTFSEnums import GtfsDfNames
+from ..DTO.General_Transit_Feed_Specification import GtfsListDto, GtfsDataFrameDto
+
+
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
                     datefmt="%Y-%m-%d %H:%M:%S")
@@ -13,7 +16,7 @@ class AnalyzeData(QObject):
     def __init__(self, app, progress: int):
         super().__init__()
         self.app = app
-        self.imported_data = None
+        self.gtfs_data_frame_dto = None
         self.progress = progress
         self.date_range = None
         self.date_range_df_format = None
@@ -29,25 +32,25 @@ class AnalyzeData(QObject):
         self.progress_Update.emit(self._progress)
 
     @property
-    def imported_data(self):
-        return self._imported_data
+    def gtfs_data_frame_dto(self):
+        return self._gtfs_data_frame_dto
 
-    @imported_data.setter
-    def imported_data(self, value):
-        self._imported_data = value
+    @gtfs_data_frame_dto.setter
+    def gtfs_data_frame_dto(self, value: GtfsDataFrameDto):
+        self._gtfs_data_frame_dto = value
         if value is not None:
             self.getDateRange()
 
     def getDateRange(self):
-        if not GtfsDfNames.Feedinfos in self.imported_data:
+        if self.gtfs_data_frame_dto.Feedinfos is None:
             self.date_range = self.analyzeDateRangeInGTFSData()
         else:
-            self.date_range = str(self.imported_data[GtfsDfNames.Feedinfos].feed_start_date) + '-' + str(
-                self.imported_data[GtfsDfNames.Feedinfos].feed_end_date)
+            self.date_range = str(self.gtfs_data_frame_dto.Feedinfos.feed_start_date) + '-' + str(
+                self.gtfs_data_frame_dto[GtfsDfNames.Feedinfos].feed_end_date)
 
 
     def analyzeDateRangeInGTFSData(self):
-        if self.imported_data[GtfsDfNames.Calendarweeks] is not None:
-            self.date_range_df_format = self.imported_data[GtfsDfNames.Calendarweeks].groupby(['start_date', 'end_date']).size().reset_index()
+        if self.gtfs_data_frame_dto.Calendarweeks is not None:
+            self.date_range_df_format = self.gtfs_data_frame_dto.Calendarweeks.groupby(['start_date', 'end_date']).size().reset_index()
             return str(self.date_range_df_format.iloc[0].start_date) + '-' + str(
                 self.date_range_df_format.iloc[0].end_date)

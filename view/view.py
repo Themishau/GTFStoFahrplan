@@ -5,15 +5,15 @@ from PyQt5.Qt import QPoint, QMessageBox, QDesktopWidget, QMainWindow
 from PyQt5.QtCore import Qt, QEvent
 from PyQt5.QtWidgets import QFileDialog
 
-from view.round_progress_bar import RoundProgress
-from view.pyui.main_window_ui import Ui_MainWindow
-from view.general_window_information import GeneralInformation
-from view.create_table_create import CreateTableCreate
-from view.create_table_import import CreateTableImport
-from view.create_table_select import CreateTableSelect
-from view.download_gtfs import DownloadGTFS
-from view.select_table_view import TableModel
-from view.sort_table_view import TableModelSort
+from .round_progress_bar import RoundProgress
+from .pyui.main_window_ui import Ui_MainWindow
+from .general_window_information import GeneralInformation
+from .create_table_create import CreateTableCreate
+from .create_table_import import CreateTableImport
+from .create_table_select import CreateTableSelect
+from .download_gtfs import DownloadGTFS
+from .select_table_view import TableModel
+from .sort_table_view import TableModelSort
 from model.Base.GTFSEnums import *
 
 logging.basicConfig(level=logging.DEBUG,
@@ -312,7 +312,7 @@ class View(QMainWindow):
 
     def handle_update_agency_list(self, event):
         self.CreateSelect_Tab.ui.AgenciesTableView.setModel(
-            TableModel(self.viewModel.model.planer.select_data.imported_data["Agencies"]))
+            TableModel(self.viewModel.model.planer.select_data.gtfs_data_frame_dto["Agencies"]))
         self.CreateCreate_Tab.ui.line_Selection_date_range.setText(self.model.gtfs.date_range)
         self.CreateCreate_Tab.ui.lineDateInput.setText(self.model.gtfs.date_range)
         self.show_Create_Select_Window()

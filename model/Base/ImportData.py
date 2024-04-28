@@ -7,6 +7,7 @@ import io
 import logging
 import os
 from model.Base.GTFSEnums import *
+from ..DTO.General_Transit_Feed_Specification import GtfsListDto, GtfsDataFrameDto
 
 from threading import Thread
 import concurrent.futures
@@ -115,7 +116,12 @@ class ImportData(QObject):
             self.progress = 20
             self.reset_data_cause_of_error()
             return None
+
         imported_data = self.read_gtfs_data()
+        if imported_data.get(GtfsDfNames.Feedinfos) is not None:
+            gtfsDataFrameDto = GtfsDataFrameDto(imported_data[GtfsDfNames.Routes], imported_data[GtfsDfNames.Trips], imported_data[GtfsDfNames.Stoptimes], imported_data[GtfsDfNames.Stops], imported_data[GtfsDfNames.Calendarweeks], imported_data[GtfsDfNames.Calendardates], imported_data[GtfsDfNames.Agencies], imported_data[GtfsDfNames.Feedinfos])
+        else:
+            gtfsDataFrameDto = GtfsDataFrameDto(imported_data[GtfsDfNames.Routes], imported_data[GtfsDfNames.Trips], imported_data[GtfsDfNames.Stoptimes], imported_data[GtfsDfNames.Stops], imported_data[GtfsDfNames.Calendarweeks], imported_data[GtfsDfNames.Calendardates], imported_data[GtfsDfNames.Agencies], None)
 
         if imported_data is None:
             self.reset_data_cause_of_error()
@@ -124,7 +130,7 @@ class ImportData(QObject):
         if self.pickle_export_checked is True and self.pickle_save_path_filename is not None:
             self.save_pickle(imported_data)
         self.progress = 100
-        return imported_data
+        return gtfsDataFrameDto
 
     """ methods """
 

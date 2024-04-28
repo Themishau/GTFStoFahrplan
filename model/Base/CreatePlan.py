@@ -12,6 +12,7 @@ import sys
 import os
 from ..Base.GTFSEnums import CreatePlanMode
 from model.Base.ProgressBar import ProgressBar
+from ..DTO.General_Transit_Feed_Specification import GtfsListDto, GtfsDataFrameDto
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
