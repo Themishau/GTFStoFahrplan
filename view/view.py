@@ -310,11 +310,11 @@ class View(QMainWindow):
         self.CreateCreate_Tab.ui.btnContinueCreate.setEnabled(True)
         # self.CreateCreate_Tab.ui.tableView_sorting_stops.populate()
 
-    def handle_update_agency_list(self, event):
+    def update_agency_list(self):
         self.CreateSelect_Tab.ui.AgenciesTableView.setModel(
-            TableModel(self.viewModel.model.planer.select_data.gtfs_data_frame_dto["Agencies"]))
-        self.CreateCreate_Tab.ui.line_Selection_date_range.setText(self.model.gtfs.date_range)
-        self.CreateCreate_Tab.ui.lineDateInput.setText(self.model.gtfs.date_range)
+            TableModel(self.viewModel.model.planer.select_data.gtfs_data_frame_dto.Agencies))
+        self.CreateCreate_Tab.ui.line_Selection_date_range.setText(self.viewModel.model.planer.analyze_data.date_range)
+        self.CreateCreate_Tab.ui.lineDateInput.setText(self.viewModel.model.planer.analyze_data.date_range)
         self.show_Create_Select_Window()
         # self.model.start_get_date_range()
         logging.debug("done with creating dfs")

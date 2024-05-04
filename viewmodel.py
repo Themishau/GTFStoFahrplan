@@ -23,6 +23,7 @@ class ViewModel(QObject):
     update_create_plan_mode = pyqtSignal(str)
     update_direction_mode = pyqtSignal(str)
     update_pickle_export_checked = pyqtSignal(bool)
+    update_agency_list = pyqtSignal()
     update_selected_agency = pyqtSignal()
     update_selected_trip = pyqtSignal(str)
     update_create_plan_continue = pyqtSignal()
@@ -97,6 +98,7 @@ class ViewModel(QObject):
 
     def set_up_signals(self):
         self.model.planer.progress_Update.connect(self.on_changed_progress_value)
+        self.model.planer.select_data.update_agency_list.connect(self.on_loaded_agency_list)
 
     def set_process(self, task):
         self.model.gtfs.gtfs_process = task
@@ -142,6 +144,9 @@ class ViewModel(QObject):
             return False
         self.model.gtfs.selected_weekday = selected_weekday
 
+
+    def on_loaded_agency_list(self):
+        self.update_agency_list.emit()
 
     def on_changed_selected_record_agency(self, index):
         self.model.gtfs.selectedAgency = index

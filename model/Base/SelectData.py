@@ -158,7 +158,7 @@ class SelectData(QObject):
         # self.agencies_list = agency_str_list
         # print (agency_list.values.tolist())
 
-        df_agency = self.gtfs_data_frame_dto[GtfsDfNames.Agencies]
+        df_agency = self.gtfs_data_frame_dto.Agencies
         # Order the DataFrame by agency_id
         df_agency_ordered = df_agency.sort_values(by='agency_id')
         # Convert the DataFrame to a list of lists

@@ -46,7 +46,7 @@ class AnalyzeData(QObject):
             self.date_range = self.analyzeDateRangeInGTFSData()
         else:
             self.date_range = str(self.gtfs_data_frame_dto.Feedinfos.feed_start_date) + '-' + str(
-                self.gtfs_data_frame_dto[GtfsDfNames.Feedinfos].feed_end_date)
+                self.gtfs_data_frame_dto.Feedinfos.feed_end_date)
 
 
     def analyzeDateRangeInGTFSData(self):
