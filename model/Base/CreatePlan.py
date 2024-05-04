@@ -8,6 +8,7 @@ import io
 from datetime import datetime, timedelta
 import re
 import logging
+from PyQt5.QtCore import pyqtSignal, QObject, QCoreApplication
 import sys
 import os
 from ..Base.GTFSEnums import CreatePlanMode
@@ -19,14 +20,14 @@ logging.basicConfig(level=logging.DEBUG,
                     datefmt="%Y-%m-%d %H:%M:%S")
 
 
-class CreatePlan(Publisher, Subscriber):
-    def __init__(self, events, name, progress: ProgressBar):
-        super().__init__(events=events, name=name)
+class CreatePlan(QObject):
+    progress_Update = pyqtSignal(int)
+    error_occured = pyqtSignal(str)
+    def __init__(self, app, progress: int):
+        super().__init__()
         self.reset_create = False
         self.create_plan_mode = None
-        self.notify_functions = {
-            'create_table': [self.sub_worker_create_output_fahrplan_date, False]
-        }
+        self.gtfs_data_frame_dto = None
 
         """ property """
         self.input_path = ""
@@ -35,7 +36,7 @@ class CreatePlan(Publisher, Subscriber):
         self.time_format = 1
 
         """ visual internal property """
-        self.progress = progress.progress
+        self.progress = progress
 
         self.weekDayOptionsList = ['0,Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday',
                                    '1,Monday, Tuesday, Wednesday, Thursday, Friday',
@@ -54,6 +55,16 @@ class CreatePlan(Publisher, Subscriber):
     @progress.setter
     def progress(self, value):
         self._progress = value
+        self.progress_Update.emit(self._progress)
+
+    @property
+    def gtfs_data_frame_dto(self):
+        return self._gtfs_data_frame_dto
+
+    @gtfs_data_frame_dto.setter
+    def gtfs_data_frame_dto(self, value: GtfsDataFrameDto):
+        self._gtfs_data_frame_dto = value
+
 
     def get_date_range(self, dffeed_info):
         logging.debug('len stop_sequences {}'.format(dffeed_info))

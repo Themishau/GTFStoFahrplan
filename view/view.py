@@ -86,6 +86,7 @@ class View(QMainWindow):
         self.CreateImport_Tab.ui.comboBox_display.activated[str].connect(self.viewModel.on_changed_time_format_mode)
         self.viewModel.export_plan_time_format.connect(self.update_time_format)
 
+        self.viewModel.update_agency_list.connect(self.update_agency_list)
         self.CreateSelect_Tab.ui.AgenciesTableView.clicked.connect(self.get_selected_agency_table_record)
         self.viewModel.update_selected_agency.connect(self.update_selected_agency)
 
@@ -112,7 +113,7 @@ class View(QMainWindow):
         self.viewModel.update_direction_mode.connect(self.update_direction_mode)
 
         self.viewModel.update_progress_value.connect(self.update_progress_bar)
-        self.viewModel.send_error_message.connect(self.send_message_box)
+        self.viewModel.error_message.connect(self.send_message_box)
 
     def update_selected_agency(self, row):
         self.CreateSelect_Tab.ui.AgenciesTableView.selectRow(row)

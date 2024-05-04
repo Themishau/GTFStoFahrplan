@@ -31,7 +31,7 @@ class ViewModel(QObject):
     update_weekdate_option = pyqtSignal(str)
     update_individualsorting = pyqtSignal(bool)
     update_progress_value = pyqtSignal(int)
-    send_error_message = pyqtSignal(str)
+    error_message = pyqtSignal(str)
     create_table_finshed = pyqtSignal()
 
 
@@ -99,6 +99,7 @@ class ViewModel(QObject):
     def set_up_signals(self):
         self.model.planer.progress_Update.connect(self.on_changed_progress_value)
         self.model.planer.select_data.update_agency_list.connect(self.on_loaded_agency_list)
+        self.model.planer.error_occured.connect(self.send_error_message)
 
     def set_process(self, task):
         self.model.gtfs.gtfs_process = task
@@ -185,6 +186,9 @@ class ViewModel(QObject):
         else:
             self.send_error_message(ErrorMessageRessources.error_load_data)
             return
+
+    def send_error_message(self, message):
+        self.error_message.emit(message)
 
     def start_create_table(self):
         self.model.start_function_async(ModelTriggerActionsEnum.planer_start_create_table.value)

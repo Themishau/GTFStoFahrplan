@@ -34,13 +34,9 @@ class SchedulePlaner(QObject):
         self.app = app
 
         self.progress = 0
-        self.create_plan_direction_two = None
-        self.create_plan_direction_one = None
+        self.create_plan = None
         self.export_plan = None
-        self.create_plan_direction_one = None
-        self.create_plan_direction_two = None
         self.analyze_data = None
-        self.prepare_data = None
         self.select_data = None
 
         self.import_Data = None
@@ -62,6 +58,7 @@ class SchedulePlaner(QObject):
         self.initialize_analyze_data()
         self.initialize_select_data()
         self.initialize_export_plan()
+        self.initialize_create_plan()
 
     def initialize_import_data(self):
         self.import_Data = ImportData(self.app, progress= self.progress)
@@ -76,6 +73,9 @@ class SchedulePlaner(QObject):
 
     def initialize_export_plan(self):
         self.export_plan = ExportPlan(self.app,progress= self.progress)
+
+    def initialize_create_plan(self):
+        self.create_plan = CreatePlan(self.app,progress= self.progress)
 
     def set_paths(self, input_path, output_path, picklesavepath=""):
         self.import_Data.input_path = input_path
@@ -112,28 +112,12 @@ class SchedulePlaner(QObject):
         self._exportPlan = value
 
     @property
-    def create_plan_direction_one(self):
-        return self._createPlan_Direction_one
+    def create_plan(self):
+        return self._create_plan
 
-    @create_plan_direction_one.setter
-    def create_plan_direction_one(self, value):
-        self._createPlan_Direction_one = value
-
-    @property
-    def create_plan_direction_two(self):
-        return self._createPlan_Direction_two
-
-    @create_plan_direction_two.setter
-    def create_plan_direction_two(self, value):
-        self._createPlan_Direction_two = value
-
-    @property
-    def prepare_data(self):
-        return self._prepare_data
-
-    @prepare_data.setter
-    def prepare_data(self, value):
-        self._prepare_data = value
+    @create_plan.setter
+    def create_plan(self, value):
+        self._create_plan = value
 
     @property
     def select_data(self):
@@ -157,10 +141,10 @@ class SchedulePlaner(QObject):
 
     @gtfs_data_frame_dto.setter
     def gtfs_data_frame_dto(self, value: GtfsDataFrameDto):
-        self._gtfsDataFrameDto = value
+        self._gtfs_data_frame_dto = value
         if value is not None:
             self.analyze_data.gtfs_data_frame_dto = value
             self.select_data.gtfs_data_frame_dto = value
-            self.prepare_data.gtfs_data_frame_dto = value
-            self.export_plan.gtfs_data_frame_dto = value
+            self.create_plan.gtfs_data_frame_dto = value
+
 
