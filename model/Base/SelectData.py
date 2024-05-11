@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-from PyQt5.QtCore import QCoreApplication, QObject
+from PyQt5.QtCore import pyqtSignal, QObject, QCoreApplication
 
-from Event.ViewEvents import *
 from model.observer import Publisher, Subscriber
 import time
 import pandas as pd
@@ -16,6 +15,7 @@ import os
 from model.Base.GTFSEnums import *
 from model.Base.ProgressBar import ProgressBar
 from model.Base.ImportData import ImportData
+from ..DTO.General_Transit_Feed_Specification import GtfsListDto, GtfsDataFrameDto
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
@@ -23,10 +23,16 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class SelectData(QObject):
+    progress_update = pyqtSignal(int)
+    select_agency_signal = pyqtSignal()
+    update_routes_list_signal = pyqtSignal()
+    error_occured = pyqtSignal(str)
+    data_selected = pyqtSignal(bool)
+
     def __init__(self, app, progress: int):
         super().__init__()
         self.app = app
-        self.imported_data = None
+        self.gtfs_data_frame_dto = None
         self.agencies_list = None
         self.df_selected_routes = None
 
@@ -73,7 +79,35 @@ class SelectData(QObject):
     @progress.setter
     def progress(self, value):
         self._progress = value
-        QCoreApplication.postEvent(self.app, ProgressUpdateEvent(self._progress))
+        self.progress_update.emit(self.progress)
+
+    @property
+    def selected_route(self):
+        return self._selected_route
+
+    @selected_route.setter
+    def selected_route(self, value):
+        self._selected_route = value
+        self.data_selected.emit(value is not None)
+
+    @property
+    def selected_agency(self):
+        return self._selected_agency
+
+    @selected_agency.setter
+    def selected_agency(self, value):
+        self._selected_agency = value
+        self.get_routes_of_agency()
+
+    @property
+    def df_selected_routes(self):
+        return self._df_selected_routes
+
+    @df_selected_routes.setter
+    def df_selected_routes(self, value):
+        self._df_selected_routes = value
+        self.update_routes_list_signal.emit()
+
 
     @property
     def agencies_list(self):
@@ -83,7 +117,7 @@ class SelectData(QObject):
     def agencies_list(self, value):
         self._agencies_list = value
         if value is not None:
-            QCoreApplication.postEvent(self.app, UpdateAgencyListEvent(self._agencies_list))
+            self.select_agency_signal.emit()
 
     @property
     def selected_timeformat(self):
@@ -95,12 +129,12 @@ class SelectData(QObject):
         logging.debug(value)
 
     @property
-    def imported_data(self):
-        return self._imported_data
+    def gtfs_data_frame_dto(self):
+        return self._gtfs_data_frame_dto
 
-    @imported_data.setter
-    def imported_data(self, value):
-        self._imported_data = value
+    @gtfs_data_frame_dto.setter
+    def gtfs_data_frame_dto(self, value: GtfsDataFrameDto):
+        self._gtfs_data_frame_dto = value
         if value is not None:
             self.read_gtfs_agencies()
 
@@ -109,35 +143,59 @@ class SelectData(QObject):
             self.find_routes_from_agency()
 
     def find_routes_from_agency(self):
-        df_routes = self.imported_data["Routes"]
+        # df_routes = self.imported_data[GtfsDfNames.Routes]
+        # input_var = [{'agency_id': self.selected_agency}]
+        # var_test = pd.DataFrame(input_var).set_index('agency_id')
+        # cond_routes_of_agency = '''
+        #             select *
+        #             from df_routes
+        #             left join var_test
+        #             where var_test.agency_id = df_routes.agency_id
+        #             order by df_routes.route_short_name;
+        #            '''
+        # routes_list = sqldf(cond_routes_of_agency, locals())
+        #
+        # self.df_selected_routes = routes_list
+
+        df_routes = self.gtfs_data_frame_dto.Routes
+
+        # Create a DataFrame from input_var and set 'agency_id' as the index
         input_var = [{'agency_id': self.selected_agency}]
         var_test = pd.DataFrame(input_var).set_index('agency_id')
-        cond_routes_of_agency = '''
-                    select *
-                    from df_routes 
-                    left join var_test
-                    where var_test.agency_id = df_routes.agency_id
-                    order by df_routes.route_short_name;
-                   '''
-        routes_list = sqldf(cond_routes_of_agency, locals())
-        """
-        todo
-        """
+
+        # Perform a left join between df_routes and var_test on 'agency_id'
+        # Filter rows where 'agency_id' in var_test matches 'agency_id' in df_routes
+        # Order the result by 'route_short_name'
+        routes_list = df_routes.merge(var_test, left_on='agency_id', right_index=True, how='left')
+        routes_list = routes_list[routes_list['agency_id'].notna()].sort_values(by='route_short_name')
+
+        # Assign the filtered and sorted DataFrame to self.df_selected_routes
         self.df_selected_routes = routes_list
         return True
 
     def read_gtfs_agencies(self):
-        df_agency = self.imported_data["Agencies"]
-        cond_agencies = '''
-                    select *
-                    from df_agency 
-                    order by df_agency.agency_id;
-                   '''
-        agency_list = sqldf(cond_agencies, locals())
-        agency_list = agency_list.values.tolist()
-        agency_str_list = []
-        for lists in agency_list:
-            agency_str_list.append('{},{}'.format(lists[0], lists[1]))
-        self.agencies_list = agency_str_list
+        # df_agency = self.imported_data[GtfsDfNames.Agencies]
+        # cond_agencies = '''
+        #             select *
+        #             from df_agency
+        #             order by df_agency.agency_id;
+        #            '''
+        # agency_list = sqldf(cond_agencies, locals())
+        # agency_list = agency_list.values.tolist()
+        # agency_str_list = []
+
+        # for lists in agency_list:
+        #     agency_str_list.append('{},{}'.format(lists[0], lists[1]))
+        # self.agencies_list = agency_str_list
         # print (agency_list.values.tolist())
+
+        df_agency = self.gtfs_data_frame_dto.Agencies
+        # Order the DataFrame by agency_id
+        df_agency_ordered = df_agency.sort_values(by='agency_id')
+        # Convert the DataFrame to a list of lists
+        agency_list = df_agency_ordered.values.tolist()
+        # Format each row into a string and store in agency_str_list
+        agency_str_list = [f'{row[0]},{row[1]}' for row in agency_list]
+        # Assign the list of strings to self.agencies_list
+        self.agencies_list = agency_str_list
         return True

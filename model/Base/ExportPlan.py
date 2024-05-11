@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-from PyQt5.QtCore import QObject, QCoreApplication
-from Event.ViewEvents import ProgressUpdateEvent, ShowErrorMessageEvent
+from PyQt5.QtCore import pyqtSignal, QObject, QCoreApplication
 import logging
+from ..DTO.General_Transit_Feed_Specification import GtfsListDto, GtfsDataFrameDto
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
@@ -9,6 +9,7 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class ExportPlan(QObject):
+    progress_update = pyqtSignal(int)
     def __init__(self, app, progress: int):
         super().__init__()
         self.app = app
@@ -27,8 +28,7 @@ class ExportPlan(QObject):
     @progress.setter
     def progress(self, value):
         self._progress = value
-        event = ProgressUpdateEvent(self._progress)
-        QCoreApplication.postEvent(self.app, event)
+        self.progress_update.emit(self.progress)
 
     def sub_worker_create_output_fahrplan_date(self):
         NotImplementedError

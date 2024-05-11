@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from Event.ViewEvents import ProgressUpdateEvent
 from model.observer import Publisher, Subscriber
 from PyQt5.QtCore import pyqtSignal, QObject, QCoreApplication
 import time
@@ -18,7 +17,7 @@ from ..Base.SelectData import SelectData
 from ..Base.CreatePlan import CreatePlan
 from ..Base.ExportPlan import ExportPlan
 from ..Base.GTFSEnums import *
-from Event.ViewEvents import *
+from ..DTO.General_Transit_Feed_Specification import GtfsListDto, GtfsDataFrameDto
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
@@ -26,21 +25,22 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class SchedulePlaner(QObject):
+    progress_Update = pyqtSignal(int)
+    error_occured = pyqtSignal(str)
+    import_finished = pyqtSignal(bool)
+    update_routes_list_signal = pyqtSignal()
+    update_options_state_signal = pyqtSignal(bool)
     def __init__(self, app):
         super().__init__()
+        self.gtfs_data_frame_dto = None
         self.app = app
 
         self.progress = 0
-        self.create_plan_direction_two = None
-        self.create_plan_direction_one = None
+        self.create_plan = None
         self.export_plan = None
-        self.create_plan_direction_one = None
-        self.create_plan_direction_two = None
         self.analyze_data = None
-        self.prepare_data = None
         self.select_data = None
 
-        self.imported_data = None
         self.import_Data = None
 
     """ methods """
@@ -53,24 +53,39 @@ class SchedulePlaner(QObject):
 
     def update_progress_bar(self, value):
         self.progress = int(value)
+        self.progress_Update.emit(self.progress)
+
+    def update_routes_list(self):
+        self.update_routes_list_signal.emit()
+
+    def update_options_state(self, value):
+        self.update_options_state_signal.emit(value)
 
     def initilize_scheduler(self):
         self.initialize_import_data()
         self.initialize_analyze_data()
         self.initialize_select_data()
         self.initialize_export_plan()
+        self.initialize_create_plan()
 
     def initialize_import_data(self):
         self.import_Data = ImportData(self.app, progress= self.progress)
+        self.import_Data.progress_Update.connect(self.update_progress_bar)
+        self.import_Data.error_occured.connect(self.sub_not_implemented)
 
     def initialize_select_data(self):
         self.select_data = SelectData(self.app,progress= self.progress)
+        self.select_data.update_routes_list_signal.connect(self.update_routes_list)
+        self.select_data.data_selected.connect(self.update_options_state)
 
     def initialize_analyze_data(self):
         self.analyze_data = AnalyzeData(self.app, progress= self.progress)
 
     def initialize_export_plan(self):
         self.export_plan = ExportPlan(self.app,progress= self.progress)
+
+    def initialize_create_plan(self):
+        self.create_plan = CreatePlan(self.app,progress= self.progress)
 
     def set_paths(self, input_path, output_path, picklesavepath=""):
         self.import_Data.input_path = input_path
@@ -79,16 +94,15 @@ class SchedulePlaner(QObject):
 
     def import_gtfs_data(self) -> bool:
         try:
-            imported_data = self.import_Data.import_gtfs()
+            self.gtfs_data_frame_dto = self.import_Data.import_gtfs()
 
-            if imported_data is None:
-                QCoreApplication.postEvent(self.app, ShowErrorMessageEvent(ErrorMessageRessources.import_data_error.value))
+            if self.gtfs_data_frame_dto is None:
+                self.error_occured.emit(ErrorMessageRessources.import_data_error.value)
                 return False
 
-            self.imported_data = imported_data
-            QCoreApplication.postEvent(self.app, ImportFinishedEvent())
+            self.import_finished.emit(True)
         except AttributeError:
-            QCoreApplication.postEvent(self.app, ShowErrorMessageEvent(ErrorMessageRessources.no_import_object_generated.value))
+            self.error_occured.emit(ErrorMessageRessources.no_import_object_generated.value)
             return False
 
     @property
@@ -108,28 +122,12 @@ class SchedulePlaner(QObject):
         self._exportPlan = value
 
     @property
-    def create_plan_direction_one(self):
-        return self._createPlan_Direction_one
+    def create_plan(self):
+        return self._create_plan
 
-    @create_plan_direction_one.setter
-    def create_plan_direction_one(self, value):
-        self._createPlan_Direction_one = value
-
-    @property
-    def create_plan_direction_two(self):
-        return self._createPlan_Direction_two
-
-    @create_plan_direction_two.setter
-    def create_plan_direction_two(self, value):
-        self._createPlan_Direction_two = value
-
-    @property
-    def prepare_data(self):
-        return self._prepare_data
-
-    @prepare_data.setter
-    def prepare_data(self, value):
-        self._prepare_data = value
+    @create_plan.setter
+    def create_plan(self, value):
+        self._create_plan = value
 
     @property
     def select_data(self):
@@ -148,14 +146,15 @@ class SchedulePlaner(QObject):
         self._import_Data = value
 
     @property
-    def imported_data(self):
-        return self._imported_data
+    def gtfs_data_frame_dto(self):
+        return self._gtfs_data_frame_dto
 
-    @imported_data.setter
-    def imported_data(self, value):
-        self._imported_data = value
+    @gtfs_data_frame_dto.setter
+    def gtfs_data_frame_dto(self, value: GtfsDataFrameDto):
+        self._gtfs_data_frame_dto = value
         if value is not None:
-            self.analyze_data.imported_data = value
-            self.select_data.imported_data = value
-            self.prepare_data.imported_data = value
-            self.export_plan.imported_data = value
+            self.analyze_data.gtfs_data_frame_dto = value
+            self.select_data.gtfs_data_frame_dto = value
+            self.create_plan.gtfs_data_frame_dto = value
+
+

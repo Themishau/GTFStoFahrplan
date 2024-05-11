@@ -3,8 +3,6 @@ import logging
 import os
 from PyQt5.Qt import QMessageBox, QObject
 from PyQt5.QtCore import pyqtSignal, QCoreApplication
-
-from Event.ViewEvents import ShowErrorMessageEvent
 from view.select_table_view import TableModel
 from view.sort_table_view import TableModelSort
 from model.Base.GTFSEnums import *
@@ -25,13 +23,18 @@ class ViewModel(QObject):
     update_create_plan_mode = pyqtSignal(str)
     update_direction_mode = pyqtSignal(str)
     update_pickle_export_checked = pyqtSignal(bool)
-    update_selected_agency = pyqtSignal()
-    update_selected_trip = pyqtSignal(str)
+    update_agency_list = pyqtSignal()
+    update_routes_list_signal = pyqtSignal()
+    update_selected_agency = pyqtSignal(int)
     update_create_plan_continue = pyqtSignal()
     update_select_data = pyqtSignal(str)
     update_weekdate_option = pyqtSignal(str)
     update_individualsorting = pyqtSignal(bool)
+    update_progress_value = pyqtSignal(int)
+    error_message = pyqtSignal(str)
     create_table_finshed = pyqtSignal()
+    update_options_state_signal = pyqtSignal(bool)
+
 
     def __init__(self, app, model):
         super().__init__()
@@ -54,16 +57,16 @@ class ViewModel(QObject):
         self.update_create_plan_mode.emit(text)
 
     def on_change_input_file_path(self, path):
-        self.model.planer.import_Data.input_path = path
-        self.input_file_path.emit(path)
+        self.model.planer.import_Data.input_path = path[0]
+        self.input_file_path.emit(path[0])
 
     def on_changed_weekdate_option(self, text):
         self.model.planer.select_data.selected_weekday = text
         self.update_weekdate_option.emit(text)
 
     def on_changed_pickle_path(self, path):
-        self.model.planer.import_Data.pickle_save_path_filename = path
-        self.pickle_file_path.emit(path)
+        self.model.planer.import_Data.pickle_save_path_filename = path[0]
+        self.pickle_file_path.emit(path[0])
 
     def on_change_output_file_path(self, path):
         self.model.planer.export_plan.output_path = path
@@ -86,20 +89,30 @@ class ViewModel(QObject):
     def on_changed_selected_weekday(self, text):
         self.model.planer.select_data.selected_weekday = text
 
+    def on_changed_progress_value(self, value):
+        self.update_progress_value.emit(value)
+
     def initilize_schedule_planer(self):
         # init model with publisher
         self.model.set_up_schedule_planer()
+        self.set_up_signals()
+
+    def set_up_signals(self):
+        self.model.planer.progress_Update.connect(self.on_changed_progress_value)
+        self.model.planer.select_data.select_agency_signal.connect(self.on_loaded_agency_list)
+        self.model.planer.error_occured.connect(self.send_error_message)
+        self.model.planer.update_routes_list_signal.connect(self.on_loaded_trip_list)
+        self.model.planer.update_options_state_signal.connect(self.on_changed_options_state)
 
     def set_process(self, task):
         self.model.gtfs.gtfs_process = task
 
+    def on_changed_options_state(self, value):
+        self.update_options_state_signal.emit(value)
+
     def on_changed_individualsorting(self, value):
         self.model.gtfs.individualsorting = value
         self.update_individualsorting.emit(value)
-
-
-    def set_pickleExport_checked(self):
-        self.model.planer.pickle_export_checked = self.view.CreateImport_Tab.ui.checkBox_savepickle.isChecked()
 
     def restart(self):
         self.reset_view()
@@ -139,14 +152,20 @@ class ViewModel(QObject):
         self.model.gtfs.selected_weekday = selected_weekday
 
 
+    def on_loaded_agency_list(self):
+        self.update_agency_list.emit()
+
+    def on_loaded_trip_list(self):
+        self.update_routes_list_signal.emit()
+
     def on_changed_selected_record_agency(self, index):
-        self.model.gtfs.selectedAgency = index
-        logging.debug(f"selectedAgency {self.model.gtfs.selectedAgency}")
+        self.model.planer.select_data.selected_agency = index
         self.update_selected_agency.emit(index)
 
 
     def on_changed_selected_record_trip(self, id_us):
-        self.model.gtfs.selectedRoute = id_us
+        self.model.planer.select_data.selected_route = id_us
+        logging.debug(f"{id_us}")
 
 
     def on_changed_selected_dates(self, selected_dates):
@@ -174,9 +193,11 @@ class ViewModel(QObject):
             self.model.start_function_async(ModelTriggerActionsEnum.planer_start_load_data.value)
             logging.debug("started import test")
         else:
-            event = ShowErrorMessageEvent("Error. Could not load data.")
-            QCoreApplication.postEvent(self.app, event)
+            self.send_error_message(ErrorMessageRessources.error_load_data)
             return
+
+    def send_error_message(self, message):
+        self.error_message.emit(message)
 
     def start_create_table(self):
         self.model.start_function_async(ModelTriggerActionsEnum.planer_start_create_table.value)

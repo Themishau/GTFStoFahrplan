@@ -5,15 +5,15 @@ from PyQt5.Qt import QPoint, QMessageBox, QDesktopWidget, QMainWindow
 from PyQt5.QtCore import Qt, QEvent
 from PyQt5.QtWidgets import QFileDialog
 
-from view.round_progress_bar import RoundProgress
-from view.pyui.main_window_ui import Ui_MainWindow
-from view.general_window_information import GeneralInformation
-from view.create_table_create import CreateTableCreate
-from view.create_table_import import CreateTableImport
-from view.create_table_select import CreateTableSelect
-from view.download_gtfs import DownloadGTFS
-from view.select_table_view import TableModel
-from view.sort_table_view import TableModelSort
+from .round_progress_bar import RoundProgress
+from .pyui.main_window_ui import Ui_MainWindow
+from .general_window_information import GeneralInformation
+from .create_table_create import CreateTableCreate
+from .create_table_import import CreateTableImport
+from .create_table_select import CreateTableSelect
+from .download_gtfs import DownloadGTFS
+from .select_table_view import TableModel
+from .sort_table_view import TableModelSort
 from model.Base.GTFSEnums import *
 
 logging.basicConfig(level=logging.DEBUG,
@@ -25,11 +25,6 @@ class View(QMainWindow):
     def __init__(self, viewModel):
         super().__init__()
         self.viewModel = viewModel
-        self.event_handlers = {UpdateGuiEnum.update_progress_bar: self.handle_progress_update,
-                               UpdateGuiEnum.update_weekday_list: self.handle_update_weekdate_option_list,
-                               UpdateGuiEnum.update_agency_list: self.handle_update_agency_list,
-                               UpdateGuiEnum.import_finished: self.handle_import_finished
-                               }
 
         self.progressRound = None
         self.ui = Ui_MainWindow()
@@ -85,17 +80,19 @@ class View(QMainWindow):
         self.CreateImport_Tab.ui.btnGetOutputDir.clicked.connect(self.get_output_dir_path)
         self.viewModel.output_file_path.connect(self.update_output_file_path)
 
-        self.CreateImport_Tab.ui.checkBox_savepickle.stateChanged.connect(self.viewModel.on_changed_pickle_export_checked)
+        self.CreateImport_Tab.ui.checkBox_savepickle.clicked.connect(self.viewModel.on_changed_pickle_export_checked)
         self.viewModel.update_pickle_export_checked.connect(self.update_pickle_export_checked)
 
         self.CreateImport_Tab.ui.comboBox_display.activated[str].connect(self.viewModel.on_changed_time_format_mode)
         self.viewModel.export_plan_time_format.connect(self.update_time_format)
 
+        self.viewModel.update_agency_list.connect(self.update_agency_list)
+        self.viewModel.update_routes_list_signal.connect(self.update_routes_list)
         self.CreateSelect_Tab.ui.AgenciesTableView.clicked.connect(self.get_selected_agency_table_record)
         self.viewModel.update_selected_agency.connect(self.update_selected_agency)
 
         self.CreateSelect_Tab.ui.TripsTableView.clicked.connect(self.get_changed_selected_record_trip)
-        self.viewModel.update_selected_trip.connect(self.update_selected_trip)
+        self.viewModel.update_options_state_signal.connect(self.update_create_options_state)
 
         self.CreateCreate_Tab.ui.btnStart.clicked.connect(self.viewModel.start_create_table)
         self.viewModel.create_table_finshed.connect(self.update_create_table)
@@ -116,6 +113,8 @@ class View(QMainWindow):
         self.CreateCreate_Tab.ui.comboBox_direction.activated[str].connect(self.viewModel.on_changed_direction_mode)
         self.viewModel.update_direction_mode.connect(self.update_direction_mode)
 
+        self.viewModel.update_progress_value.connect(self.update_progress_bar)
+        self.viewModel.error_message.connect(self.send_message_box)
 
     def update_selected_agency(self, row):
         self.CreateSelect_Tab.ui.AgenciesTableView.selectRow(row)
@@ -176,7 +175,7 @@ class View(QMainWindow):
             self.CreateCreate_Tab.ui.lineDateInput.setEnabled(False)
             self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(True)
 
-    def update_selected_trip(self):
+    def update_create_options_state(self):
         self.initialize_create_view_weekdaydate_option()
         self.CreateCreate_Tab.ui.line_Selection_agency.setText(f"selected agency: {self.viewModel.model.gtfs.selectedAgency}")
         self.CreateCreate_Tab.ui.line_Selection_trips.setText(f"selected Trip: {self.viewModel.model.gtfs.selectedRoute}")
@@ -208,15 +207,17 @@ class View(QMainWindow):
         self.move(qr.topLeft())
 
     def event(self, event):
-        if hasattr(event, 'event_type'):
-        # Use the event type to look up the handler function in the dictionary
+        if event.type() >= QEvent.User:
+            # Call the appropriate handler based on the event type
             handler = self.event_handlers.get(event.event_type, None)
             if handler:
-                return handler(event)
+                handler(event)
+                return True
+        # If not handled, call the base class event method
         return super().event(event)
 
-    def handle_progress_update(self, event):
-        self.progressRound.set_value(event.progress)
+    def update_progress_bar(self, value):
+        self.progressRound.set_value(value)
         return True
 
     def initialize_modified_progress_bar(self):
@@ -283,7 +284,7 @@ class View(QMainWindow):
     def initialize_create_view_weekdaydate_option(self):
         self.initialize_create_base_option()
         self.CreateCreate_Tab.ui.listDatesWeekday.clear()
-        self.CreateCreate_Tab.ui.lineDateInput.setText(self.viewModel.model.gtfs.date_range)
+        self.CreateCreate_Tab.ui.lineDateInput.setText(self.viewModel.model.planer.select_data.selected_dates)
         self.CreateCreate_Tab.ui.lineDateInput.setEnabled(True)
         self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(False)
         self.viewModel.select_weekday_option(None)
@@ -300,22 +301,22 @@ class View(QMainWindow):
 
     def sub_update_weekday_list(self, ):
         self.CreateCreate_Tab.ui.listDatesWeekday.clear()
-        self.CreateCreate_Tab.ui.listDatesWeekday.addItems(self.viewModel.model.gtfs.week_day_options_list)
+        self.CreateCreate_Tab.ui.listDatesWeekday.addItems(self.viewModel.model.planer.select_data.week_day_options_list)
 
-    def sub_update_routes_list(self):
+    def update_routes_list(self):
         self.CreateSelect_Tab.ui.TripsTableView.setModel(TableModel(self.viewModel.model.planer.select_data.df_selected_routes))
 
     def sub_update_stopname_create_list(self):
         self.CreateCreate_Tab.ui.tableView_sorting_stops.setModel(
-            TableModelSort(self.model.gtfs.df_filtered_stop_names))
+            TableModelSort(self.viewModel.model.planer.create_data.df_filtered_stop_names))
         self.CreateCreate_Tab.ui.btnContinueCreate.setEnabled(True)
         # self.CreateCreate_Tab.ui.tableView_sorting_stops.populate()
 
-    def handle_update_agency_list(self, event):
+    def update_agency_list(self):
         self.CreateSelect_Tab.ui.AgenciesTableView.setModel(
-            TableModel(self.viewModel.model.planer.select_data.imported_data["Agencies"]))
-        self.CreateCreate_Tab.ui.line_Selection_date_range.setText(self.model.gtfs.date_range)
-        self.CreateCreate_Tab.ui.lineDateInput.setText(self.model.gtfs.date_range)
+            TableModel(self.viewModel.model.planer.select_data.gtfs_data_frame_dto.Agencies))
+        self.CreateCreate_Tab.ui.line_Selection_date_range.setText(self.viewModel.model.planer.analyze_data.date_range)
+        self.CreateCreate_Tab.ui.lineDateInput.setText(self.viewModel.model.planer.analyze_data.date_range)
         self.show_Create_Select_Window()
         # self.model.start_get_date_range()
         logging.debug("done with creating dfs")
@@ -363,13 +364,13 @@ class View(QMainWindow):
                                                            filter='Zip File (*.zip)',
                                                            initialFilter='Zip File (*.zip)')
         if pickle_file_path[0] > '':
-            self.viewModel.onChangePickleFilePath(pickle_file_path)
+            self.viewModel.on_changed_pickle_path(pickle_file_path)
 
     def get_changed_selected_record_trip(self):
         index = self.CreateSelect_Tab.ui.TripsTableView.selectedIndexes()[2]
         logging.debug(f"index {index}")
         id_us = self.CreateSelect_Tab.ui.TripsTableView.model().data(index)
-        logging.debug(f"index {id_us}")
+        logging.debug(f"id {id_us}")
         self.viewModel.on_changed_selected_record_trip(id_us)
 
     def reset_view(self):
