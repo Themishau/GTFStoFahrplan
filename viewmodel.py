@@ -24,8 +24,8 @@ class ViewModel(QObject):
     update_direction_mode = pyqtSignal(str)
     update_pickle_export_checked = pyqtSignal(bool)
     update_agency_list = pyqtSignal()
-    update_selected_agency = pyqtSignal()
-    update_selected_trip = pyqtSignal(str)
+    update_routes_list_signal = pyqtSignal()
+    update_selected_agency = pyqtSignal(int)
     update_create_plan_continue = pyqtSignal()
     update_select_data = pyqtSignal(str)
     update_weekdate_option = pyqtSignal(str)
@@ -33,6 +33,7 @@ class ViewModel(QObject):
     update_progress_value = pyqtSignal(int)
     error_message = pyqtSignal(str)
     create_table_finshed = pyqtSignal()
+    update_options_state_signal = pyqtSignal(bool)
 
 
     def __init__(self, app, model):
@@ -98,11 +99,16 @@ class ViewModel(QObject):
 
     def set_up_signals(self):
         self.model.planer.progress_Update.connect(self.on_changed_progress_value)
-        self.model.planer.select_data.update_agency_list.connect(self.on_loaded_agency_list)
+        self.model.planer.select_data.select_agency_signal.connect(self.on_loaded_agency_list)
         self.model.planer.error_occured.connect(self.send_error_message)
+        self.model.planer.update_routes_list_signal.connect(self.on_loaded_trip_list)
+        self.model.planer.update_options_state_signal.connect(self.on_changed_options_state)
 
     def set_process(self, task):
         self.model.gtfs.gtfs_process = task
+
+    def on_changed_options_state(self, value):
+        self.update_options_state_signal.emit(value)
 
     def on_changed_individualsorting(self, value):
         self.model.gtfs.individualsorting = value
@@ -149,14 +155,17 @@ class ViewModel(QObject):
     def on_loaded_agency_list(self):
         self.update_agency_list.emit()
 
+    def on_loaded_trip_list(self):
+        self.update_routes_list_signal.emit()
+
     def on_changed_selected_record_agency(self, index):
-        self.model.gtfs.selectedAgency = index
-        logging.debug(f"selectedAgency {self.model.gtfs.selectedAgency}")
+        self.model.planer.select_data.selected_agency = index
         self.update_selected_agency.emit(index)
 
 
     def on_changed_selected_record_trip(self, id_us):
-        self.model.gtfs.selectedRoute = id_us
+        self.model.planer.select_data.selected_route = id_us
+        logging.debug(f"{id_us}")
 
 
     def on_changed_selected_dates(self, selected_dates):

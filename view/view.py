@@ -87,11 +87,12 @@ class View(QMainWindow):
         self.viewModel.export_plan_time_format.connect(self.update_time_format)
 
         self.viewModel.update_agency_list.connect(self.update_agency_list)
+        self.viewModel.update_routes_list_signal.connect(self.update_routes_list)
         self.CreateSelect_Tab.ui.AgenciesTableView.clicked.connect(self.get_selected_agency_table_record)
         self.viewModel.update_selected_agency.connect(self.update_selected_agency)
 
         self.CreateSelect_Tab.ui.TripsTableView.clicked.connect(self.get_changed_selected_record_trip)
-        self.viewModel.update_selected_trip.connect(self.update_selected_trip)
+        self.viewModel.update_options_state_signal.connect(self.update_create_options_state)
 
         self.CreateCreate_Tab.ui.btnStart.clicked.connect(self.viewModel.start_create_table)
         self.viewModel.create_table_finshed.connect(self.update_create_table)
@@ -174,7 +175,7 @@ class View(QMainWindow):
             self.CreateCreate_Tab.ui.lineDateInput.setEnabled(False)
             self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(True)
 
-    def update_selected_trip(self):
+    def update_create_options_state(self):
         self.initialize_create_view_weekdaydate_option()
         self.CreateCreate_Tab.ui.line_Selection_agency.setText(f"selected agency: {self.viewModel.model.gtfs.selectedAgency}")
         self.CreateCreate_Tab.ui.line_Selection_trips.setText(f"selected Trip: {self.viewModel.model.gtfs.selectedRoute}")
@@ -283,7 +284,7 @@ class View(QMainWindow):
     def initialize_create_view_weekdaydate_option(self):
         self.initialize_create_base_option()
         self.CreateCreate_Tab.ui.listDatesWeekday.clear()
-        self.CreateCreate_Tab.ui.lineDateInput.setText(self.viewModel.model.gtfs.date_range)
+        self.CreateCreate_Tab.ui.lineDateInput.setText(self.viewModel.model.planer.select_data.selected_dates)
         self.CreateCreate_Tab.ui.lineDateInput.setEnabled(True)
         self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(False)
         self.viewModel.select_weekday_option(None)
@@ -300,14 +301,14 @@ class View(QMainWindow):
 
     def sub_update_weekday_list(self, ):
         self.CreateCreate_Tab.ui.listDatesWeekday.clear()
-        self.CreateCreate_Tab.ui.listDatesWeekday.addItems(self.viewModel.model.gtfs.week_day_options_list)
+        self.CreateCreate_Tab.ui.listDatesWeekday.addItems(self.viewModel.model.planer.select_data.week_day_options_list)
 
-    def sub_update_routes_list(self):
+    def update_routes_list(self):
         self.CreateSelect_Tab.ui.TripsTableView.setModel(TableModel(self.viewModel.model.planer.select_data.df_selected_routes))
 
     def sub_update_stopname_create_list(self):
         self.CreateCreate_Tab.ui.tableView_sorting_stops.setModel(
-            TableModelSort(self.model.gtfs.df_filtered_stop_names))
+            TableModelSort(self.viewModel.model.planer.create_data.df_filtered_stop_names))
         self.CreateCreate_Tab.ui.btnContinueCreate.setEnabled(True)
         # self.CreateCreate_Tab.ui.tableView_sorting_stops.populate()
 
@@ -369,7 +370,7 @@ class View(QMainWindow):
         index = self.CreateSelect_Tab.ui.TripsTableView.selectedIndexes()[2]
         logging.debug(f"index {index}")
         id_us = self.CreateSelect_Tab.ui.TripsTableView.model().data(index)
-        logging.debug(f"index {id_us}")
+        logging.debug(f"id {id_us}")
         self.viewModel.on_changed_selected_record_trip(id_us)
 
     def reset_view(self):

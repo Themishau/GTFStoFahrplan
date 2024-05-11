@@ -24,8 +24,11 @@ logging.basicConfig(level=logging.DEBUG,
 
 class SelectData(QObject):
     progress_update = pyqtSignal(int)
-    update_agency_list = pyqtSignal()
+    select_agency_signal = pyqtSignal()
+    update_routes_list_signal = pyqtSignal()
     error_occured = pyqtSignal(str)
+    data_selected = pyqtSignal(bool)
+
     def __init__(self, app, progress: int):
         super().__init__()
         self.app = app
@@ -79,6 +82,34 @@ class SelectData(QObject):
         self.progress_update.emit(self.progress)
 
     @property
+    def selected_route(self):
+        return self._selected_route
+
+    @selected_route.setter
+    def selected_route(self, value):
+        self._selected_route = value
+        self.data_selected.emit(value is not None)
+
+    @property
+    def selected_agency(self):
+        return self._selected_agency
+
+    @selected_agency.setter
+    def selected_agency(self, value):
+        self._selected_agency = value
+        self.get_routes_of_agency()
+
+    @property
+    def df_selected_routes(self):
+        return self._df_selected_routes
+
+    @df_selected_routes.setter
+    def df_selected_routes(self, value):
+        self._df_selected_routes = value
+        self.update_routes_list_signal.emit()
+
+
+    @property
     def agencies_list(self):
         return self._agencies_list
 
@@ -86,7 +117,7 @@ class SelectData(QObject):
     def agencies_list(self, value):
         self._agencies_list = value
         if value is not None:
-            self.update_agency_list.emit()
+            self.select_agency_signal.emit()
 
     @property
     def selected_timeformat(self):

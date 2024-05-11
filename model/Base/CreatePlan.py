@@ -28,6 +28,7 @@ class CreatePlan(QObject):
         self.reset_create = False
         self.create_plan_mode = None
         self.gtfs_data_frame_dto = None
+        self.df_filtered_stop_names = None
 
         """ property """
         self.input_path = ""

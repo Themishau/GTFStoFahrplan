@@ -28,6 +28,8 @@ class SchedulePlaner(QObject):
     progress_Update = pyqtSignal(int)
     error_occured = pyqtSignal(str)
     import_finished = pyqtSignal(bool)
+    update_routes_list_signal = pyqtSignal()
+    update_options_state_signal = pyqtSignal(bool)
     def __init__(self, app):
         super().__init__()
         self.gtfs_data_frame_dto = None
@@ -53,6 +55,12 @@ class SchedulePlaner(QObject):
         self.progress = int(value)
         self.progress_Update.emit(self.progress)
 
+    def update_routes_list(self):
+        self.update_routes_list_signal.emit()
+
+    def update_options_state(self, value):
+        self.update_options_state_signal.emit(value)
+
     def initilize_scheduler(self):
         self.initialize_import_data()
         self.initialize_analyze_data()
@@ -67,6 +75,8 @@ class SchedulePlaner(QObject):
 
     def initialize_select_data(self):
         self.select_data = SelectData(self.app,progress= self.progress)
+        self.select_data.update_routes_list_signal.connect(self.update_routes_list)
+        self.select_data.data_selected.connect(self.update_options_state)
 
     def initialize_analyze_data(self):
         self.analyze_data = AnalyzeData(self.app, progress= self.progress)
