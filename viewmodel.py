@@ -82,9 +82,9 @@ class ViewModel(QObject):
 
     def on_changed_direction_mode(self, text):
         if text == 'direction 1':
-            self.model.gtfs.selected_direction = 0
+            self.model.planer.select_data.selected_direction = 0
         elif text == 'direction 2':
-            self.model.gtfs.selected_direction = 1
+            self.model.planer.select_data.selected_direction = 1
 
     def on_changed_selected_weekday(self, text):
         self.model.planer.select_data.selected_weekday = text
@@ -104,14 +104,11 @@ class ViewModel(QObject):
         self.model.planer.update_routes_list_signal.connect(self.on_loaded_trip_list)
         self.model.planer.update_options_state_signal.connect(self.on_changed_options_state)
 
-    def set_process(self, task):
-        self.model.gtfs.gtfs_process = task
-
     def on_changed_options_state(self, value):
         self.update_options_state_signal.emit(value)
 
     def on_changed_individualsorting(self, value):
-        self.model.gtfs.individualsorting = value
+        self.model.planer.select_data.individualsorting = value
         self.update_individualsorting.emit(value)
 
     def restart(self):
@@ -147,9 +144,9 @@ class ViewModel(QObject):
         logging.debug('event not found in class gui: {}'.format(event))
 
     def select_weekday_option(self, selected_weekday):
-        if self.model.gtfs.week_day_options_list is None:
+        if self.model.planer.select_data.week_day_options_list is None:
             return False
-        self.model.gtfs.selected_weekday = selected_weekday
+        self.model.planer.select_data.selected_weekday = selected_weekday
 
 
     def on_loaded_agency_list(self):
@@ -169,7 +166,7 @@ class ViewModel(QObject):
 
 
     def on_changed_selected_dates(self, selected_dates):
-        self.model.gtfs.selected_dates = selected_dates
+        self.model.planer.select_data.selected_dates = selected_dates
         self.update_select_data.emit(selected_dates)
 
     def notify_StopNameTableView(self):
