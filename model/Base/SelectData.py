@@ -35,7 +35,7 @@ class SelectData(QObject):
         super().__init__()
         self.app = app
         self.gtfs_data_frame_dto = None
-        self.create_settings_for_table_dto = CreateSettingsForTableDTO
+        self.create_settings_for_table_dto = CreateSettingsForTableDTO()
         self.agencies_list = None
         self.df_selected_routes = None
 
