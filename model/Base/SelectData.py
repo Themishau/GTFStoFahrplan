@@ -15,6 +15,7 @@ import os
 from model.Base.GTFSEnums import *
 from model.Base.ProgressBar import ProgressBar
 from model.Base.ImportData import ImportData
+from ..DTO.CreateSettingsForTableDTO import CreateSettingsForTableDTO
 from ..DTO.General_Transit_Feed_Specification import GtfsListDto, GtfsDataFrameDto
 
 logging.basicConfig(level=logging.DEBUG,
@@ -28,11 +29,13 @@ class SelectData(QObject):
     update_routes_list_signal = pyqtSignal()
     error_occured = pyqtSignal(str)
     data_selected = pyqtSignal(bool)
+    create_settings_for_table_dto_changed = pyqtSignal()
 
     def __init__(self, app, progress: int):
         super().__init__()
         self.app = app
         self.gtfs_data_frame_dto = None
+        self.create_settings_for_table_dto = CreateSettingsForTableDTO
         self.agencies_list = None
         self.df_selected_routes = None
 
@@ -88,6 +91,8 @@ class SelectData(QObject):
     @selected_route.setter
     def selected_route(self, value):
         self._selected_route = value
+        self.create_settings_for_table_dto.route = value
+        self.create_settings_for_table_dto_changed.emit()
         self.data_selected.emit(value is not None)
 
     @property
@@ -97,6 +102,8 @@ class SelectData(QObject):
     @selected_agency.setter
     def selected_agency(self, value):
         self._selected_agency = value
+        self.create_settings_for_table_dto.agency = value
+        self.create_settings_for_table_dto_changed.emit()
         self.get_routes_of_agency()
 
     @property
@@ -126,6 +133,8 @@ class SelectData(QObject):
     @selected_timeformat.setter
     def selected_timeformat(self, value):
         self._selected_timeformat = value
+        self.create_settings_for_table_dto.timeformat = value
+        self.create_settings_for_table_dto_changed.emit()
         logging.debug(value)
 
     @property

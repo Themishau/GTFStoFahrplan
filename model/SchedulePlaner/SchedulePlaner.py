@@ -17,6 +17,7 @@ from ..Base.SelectData import SelectData
 from ..Base.CreatePlan import CreatePlan
 from ..Base.ExportPlan import ExportPlan
 from ..Base.GTFSEnums import *
+from ..DTO.CreateSettingsForTableDTO import CreateSettingsForTableDTO
 from ..DTO.General_Transit_Feed_Specification import GtfsListDto, GtfsDataFrameDto
 
 logging.basicConfig(level=logging.DEBUG,
@@ -30,6 +31,7 @@ class SchedulePlaner(QObject):
     import_finished = pyqtSignal(bool)
     update_routes_list_signal = pyqtSignal()
     update_options_state_signal = pyqtSignal(bool)
+
     def __init__(self, app):
         super().__init__()
         self.gtfs_data_frame_dto = None
@@ -42,6 +44,7 @@ class SchedulePlaner(QObject):
         self.select_data = None
 
         self.import_Data = None
+        self.create_settings_for_table_dto = CreateSettingsForTableDTO()
 
     """ methods """
 
@@ -61,6 +64,17 @@ class SchedulePlaner(QObject):
     def update_options_state(self, value):
         self.update_options_state_signal.emit(value)
 
+    def update_create_settings_output(self):
+        self.create_settings_for_table_dto.output_path = self.export_plan.create_settings_for_table_dto.output_path
+
+    def update_create_settings_selected_data(self):
+        self.create_settings_for_table_dto.agency = self.select_data.create_settings_for_table_dto.agency
+        self.create_settings_for_table_dto.route = self.select_data.create_settings_for_table_dto.route
+        self.create_settings_for_table_dto.weekday = self.select_data.create_settings_for_table_dto.weekday
+        self.create_settings_for_table_dto.dates = self.select_data.create_settings_for_table_dto.dates
+        self.create_settings_for_table_dto.direction = self.select_data.create_settings_for_table_dto.direction
+        self.create_settings_for_table_dto.create_plan_mode = self.select_data.create_settings_for_table_dto.create_plan_mode
+
     def initilize_scheduler(self):
         self.initialize_import_data()
         self.initialize_analyze_data()
@@ -73,16 +87,20 @@ class SchedulePlaner(QObject):
         self.import_Data.progress_Update.connect(self.update_progress_bar)
         self.import_Data.error_occured.connect(self.sub_not_implemented)
 
+
     def initialize_select_data(self):
         self.select_data = SelectData(self.app,progress= self.progress)
         self.select_data.update_routes_list_signal.connect(self.update_routes_list)
         self.select_data.data_selected.connect(self.update_options_state)
+        self.select_data.create_settings_for_table_dto_changed.connect(self.update_create_settings_selected_data)
+
 
     def initialize_analyze_data(self):
         self.analyze_data = AnalyzeData(self.app, progress= self.progress)
 
     def initialize_export_plan(self):
         self.export_plan = ExportPlan(self.app,progress= self.progress)
+        self.export_plan.create_settings_for_table_dto_changed.connect(self.update_create_settings_output)
 
     def initialize_create_plan(self):
         self.create_plan = CreatePlan(self.app,progress= self.progress)

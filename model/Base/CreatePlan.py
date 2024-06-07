@@ -33,7 +33,6 @@ class CreatePlan(QObject):
         """ property """
         self.input_path = ""
         self.pickle_save_path = ""
-
         self.time_format = 1
 
         """ visual internal property """
