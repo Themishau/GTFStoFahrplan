@@ -65,17 +65,3 @@ class CreatePlan(QObject):
     def gtfs_data_frame_dto(self, value: GtfsDataFrameDto):
         self._gtfs_data_frame_dto = value
 
-
-    def get_date_range(self, dffeed_info):
-        logging.debug('len stop_sequences {}'.format(dffeed_info))
-        if not dffeed_info.empty:
-            self.date_range = str(dffeed_info.iloc[0].feed_start_date) + '-' + str(
-                dffeed_info.iloc[0].feed_end_date)
-        else:
-            self.date_range = self.analyze_date_range_in_gtfs_data()
-
-    def analyze_date_range_in_gtfs_data(self):
-        if self.dfWeek is not None:
-            self.dfdateRangeInGTFSData = self.dfWeek.groupby(['start_date', 'end_date']).size().reset_index()
-            return str(self.dfdateRangeInGTFSData.iloc[0].start_date) + '-' + str(
-                self.dfdateRangeInGTFSData.iloc[0].end_date)
