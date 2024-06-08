@@ -3,6 +3,8 @@ import logging
 import os
 from PyQt5.Qt import QMessageBox, QObject
 from PyQt5.QtCore import pyqtSignal, QCoreApplication
+
+from helpFunctions import qdate_to_string
 from view.select_table_view import TableModel
 from view.sort_table_view import TableModelSort
 from model.Base.GTFSEnums import *
@@ -166,7 +168,8 @@ class ViewModel(QObject):
 
 
     def on_changed_selected_dates(self, selected_dates):
-        self.model.planer.select_data.selected_dates = selected_dates
+        # gtfs format uses "YYYYMMDD" as date format
+        self.model.planer.select_data.selected_dates = qdate_to_string(selected_dates)
         self.update_select_data.emit(selected_dates)
 
     def notify_StopNameTableView(self):
