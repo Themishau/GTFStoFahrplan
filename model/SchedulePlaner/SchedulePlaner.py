@@ -110,6 +110,9 @@ class SchedulePlaner(QObject):
         self.import_Data.pickle_save_path_filename = picklesavepath
         self.export_plan.output_path = output_path
 
+    def initialize_setting_dto(self):
+        self.select_data.create_settings_for_table_dto = self.create_settings_for_table_dto
+
     def import_gtfs_data(self) -> bool:
         try:
             self.gtfs_data_frame_dto = self.import_Data.import_gtfs()
@@ -172,6 +175,7 @@ class SchedulePlaner(QObject):
         self._gtfs_data_frame_dto = value
         if value is not None:
             self.analyze_data.gtfs_data_frame_dto = value
+            self.initialize_setting_dto()
             self.select_data.gtfs_data_frame_dto = value
             self.create_plan.gtfs_data_frame_dto = value
 

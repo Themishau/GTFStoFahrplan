@@ -170,7 +170,8 @@ class ViewModel(QObject):
     def on_changed_selected_dates(self, selected_dates):
         # gtfs format uses "YYYYMMDD" as date format
         self.model.planer.select_data.selected_dates = qdate_to_string(selected_dates)
-        self.update_select_data.emit(selected_dates)
+        self.update_select_data.emit(self.model.planer.select_data.selected_dates)
+
 
     def notify_StopNameTableView(self):
         logging.debug(f"click stop")
@@ -205,8 +206,6 @@ class ViewModel(QObject):
     def notify_select_option_button_direction(self):
         return self.dispatch("select_option_button_direction",
                              "select_option_button_direction routine started! Notify subscriber!")
-
-
 
 
 def get_current_time():

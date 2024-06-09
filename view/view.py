@@ -163,10 +163,10 @@ class View(QMainWindow):
         self.CreateCreate_Tab.ui.comboBox_direction.setCurrentText(mode)
 
     def update_create_plan_mode(self, mode):
-        self.CreateCreate_Tab.ui.comboBox_mode.setCurrentText(mode)
+        self.CreateCreate_Tab.ui.comboBox.setCurrentText(mode)
         if mode == 'date':
             self.CreateCreate_Tab.ui.listDatesWeekday.clear()
-            self.CreateCreate_Tab.ui.dateEdit.setText(self.viewModel.model.planer.select_data.date_range)
+            self.CreateCreate_Tab.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
             self.CreateCreate_Tab.ui.dateEdit.setEnabled(True)
             self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(False)
         elif mode == 'weekday':
@@ -179,6 +179,7 @@ class View(QMainWindow):
         self.initialize_create_view_weekdaydate_option()
         self.CreateCreate_Tab.ui.line_Selection_agency.setText(f"selected agency: {self.viewModel.model.planer.create_settings_for_table_dto.agency}")
         self.CreateCreate_Tab.ui.line_Selection_trips.setText(f"selected Trip: {self.viewModel.model.planer.create_settings_for_table_dto.route}")
+
 
     def initialize_window(self):
         self.setFixedSize(1350, 900)
@@ -274,10 +275,10 @@ class View(QMainWindow):
     def initialize_create_view_weekdaydate_option(self):
         self.initialize_create_base_option()
         self.CreateCreate_Tab.ui.listDatesWeekday.clear()
-        self.CreateCreate_Tab.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.select_data.selected_dates))
+        self.CreateCreate_Tab.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
         self.CreateCreate_Tab.ui.dateEdit.setEnabled(True)
         self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(False)
-        self.viewModel.select_weekday_option(None)
+        self.CreateCreate_Tab.ui.listDatesWeekday.addItems(self.viewModel.model.planer.select_data.week_day_options_list)
 
     def get_selected_weekday(self):
         self.viewModel.select_weekday_option(self.CreateCreate_Tab.ui.listDatesWeekday.currentItem().text().split(',')[0])
