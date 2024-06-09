@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-from PyQt5.QtCore import pyqtSignal, QObject, QCoreApplication, QDate
 import logging
-from model.Base.GTFSEnums import GtfsDfNames
-from ..DTO.General_Transit_Feed_Specification import GtfsListDto, GtfsDataFrameDto
 
+from PyQt5.QtCore import pyqtSignal, QObject
+
+from ..DTO.General_Transit_Feed_Specification import GtfsDataFrameDto
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
@@ -13,6 +13,7 @@ logging.basicConfig(level=logging.DEBUG,
 class AnalyzeData(QObject):
     progress_Update = pyqtSignal(int)
     error_occured = pyqtSignal(str)
+
     def __init__(self, app, progress: int):
         super().__init__()
         self.app = app
@@ -86,8 +87,8 @@ class AnalyzeData(QObject):
          str: A string representing the start and end date of the date range.
          """
         if self.gtfs_data_frame_dto.Calendarweeks is not None:
-            self.date_range_df_format = self.gtfs_data_frame_dto.Calendarweeks.groupby(['start_date', 'end_date']).size().reset_index()
+            self.date_range_df_format = self.gtfs_data_frame_dto.Calendarweeks.groupby(
+                ['start_date', 'end_date']).size().reset_index()
             self.sample_date = str(self.date_range_df_format.iloc[0].start_date)
             return str(self.date_range_df_format.iloc[0].start_date) + '-' + str(
                 self.date_range_df_format.iloc[0].end_date)
-
