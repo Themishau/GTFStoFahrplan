@@ -24,6 +24,7 @@ logging.basicConfig(level=logging.DEBUG,
 class CreatePlan(QObject):
     progress_Update = pyqtSignal(int)
     error_occured = pyqtSignal(str)
+    create_sorting = pyqtSignal()
     def __init__(self, app, progress: int):
         super().__init__()
         self.reset_create = False
@@ -85,8 +86,11 @@ class CreatePlan(QObject):
             self.datesWeekday_select_stop_sequence_stop_name_sorted()
             self.progress = 70
             self.datesWeekday_create_sort_stopnames()
-            self.dispatch("update_stopname_create_list",
-                          "update_stopname_create_list routine started! Notify subscriber!")
+            self.create_sorting.emit()
 
-
+    def create_table_continue(self):
+        self.datesWeekday_create_fahrplan_continue()
+        self.progress = 80
+        self.datesWeekday_create_output_fahrplan()
+        self.progress = 100
 

@@ -36,6 +36,7 @@ class ViewModel(QObject):
     error_message = pyqtSignal(str)
     create_table_finshed = pyqtSignal()
     update_options_state_signal = pyqtSignal(bool)
+    on_changed_individualsorting_table = pyqtSignal()
 
 
     def __init__(self, app, model):
@@ -105,6 +106,7 @@ class ViewModel(QObject):
         self.model.planer.error_occured.connect(self.send_error_message)
         self.model.planer.update_routes_list_signal.connect(self.on_loaded_trip_list)
         self.model.planer.update_options_state_signal.connect(self.on_changed_options_state)
+        self.model.planer.create_sorting_signal.connect(self.on_create_sorting_signal)
 
     def on_changed_options_state(self, value):
         self.update_options_state_signal.emit(value)
@@ -202,6 +204,9 @@ class ViewModel(QObject):
 
     def start_create_table(self):
         self.model.start_function_async(ModelTriggerActionsEnum.planer_start_create_table.value)
+
+    def on_create_sorting_signal(self):
+        self.on_changed_individualsorting_table.emit()
 
     def notify_select_option_button_direction(self):
         return self.dispatch("select_option_button_direction",

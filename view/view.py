@@ -69,6 +69,8 @@ class View(QMainWindow):
 
         self.CreateImport_Tab.ui.btnImport.clicked.connect(self.viewModel.start_import_gtfs_data)
 
+        self.viewModel.on_changed_individualsorting_table.connect(self.update_individualsorting_table)
+
         self.CreateImport_Tab.ui.btnRestart.clicked.connect(self.viewModel.restart)
 
         # view gets updated if view model changed model successfully
@@ -301,7 +303,7 @@ class View(QMainWindow):
     def update_routes_list(self):
         self.CreateSelect_Tab.ui.TripsTableView.setModel(TableModel(self.viewModel.model.planer.select_data.df_selected_routes))
 
-    def sub_update_stopname_create_list(self):
+    def update_individualsorting_table(self):
         self.CreateCreate_Tab.ui.tableView_sorting_stops.setModel(
             TableModelSort(self.viewModel.model.planer.create_data.df_filtered_stop_names))
         self.CreateCreate_Tab.ui.btnContinueCreate.setEnabled(True)

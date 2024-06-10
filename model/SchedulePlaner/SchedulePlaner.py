@@ -32,6 +32,7 @@ class SchedulePlaner(QObject):
     create_finished = pyqtSignal(bool)
     update_routes_list_signal = pyqtSignal()
     update_options_state_signal = pyqtSignal(bool)
+    create_sorting_signal = pyqtSignal()
 
     def __init__(self, app):
         super().__init__()
@@ -105,6 +106,10 @@ class SchedulePlaner(QObject):
 
     def initialize_create_plan(self):
         self.create_plan = CreatePlan(self.app,progress= self.progress)
+        self.create_plan.create_sorting_signal.connect(self.create_sorting_start)
+
+    def create_sorting_start(self):
+        self.create_sorting_signal.emit()
 
     def set_paths(self, input_path, output_path, picklesavepath=""):
         self.import_Data.input_path = input_path
