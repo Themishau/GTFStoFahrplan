@@ -13,6 +13,7 @@ class CreatePlanMode(Enum):
     weekday = 'weekday'
 
 
+
 class GtfsColumnNames(Enum):
     stopsList = 'stopsList'
     stopTimesList = 'stopTimesList'

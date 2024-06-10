@@ -13,6 +13,7 @@ import sys
 import os
 from ..Base.GTFSEnums import CreatePlanMode
 from model.Base.ProgressBar import ProgressBar
+from ..DTO.CreateSettingsForTableDTO import CreateSettingsForTableDTO
 from ..DTO.General_Transit_Feed_Specification import GtfsListDto, GtfsDataFrameDto
 
 logging.basicConfig(level=logging.DEBUG,
@@ -29,6 +30,7 @@ class CreatePlan(QObject):
         self.create_plan_mode = None
         self.gtfs_data_frame_dto = None
         self.df_filtered_stop_names = None
+        self.create_settings_for_table_dto = CreateSettingsForTableDTO()
 
         """ property """
         self.input_path = ""
@@ -66,12 +68,25 @@ class CreatePlan(QObject):
         self._gtfs_data_frame_dto = value
 
     def create_table(self):
-        self.dates_prepare_data_fahrplan()
-        self.datesWeekday_select_dates_for_date_range()
-        self.dates_select_dates_delete_exception_2()
-        self.datesWeekday_select_stops_for_trips()
-        self.datesWeekday_select_for_every_date_trips_stops()
-        self.datesWeekday_select_stop_sequence_stop_name_sorted()
-        self.datesWeekday_create_fahrplan()
+        if self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date and self.create_settings_for_table_dto.individual_sorting:
+            self.progress = 0
+            logging.debug(f"PREPARE intividual date ")
+            self.progress = 10
+            self.dates_prepare_data_fahrplan()
+            self.progress = 20
+            self.datesWeekday_select_dates_for_date_range()
+            self.progress = 30
+            self.dates_select_dates_delete_exception_2()
+            self.progress = 40
+            self.datesWeekday_select_stops_for_trips()
+            self.progress = 50
+            self.datesWeekday_select_for_every_date_trips_stops()
+            self.progress = 60
+            self.datesWeekday_select_stop_sequence_stop_name_sorted()
+            self.progress = 70
+            self.datesWeekday_create_sort_stopnames()
+            self.dispatch("update_stopname_create_list",
+                          "update_stopname_create_list routine started! Notify subscriber!")
+
 
 

@@ -5,6 +5,7 @@ class CreateSettingsForTableDTO:
         self.weekday = None
         self.dates = None
         self.direction = None
+        self.individual_sorting = False
         self.timeformat = 1
         self.create_plan_mode = None
         self.output_path = ""
