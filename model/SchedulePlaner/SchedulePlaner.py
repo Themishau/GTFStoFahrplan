@@ -29,6 +29,7 @@ class SchedulePlaner(QObject):
     progress_Update = pyqtSignal(int)
     error_occured = pyqtSignal(str)
     import_finished = pyqtSignal(bool)
+    create_finished = pyqtSignal(bool)
     update_routes_list_signal = pyqtSignal()
     update_options_state_signal = pyqtSignal(bool)
 
@@ -112,6 +113,16 @@ class SchedulePlaner(QObject):
 
     def initialize_setting_dto(self):
         self.select_data.create_settings_for_table_dto = self.create_settings_for_table_dto
+
+    def create_table(self) -> bool:
+        try:
+            self.create_plan.create_table()
+            self.export_plan.export_plan()
+            self.create_finished.emit(True)
+            return True
+        except AttributeError:
+            self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
+            return False
 
     def import_gtfs_data(self) -> bool:
         try:

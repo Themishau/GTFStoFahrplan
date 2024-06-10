@@ -43,3 +43,6 @@ class ExportPlan(QObject):
         self.create_settings_for_table_dto.output_path = value
         self.create_settings_for_table_dto_changed.emit()
         logging.debug(value)
+
+    def export_plan(self):
+        self.datesWeekday_create_output_fahrplan()

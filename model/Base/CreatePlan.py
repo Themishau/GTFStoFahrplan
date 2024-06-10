@@ -65,3 +65,13 @@ class CreatePlan(QObject):
     def gtfs_data_frame_dto(self, value: GtfsDataFrameDto):
         self._gtfs_data_frame_dto = value
 
+    def create_table(self):
+        self.dates_prepare_data_fahrplan()
+        self.datesWeekday_select_dates_for_date_range()
+        self.dates_select_dates_delete_exception_2()
+        self.datesWeekday_select_stops_for_trips()
+        self.datesWeekday_select_for_every_date_trips_stops()
+        self.datesWeekday_select_stop_sequence_stop_name_sorted()
+        self.datesWeekday_create_fahrplan()
+
+
