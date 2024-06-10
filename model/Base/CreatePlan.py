@@ -87,6 +87,62 @@ class CreatePlan(QObject):
             self.progress = 70
             self.datesWeekday_create_sort_stopnames()
             self.create_sorting.emit()
+        elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date:
+            self.progress = 0
+            logging.debug(f"PREPARE date ")
+            self.progress = 10
+            self.dates_prepare_data_fahrplan()
+            self.progress = 20
+            self.datesWeekday_select_dates_for_date_range()
+            self.progress = 30
+            self.dates_select_dates_delete_exception_2()
+            self.progress = 40
+            self.datesWeekday_select_stops_for_trips()
+            self.progress = 50
+            self.datesWeekday_select_for_every_date_trips_stops()
+            self.progress = 60
+            self.datesWeekday_select_stop_sequence_stop_name_sorted()
+            self.progress = 70
+            self.datesWeekday_create_fahrplan()
+            self.progress = 80
+            self.datesWeekday_create_output_fahrplan()
+            self.progress = 100
+
+        elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.weekday and self.create_settings_for_table_dto.individual_sorting:
+            self.progress = 10
+            self.weekday_prepare_data_fahrplan()
+            self.progress = 20
+            self.datesWeekday_select_dates_for_date_range()
+            self.progress = 30
+            self.weekday_select_weekday_exception_2()
+            self.progress = 40
+            self.datesWeekday_select_stops_for_trips()
+            self.progress = 50
+            self.datesWeekday_select_for_every_date_trips_stops()
+            self.progress = 60
+            self.datesWeekday_select_stop_sequence_stop_name_sorted()
+            self.progress = 70
+            self.datesWeekday_create_sort_stopnames()
+            self.create_sorting.emit()
+
+        elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.weekday:
+            self.progress = 10
+            self.weekday_prepare_data_fahrplan()
+            self.progress = 20
+            self.datesWeekday_select_dates_for_date_range()
+            self.progress = 30
+            self.weekday_select_weekday_exception_2()
+            self.progress = 40
+            self.datesWeekday_select_stops_for_trips()
+            self.progress = 50
+            self.datesWeekday_select_for_every_date_trips_stops()
+            self.progress = 60
+            self.datesWeekday_select_stop_sequence_stop_name_sorted()
+            self.progress = 70
+            self.datesWeekday_create_fahrplan()
+            self.progress = 80
+            self.datesWeekday_create_output_fahrplan()
+            self.progress = 100
 
     def create_table_continue(self):
         self.datesWeekday_create_fahrplan_continue()
@@ -94,3 +150,34 @@ class CreatePlan(QObject):
         self.datesWeekday_create_output_fahrplan()
         self.progress = 100
 
+    def dates_prepare_data_fahrplan(self):
+        self.last_time = time.time()
+
+        if not self.check_dates_input(self.selected_dates):
+            return
+
+        # DataFrame for header information
+        self.header_for_export_data = {'Agency': [self.selectedAgency],
+                                       'Route': [self.selectedRoute],
+                                       'Dates': [self.selected_dates]
+                                       }
+        self.dfheader_for_export_data = pd.DataFrame.from_dict(self.header_for_export_data)
+
+        dummy_direction = 0
+        direction = [{'direction_id': dummy_direction}
+                     ]
+        self.dfdirection = pd.DataFrame(direction)
+
+        # dataframe with requested data
+        self.requested_dates = {'date': [self.selected_dates]}
+        self.requested_datesdf = pd.DataFrame.from_dict(self.requested_dates)
+        self.requested_datesdf['date'] = pd.to_datetime(self.requested_datesdf['date'], format='%Y%m%d')
+
+        self.requested_direction = {'direction_id': [self.selected_direction]}
+        self.requested_directiondf = pd.DataFrame.from_dict(self.requested_direction)
+
+        inputVar = [{'route_short_name': self.selectedRoute}]
+        self.route_short_namedf = pd.DataFrame(inputVar)
+
+        inputVarAgency = [{'agency_id': self.selectedAgency}]
+        self.varTestAgency = pd.DataFrame(inputVarAgency)
