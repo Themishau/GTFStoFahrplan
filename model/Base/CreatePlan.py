@@ -700,10 +700,10 @@ class CreatePlan(QObject):
         return fahrplan_calendar_weeks
 
     def filterStopSequence(self, data):
-            """
-            take all stop ids and search for the earlist stoptime
-            for each stop to determine sorting
-            """
+        """
+        take all stop ids and search for the earlist stoptime
+        for each stop to determine sorting
+        """
         stopsequence = {}
         sorted_stopsequence = {
             "stop_id": [],
@@ -819,29 +819,111 @@ class CreatePlan(QObject):
             sorted_stopsequence['stop_name'].append(new_stopsequence[stop_sequence]['stop_name'])
             sorted_stopsequence['start_time'].append(new_stopsequence[stop_sequence]['start_time'])
 
-        #
-        # logging.debug('len stop_sequences {}'.format(sequence_count))
-        # for stop_id in stopsequence.keys():
-        #     if stop_id in new_stopsequence \
-        #         and stopsequence[stop_id]['start_time'] < new_stopsequence[stop_id]['start_time'] \
-        #         and stopsequence[stop_id]['arrival_time'] < new_stopsequence[stop_id]['arrival_time']:
-        #         pass
-        #     else:
-        #         temp = {"stop_sequence": -1, "stop_name": '', "trip_id": '', "start_time": '', "arrival_time": ''}
-        #         temp["start_time"] = stopsequence[stop_id]['start_time']
-        #         temp["arrival_time"] = stopsequence[stop_id]['arrival_time']
-        #         temp["stop_sequence"] = sequence_count - 1
-        #         new_stopsequence[stop_id] = temp
-        #
-        #
-        #
-        #
-        #
-        #
-        # logging.debug(stopsequence)
-        # i = 0
-        # for sequence in range(0, len(temp["stop_sequence"])):
-        #     i += 1
-        #     temp["stop_sequence"][sequence] = i
 
         return sorted_stopsequence
+
+    def sortStopSequence(self, stopsequence):
+        """
+        sort dict of stops (cust. bubble sort)
+        """
+        # get all possible stops
+        sequence_count = len(stopsequence)
+
+        # init data structure
+        d = {}
+        for k in range(sequence_count):
+            d[str(k)] = {"start_time": datetime.strptime('1901-01-01 23:59:00', '%Y-%m-%d %H:%M:%S').time(),
+                         "arrival_time": datetime.strptime('1901-01-01 23:59:00', '%Y-%m-%d %H:%M:%S').time(),
+                         "stop_name": '',
+                         "stop_id": ''
+                         }
+
+        # fill new dict
+        for k, j in enumerate(stopsequence):
+            if d[str(k)]["stop_id"] == '':
+                d[str(k)]["stop_id"] = j
+                d[str(k)]["start_time"] = stopsequence[j]['start_time']
+                d[str(k)]["arrival_time"] = stopsequence[j]['arrival_time']
+                d[str(k)]["stop_sequence"] = stopsequence[j]['stop_sequence']
+                d[str(k)]["stop_name"] = stopsequence[j]['stop_name']
+
+        if self.sortmode == 1:
+            # bubble sort
+            for i in range(sequence_count - 1):
+                for j in range(0, sequence_count - i - 1):
+                    if d[str(j)]["stop_sequence"] > d[str(j + 1)]["stop_sequence"]:
+                        d[str(j)], d[str(j + 1)] = d[str(j + 1)], d[str(j)]
+                    elif d[str(j)]["stop_sequence"] == d[str(j + 1)]["stop_sequence"]:
+                        if d[str(j)]["start_time"] > d[str(j + 1)]["start_time"]:
+                            d[str(j)], d[str(j + 1)] = d[str(j + 1)], d[str(j)]
+
+        else:
+            # bubble sort
+            for i in range(sequence_count - 1):
+                for j in range(0, sequence_count - i - 1):
+                    if d[str(j)]["stop_sequence"] > d[str(j + 1)]["stop_sequence"]:
+                        d[str(j)], d[str(j + 1)] = d[str(j + 1)], d[str(j)]
+                    elif d[str(j)]["stop_sequence"] == d[str(j + 1)]["stop_sequence"]:
+                        if d[str(j)]["start_time"] > d[str(j + 1)]["start_time"]:
+                            d[str(j)], d[str(j + 1)] = d[str(j + 1)], d[str(j)]
+            # -> hier ist etwas komisch!
+            # for i in range(sequence_count - 1):
+            #     for j in range(0, sequence_count - i - 1):
+            #         # 23072022
+            #         # if d[str(j)]["arrival_time"] > d[str(j + 1)]["arrival_time"]:
+            #         #     d[str(j)], d[str(j + 1)] = d[str(j + 1)], d[str(j)]
+            #         if d[str(j)]["stop_sequence"] > d[str(j + 1)]["stop_sequence"] \
+            #                 and d[str(j)]["start_time"] > d[str(j + 1)]["start_time"]:
+            #             d[str(j)], d[str(j + 1)] = d[str(j + 1)], d[str(j)]
+            #         elif d[str(j)]["stop_sequence"] == d[str(j + 1)]["stop_sequence"]:
+            #             if d[str(j)]["start_time"] > d[str(j + 1)]["start_time"] \
+            #                     and d[str(j)]["arrival_time"] > d[str(j + 1)]["arrival_time"]:
+            #                 d[str(j)], d[str(j + 1)] = d[str(j + 1)], d[str(j)]
+        return d
+
+    # checks if in dictonary
+    def dictForEntry(self, temp, key, key_value):
+        if key_value in temp:
+            return True
+        else:
+            return False
+
+    # the is the one way to add a 0 to the time hh:mm:ss, if 0 is missing like in 6:44:33
+    def time_in_string(self, time):
+        pattern = re.findall('^\d{1}:\d{2}:\d{2}$', time)
+
+        if pattern:
+            return '0' + time
+        else:
+            return time
+
+    # the is the one way to add a 0 to the time hh:mm:ss, if 0 is missing like in 6:44:33
+    def time_delete_seconds(self, time):
+        return time[:-3]
+
+    # checks if date string
+    def check_dates_input(self, dates):
+        pattern1 = re.findall('^\d{8}(?:\d{8})*(?:,\d{8})*$', dates)
+        if pattern1:
+            return True
+        else:
+            return False
+
+    def check_KommaInText(self, dates):
+        pattern1 = re.findall('"\w*,\w*"', dates)
+        if pattern1:
+            logging.debug(pattern1)
+            return True
+        else:
+            return False
+
+    # checks if time-string exceeds 24 hour
+    def check_hour_24(self, time):
+        try:
+            pattern1 = re.findall('^2{1}[4-9]{1}:[0-9]{2}', time)
+            if pattern1:
+                return True
+            else:
+                return False
+        except:
+            logging.debug(time)
