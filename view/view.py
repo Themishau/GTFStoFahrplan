@@ -91,6 +91,7 @@ class View(QMainWindow):
 
         self.viewModel.update_agency_list.connect(self.update_agency_list)
         self.viewModel.update_routes_list_signal.connect(self.update_routes_list)
+
         self.CreateSelect_Tab.ui.AgenciesTableView.clicked.connect(self.get_selected_agency_table_record)
         self.viewModel.update_selected_agency.connect(self.update_selected_agency)
 
@@ -115,6 +116,8 @@ class View(QMainWindow):
 
         self.CreateCreate_Tab.ui.comboBox_direction.activated[str].connect(self.viewModel.on_changed_direction_mode)
         self.viewModel.update_direction_mode.connect(self.update_direction_mode)
+
+        self.viewModel.set_up_create_tab_signal.connect(self.initialize_create_view_weekdaydate_option)
 
         self.viewModel.update_progress_value.connect(self.update_progress_bar)
         self.viewModel.error_message.connect(self.send_message_box)
@@ -160,6 +163,8 @@ class View(QMainWindow):
 
     def update_time_format(self, time_format):
         self.CreateCreate_Tab.ui.line_Selection_format.setText(time_format)
+    def update_time_format_based_on_dto(self):
+            self.CreateCreate_Tab.ui.line_Selection_format.setText(f'time format {self.viewModel.model.planer.create_settings_for_table_dto.timeformat}')
 
     def update_direction_mode(self, mode):
         self.CreateCreate_Tab.ui.comboBox_direction.setCurrentText(mode)
@@ -178,9 +183,10 @@ class View(QMainWindow):
             self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(True)
 
     def update_create_options_state(self):
-        self.initialize_create_view_weekdaydate_option()
         self.CreateCreate_Tab.ui.line_Selection_agency.setText(f"selected agency: {self.viewModel.model.planer.create_settings_for_table_dto.agency}")
         self.CreateCreate_Tab.ui.line_Selection_trips.setText(f"selected Trip: {self.viewModel.model.planer.create_settings_for_table_dto.route}")
+        self.update_time_format_based_on_dto()
+
 
 
     def initialize_window(self):
@@ -319,8 +325,7 @@ class View(QMainWindow):
         logging.debug("done with creating dfs")
         # self.model.gtfs.save_h5(h5_filename="C:/Tmp/test.h5", data=self.model.gtfs.dfTrips, labels="trips")
 
-    def handle_import_finished(self, event):
-        self.reset_weekdayDate()
+
 
     def get_file_path(self):
         try:

@@ -66,6 +66,7 @@ class SchedulePlaner(QObject):
     def update_options_state(self, value):
         self.update_options_state_signal.emit(value)
 
+
     def update_create_settings_output(self):
         self.create_settings_for_table_dto.output_path = self.export_plan.create_settings_for_table_dto.output_path
 
@@ -95,6 +96,9 @@ class SchedulePlaner(QObject):
         self.select_data.update_routes_list_signal.connect(self.update_routes_list)
         self.select_data.data_selected.connect(self.update_options_state)
         self.select_data.create_settings_for_table_dto_changed.connect(self.update_create_settings_selected_data)
+
+    def update_settings_for_create_table(self):
+        self.create_plan.create_settings_for_table_dto = self.create_settings_for_table_dto
 
 
     def initialize_analyze_data(self):
