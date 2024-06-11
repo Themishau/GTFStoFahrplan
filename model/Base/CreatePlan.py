@@ -153,13 +153,13 @@ class CreatePlan(QObject):
     def dates_prepare_data_fahrplan(self):
         self.last_time = time.time()
 
-        if not self.check_dates_input(self.selected_dates):
+        if not self.check_dates_input(self.create_settings_for_table_dto.dates):
             return
 
         # DataFrame for header information
-        self.header_for_export_data = {'Agency': [self.selectedAgency],
-                                       'Route': [self.selectedRoute],
-                                       'Dates': [self.selected_dates]
+        self.header_for_export_data = {'Agency': [self.create_settings_for_table_dto.agency],
+                                       'Route': [self.create_settings_for_table_dto.route],
+                                       'Dates': [self.create_settings_for_table_dto.dates]
                                        }
         self.dfheader_for_export_data = pd.DataFrame.from_dict(self.header_for_export_data)
 
@@ -224,55 +224,7 @@ class CreatePlan(QObject):
         varTestAgency = self.varTestAgency
         requested_directiondf = self.requested_directiondf
 
-        cond_select_dates_delete_exception_2 = '''
-                        select  
-                                fahrplan_dates_all_dates.date,
-                                fahrplan_dates_all_dates.day,
-                                fahrplan_dates_all_dates.trip_id,
-                                fahrplan_dates_all_dates.service_id,
-                                fahrplan_dates_all_dates.route_id, 
-                                fahrplan_dates_all_dates.start_date,
-                                fahrplan_dates_all_dates.end_date,
-                                fahrplan_dates_all_dates.monday,
-                                fahrplan_dates_all_dates.tuesday,
-                                fahrplan_dates_all_dates.wednesday,
-                                fahrplan_dates_all_dates.thursday,
-                                fahrplan_dates_all_dates.friday,
-                                fahrplan_dates_all_dates.saturday,
-                                fahrplan_dates_all_dates.sunday
-                        from fahrplan_dates_all_dates 
-                              -- not has exception_type = 2
-                        where fahrplan_dates_all_dates.date not in (select dfDates.date
-                                                                      from dfDates                                                            
-                                                                        where fahrplan_dates_all_dates.service_id = dfDates.service_id 
-                                                                          and fahrplan_dates_all_dates.date = dfDates.date
-                                                                          and dfDates.exception_type = 2
-                                                                    )
-                          -- and is marked as the day of the week or is has exception_type = 1                          
-                          and (  (   fahrplan_dates_all_dates.day = fahrplan_dates_all_dates.monday
-                                  or fahrplan_dates_all_dates.day = fahrplan_dates_all_dates.tuesday
-                                  or fahrplan_dates_all_dates.day = fahrplan_dates_all_dates.wednesday
-                                  or fahrplan_dates_all_dates.day = fahrplan_dates_all_dates.thursday
-                                  or fahrplan_dates_all_dates.day = fahrplan_dates_all_dates.friday
-                                  or fahrplan_dates_all_dates.day = fahrplan_dates_all_dates.saturday
-                                  or fahrplan_dates_all_dates.day = fahrplan_dates_all_dates.sunday
-                                 )
-                                 or 
-                                 (   fahrplan_dates_all_dates.date in (select dfDates.date
-                                                                      from dfDates                                                            
-                                                                        where fahrplan_dates_all_dates.service_id = dfDates.service_id 
-                                                                          and fahrplan_dates_all_dates.date = dfDates.date
-                                                                          and dfDates.exception_type = 1
-                                                                     )    
-                                 )
-                              )
-                          -- and the day is requested   
-                          and fahrplan_dates_all_dates.day in (select weekcond_df.day
-                                                                      from weekcond_df                                                            
-                                                                        where fahrplan_dates_all_dates.day = weekcond_df.day
-                                                             )  
-                        order by fahrplan_dates_all_dates.date;
-                       '''
+
 
         """
         add date column for every date in date range
@@ -333,7 +285,34 @@ class CreatePlan(QObject):
         fahrplan_dates_all_dates = fahrplan_dates_all_dates.set_index('date')
 
         # delete exceptions = 2 or add exceptions = 1
-        fahrplan_dates_all_dates = sqldf(cond_select_dates_delete_exception_2, locals())
+        # Filter fahrplan_dates_all_dates to exclude dates with exception_type = 2 in dfDates
+        excluded_dates_mask = ~fahrplan_dates_all_dates.apply(lambda row: (
+                (fahrplan_dates_all_dates['service_id'] == dfDates['service_id']) &
+                (fahrplan_dates_all_dates['date'] == dfDates['date']) &
+                (dfDates['exception_type'] == 2)).any(), axis=1)
+
+        fahrplan_dates_all_dates_filtered = fahrplan_dates_all_dates[~excluded_dates_mask]
+
+        # Filter fahrplan_dates_all_dates_filtered to include dates that are either weekdays or have exception_type = 1 in dfDates
+        included_dates_mask = fahrplan_dates_all_dates_filtered.apply(lambda row: (
+                (row['day'] in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']) |
+                ((fahrplan_dates_all_dates_filtered['service_id'] == dfDates['service_id']) &
+                 (fahrplan_dates_all_dates_filtered['date'] == dfDates['date']) &
+                 (dfDates['exception_type'] == 1)).any()), axis=1)
+
+        fahrplan_dates_all_dates_final = fahrplan_dates_all_dates_filtered[included_dates_mask]
+
+        # Filter fahrplan_dates_all_dates_final to include dates that are in weekcond_df
+        final_dates_mask = fahrplan_dates_all_dates_final['day'].isin(weekcond_df['day'])
+        fahrplan_dates_all_dates_final = fahrplan_dates_all_dates_final[final_dates_mask]
+
+        # Order the final DataFrame by date
+        ordered_fahrplan_dates_all_dates_final = fahrplan_dates_all_dates_final.sort_values('date')
+
+        # Select the required columns
+        selected_columns = ['date', 'day', 'trip_id', 'service_id', 'route_id', 'start_date', 'end_date', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+        fahrplan_dates_all_dates = ordered_fahrplan_dates_all_dates_final[selected_columns]
+
         fahrplan_dates_all_dates['date'] = pd.to_datetime(fahrplan_dates_all_dates['date'],
                                                           format='%Y-%m-%d %H:%M:%S.%f')
         fahrplan_dates_all_dates['start_date'] = pd.to_datetime(fahrplan_dates_all_dates['start_date'],
