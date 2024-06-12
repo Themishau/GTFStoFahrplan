@@ -99,62 +99,60 @@ class CreatePlan(QObject):
             self.progress = 10
             dataframe = self.dates_prepare_data_fahrplan()
             self.progress = 20
-            dataframe = self.datesWeekday_select_dates_for_date_range()
+            dataframe = self.datesWeekday_select_dates_for_date_range(dataframe)
             self.progress = 30
-            dataframe = self.dates_select_dates_delete_exception_2()
+            dataframe = self.dates_select_dates_delete_exception_2(dataframe)
             self.progress = 40
-            dataframe = self.datesWeekday_select_stops_for_trips()
+            dataframe = self.datesWeekday_select_stops_for_trips(dataframe)
             self.progress = 50
-            dataframe = self.datesWeekday_select_for_every_date_trips_stops()
+            dataframe = self.datesWeekday_select_for_every_date_trips_stops(dataframe)
             self.progress = 60
-            dataframe = self.datesWeekday_select_stop_sequence_stop_name_sorted()
+            dataframe = self.datesWeekday_select_stop_sequence_stop_name_sorted(dataframe)
             self.progress = 70
-            dataframe = self.datesWeekday_create_fahrplan()
+            dataframe = self.datesWeekday_create_fahrplan(dataframe)
             self.progress = 80
-            dataframe = self.datesWeekday_create_output_fahrplan()
-            self.progress = 100
 
         elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.weekday and self.create_settings_for_table_dto.individual_sorting:
             self.progress = 10
             dataframe = self.weekday_prepare_data_fahrplan()
             self.progress = 20
-            dataframe = self.datesWeekday_select_dates_for_date_range()
+            dataframe = self.datesWeekday_select_dates_for_date_range(dataframe)
             self.progress = 30
-            dataframe = self.weekday_select_weekday_exception_2()
+            dataframe = self.weekday_select_weekday_exception_2(dataframe)
             self.progress = 40
-            dataframe = self.datesWeekday_select_stops_for_trips()
+            dataframe = self.datesWeekday_select_stops_for_trips(dataframe)
             self.progress = 50
-            dataframe = self.datesWeekday_select_for_every_date_trips_stops()
+            dataframe = self.datesWeekday_select_for_every_date_trips_stops(dataframe)
             self.progress = 60
-            dataframe = self.datesWeekday_select_stop_sequence_stop_name_sorted()
+            dataframe = self.datesWeekday_select_stop_sequence_stop_name_sorted(dataframe)
             self.progress = 70
-            dataframe = self.datesWeekday_create_sort_stopnames()
+            dataframe = self.datesWeekday_create_sort_stopnames(dataframe)
             self.create_sorting.emit()
 
         elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.weekday:
             self.progress = 10
             dataframe = self.weekday_prepare_data_fahrplan()
             self.progress = 20
-            dataframe = self.datesWeekday_select_dates_for_date_range()
+            dataframe = self.datesWeekday_select_dates_for_date_range(dataframe)
             self.progress = 30
-            dataframe = self.weekday_select_weekday_exception_2()
+            dataframe = self.weekday_select_weekday_exception_2(dataframe)
             self.progress = 40
-            dataframe = self.datesWeekday_select_stops_for_trips()
+            dataframe = self.datesWeekday_select_stops_for_trips(dataframe)
             self.progress = 50
-            dataframe = self.datesWeekday_select_for_every_date_trips_stops()
+            dataframe = self.datesWeekday_select_for_every_date_trips_stops(dataframe)
             self.progress = 60
-            dataframe = self.datesWeekday_select_stop_sequence_stop_name_sorted()
+            dataframe = self.datesWeekday_select_stop_sequence_stop_name_sorted(dataframe)
             self.progress = 70
-            dataframe = self.datesWeekday_create_fahrplan()
+            dataframe = self.datesWeekday_create_fahrplan(dataframe)
             self.progress = 80
-            dataframe = self.datesWeekday_create_output_fahrplan()
-            self.progress = 100
 
-    def create_table_continue(self):
-        dataframe = self.datesWeekday_create_fahrplan_continue()
+        return dataframe
+
+    def create_table_continue(self, dataframe):
+        dataframe = self.datesWeekday_create_fahrplan_continue(dataframe)
         self.progress = 80
-        dataframe = self.datesWeekday_create_output_fahrplan()
-        self.progress = 100
+        return dataframe
+
 
     def dates_prepare_data_fahrplan(self) -> dict:
         self.last_time = time.time()
@@ -179,7 +177,7 @@ class CreatePlan(QObject):
         }
         return dataframes
 
-    def datesWeekday_select_dates_for_date_range(self):
+    def datesWeekday_select_dates_for_date_range(self, dataframe):
         # conditions for searching in dfs
         dfTrips = self.gtfs_data_frame_dto.Trips
         dfWeek = self.gtfs_data_frame_dto.Calendarweeks
@@ -205,11 +203,12 @@ class CreatePlan(QObject):
 
         # Select columns as per the original SQL query
         selected_columns = ['trip_id', 'service_id', 'route_id', 'start_date', 'end_date', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-        cond_select_dates_for_date_range_pandas = final_df[selected_columns]
+        fahrplan_dates = final_df[selected_columns]
 
         # change format
-        self.fahrplan_dates['start_date'] = pd.to_datetime(self.fahrplan_dates['start_date'], format='%Y%m%d')
-        self.fahrplan_dates['end_date'] = pd.to_datetime(self.fahrplan_dates['end_date'], format='%Y%m%d')
+        fahrplan_dates['start_date'] = pd.to_datetime(fahrplan_dates['start_date'], format='%Y%m%d')
+        fahrplan_dates['end_date'] = pd.to_datetime(fahrplan_dates['end_date'], format='%Y%m%d')
+        dataframe['fahrplan_dates'] = fahrplan_dates
 
     def weekday_select_weekday_exception_2(self):
         dfDates = self.dfDates
@@ -319,83 +318,45 @@ class CreatePlan(QObject):
 
         self.fahrplan_dates_all_dates = fahrplan_dates_all_dates
 
-    def dates_select_dates_delete_exception_2(self):
-        dfDates = self.dfDates
-        dfTrips = self.dfTrips
-        dfWeek = self.dfWeek
-        dfRoutes = self.dfRoutes
-        route_short_namedf = self.route_short_namedf
-        varTestAgency = self.varTestAgency
-        requested_directiondf = self.requested_directiondf
-        requested_datesdf = self.requested_datesdf
+    def dates_select_dates_delete_exception_2(self, dataframe):
 
+        dfDates = self.gtfs_data_frame_dto.Calendardates
+        requested_datesdf = self.create_settings_for_table_dto.dates
+        fahrplan_dates = dataframe['fahrplan_dates']
 
-        """
-        add date column for every date in date range
-        for every date in range create
-    
-        fahrplan_dates_all_dates.date,
-        fahrplan_dates_all_dates.trip_id,
-        fahrplan_dates_all_dates.service_id,
-        fahrplan_dates_all_dates.route_id, 
-        fahrplan_dates_all_dates.start_date,
-        fahrplan_dates_all_dates.end_date,
-        fahrplan_dates_all_dates.monday,
-        fahrplan_dates_all_dates.tuesday,
-        fahrplan_dates_all_dates.wednesday,
-        fahrplan_dates_all_dates.thursday,
-        fahrplan_dates_all_dates.friday,
-        fahrplan_dates_all_dates.saturday,
-        fahrplan_dates_all_dates.sunday
-        """
-        last_time = time.time()
+        dates_df = pd.DataFrame([
+            {
+                'date': pd.date_range(start=row.start_date, end=row.end_date, freq='D'),
+                'trip_id': row.trip_id,
+                'service_id': row.service_id,
+                'route_id': row.route_id,
+                'start_date': row.start_date,
+                'end_date': row.end_date,
+                'monday': int(row.monday),  # Assuming monday is stored as a string ('1' or '0')
+                'tuesday': int(row.tuesday),
+                'wednesday': int(row.wednesday),
+                'thursday': int(row.thursday),
+                'friday': int(row.friday),
+                'saturday': int(row.saturday),
+                'sunday': int(row.sunday)
+            }
+            for _, row in fahrplan_dates.iterrows()
+        ])
 
-        fahrplan_dates_all_dates = pd.concat(
-            [pd.DataFrame
-             ({'date': pd.date_range(row.start_date, row.end_date, freq='D'),
-               'trip_id': row.trip_id,
-               'service_id': row.service_id,
-               'route_id': row.route_id,
-               'start_date': row.start_date,
-               'end_date': row.end_date,
-               'monday': row.monday,
-               'tuesday': row.tuesday,
-               'wednesday': row.wednesday,
-               'thursday': row.thursday,
-               'friday': row.friday,
-               'saturday': row.saturday,
-               'sunday': row.sunday
-               }) for i, row in self.fahrplan_dates.iterrows()], ignore_index=True)
+        # Convert date columns to datetime and extract day names
+        dates_df['date'] = pd.to_datetime(dates_df['date'])
+        dates_df['start_date'] = pd.to_datetime(dates_df['start_date'])
+        dates_df['end_date'] = pd.to_datetime(dates_df['end_date'])
+        dates_df['day'] = dates_df['date'].dt.day_name()
 
-        zeit = time.time() - last_time
+        # Map day numbers to day names
+        days_mapping = {1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 4: 'Thursday', 5: 'Friday', 6: 'Saturday', 7: 'Sunday'}
+        dates_df[['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']] = dates_df[
+            ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']].applymap(lambda x: days_mapping.get(x, '-'))
 
-        last_time = time.time()
+        # Set 'date' as the index
+        fahrplan_dates_all_dates = dates_df.set_index('date')
 
-        # need to convert the date after using iterows (itertuples might be faster)
-        self.fahrplan_dates = None
-        fahrplan_dates_all_dates['date'] = pd.to_datetime(fahrplan_dates_all_dates['date'], format='%Y%m%d')
-        fahrplan_dates_all_dates['start_date'] = pd.to_datetime(fahrplan_dates_all_dates['start_date'], format='%Y%m%d')
-        fahrplan_dates_all_dates['end_date'] = pd.to_datetime(fahrplan_dates_all_dates['end_date'], format='%Y%m%d')
-        fahrplan_dates_all_dates['day'] = fahrplan_dates_all_dates['date'].dt.day_name()
-
-        # set value in column to day if 1 and compare with day
-        fahrplan_dates_all_dates['monday'] = ['Monday' if x == '1' else '-' for x in fahrplan_dates_all_dates['monday']]
-        fahrplan_dates_all_dates['tuesday'] = ['Tuesday' if x == '1' else '-' for x in
-                                               fahrplan_dates_all_dates['tuesday']]
-        fahrplan_dates_all_dates['wednesday'] = ['Wednesday' if x == '1' else '-' for x in
-                                                 fahrplan_dates_all_dates['wednesday']]
-        fahrplan_dates_all_dates['thursday'] = ['Thursday' if x == '1' else '-' for x in
-                                                fahrplan_dates_all_dates['thursday']]
-        fahrplan_dates_all_dates['friday'] = ['Friday' if x == '1' else '-' for x in fahrplan_dates_all_dates['friday']]
-        fahrplan_dates_all_dates['saturday'] = ['Saturday' if x == '1' else '-' for x in
-                                                fahrplan_dates_all_dates['saturday']]
-        fahrplan_dates_all_dates['sunday'] = ['Sunday' if x == '1' else '-' for x in fahrplan_dates_all_dates['sunday']]
-
-        fahrplan_dates_all_dates = fahrplan_dates_all_dates.set_index('date')
-
-        zeit = time.time() - last_time
-
-        last_time = time.time()
 
         # Filter fahrplan_dates_all_dates to exclude dates with exception_type = 2 in dfDates
         excluded_dates_mask = ~fahrplan_dates_all_dates.apply(lambda row: (
@@ -429,11 +390,9 @@ class CreatePlan(QObject):
                                                                 format='%Y-%m-%d %H:%M:%S.%f')
         fahrplan_dates_all_dates['end_date'] = pd.to_datetime(fahrplan_dates_all_dates['end_date'],
                                                               format='%Y-%m-%d %H:%M:%S.%f')
-        zeit = time.time() - last_time
+        dataframe['fahrplan_dates_all_dates'] = fahrplan_dates_all_dates
 
-        last_time = time.time()
-
-        self.fahrplan_dates_all_dates = fahrplan_dates_all_dates
+        return dataframe
 
     def datesWeekday_select_stops_for_trips(self):
 
