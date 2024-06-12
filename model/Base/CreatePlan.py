@@ -182,33 +182,31 @@ class CreatePlan(QObject):
         dfTrips = self.gtfs_data_frame_dto.Trips
         dfWeek = self.gtfs_data_frame_dto.Calendarweeks
         dfRoutes = self.gtfs_data_frame_dto.Routes
-        route_short_namedf = self.create_settings_for_table_dto.route
-        varTestAgency = self.create_settings_for_table_dto.agency
-        requested_directiondf = self.create_settings_for_table_dto.direction
+        route_short_namedf = dataframe['Route Short Name']
+        requested_directiondf = dataframe['Direction']
+        varTestAgency = dataframe['Selected Agency']
 
-        filtered_dfRoutes = dfRoutes[dfRoutes['route_short_name'].isin(route_short_namedf['route_short_name']) &
-                                     dfRoutes['agency_id'].isin(varTestAgency['agency_id'])]
+        filtered_dfRoutes = dfRoutes[dfRoutes['route_short_name'].isin(route_short_namedf['route_short_name'])]
+        filtered_dfRoutes = filtered_dfRoutes[filtered_dfRoutes['agency_id'].isin(varTestAgency['agency_id'])]
 
         # Filter dfTrips based on direction_id
-        filtered_dfTrips = dfTrips[dfTrips['direction_id'].isin(requested_directiondf['direction_id'])]
+        filtered_dfTrips = dfTrips[dfTrips['direction_id'].astype(int).isin(requested_directiondf['direction_id'])]
 
         # Merge filtered_dfRoutes with filtered_dfTrips on route_id
-        merged_df = pd.merge(filtered_dfTrips, filtered_dfRoutes[['route_id', 'service_id']], on='route_id')
+        merged_df = pd.merge(filtered_dfTrips, filtered_dfRoutes[['route_id']], on='route_id')
 
+        # dfWeek.set_index('service_id', inplace=True)
         # Merge merged_df with dfWeek on service_id
-        final_df = pd.merge(merged_df, dfWeek[['start_date', 'end_date', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday', 'service_id']], left_on='service_id', right_on='service_id')
+        final_df = pd.merge(merged_df, dfWeek[['start_date', 'end_date', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']], left_on='service_id', right_on='service_id')
 
         # Order final_df by service_id
-        final_df = final_df.sort_values(by=['service_id'])
-
-        # Select columns as per the original SQL query
-        selected_columns = ['trip_id', 'service_id', 'route_id', 'start_date', 'end_date', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-        fahrplan_dates = final_df[selected_columns]
+        fahrplan_dates = final_df.sort_values(by=['service_id'])
 
         # change format
         fahrplan_dates['start_date'] = pd.to_datetime(fahrplan_dates['start_date'], format='%Y%m%d')
         fahrplan_dates['end_date'] = pd.to_datetime(fahrplan_dates['end_date'], format='%Y%m%d')
         dataframe['fahrplan_dates'] = fahrplan_dates
+        return dataframe
 
     def weekday_select_weekday_exception_2(self):
         dfDates = self.dfDates
@@ -327,7 +325,7 @@ class CreatePlan(QObject):
         dates_df = pd.DataFrame([
             {
                 'date': pd.date_range(start=row.start_date, end=row.end_date, freq='D'),
-                'trip_id': row.trip_id,
+                'trip_id': row.index,
                 'service_id': row.service_id,
                 'route_id': row.route_id,
                 'start_date': row.start_date,
