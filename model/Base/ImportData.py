@@ -518,25 +518,37 @@ class ImportData(QObject):
 
     def create_df_trips(self, raw_data):
         logging.debug("convert to df: create_df_trips")
-        df_trips = pd.DataFrame.from_dict(raw_data[GtfsDfNames.Trips]).set_index('trip_id')
+        df_trips = pd.DataFrame.from_dict(raw_data[GtfsDfNames.Trips]).set_index('trip_id', inplace=True)
         df_trips.name = GtfsDfNames.Trips
         """ lets try to convert every column to speed computing """
         try:
             df_trips['trip_id'] = df_trips['trip_id'].astype('int8')
-            df_trips['direction_id'] = df_trips['direction_id'].astype('int8')
-            df_trips['shape_id'] = df_trips['shape_id'].astype('int8')
-            df_trips['wheelchair_accessible'] = df_trips['wheelchair_accessible'].astype('int8')
-            df_trips['bikes_allowed'] = df_trips['bikes_allowed'].astype('int8')
-
         except KeyError:
             logging.debug("can not convert dfTrips")
+        try:
+            df_trips['direction_id'] = df_trips['direction_id'].astype('int8')
+        except KeyError:
+            logging.debug("can not convert dfTrips")
+        try:
+            df_trips['shape_id'] = df_trips['shape_id'].astype('int8')
+        except KeyError:
+            logging.debug("can not convert dfTrips")
+        try:
+            df_trips['wheelchair_accessible'] = df_trips['wheelchair_accessible'].astype('int8')
+        except KeyError:
+            logging.debug("can not convert dfTrips")
+        try:
+            df_trips['bikes_allowed'] = df_trips['bikes_allowed'].astype('int8')
+        except KeyError:
+            logging.debug("can not convert dfTrips")
+
         logging.debug("convert to df: create_df_trips finished")
         return df_trips
 
     def create_df_stop_times(self, raw_data):
         logging.debug("convert to df: create_df_stop_times")
         # DataFrame with every stop (time)
-        df_stoptimes = pd.DataFrame.from_dict(raw_data[GtfsDfNames.Stoptimes]).set_index('stop_id')
+        df_stoptimes = pd.DataFrame.from_dict(raw_data[GtfsDfNames.Stoptimes]).set_index('stop_id', inplace=True)
         df_stoptimes.name = GtfsDfNames.Stoptimes
         try:
             df_stoptimes['stop_sequence'] = df_stoptimes['stop_sequence'].astype('int32')
@@ -552,7 +564,7 @@ class ImportData(QObject):
     def create_df_stops(self, raw_data):
         logging.debug("convert to df: create_df_stops")
         # DataFrame with every stop
-        df_stops = pd.DataFrame.from_dict(raw_data[GtfsDfNames.Stops]).set_index('stop_id')
+        df_stops = pd.DataFrame.from_dict(raw_data[GtfsDfNames.Stops]).set_index('stop_id', inplace=True)
         df_stops.name = GtfsDfNames.Stops
         try:
             df_stops['stop_id'] = df_stops['stop_id'].astype('int32')
@@ -563,7 +575,7 @@ class ImportData(QObject):
 
     def create_df_week(self, raw_data):
         logging.debug("convert to df: create_df_week")
-        df_week = pd.DataFrame.from_dict(raw_data[GtfsDfNames.Calendarweeks]).set_index('service_id')
+        df_week = pd.DataFrame.from_dict(raw_data[GtfsDfNames.Calendarweeks]).set_index('service_id', inplace=True)
         df_week.name = GtfsDfNames.Calendarweeks
         try:
             df_week['start_date'] = df_week['start_date'].astype('string')
@@ -576,7 +588,7 @@ class ImportData(QObject):
     def create_df_dates(self, raw_data):
         logging.debug("convert to df: create_df_dates")
 
-        df_dates = pd.DataFrame.from_dict(raw_data[GtfsDfNames.Calendardates]).set_index('service_id')
+        df_dates = pd.DataFrame.from_dict(raw_data[GtfsDfNames.Calendardates]).set_index('service_id', inplace=True)
         df_dates.name = GtfsDfNames.Calendardates
         try:
             df_dates['exception_type'] = df_dates['exception_type'].astype('int32')

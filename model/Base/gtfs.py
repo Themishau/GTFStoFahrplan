@@ -1834,14 +1834,5 @@ class gtfs(Publisher, Subscriber):
         now = datetime.now()
         self.now = now.strftime("%Y_%m_%d_%H_%M_%S")
 
-    def datesWeekday_create_output_fahrplan(self):
-        # save as csv
-        self.dfheader_for_export_data.to_csv(
-            self.output_path + str(self.route_short_namedf.route_short_name[0]) + 'dates_' + str(
-                self.now) + 'pivot_table.csv', header=True,
-            quotechar=' ', sep=';', mode='w', encoding='utf8')
-        self.fahrplan_calendar_filter_days_pivot.to_csv(
-            self.output_path + str(self.route_short_namedf.route_short_name[0]) + 'dates_' + str(
-                self.now) + 'pivot_table.csv', header=True, quotechar=' ',
-            index=True, sep=';', mode='a', encoding='utf8')
+
 

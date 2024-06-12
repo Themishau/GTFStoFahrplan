@@ -47,7 +47,7 @@ class ExportPlan(QObject):
     def export_plan(self):
         self.datesWeekday_create_output_fahrplan()
 
-    def datesWeekday_create_output_fahrplan(self):
+    def datesWeekday_create_output_fahrplan(self, dataframe):
         # save as csv
         self.dfheader_for_export_data.to_csv(
             self.output_path + str(self.route_short_namedf.route_short_name[0]) + 'dates_' + str(
