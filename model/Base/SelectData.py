@@ -133,7 +133,7 @@ class SelectData(QObject):
     @use_individual_sorting.setter
     def use_individual_sorting(self, value):
         self._use_individual_sorting = value
-        self.create_settings_for_table_dto_changed.individual_sorting = value
+        self.create_settings_for_table_dto.individual_sorting = value
         self.create_settings_for_table_dto_changed.emit()
 
 
@@ -144,6 +144,8 @@ class SelectData(QObject):
     @selected_dates.setter
     def selected_dates(self, value):
         self._selected_dates = value
+        self.create_settings_for_table_dto.dates = value
+        self.create_settings_for_table_dto_changed.emit()
         self.data_selected.emit(value is not None)
 
     @property

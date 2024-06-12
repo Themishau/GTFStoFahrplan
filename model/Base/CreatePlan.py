@@ -68,6 +68,12 @@ class CreatePlan(QObject):
     def gtfs_data_frame_dto(self, value: GtfsDataFrameDto):
         self._gtfs_data_frame_dto = value
 
+    def check_setting_data(self) -> bool:
+        if not self.check_dates_input(self.create_settings_for_table_dto.dates):
+            return False
+
+        return True
+
     def create_table(self):
         if self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date and self.create_settings_for_table_dto.individual_sorting:
             self.progress = 0
@@ -153,8 +159,7 @@ class CreatePlan(QObject):
     def dates_prepare_data_fahrplan(self):
         self.last_time = time.time()
 
-        if not self.check_dates_input(self.create_settings_for_table_dto.dates):
-            return
+
 
         # DataFrame for header information
         self.header_for_export_data = {'Agency': [self.create_settings_for_table_dto.agency],
@@ -169,11 +174,11 @@ class CreatePlan(QObject):
         self.dfdirection = pd.DataFrame(direction)
 
         # dataframe with requested data
-        self.requested_dates = {'date': [self.selected_dates]}
+        self.requested_dates = {'date': [self.create_settings_for_table_dto.dates]}
         self.requested_datesdf = pd.DataFrame.from_dict(self.requested_dates)
         self.requested_datesdf['date'] = pd.to_datetime(self.requested_datesdf['date'], format='%Y%m%d')
 
-        self.requested_direction = {'direction_id': [self.selected_direction]}
+        self.requested_direction = {'direction_id': [self.create_settings_for_table_dto.direction]}
         self.requested_directiondf = pd.DataFrame.from_dict(self.requested_direction)
 
         inputVar = [{'route_short_name': self.selectedRoute}]

@@ -85,27 +85,6 @@ class Model(QObject):
         self.worker.start()
         self.worker.finished.connect(self.finished_create_table)
 
-    def schedule_planer_trigger_action_start_create_table(self):
-        NotImplemented()
-
-    def schedule_planer_trigger_action_start_create_table_continue(self):
-        NotImplemented()
-
-    def schedule_planer_trigger_action_update_routes_gui_selection(self):
-        NotImplemented()
-
-    def schedule_planer_trigger_action_create_output_schedule_plan_for_date(self):
-        NotImplemented()
-
-    def schedule_planer_trigger_action_create_output_fahrplan_date_indi(self):
-        NotImplemented
-
-    def schedule_planer_trigger_action_create_output_fahrplan_date_indi_continue(self):
-        NotImplemented
-
-    def schedule_planer_trigger_action_create_output_fahrplan_weekday(self):
-        NotImplemented
-
     def sub_start_create_table(self):
         self.gtfs.processing = "create table"
         logging.debug(f'create table date: {self.gtfs.selected_dates}')

@@ -1,24 +1,16 @@
 # -*- coding: utf-8 -*-
-from model.observer import Publisher, Subscriber
-from PyQt5.QtCore import pyqtSignal, QObject, QCoreApplication
-import time
-import pandas as pd
-from pandasql import sqldf
-import zipfile
-import io
-from datetime import datetime, timedelta
-import re
 import logging
-import sys
-import os
-from ..Base.ImportData import ImportData
+
+from PyQt5.QtCore import pyqtSignal, QObject
+
 from ..Base.AnalyzeData import AnalyzeData
-from ..Base.SelectData import SelectData
 from ..Base.CreatePlan import CreatePlan
 from ..Base.ExportPlan import ExportPlan
 from ..Base.GTFSEnums import *
+from ..Base.ImportData import ImportData
+from ..Base.SelectData import SelectData
 from ..DTO.CreateSettingsForTableDTO import CreateSettingsForTableDTO
-from ..DTO.General_Transit_Feed_Specification import GtfsListDto, GtfsDataFrameDto
+from ..DTO.General_Transit_Feed_Specification import GtfsDataFrameDto
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
@@ -66,7 +58,6 @@ class SchedulePlaner(QObject):
     def update_options_state(self, value):
         self.update_options_state_signal.emit(value)
 
-
     def update_create_settings_output(self):
         self.create_settings_for_table_dto.output_path = self.export_plan.create_settings_for_table_dto.output_path
 
@@ -86,13 +77,12 @@ class SchedulePlaner(QObject):
         self.initialize_create_plan()
 
     def initialize_import_data(self):
-        self.import_Data = ImportData(self.app, progress= self.progress)
+        self.import_Data = ImportData(self.app, progress=self.progress)
         self.import_Data.progress_Update.connect(self.update_progress_bar)
         self.import_Data.error_occured.connect(self.sub_not_implemented)
 
-
     def initialize_select_data(self):
-        self.select_data = SelectData(self.app,progress= self.progress)
+        self.select_data = SelectData(self.app, progress=self.progress)
         self.select_data.update_routes_list_signal.connect(self.update_routes_list)
         self.select_data.data_selected.connect(self.update_options_state)
         self.select_data.create_settings_for_table_dto_changed.connect(self.update_create_settings_selected_data)
@@ -100,16 +90,15 @@ class SchedulePlaner(QObject):
     def update_settings_for_create_table(self):
         self.create_plan.create_settings_for_table_dto = self.create_settings_for_table_dto
 
-
     def initialize_analyze_data(self):
-        self.analyze_data = AnalyzeData(self.app, progress= self.progress)
+        self.analyze_data = AnalyzeData(self.app, progress=self.progress)
 
     def initialize_export_plan(self):
-        self.export_plan = ExportPlan(self.app,progress= self.progress)
+        self.export_plan = ExportPlan(self.app, progress=self.progress)
         self.export_plan.create_settings_for_table_dto_changed.connect(self.update_create_settings_output)
 
     def initialize_create_plan(self):
-        self.create_plan = CreatePlan(self.app,progress= self.progress)
+        self.create_plan = CreatePlan(self.app, progress=self.progress)
         self.create_plan.create_sorting.connect(self.create_sorting_start)
 
     def create_sorting_start(self):
@@ -124,14 +113,14 @@ class SchedulePlaner(QObject):
         self.select_data.create_settings_for_table_dto = self.create_settings_for_table_dto
 
     def create_table(self) -> bool:
-        try:
-            self.create_plan.create_table()
-            self.export_plan.export_plan()
-            self.create_finished.emit(True)
-            return True
-        except AttributeError:
-            self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
-            return False
+        #try:
+        self.create_plan.create_table()
+        self.export_plan.export_plan()
+        self.create_finished.emit(True)
+        return True
+        #except AttributeError:
+        #    self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
+        #    return False
 
     def import_gtfs_data(self) -> bool:
         try:
@@ -198,5 +187,3 @@ class SchedulePlaner(QObject):
             self.initialize_setting_dto()
             self.select_data.gtfs_data_frame_dto = value
             self.create_plan.gtfs_data_frame_dto = value
-
-

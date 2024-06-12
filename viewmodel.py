@@ -1,12 +1,11 @@
 import datetime as dt
 import logging
 import os
-from PyQt5.Qt import QMessageBox, QObject
-from PyQt5.QtCore import pyqtSignal, QCoreApplication
+
+from PyQt5.Qt import QObject
+from PyQt5.QtCore import pyqtSignal
 
 from helpFunctions import qdate_to_string
-from view.select_table_view import TableModel
-from view.sort_table_view import TableModelSort
 from model.Base.GTFSEnums import *
 
 logging.basicConfig(level=logging.DEBUG,
@@ -33,12 +32,11 @@ class ViewModel(QObject):
     update_weekdate_option = pyqtSignal(str)
     update_individualsorting = pyqtSignal(bool)
     update_progress_value = pyqtSignal(int)
+    update_options_state_signal = pyqtSignal(bool)
     error_message = pyqtSignal(str)
     create_table_finshed = pyqtSignal()
-    update_options_state_signal = pyqtSignal(bool)
     on_changed_individualsorting_table = pyqtSignal()
     set_up_create_tab_signal = pyqtSignal()
-
 
     def __init__(self, app, model):
         super().__init__()
@@ -101,7 +99,6 @@ class ViewModel(QObject):
         self.model.set_up_schedule_planer()
         self.set_up_signals()
 
-
     def set_up_signals(self):
         self.model.planer.progress_Update.connect(self.on_changed_progress_value)
         self.model.planer.select_data.select_agency_signal.connect(self.on_loaded_agency_list)
@@ -136,17 +133,14 @@ class ViewModel(QObject):
         self.model.planer.select_data.selected_agency = index
         self.update_selected_agency.emit(index)
 
-
     def on_changed_selected_record_trip(self, id_us):
         self.model.planer.select_data.selected_route = id_us
         logging.debug(f"{id_us}")
-
 
     def on_changed_selected_dates(self, selected_dates):
         # gtfs format uses "YYYYMMDD" as date format
         self.model.planer.select_data.selected_dates = qdate_to_string(selected_dates)
         self.update_select_data.emit(self.model.planer.select_data.selected_dates)
-
 
     def create_table_continue(self):
         self.model.start_function_async(ModelTriggerActionsEnum.planer_start_create_table_continue.value)
@@ -169,12 +163,12 @@ class ViewModel(QObject):
             self.send_error_message(ErrorMessageRessources.error_load_data)
             return
 
-    def send_error_message(self, message):
-        self.error_message.emit(message)
-
     def start_create_table(self):
         self.model.planer.update_settings_for_create_table()
         self.model.start_function_async(ModelTriggerActionsEnum.planer_start_create_table.value)
+
+    def send_error_message(self, message):
+        self.error_message.emit(message)
 
     def on_create_sorting_signal(self):
         self.on_changed_individualsorting_table.emit()
