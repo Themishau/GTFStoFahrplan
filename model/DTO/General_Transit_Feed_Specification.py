@@ -23,3 +23,9 @@ class GtfsDataFrameDto:
         self.Calendardates = Calendardates
         self.Agencies = Agencies
         self.Feedinfos = Feedinfos
+
+
+
+class lol:
+    def __init__(self, dataframes):
+        self.dataframes = dataframes
