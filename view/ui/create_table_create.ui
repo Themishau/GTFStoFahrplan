@@ -84,23 +84,26 @@ background: #cfe2da;
    </item>
    <item row="0" column="0">
     <layout class="QGridLayout" name="gridLayout_5">
-     <item row="4" column="0">
-      <widget class="QLineEdit" name="lineDateInput">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
+     <item row="5" column="0">
+      <widget class="QLabel" name="label_17">
        <property name="font">
         <font>
-         <pointsize>12</pointsize>
+         <family>72</family>
+         <pointsize>8</pointsize>
+         <italic>false</italic>
+         <bold>false</bold>
         </font>
        </property>
        <property name="styleSheet">
         <string notr="true"/>
        </property>
        <property name="text">
-        <string>20211212</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;detected date range&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QDateEdit" name="dateEdit"/>
      </item>
      <item row="0" column="1">
       <widget class="QComboBox" name="comboBox">
@@ -137,18 +140,8 @@ background: #cfe2da;
        </property>
       </widget>
      </item>
-     <item row="6" column="0">
-      <widget class="QLineEdit" name="line_Selection_date_range">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QLabel" name="label_6">
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_13">
        <property name="font">
         <font>
          <family>72</family>
@@ -161,11 +154,21 @@ background: #cfe2da;
         <string notr="true"/>
        </property>
        <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Weekday&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Date&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="1" rowspan="4">
+     <item row="6" column="0">
+      <widget class="QLineEdit" name="line_Selection_date_range">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1" rowspan="5">
       <widget class="QListWidget" name="listDatesWeekday">
        <property name="enabled">
         <bool>false</bool>
@@ -186,18 +189,8 @@ background: #cfe2da;
        </property>
       </widget>
      </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="label_2">
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
-       <property name="text">
-        <string>example: 20211212</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label_13">
+     <item row="2" column="1">
+      <widget class="QLabel" name="label_6">
        <property name="font">
         <font>
          <family>72</family>
@@ -210,7 +203,7 @@ background: #cfe2da;
         <string notr="true"/>
        </property>
        <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Date&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Weekday&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>
@@ -237,24 +230,6 @@ background: #cfe2da;
          <string>direction 2</string>
         </property>
        </item>
-      </widget>
-     </item>
-     <item row="5" column="0">
-      <widget class="QLabel" name="label_17">
-       <property name="font">
-        <font>
-         <family>72</family>
-         <pointsize>8</pointsize>
-         <italic>false</italic>
-         <bold>false</bold>
-        </font>
-       </property>
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
-       <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;detected date range&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
       </widget>
      </item>
     </layout>

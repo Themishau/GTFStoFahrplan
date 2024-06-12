@@ -1,10 +1,11 @@
 import datetime as dt
 import logging
 import os
-from PyQt5.Qt import QMessageBox, QObject
-from PyQt5.QtCore import pyqtSignal, QCoreApplication
-from view.select_table_view import TableModel
-from view.sort_table_view import TableModelSort
+
+from PyQt5.Qt import QObject
+from PyQt5.QtCore import pyqtSignal
+
+from helpFunctions import qdate_to_string
 from model.Base.GTFSEnums import *
 
 logging.basicConfig(level=logging.DEBUG,
@@ -31,10 +32,11 @@ class ViewModel(QObject):
     update_weekdate_option = pyqtSignal(str)
     update_individualsorting = pyqtSignal(bool)
     update_progress_value = pyqtSignal(int)
+    update_options_state_signal = pyqtSignal(bool)
     error_message = pyqtSignal(str)
     create_table_finshed = pyqtSignal()
-    update_options_state_signal = pyqtSignal(bool)
-
+    on_changed_individualsorting_table = pyqtSignal()
+    set_up_create_tab_signal = pyqtSignal()
 
     def __init__(self, app, model):
         super().__init__()
@@ -73,7 +75,7 @@ class ViewModel(QObject):
         self.output_file_path.emit(path)
 
     def on_changed_time_format_mode(self, text):
-        logging.debug(text)
+        logging.debug(f'time format {text}')
         if text == 'time format 1':
             self.model.planer.select_data.selected_timeformat = 1
         elif text == 'time format 2':
@@ -82,9 +84,9 @@ class ViewModel(QObject):
 
     def on_changed_direction_mode(self, text):
         if text == 'direction 1':
-            self.model.gtfs.selected_direction = 0
+            self.model.planer.select_data.selected_direction = 0
         elif text == 'direction 2':
-            self.model.gtfs.selected_direction = 1
+            self.model.planer.select_data.selected_direction = 1
 
     def on_changed_selected_weekday(self, text):
         self.model.planer.select_data.selected_weekday = text
@@ -103,54 +105,23 @@ class ViewModel(QObject):
         self.model.planer.error_occured.connect(self.send_error_message)
         self.model.planer.update_routes_list_signal.connect(self.on_loaded_trip_list)
         self.model.planer.update_options_state_signal.connect(self.on_changed_options_state)
-
-    def set_process(self, task):
-        self.model.gtfs.gtfs_process = task
+        self.model.planer.create_sorting_signal.connect(self.on_create_sorting_signal)
 
     def on_changed_options_state(self, value):
         self.update_options_state_signal.emit(value)
 
     def on_changed_individualsorting(self, value):
-        self.model.gtfs.individualsorting = value
+        self.model.planer.select_data.use_individual_sorting = value
         self.update_individualsorting.emit(value)
 
     def restart(self):
         self.reset_view()
         self.model.reset_model()
 
-    # based on linked event subscriber are going to be notified
-    def notify_subscriber(self, event, message):
-        logging.debug(f'notify_subscriber event: {event}, message {message}')
-        notify_function, parameters = self.notify_functions.get(event, self.notify_not_function)
-        if not parameters:
-            notify_function()
-        else:
-            notify_function(message)
-
-    def trigger_action(self, event, message):
-        logging.debug(f'trigger_action event: {event}, message {message}')
-        notify_function, parameters = self.notify_functions.get(event, self.notify_not_function)
-        if not parameters:
-            notify_function()
-        else:
-            notify_function(message)
-
-    def update_gui(self, event, message):
-        logging.debug(f'update_gui event: {event}, message {message}')
-        notify_function, parameters = self.notify_functions.get(event, self.notify_not_function)
-        if not parameters:
-            notify_function()
-        else:
-            notify_function(message)
-
-    def notify_not_function(self, event):
-        logging.debug('event not found in class gui: {}'.format(event))
-
     def select_weekday_option(self, selected_weekday):
-        if self.model.gtfs.week_day_options_list is None:
+        if self.model.planer.select_data.week_day_options_list is None:
             return False
-        self.model.gtfs.selected_weekday = selected_weekday
-
+        self.model.planer.select_data.selected_weekday = selected_weekday
 
     def on_loaded_agency_list(self):
         self.update_agency_list.emit()
@@ -162,19 +133,14 @@ class ViewModel(QObject):
         self.model.planer.select_data.selected_agency = index
         self.update_selected_agency.emit(index)
 
-
     def on_changed_selected_record_trip(self, id_us):
         self.model.planer.select_data.selected_route = id_us
         logging.debug(f"{id_us}")
 
-
     def on_changed_selected_dates(self, selected_dates):
-        self.model.gtfs.selected_dates = selected_dates
-        self.update_select_data.emit(selected_dates)
-
-    def notify_StopNameTableView(self):
-        logging.debug(f"click stop")
-
+        # gtfs format uses "YYYYMMDD" as date format
+        self.model.planer.select_data.selected_dates = qdate_to_string(selected_dates)
+        self.update_select_data.emit(self.model.planer.select_data.selected_dates)
 
     def create_table_continue(self):
         self.model.start_function_async(ModelTriggerActionsEnum.planer_start_create_table_continue.value)
@@ -191,22 +157,21 @@ class ViewModel(QObject):
                           self.model.planer.import_Data.input_path.split('/')[-1], ''))
         ):
             self.model.start_function_async(ModelTriggerActionsEnum.planer_start_load_data.value)
+            self.set_up_create_tab_signal.emit()
             logging.debug("started import test")
         else:
             self.send_error_message(ErrorMessageRessources.error_load_data)
             return
 
+    def start_create_table(self):
+        self.model.planer.update_settings_for_create_table()
+        self.model.start_function_async(ModelTriggerActionsEnum.planer_start_create_table.value)
+
     def send_error_message(self, message):
         self.error_message.emit(message)
 
-    def start_create_table(self):
-        self.model.start_function_async(ModelTriggerActionsEnum.planer_start_create_table.value)
-
-    def notify_select_option_button_direction(self):
-        return self.dispatch("select_option_button_direction",
-                             "select_option_button_direction routine started! Notify subscriber!")
-
-
+    def on_create_sorting_signal(self):
+        self.on_changed_individualsorting_table.emit()
 
 
 def get_current_time():

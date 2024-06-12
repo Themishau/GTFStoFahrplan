@@ -13,6 +13,7 @@ class CreatePlanMode(Enum):
     weekday = 'weekday'
 
 
+
 class GtfsColumnNames(Enum):
     stopsList = 'stopsList'
     stopTimesList = 'stopTimesList'
@@ -103,6 +104,7 @@ class ImportDataFuncitonEnum(Enum):
 class ErrorMessageRessources(Enum):
     import_data_error = 'no data in imported_data.'
     no_import_object_generated = 'No import object generated.'
+    no_create_object_generated = 'No create object generated.'
     error_in_SchedulePlaner_class = 'error_in_SchedulePlaner_class'
     error_load_data = 'Error. Could not load data.'
 

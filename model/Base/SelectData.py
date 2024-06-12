@@ -15,6 +15,7 @@ import os
 from model.Base.GTFSEnums import *
 from model.Base.ProgressBar import ProgressBar
 from model.Base.ImportData import ImportData
+from ..DTO.CreateSettingsForTableDTO import CreateSettingsForTableDTO
 from ..DTO.General_Transit_Feed_Specification import GtfsListDto, GtfsDataFrameDto
 
 logging.basicConfig(level=logging.DEBUG,
@@ -28,11 +29,13 @@ class SelectData(QObject):
     update_routes_list_signal = pyqtSignal()
     error_occured = pyqtSignal(str)
     data_selected = pyqtSignal(bool)
+    create_settings_for_table_dto_changed = pyqtSignal()
 
     def __init__(self, app, progress: int):
         super().__init__()
         self.app = app
         self.gtfs_data_frame_dto = None
+        self.create_settings_for_table_dto = CreateSettingsForTableDTO()
         self.agencies_list = None
         self.df_selected_routes = None
 
@@ -41,11 +44,12 @@ class SelectData(QObject):
         self.selected_weekday = None
         self.selected_dates = None
         self.selected_timeformat = 1
+        self.use_individual_sorting = False
 
         self.header_for_export_data = None
         self.df_header_for_export_data = None
         self.last_time = time.time()
-        self.df_direction = None
+        self.selected_direction = None
 
         self.reset_select_data = False
         self.create_plan_mode = None
@@ -88,6 +92,18 @@ class SelectData(QObject):
     @selected_route.setter
     def selected_route(self, value):
         self._selected_route = value
+        self.create_settings_for_table_dto.route = value
+        self.create_settings_for_table_dto_changed.emit()
+        self.data_selected.emit(value is not None)
+    @property
+    def selected_direction(self):
+        return self._selected_direction
+
+    @selected_direction.setter
+    def selected_direction(self, value):
+        self._selected_direction = value
+        self.create_settings_for_table_dto.direction = value
+        self.create_settings_for_table_dto_changed.emit()
         self.data_selected.emit(value is not None)
 
     @property
@@ -97,6 +113,8 @@ class SelectData(QObject):
     @selected_agency.setter
     def selected_agency(self, value):
         self._selected_agency = value
+        self.create_settings_for_table_dto.agency = value
+        self.create_settings_for_table_dto_changed.emit()
         self.get_routes_of_agency()
 
     @property
@@ -108,6 +126,27 @@ class SelectData(QObject):
         self._df_selected_routes = value
         self.update_routes_list_signal.emit()
 
+    @property
+    def use_individual_sorting(self):
+        return self._use_individual_sorting
+
+    @use_individual_sorting.setter
+    def use_individual_sorting(self, value):
+        self._use_individual_sorting = value
+        self.create_settings_for_table_dto.individual_sorting = value
+        self.create_settings_for_table_dto_changed.emit()
+
+
+    @property
+    def selected_dates(self):
+        return self._selected_dates
+
+    @selected_dates.setter
+    def selected_dates(self, value):
+        self._selected_dates = value
+        self.create_settings_for_table_dto.dates = value
+        self.create_settings_for_table_dto_changed.emit()
+        self.data_selected.emit(value is not None)
 
     @property
     def agencies_list(self):
@@ -126,6 +165,9 @@ class SelectData(QObject):
     @selected_timeformat.setter
     def selected_timeformat(self, value):
         self._selected_timeformat = value
+        self.create_settings_for_table_dto.timeformat = value
+        self.create_settings_for_table_dto_changed.emit()
+        self.data_selected.emit(value is not None)
         logging.debug(value)
 
     @property
@@ -137,6 +179,9 @@ class SelectData(QObject):
         self._gtfs_data_frame_dto = value
         if value is not None:
             self.read_gtfs_agencies()
+
+    def initialize_select_data(self):
+        self.selected_timeformat = 1
 
     def get_routes_of_agency(self) -> None:
         if self.selected_agency is not None:

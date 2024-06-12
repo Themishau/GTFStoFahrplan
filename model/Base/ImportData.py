@@ -230,7 +230,6 @@ class ImportData(QObject):
                         raw_data[GtfsColumnNames.feed_info] = [feed_info.readlines()[0].rstrip()]
             except:
                 logging.debug('no feed info header')
-                raw_data[GtfsColumnNames.feed_info] = []
 
             try:
                 with zipfile.ZipFile(self.input_path) as zf:
@@ -238,7 +237,6 @@ class ImportData(QObject):
                         raw_data[GtfsColumnNames.feed_info] += feed_info.readlines()[1:]
             except:
                 logging.debug('no feed info data')
-                raw_data[GtfsColumnNames.feed_info] = []
 
             logging.debug(f"raw_data keys: {raw_data.keys()}")
 

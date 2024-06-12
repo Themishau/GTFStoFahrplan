@@ -19,24 +19,6 @@ class Model(QObject):
 
         # we use this thread, to start processes not in the main gui thread
         self.thread = None
-        self.notify_functions = {
-            SchedulePlanerTriggerActionsEnum.schedule_planer_reset_schedule_planer: [
-                self.trigger_action_reset_schedule_planer, False],
-            SchedulePlanerTriggerActionsEnum.schedule_planer_start_create_table: [
-                self.schedule_planer_trigger_action_start_create_table, False],
-            SchedulePlanerTriggerActionsEnum.schedule_planer_start_create_table_continue: [
-                self.schedule_planer_trigger_action_start_create_table_continue, False],
-            SchedulePlanerTriggerActionsEnum.schedule_planer_update_routes_list: [
-                self.schedule_planer_trigger_action_update_routes_gui_selection, False],
-            SchedulePlanerTriggerActionsEnum.schedule_planer_create_output_fahrplan_date: [
-                self.schedule_planer_trigger_action_create_output_schedule_plan_for_date, False],
-            SchedulePlanerTriggerActionsEnum.schedule_planer_create_output_fahrplan_date_indi: [
-                self.schedule_planer_trigger_action_create_output_fahrplan_date_indi, False],
-            SchedulePlanerTriggerActionsEnum.schedule_planer_create_output_fahrplan_date_indi_continue: [
-                self.schedule_planer_trigger_action_create_output_fahrplan_date_indi_continue, False],
-            SchedulePlanerTriggerActionsEnum.schedule_planer_create_output_fahrplan_weekday: [
-                self.schedule_planer_trigger_action_create_output_fahrplan_weekday, False]
-        }
 
     def set_up_schedule_planer(self):
         self.planer = SchedulePlaner(self.event_loop)
@@ -59,13 +41,15 @@ class Model(QObject):
     def planer_start_load_data(self):
         self.planer.import_gtfs_data()
 
+    def planer_start_create_table(self):
+        self.planer.create_table()
+
     def trigger_action_reset_schedule_planer(self):
         self.planer = None
         self.set_up_schedule_planer()
 
     def error_reset_model(self):
-        self.dispatch("restart",
-                      "restart routine started! Notify subscriber!")
+        NotImplemented()
 
     def sub_worker_load_gtfsdata(self):
         self.planer.import_gtfs_data()
@@ -75,6 +59,7 @@ class Model(QObject):
 
     def sub_worker_load_gtfsdata_indi(self):
         print('sub_worker_load_gtfsdata_indi')
+        NotImplemented()
 
     def sub_worker_create_output_fahrplan_weekday(self):
         self.gtfs.sub_worker_create_output_fahrplan_weekday()
@@ -99,27 +84,6 @@ class Model(QObject):
         self.worker.register('sub_worker_create_output_fahrplan_date_indi_continue', self)
         self.worker.start()
         self.worker.finished.connect(self.finished_create_table)
-
-    def schedule_planer_trigger_action_start_create_table(self):
-        NotImplemented()
-
-    def schedule_planer_trigger_action_start_create_table_continue(self):
-        NotImplemented()
-
-    def schedule_planer_trigger_action_update_routes_gui_selection(self):
-        NotImplemented()
-
-    def schedule_planer_trigger_action_create_output_schedule_plan_for_date(self):
-        NotImplemented()
-
-    def schedule_planer_trigger_action_create_output_fahrplan_date_indi(self):
-        NotImplemented
-
-    def schedule_planer_trigger_action_create_output_fahrplan_date_indi_continue(self):
-        NotImplemented
-
-    def schedule_planer_trigger_action_create_output_fahrplan_weekday(self):
-        NotImplemented
 
     def sub_start_create_table(self):
         self.gtfs.processing = "create table"
@@ -151,21 +115,6 @@ class Model(QObject):
     def update_sorting_table(self):
         self.worker = None
 
-    def update_agency_list(self):
-        if self.gtfs.pickleExport_checked is True:
-            logging.debug("save not imolemented yet")
-        self.model.planer.read_gtfs_agencies()
-
-    def update_date_range(self):
-        self.worker = None
-        # self.update_weekdate_options()
-
-    def update_routes_list(self):
-        self.worker = None
-
-    def update_weekdate_options(self):
-        self.notify_update_weekdate_option()
-        self.worker = None
 
     def notify_set_process(self, task):
         self.gtfs.processing = task
@@ -174,17 +123,21 @@ class Model(QObject):
         self.gtfs.processing = None
 
     def notify_update_stopname_create_list(self):
+        NotImplemented()
         return self.dispatch("update_stopname_create_list",
                              "update_stopname_create_list routine started! Notify subscriber!")
 
     def notify_update_routes_List(self):
+        NotImplemented()
         return self.dispatch("update_routes_list",
                              "update_routes_list routine started! Notify subscriber!")
 
     def notify_update_weekdate_option(self):
+        NotImplemented()
         return self.dispatch("update_weekdate_option",
                              "update_weekdate_option routine started! Notify subscriber!")
 
     def notify_finished(self):
+        NotImplemented()
         return self.dispatch("message",
                              "Table created!")
