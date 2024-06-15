@@ -319,7 +319,7 @@ class CreatePlan(QObject):
     def dates_select_dates_delete_exception_2(self, dataframe):
 
         dfDates = self.gtfs_data_frame_dto.Calendardates
-        requested_datesdf = self.create_settings_for_table_dto.dates
+        requested_datesdf = pd.DataFrame([self.create_settings_for_table_dto.dates], columns=['date'])
         fahrplan_dates = dataframe['fahrplan_dates']
 
         dates_df = pd.DataFrame([
@@ -342,10 +342,10 @@ class CreatePlan(QObject):
         ])
 
         # Convert date columns to datetime and extract day names
-        dates_df['date'] = pd.to_datetime(dates_df['date'])
+        # dates_df['date'] = pd.to_datetime(dates_df['date'])
         dates_df['start_date'] = pd.to_datetime(dates_df['start_date'])
         dates_df['end_date'] = pd.to_datetime(dates_df['end_date'])
-        dates_df['day'] = dates_df['date'].dt.day_name()
+
 
         # Map day numbers to day names
         days_mapping = {1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 4: 'Thursday', 5: 'Friday', 6: 'Saturday', 7: 'Sunday'}
@@ -357,14 +357,20 @@ class CreatePlan(QObject):
 
 
         # Filter fahrplan_dates_all_dates to exclude dates with exception_type = 2 in dfDates
-        excluded_dates_mask = ~fahrplan_dates_all_dates.apply(lambda row: (
-            (fahrplan_dates_all_dates['date'] == dfDates.loc[(dfDates['service_id'] == row['service_id']) & (dfDates['exception_type'] == 2), 'date']).any()
-        ), axis=1)
+        #excluded_dates_mask = ~fahrplan_dates_all_dates.apply(lambda row: (
+        #    (fahrplan_dates_all_dates['date'] == dfDates.loc[(dfDates == row) & (dfDates['exception_type'] == 2), 'date']).any()
+        #), axis=1)
+
+        # Step 1: Pre-calculate the mask for dfDates
+        mask_service_id_exception_type_2 = dfDates[dfDates['exception_type'] == 2]
+
+        # Step 2: Use the mask to filter fahrplan_dates_all_dates
+        excluded_dates_mask = ~fahrplan_dates_all_dates.isin(mask_service_id_exception_type_2.index)
 
         fahrplan_dates_all_dates_filtered = fahrplan_dates_all_dates[~excluded_dates_mask]
 
         # Filter fahrplan_dates_all_dates_filtered to include dates in requested_datesdf
-        included_dates_mask = fahrplan_dates_all_dates_filtered['date'].isin(requested_datesdf['date'])
+        included_dates_mask = fahrplan_dates_all_dates_filtered.index.astype(int).isin(requested_datesdf['date'].astype(int))
         fahrplan_dates_all_dates_final = fahrplan_dates_all_dates_filtered[included_dates_mask]
 
         # Further filter to include dates with exception_type = 1 in dfDates
