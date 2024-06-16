@@ -186,21 +186,49 @@ class CreatePlan(QObject):
         requested_directiondf = dataframe['Direction']
         varTestAgency = dataframe['Selected Agency']
 
-        filtered_dfRoutes = dfRoutes[dfRoutes['route_short_name'].isin(route_short_namedf['route_short_name'])]
-        filtered_dfRoutes = filtered_dfRoutes[filtered_dfRoutes['agency_id'].isin(varTestAgency['agency_id'])]
+        cond_select_dates_for_date_range = '''
+                    select  
+                            dfTrips.trip_id,
+                            dfTrips.service_id,
+                            dfTrips.route_id, 
+                            dfWeek.start_date,
+                            dfWeek.end_date,
+                            dfWeek.monday,
+                            dfWeek.tuesday,
+                            dfWeek.wednesday,
+                            dfWeek.thursday,
+                            dfWeek.friday,
+                            dfWeek.saturday,
+                            dfWeek.sunday
+                    from dfWeek 
+                    inner join dfTrips on dfWeek.service_id = dfTrips.service_id
+                    inner join dfRoutes on dfRoutes.route_id  = dfTrips.route_id
+                    inner join route_short_namedf on dfRoutes.route_short_name = route_short_namedf.route_short_name
+                    inner join varTestAgency on dfRoutes.agency_id = varTestAgency.agency_id
+                    inner join requested_directiondf on dfTrips.direction_id = requested_directiondf.direction_id
+                    where dfRoutes.route_short_name = route_short_namedf.route_short_name -- in this case the bus line number
+                      and dfRoutes.agency_id = varTestAgency.agency_id -- in this case the bus line number
+                      and dfTrips.direction_id = requested_directiondf.direction_id -- shows the direction of the line 
+                    order by dfTrips.service_id;
+                   '''
 
-        # Filter dfTrips based on direction_id
-        filtered_dfTrips = dfTrips[dfTrips['direction_id'].astype(int).isin(requested_directiondf['direction_id'])]
-
-        # Merge filtered_dfRoutes with filtered_dfTrips on route_id
-        merged_df = pd.merge(filtered_dfTrips, filtered_dfRoutes[['route_id']], on='route_id')
-
-        # dfWeek.set_index('service_id', inplace=True)
-        # Merge merged_df with dfWeek on service_id
-        final_df = pd.merge(merged_df, dfWeek[['start_date', 'end_date', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']], left_on='service_id', right_on='service_id')
-
-        # Order final_df by service_id
-        fahrplan_dates = final_df.sort_values(by=['service_id'])
+        # get dates for start and end dates for date range function
+        # TODO: Sortieren nach neue Spalte
+        """
+        dfTrips.trip_id,
+        dfTrips.service_id,
+        dfTrips.route_id, 
+        dfWeek.start_date,
+        dfWeek.end_date,
+        dfWeek.monday,
+        dfWeek.tuesday,
+        dfWeek.wednesday,
+        dfWeek.thursday,
+        dfWeek.friday,
+        dfWeek.saturday,
+        dfWeek.sunday
+        """
+        fahrplan_dates = sqldf(cond_select_dates_for_date_range, locals())
 
         # change format
         fahrplan_dates['start_date'] = pd.to_datetime(fahrplan_dates['start_date'], format='%Y%m%d')
@@ -320,82 +348,102 @@ class CreatePlan(QObject):
 
         dfDates = self.gtfs_data_frame_dto.Calendardates
         requested_datesdf = pd.DataFrame([self.create_settings_for_table_dto.dates], columns=['date'])
+        requested_datesdf['date'] = pd.to_datetime(requested_datesdf['date'], format='%Y%m%d')
         fahrplan_dates = dataframe['fahrplan_dates']
+        cond_select_dates_delete_exception_2 = '''
+                    select  
+                            fahrplan_dates.date,
+                            fahrplan_dates.day,
+                            fahrplan_dates.trip_id,
+                            fahrplan_dates.service_id,
+                            fahrplan_dates.route_id, 
+                            fahrplan_dates.start_date,
+                            fahrplan_dates.end_date,
+                            fahrplan_dates.monday,
+                            fahrplan_dates.tuesday,
+                            fahrplan_dates.wednesday,
+                            fahrplan_dates.thursday,
+                            fahrplan_dates.friday,
+                            fahrplan_dates.saturday,
+                            fahrplan_dates.sunday
+                    from fahrplan_dates 
+                    where fahrplan_dates.date not in (select dfDates.date 
+                                                                  from dfDates                                                            
+                                                                    where fahrplan_dates.service_id = dfDates.service_id
+                                                                      and fahrplan_dates.date = dfDates.date 
+                                                                      and dfDates.exception_type = 2 
+                                                               )
+                     and fahrplan_dates.date in (select requested_datesdf.date 
+                                                                  from requested_datesdf                                                            
+                                                                    where fahrplan_dates.date = requested_datesdf.date
+                                                          )
+                     and (   (   fahrplan_dates.day = fahrplan_dates.monday
+                              or fahrplan_dates.day = fahrplan_dates.tuesday
+                              or fahrplan_dates.day = fahrplan_dates.wednesday
+                              or fahrplan_dates.day = fahrplan_dates.thursday
+                              or fahrplan_dates.day = fahrplan_dates.friday
+                              or fahrplan_dates.day = fahrplan_dates.saturday
+                              or fahrplan_dates.day = fahrplan_dates.sunday
+                             )
+                             or 
+                             (   fahrplan_dates.date in (select dfDates.date
+                                                                   from dfDates                                                            
+                                                                    where fahrplan_dates.service_id = dfDates.service_id 
+                                                                      and fahrplan_dates.date = dfDates.date
+                                                                      and dfDates.exception_type = 1
+                                                                  )    
+                             )
+                        ) 
+                    order by fahrplan_dates.date;
+                   '''
 
-        dates_df = pd.DataFrame([
-            {
-                'date': pd.date_range(start=row.start_date, end=row.end_date, freq='D'),
-                'trip_id': row.index,
-                'service_id': row.service_id,
-                'route_id': row.route_id,
-                'start_date': row.start_date,
-                'end_date': row.end_date,
-                'monday': int(row.monday),  # Assuming monday is stored as a string ('1' or '0')
-                'tuesday': int(row.tuesday),
-                'wednesday': int(row.wednesday),
-                'thursday': int(row.thursday),
-                'friday': int(row.friday),
-                'saturday': int(row.saturday),
-                'sunday': int(row.sunday)
-            }
-            for _, row in fahrplan_dates.iterrows()
-        ])
+        fahrplan_dates = pd.concat(
+            [pd.DataFrame
+             ({'date': pd.date_range(row.start_date, row.end_date, freq='D'),
+               'trip_id': row.trip_id,
+               'service_id': row.service_id,
+               'route_id': row.route_id,
+               'start_date': row.start_date,
+               'end_date': row.end_date,
+               'monday': row.monday,
+               'tuesday': row.tuesday,
+               'wednesday': row.wednesday,
+               'thursday': row.thursday,
+               'friday': row.friday,
+               'saturday': row.saturday,
+               'sunday': row.sunday
+               }) for i, row in fahrplan_dates.iterrows()], ignore_index=True)
 
-        # Convert date columns to datetime and extract day names
-        # dates_df['date'] = pd.to_datetime(dates_df['date'])
-        dates_df['start_date'] = pd.to_datetime(dates_df['start_date'])
-        dates_df['end_date'] = pd.to_datetime(dates_df['end_date'])
+        # need to convert the date after using iterows (itertuples might be faster)
+        fahrplan_dates['date'] = pd.to_datetime(fahrplan_dates['date'], format='%Y%m%d')
+        fahrplan_dates['start_date'] = pd.to_datetime(fahrplan_dates['start_date'], format='%Y%m%d')
+        fahrplan_dates['end_date'] = pd.to_datetime(fahrplan_dates['end_date'], format='%Y%m%d')
+        fahrplan_dates['day'] = fahrplan_dates['date'].dt.day_name()
 
+        # set value in column to day if 1 and compare with day
+        fahrplan_dates['monday'] = ['Monday' if x == '1' else '-' for x in fahrplan_dates['monday']]
+        fahrplan_dates['tuesday'] = ['Tuesday' if x == '1' else '-' for x in
+                                     fahrplan_dates['tuesday']]
+        fahrplan_dates['wednesday'] = ['Wednesday' if x == '1' else '-' for x in
+                                       fahrplan_dates['wednesday']]
+        fahrplan_dates['thursday'] = ['Thursday' if x == '1' else '-' for x in
+                                      fahrplan_dates['thursday']]
+        fahrplan_dates['friday'] = ['Friday' if x == '1' else '-' for x in fahrplan_dates['friday']]
+        fahrplan_dates['saturday'] = ['Saturday' if x == '1' else '-' for x in
+                                      fahrplan_dates['saturday']]
+        fahrplan_dates['sunday'] = ['Sunday' if x == '1' else '-' for x in fahrplan_dates['sunday']]
 
-        # Map day numbers to day names
-        days_mapping = {1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 4: 'Thursday', 5: 'Friday', 6: 'Saturday', 7: 'Sunday'}
-        dates_df[['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']] = dates_df[
-            ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']].applymap(lambda x: days_mapping.get(x, '-'))
+        fahrplan_dates = fahrplan_dates.set_index('date')
 
-        # Set 'date' as the index
-        fahrplan_dates_all_dates = dates_df.set_index('date')
-
-
-        # Filter fahrplan_dates_all_dates to exclude dates with exception_type = 2 in dfDates
-        #excluded_dates_mask = ~fahrplan_dates_all_dates.apply(lambda row: (
-        #    (fahrplan_dates_all_dates['date'] == dfDates.loc[(dfDates == row) & (dfDates['exception_type'] == 2), 'date']).any()
-        #), axis=1)
-
-        # Step 1: Pre-calculate the mask for dfDates
-        mask_service_id_exception_type_2 = dfDates[dfDates['exception_type'] == 2]
-
-        # Step 2: Use the mask to filter fahrplan_dates_all_dates
-        excluded_dates_mask = ~fahrplan_dates_all_dates.isin(mask_service_id_exception_type_2.index)
-
-        fahrplan_dates_all_dates_filtered = fahrplan_dates_all_dates[~excluded_dates_mask]
-
-        # Filter fahrplan_dates_all_dates_filtered to include dates in requested_datesdf
-        included_dates_mask = fahrplan_dates_all_dates_filtered.index.astype(int).isin(requested_datesdf['date'].astype(int))
-        fahrplan_dates_all_dates_final = fahrplan_dates_all_dates_filtered[included_dates_mask]
-
-        # Further filter to include dates with exception_type = 1 in dfDates
-        dates_with_exception_type_1 = dfDates[dfDates['exception_type'] == 1]['date']
-        fahrplan_dates_all_dates_final = fahrplan_dates_all_dates_final[fahrplan_dates_all_dates_final['date'].isin(dates_with_exception_type_1)]
-
-        # Ensure the day column matches one of the days of the week
-        days_of_week = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-        valid_days_mask = fahrplan_dates_all_dates_final['day'].isin(days_of_week)
-        fahrplan_dates_all_dates_final = fahrplan_dates_all_dates_final[valid_days_mask]
-
-        # Select columns as per the original SQL query
-        selected_columns = ['date', 'day', 'trip_id', 'service_id', 'route_id', 'start_date', 'end_date', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-        cond_select_dates_delete_exception_2_pandas = fahrplan_dates_all_dates_final[selected_columns]
-
-
-
-        fahrplan_dates_all_dates['date'] = pd.to_datetime(fahrplan_dates_all_dates['date'],
+        # delete exceptions = 2 or add exceptions = 1
+        fahrplan_dates2 = sqldf(cond_select_dates_delete_exception_2, locals())
+        fahrplan_dates['date'] = pd.to_datetime(fahrplan_dates['date'],
                                                           format='%Y-%m-%d %H:%M:%S.%f')
-        fahrplan_dates_all_dates['start_date'] = pd.to_datetime(fahrplan_dates_all_dates['start_date'],
+        fahrplan_dates['start_date'] = pd.to_datetime(fahrplan_dates['start_date'],
                                                                 format='%Y-%m-%d %H:%M:%S.%f')
-        fahrplan_dates_all_dates['end_date'] = pd.to_datetime(fahrplan_dates_all_dates['end_date'],
+        fahrplan_dates['end_date'] = pd.to_datetime(fahrplan_dates['end_date'],
                                                               format='%Y-%m-%d %H:%M:%S.%f')
-        dataframe['fahrplan_dates_all_dates'] = fahrplan_dates_all_dates
-
+        dataframe['fahrplan_dates'] = fahrplan_dates
         return dataframe
 
     def datesWeekday_select_stops_for_trips(self):

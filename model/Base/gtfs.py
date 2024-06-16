@@ -1457,26 +1457,6 @@ class gtfs(Publisher, Subscriber):
                     order by fahrplan_dates_all_dates.date;
                    '''
 
-        """
-        add date column for every date in date range
-        for every date in range create
-
-        fahrplan_dates_all_dates.date,
-        fahrplan_dates_all_dates.trip_id,
-        fahrplan_dates_all_dates.service_id,
-        fahrplan_dates_all_dates.route_id, 
-        fahrplan_dates_all_dates.start_date,
-        fahrplan_dates_all_dates.end_date,
-        fahrplan_dates_all_dates.monday,
-        fahrplan_dates_all_dates.tuesday,
-        fahrplan_dates_all_dates.wednesday,
-        fahrplan_dates_all_dates.thursday,
-        fahrplan_dates_all_dates.friday,
-        fahrplan_dates_all_dates.saturday,
-        fahrplan_dates_all_dates.sunday
-        """
-        last_time = time.time()
-
         fahrplan_dates_all_dates = pd.concat(
             [pd.DataFrame
              ({'date': pd.date_range(row.start_date, row.end_date, freq='D'),
@@ -1493,10 +1473,6 @@ class gtfs(Publisher, Subscriber):
                'saturday': row.saturday,
                'sunday': row.sunday
                }) for i, row in self.fahrplan_dates.iterrows()], ignore_index=True)
-
-        zeit = time.time() - last_time
-
-        last_time = time.time()
 
         # need to convert the date after using iterows (itertuples might be faster)
         self.fahrplan_dates = None
@@ -1520,10 +1496,6 @@ class gtfs(Publisher, Subscriber):
 
         fahrplan_dates_all_dates = fahrplan_dates_all_dates.set_index('date')
 
-        zeit = time.time() - last_time
-
-        last_time = time.time()
-
         # delete exceptions = 2 or add exceptions = 1
         fahrplan_dates_all_dates = sqldf(cond_select_dates_delete_exception_2, locals())
         fahrplan_dates_all_dates['date'] = pd.to_datetime(fahrplan_dates_all_dates['date'],
@@ -1532,9 +1504,6 @@ class gtfs(Publisher, Subscriber):
                                                                 format='%Y-%m-%d %H:%M:%S.%f')
         fahrplan_dates_all_dates['end_date'] = pd.to_datetime(fahrplan_dates_all_dates['end_date'],
                                                               format='%Y-%m-%d %H:%M:%S.%f')
-        zeit = time.time() - last_time
-
-        last_time = time.time()
 
         self.fahrplan_dates_all_dates = fahrplan_dates_all_dates
 
