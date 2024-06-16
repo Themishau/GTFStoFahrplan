@@ -436,7 +436,7 @@ class CreatePlan(QObject):
         fahrplan_dates = fahrplan_dates.set_index('date')
 
         # delete exceptions = 2 or add exceptions = 1
-        fahrplan_dates2 = sqldf(cond_select_dates_delete_exception_2, locals())
+        fahrplan_dates = sqldf(cond_select_dates_delete_exception_2, locals())
         fahrplan_dates['date'] = pd.to_datetime(fahrplan_dates['date'],
                                                           format='%Y-%m-%d %H:%M:%S.%f')
         fahrplan_dates['start_date'] = pd.to_datetime(fahrplan_dates['start_date'],
