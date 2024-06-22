@@ -412,7 +412,7 @@ class CreatePlan(QObject):
                'friday': row.friday,
                'saturday': row.saturday,
                'sunday': row.sunday
-               }) for i, row in fahrplan_dates.iterrows()], ignore_index=True)
+               }) for _, row in fahrplan_dates.iterrows()])
 
         # need to convert the date after using iterows (itertuples might be faster)
         fahrplan_dates['date'] = pd.to_datetime(fahrplan_dates['date'], format='%Y%m%d')
@@ -446,67 +446,72 @@ class CreatePlan(QObject):
         dataframe['fahrplan_dates'] = fahrplan_dates
         return dataframe
 
-    def datesWeekday_select_stops_for_trips(self):
+    def datesWeekday_select_stops_for_trips(self, dataframe):
+
+        requested_datesdf = pd.DataFrame([self.create_settings_for_table_dto.dates], columns=['date'])
+        requested_datesdf['date'] = pd.to_datetime(requested_datesdf['date'], format='%Y%m%d')
+
+        route_short_namedf = dataframe['Route Short Name']
+        requested_directiondf = dataframe['Direction'].astype('string')
+        varTestAgency = dataframe['Selected Agency']
 
 
-        route_short_namedf = self.route_short_namedf
-        varTestAgency = self.varTestAgency
-        requested_directiondf = self.requested_directiondf
-        requested_directiondf['direction_id'] = requested_directiondf['direction_id'].astype('string')
-
-        dfRoutes = self.dfRoutes
+        dfRoutes = self.gtfs_data_frame_dto.Routes
         dfRoutes = pd.merge(left=dfRoutes, right=route_short_namedf, how='inner', on='route_short_name')
         dfRoutes = pd.merge(left=dfRoutes, right=varTestAgency, how='inner', on='agency_id')
-        dfTrip = self.dfTrips
+        dfTrip = self.gtfs_data_frame_dto.Trips
         dfTrip['direction_id'] = dfTrip['direction_id'].astype('string')
 
-        dfTrip['trip_id_dup'] = dfTrip.index
-        dfTrip = dfTrip.reset_index(drop=True)
-        dfTrip['trip_id_dup'] = dfTrip['trip_id_dup'].astype('string')
+        #dfTrip['trip_id_dup'] = dfTrip.index
+        #dfTrip = dfTrip.reset_index(drop=True)
+        #dfTrip['trip_id_dup'] = dfTrip['trip_id_dup'].astype('string')
         dfTrip = pd.merge(left=dfTrip, right=requested_directiondf, how='inner', on='direction_id')
         # pd.concat([self.dfTrips, self.requested_directiondf], join='inner', keys='direction_id')
         dfTrip = pd.merge(left=dfTrip, right=dfRoutes, how='inner', on='route_id')
-        dfStopTimes = self.dfStopTimes
-        dfStopTimes['stop_id'] = dfStopTimes.index
-        dfStopTimes = dfStopTimes.reset_index(drop=True)
+        dfStopTimes = self.gtfs_data_frame_dto.Stoptimes
+        #dfStopTimes['stop_id'] = dfStopTimes.index
+        #dfStopTimes = dfStopTimes.reset_index(drop=True)
+        dfTrip['trip_id'] = dfTrip['trip_id'].astype('string')
         dfStopTimes['trip_id'] = dfStopTimes['trip_id'].astype('string')
-        dfStopTimes = pd.merge(left=dfStopTimes, right=dfTrip, how='inner', left_on='trip_id', right_on='trip_id_dup')
-        dfStops = self.dfStops
-        last_time = time.time()
+        dfStopTimes = pd.merge(left=dfStopTimes, right=dfTrip, how='inner', left_on='trip_id', right_on='trip_id')
+        dfStops = self.gtfs_data_frame_dto.Stops
 
 
         # Join dfStopTimes with dfTrip and dfStops
-        joined_df = pd.merge(dfStopTimes, dfTrip[['trip_id_dup', 'service_id']], left_on='trip_id', right_on='trip_id_dup')
+        joined_df = pd.merge(dfStopTimes, dfTrip[['trip_id', 'service_id']], left_on='trip_id', right_on='trip_id')
         joined_df = pd.merge(joined_df, dfStops[['stop_id', 'stop_name']], left_on='stop_id', right_on='stop_id')
 
         # Select the arrival time at the first stop for each trip
-        first_stop_times = joined_df[joined_df['stop_sequence'] == 0]['arrival_time']
+        first_stop_times = joined_df[joined_df['stop_sequence'] == 0][['arrival_time', 'trip_id']]
+
+        merged_df = pd.merge(joined_df, first_stop_times.rename(columns={'arrival_time': 'start_time'}), on='trip_id', how='left')
 
         # Add the start_time column to the main DataFrame
-        joined_df['start_time'] = first_stop_times.values
+        #joined_df['start_time'] = first_stop_times.values
 
         # Select the required columns
         selected_columns = ['start_time', 'trip_id', 'stop_name', 'stop_sequence', 'arrival_time', 'service_id', 'stop_id']
-        cond_select_stops_for_trips_pandas = joined_df[selected_columns]
+        cond_select_stops_for_trips_pandas = merged_df[selected_columns]
 
         if not cond_select_stops_for_trips_pandas.empty:
             # Similar to cond_select_stops_for_trips but for the second stop
-            second_stop_times = joined_df[joined_df['stop_sequence'] == 1]['arrival_time']
+            second_stop_times = merged_df[merged_df['stop_sequence'] == 1]['arrival_time']
 
             # Add the start_time column to the main DataFrame for the second stop
-            joined_df['start_time'] = second_stop_times.values
+            merged_df['start_time'] = second_stop_times.values
 
             # Select the required columns for the second stop
             selected_columns_one = ['start_time', 'trip_id', 'stop_name', 'stop_sequence', 'arrival_time', 'service_id', 'stop_id']
-            cond_select_stops_for_tripsOne_pandas = joined_df[selected_columns_one]
+            cond_select_stops_for_tripsOne_pandas = merged_df[selected_columns_one]
+            dataframe['fahrplan_stops'] = cond_select_stops_for_tripsOne_pandas
+            return dataframe
 
-        # get all stop_times and stops for every stop of one route
+        dataframe['fahrplan_stops'] = cond_select_stops_for_trips_pandas
+        return dataframe
 
-        dfTrip = dfTrip.drop('trip_id_dup', axis=1)
-        zeit = time.time() - last_time
-        last_time = time.time()
+    def datesWeekday_select_for_every_date_trips_stops(self, dataframe):
 
-    def datesWeekday_select_for_every_date_trips_stops(self):
+        fahrplan_dates = dataframe['fahrplan_dates']
 
         fahrplan_calendar_weeks = self.fahrplan_calendar_weeks
         fahrplan_dates_all_dates = self.fahrplan_dates_all_dates
