@@ -478,7 +478,7 @@ class CreatePlan(QObject):
 
 
         # Join dfStopTimes with dfTrip and dfStops
-        joined_df = pd.merge(dfStopTimes, dfTrip[['trip_id', 'service_id']], left_on='trip_id', right_on='trip_id')
+        joined_df = pd.merge(dfStopTimes, dfTrip[['trip_id', 'service_id']], left_on=['trip_id', 'service_id'], right_on=['trip_id', 'service_id'])
         joined_df = pd.merge(joined_df, dfStops[['stop_id', 'stop_name']], left_on='stop_id', right_on='stop_id')
 
         # Select the arrival time at the first stop for each trip
@@ -498,7 +498,7 @@ class CreatePlan(QObject):
             second_stop_times = merged_df[merged_df['stop_sequence'] == 1]['arrival_time']
 
             # Add the start_time column to the main DataFrame for the second stop
-            merged_df['start_time'] = second_stop_times.values
+            merged_df['start_time'] = second_stop_times.values   wie iobben .merge(joined_df, first_stop_times.rename(columns={'arrival_time': 'start_time'}), on='trip_id', how='left')
 
             # Select the required columns for the second stop
             selected_columns_one = ['start_time', 'trip_id', 'stop_name', 'stop_sequence', 'arrival_time', 'service_id', 'stop_id']
