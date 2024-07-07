@@ -492,9 +492,9 @@ class CreatePlan(QObject):
         selected_columns = ['start_time', 'trip_id', 'stop_name', 'stop_sequence', 'arrival_time', 'service_id', 'stop_id']
         cond_select_stops_for_trips_pandas = merged_df[selected_columns]
 
-        if not cond_select_stops_for_trips_pandas.empty:
+        if cond_select_stops_for_trips_pandas.empty:
             # Similar to cond_select_stops_for_trips but for the second stop
-            second_stop_times = joined_df[joined_df['stop_sequence'] == 1]['arrival_time']
+            second_stop_times = joined_df[joined_df['stop_sequence'] == 1][['arrival_time', 'trip_id']]
 
             # Add the start_time column to the main DataFrame for the second stop
             merged_df = pd.merge(joined_df, second_stop_times.rename(columns={'arrival_time': 'start_time'}), on='trip_id', how='left')
@@ -510,7 +510,7 @@ class CreatePlan(QObject):
 
     def datesWeekday_select_for_every_date_trips_stops(self, dataframe):
 
-        fahrplan_calendar_weeks = dataframe['fahrplan_calendar_weeks']
+        fahrplan_calendar_weeks = dataframe['fahrplan_stops']
         fahrplan_dates_all_dates = dataframe['fahrplan_dates']
         # Perform a left join between fahrplan_dates_all_dates and fahrplan_calendar_weeks
         joined_df = pd.merge(fahrplan_dates_all_dates, fahrplan_calendar_weeks, left_on=['service_id', 'trip_id'], right_on=['service_id', 'trip_id'], how='left')

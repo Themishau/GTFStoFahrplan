@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 import sys
+
+import networkx as nx
+import matplotlib.pyplot as plt
+
 from viewmodel import ViewModel
 from view.view import View
 from model.model import Model
