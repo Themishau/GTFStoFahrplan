@@ -88,8 +88,6 @@ class CreatePlan(QObject):
             dataframe = self.datesWeekday_select_stops_for_trips(dataframe)
             self.progress = 50
             dataframe = self.datesWeekday_select_for_every_date_trips_stops(dataframe)
-            self.progress = 60
-            dataframe = self.datesWeekday_select_stop_sequence_stop_name_sorted(dataframe)
             self.progress = 70
             dataframe = self.datesWeekday_create_sort_stopnames(dataframe)
             self.create_sorting.emit()
@@ -106,8 +104,6 @@ class CreatePlan(QObject):
             dataframe = self.datesWeekday_select_stops_for_trips(dataframe)
             self.progress = 50
             dataframe = self.datesWeekday_select_for_every_date_trips_stops(dataframe)
-            self.progress = 60
-            dataframe = self.datesWeekday_select_stop_sequence_stop_name_sorted(dataframe)
             self.progress = 70
             dataframe = self.datesWeekday_create_fahrplan(dataframe)
             self.progress = 80
@@ -123,8 +119,6 @@ class CreatePlan(QObject):
             dataframe = self.datesWeekday_select_stops_for_trips(dataframe)
             self.progress = 50
             dataframe = self.datesWeekday_select_for_every_date_trips_stops(dataframe)
-            self.progress = 60
-            dataframe = self.datesWeekday_select_stop_sequence_stop_name_sorted(dataframe)
             self.progress = 70
             dataframe = self.datesWeekday_create_sort_stopnames(dataframe)
             self.create_sorting.emit()
@@ -140,8 +134,6 @@ class CreatePlan(QObject):
             dataframe = self.datesWeekday_select_stops_for_trips(dataframe)
             self.progress = 50
             dataframe = self.datesWeekday_select_for_every_date_trips_stops(dataframe)
-            self.progress = 60
-            dataframe = self.datesWeekday_select_stop_sequence_stop_name_sorted(dataframe)
             self.progress = 70
             dataframe = self.datesWeekday_create_fahrplan(dataframe)
             self.progress = 80
@@ -514,47 +506,35 @@ class CreatePlan(QObject):
         fahrplan_dates_all_dates = dataframe['fahrplan_dates']
         # Perform a left join between fahrplan_dates_all_dates and fahrplan_calendar_weeks
         joined_df = pd.merge(fahrplan_dates_all_dates, fahrplan_calendar_weeks, left_on=['service_id', 'trip_id'], right_on=['service_id', 'trip_id'], how='left')
-
         # Order the resulting DataFrame by date, stop_sequence, start_time, and trip_id
         ordered_df = joined_df.sort_values(by=['date', 'stop_sequence', 'start_time', 'trip_id'])
-
         # Select the required columns
         selected_columns = ['date', 'day', 'start_time', 'trip_id', 'stop_name', 'stop_sequence', 'arrival_time', 'service_id', 'stop_id']
-        fahrplan_calendar_weeks  = ordered_df[selected_columns]
-        fahrplan_calendar_weeks['arrival_time'] = fahrplan_calendar_weeks['arrival_time'].apply(
+        ordered_df  = ordered_df[selected_columns]
+        ordered_df['arrival_time'] = ordered_df['arrival_time'].apply(
             lambda x: self.time_in_string(x))
-        fahrplan_calendar_weeks['start_time'] = fahrplan_calendar_weeks['start_time'].apply(
+        ordered_df['start_time'] = ordered_df['start_time'].apply(
             lambda x: self.time_in_string(x))
-
-        #########################
-
-    def datesWeekday_select_stop_sequence_stop_name_sorted(self):
-
-        fahrplan_calendar_weeks = self.fahrplan_calendar_weeks
-        # Assuming fahrplan_calendar_weeks is already defined
-
         # Sort the DataFrame by trip_id, date, and stop_sequence
-        sorted_df = fahrplan_calendar_weeks.sort_values(by=['trip_id', 'date', 'stop_sequence'])
-
+        sorted_df = ordered_df.sort_values(by=['trip_id', 'date', 'stop_sequence'])
         # Select the required columns
         selected_columns = ['date', 'day', 'start_time', 'arrival_time', 'stop_name', 'stop_sequence', 'stop_id', 'trip_id']
-        self.fahrplan_sorted_stops = sorted_df[selected_columns]
+        sorted_df = sorted_df[selected_columns]
+        dataframe['sorted_df'] = sorted_df
+        return dataframe
 
-
-    def datesWeekday_create_sort_stopnames(self):
-        fahrplan_calendar_weeks = self.fahrplan_calendar_weeks
-        self.filtered_stop_names = self.filterStopSequence(self.fahrplan_sorted_stops.copy())
-
+    def datesWeekday_create_sort_stopnames(self, dataframe ):
+        sorted_df = dataframe['sorted_df']
+        filtered_df = self.filterStopSequence(sorted_df)
         # create new def with filterStopSequence
-        self.df_filtered_stop_names = pd.DataFrame.from_dict(self.filtered_stop_names)
+        df_filtered_stop_names = pd.DataFrame.from_dict(filtered_df)
         # df_deleted_dupl_stop_names["stop_name"] = df_deleted_dupl_stop_names["stop_name"].astype('string')
-        self.df_filtered_stop_names["stop_sequence"] = self.df_filtered_stop_names["stop_sequence"].astype('int32')
+        df_filtered_stop_names["stop_sequence"] = df_filtered_stop_names["stop_sequence"].astype('int32')
         # self.df_filtered_stop_names = self.df_filtered_stop_names.set_index("stop_sequence")
-        self.df_filtered_stop_names = self.df_filtered_stop_names.sort_index(axis=0)
+        df_filtered_stop_names = df_filtered_stop_names.sort_index(axis=0)
+        dataframe['df_filtered_stop_names'] = df_filtered_stop_names
 
     def datesWeekday_create_fahrplan_continue(self):
-
-
         fahrplan_calendar_weeks = self.fahrplan_calendar_weeks
         df_filtered_stop_names = self.df_filtered_stop_names
 
