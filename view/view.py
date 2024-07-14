@@ -244,6 +244,7 @@ class View(QMainWindow):
     def show_Create_Import_Window(self):
         self.set_btn_checked(self.createTableImport_btn)
         self.ui.stackedWidget.setCurrentWidget(self.CreateImport_Tab)
+        self.ui.stackedWidget.resize(1100, 900)
 
     """
     TODO: is this bugged? 

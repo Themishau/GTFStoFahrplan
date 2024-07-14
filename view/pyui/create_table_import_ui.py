@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '.\create_table_import.ui'
+# Form implementation generated from reading ui file '.\ui\create_table_import.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.10
 #
@@ -14,13 +14,14 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(700, 700)
+        Form.resize(1100, 900)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHorizontalStretch(1)
+        sizePolicy.setVerticalStretch(1)
         sizePolicy.setHeightForWidth(Form.sizePolicy().hasHeightForWidth())
         Form.setSizePolicy(sizePolicy)
-        Form.setMaximumSize(QtCore.QSize(700, 700))
+        Form.setMinimumSize(QtCore.QSize(1100, 900))
+        Form.setMaximumSize(QtCore.QSize(1100, 900))
         Form.setLayoutDirection(QtCore.Qt.LeftToRight)
         Form.setStyleSheet("#Form {\n"
 "border-style: solid;\n"
@@ -197,5 +198,4 @@ class Ui_Form(object):
         self.label_11.setText(_translate("Form", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">input data</span></p></body></html>"))
         self.lineOutputPath.setPlaceholderText(_translate("Form", "C:/Tmp/"))
         self.btnRestart.setText(_translate("Form", "Restart Import"))
-from add_files.res import resource_boot
-from add_files.res import resource_rc
+

@@ -503,9 +503,12 @@ class CreatePlan(QObject):
     def datesWeekday_select_for_every_date_trips_stops(self, dataframe):
 
         fahrplan_calendar_weeks = dataframe['fahrplan_stops']
+        fahrplan_calendar_weeks['trip_id'] = fahrplan_calendar_weeks['trip_id'].astype(int)
         fahrplan_dates_all_dates = dataframe['fahrplan_dates']
+        fahrplan_dates_all_dates['trip_id'] = fahrplan_dates_all_dates['trip_id'].astype(int)
         # Perform a left join between fahrplan_dates_all_dates and fahrplan_calendar_weeks
-        joined_df = pd.merge(fahrplan_dates_all_dates, fahrplan_calendar_weeks, left_on=['service_id', 'trip_id'], right_on=['service_id', 'trip_id'], how='left')
+        # use indicator=True for debug reasons!
+        joined_df = pd.merge(fahrplan_dates_all_dates, fahrplan_calendar_weeks, left_on=['trip_id', 'service_id'], right_on=['trip_id', 'service_id'], how='left')
         # Order the resulting DataFrame by date, stop_sequence, start_time, and trip_id
         ordered_df = joined_df.sort_values(by=['date', 'stop_sequence', 'start_time', 'trip_id'])
         # Select the required columns

@@ -1647,7 +1647,6 @@ class gtfs(Publisher, Subscriber):
         self.df_filtered_stop_names = self.df_filtered_stop_names.sort_index(axis=0)
 
     def datesWeekday_create_fahrplan_continue(self):
-
         cond_stop_name_sorted_trips_with_dates = '''
                     select  fahrplan_calendar_weeks.date,
                             fahrplan_calendar_weeks.day,
