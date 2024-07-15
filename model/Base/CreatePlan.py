@@ -694,8 +694,9 @@ class CreatePlan(QObject):
                 temp["stop_name"] = stop_name_i.stop_name
                 temp["trip_id"] = stop_name_i.trip_id
 
+                // is already in date format lol
                 if self.check_hour_24(stop_name_i.start_time):
-                    comparetime_i = str((datetime.strptime(stop_name_i.date, '%Y-%m-%d %H:%M:%S.%f').strftime(
+                    comparetime_i = str((stop_name_i.date.strftime(
                         '%Y-%m-%d'))) + ' 0' + str(int(stop_name_i.start_time.split(':')[0]) - 24) + ':' + \
                                     stop_name_i.start_time.split(':')[1] + ':' + \
                                     stop_name_i.start_time.split(':')[2]
