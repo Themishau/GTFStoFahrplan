@@ -14,6 +14,7 @@ import os
 from ..Base.GTFSEnums import CreatePlanMode
 from model.Base.ProgressBar import ProgressBar
 from ..DTO.CreateSettingsForTableDTO import CreateSettingsForTableDTO
+from ..DTO.CreateTableDataframeDto import CreateTableDataframeDto
 from ..DTO.General_Transit_Feed_Specification import GtfsListDto, GtfsDataFrameDto
 
 logging.basicConfig(level=logging.DEBUG,
@@ -32,6 +33,7 @@ class CreatePlan(QObject):
         self.gtfs_data_frame_dto = None
         self.df_filtered_stop_names = None
         self.create_settings_for_table_dto = CreateSettingsForTableDTO()
+        self.create_dataframe = CreateTableDataframeDto()
 
         """ property """
         self.input_path = ""
@@ -90,6 +92,7 @@ class CreatePlan(QObject):
             dataframe = self.datesWeekday_select_for_every_date_trips_stops(dataframe)
             self.progress = 70
             dataframe = self.datesWeekday_create_sort_stopnames(dataframe)
+
             self.create_sorting.emit()
         elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date:
             self.progress = 0
@@ -146,8 +149,7 @@ class CreatePlan(QObject):
         return dataframe
 
 
-    def dates_prepare_data_fahrplan(self) -> dict:
-        self.last_time = time.time()
+    def dates_prepare_data_fahrplan(self):
 
         # Create a dictionary for headers
         headers = {
@@ -160,14 +162,12 @@ class CreatePlan(QObject):
         df_header_for_export_data = pd.DataFrame(headers)
 
         # Simplify DataFrame creation for direction, dates, route, and agency
-        dataframes = {
-            'Header': df_header_for_export_data,
-            'Direction': pd.DataFrame({'direction_id': [self.create_settings_for_table_dto.direction]}),
-            'Requested Dates': pd.DataFrame({'date': pd.to_datetime([self.create_settings_for_table_dto.dates], format='%Y%m%d')}),
-            'Route Short Name': pd.DataFrame({'route_short_name': [self.create_settings_for_table_dto.route]}),
-            'Selected Agency': pd.DataFrame({'agency_id': [self.create_settings_for_table_dto.agency]})
-        }
-        return dataframes
+        self.create_dataframe = CreateTableDataframeDto()
+        self.create_dataframe.Header = df_header_for_export_data
+        self.create_dataframe.Direction = pd.DataFrame({'direction_id': [self.create_settings_for_table_dto.direction]})
+        self.create_dataframe.RequestedDates = pd.DataFrame({'date': pd.to_datetime([self.create_settings_for_table_dto.dates], format='%Y%m%d')})
+        self.create_dataframe.RouteShortName = pd.DataFrame({'route_short_name': [self.create_settings_for_table_dto.route]})
+        self.create_dataframe.SelectedAgency = pd.DataFrame({'agency_id': [self.create_settings_for_table_dto.agency]})
 
     def datesWeekday_select_dates_for_date_range(self, dataframe):
         # conditions for searching in dfs
@@ -694,7 +694,7 @@ class CreatePlan(QObject):
                 temp["stop_name"] = stop_name_i.stop_name
                 temp["trip_id"] = stop_name_i.trip_id
 
-                // is already in date format lol
+
                 if self.check_hour_24(stop_name_i.start_time):
                     comparetime_i = str((stop_name_i.date.strftime(
                         '%Y-%m-%d'))) + ' 0' + str(int(stop_name_i.start_time.split(':')[0]) - 24) + ':' + \
@@ -703,19 +703,19 @@ class CreatePlan(QObject):
                     time_i = datetime.strptime(comparetime_i, '%Y-%m-%d %H:%M:%S')
                     time_i = time_i + timedelta(days=1)
                 else:
-                    comparetime_i = str((datetime.strptime(stop_name_i.date, '%Y-%m-%d %H:%M:%S.%f').strftime(
+                    comparetime_i = str((stop_name_i.date.strftime(
                         '%Y-%m-%d'))) + ' ' + stop_name_i.start_time
                     time_i = datetime.strptime(comparetime_i, '%Y-%m-%d %H:%M:%S')
 
                 if self.check_hour_24(stop_name_i.arrival_time):
-                    time_arrival_i = str((datetime.strptime(stop_name_i.date, '%Y-%m-%d %H:%M:%S.%f').strftime(
+                    time_arrival_i = str((stop_name_i.date.strftime(
                         '%Y-%m-%d'))) + ' 0' + str(int(stop_name_i.arrival_time.split(':')[0]) - 24) + ':' + \
                                      stop_name_i.arrival_time.split(':')[1] + ':' + \
                                      stop_name_i.arrival_time.split(':')[2]
                     time_arrival_i = datetime.strptime(time_arrival_i, '%Y-%m-%d %H:%M:%S')
                     time_arrival_i = time_arrival_i + timedelta(days=1)
                 else:
-                    time_arrival_i = str((datetime.strptime(stop_name_i.date, '%Y-%m-%d %H:%M:%S.%f').strftime(
+                    time_arrival_i = str((stop_name_i.date.strftime(
                         '%Y-%m-%d'))) + ' ' + stop_name_i.arrival_time
                     time_arrival_i = datetime.strptime(time_arrival_i, '%Y-%m-%d %H:%M:%S')
 
@@ -729,8 +729,7 @@ class CreatePlan(QObject):
                         # 23072022
                         # and stop_name_i.trip_id == stop_name_j.trip_id\
                         if self.check_hour_24(stop_name_j.start_time):
-                            comparetime_j = str((datetime.strptime(stop_name_j.date,
-                                                                   '%Y-%m-%d %H:%M:%S.%f').strftime(
+                            comparetime_j = str((stop_name_j.date.strftime(
                                 '%Y-%m-%d'))) + ' 0' + str(
                                 int(stop_name_j.start_time.split(':')[0]) - 24) + ':' + \
                                             stop_name_j.start_time.split(':')[1] + ':' + \
@@ -739,16 +738,14 @@ class CreatePlan(QObject):
                             time_j = datetime.strptime(comparetime_j, '%Y-%m-%d %H:%M:%S')
                             time_j = time_j + timedelta(days=1)
                         else:
-                            comparetime_j = str((datetime.strptime(stop_name_j.date,
-                                                                   '%Y-%m-%d %H:%M:%S.%f').strftime(
+                            comparetime_j = str((stop_name_j.date.strftime(
                                 '%Y-%m-%d'))) + ' ' + stop_name_j.start_time
                             time_j = datetime.strptime(comparetime_j, '%Y-%m-%d %H:%M:%S')
 
                         time_temp = temp["start_time"]
 
                         if self.check_hour_24(stop_name_j.arrival_time):
-                            time_arrival_j = str((datetime.strptime(stop_name_j.date,
-                                                                    '%Y-%m-%d %H:%M:%S.%f').strftime(
+                            time_arrival_j = str((stop_name_j.date.strftime(
                                 '%Y-%m-%d'))) + ' 0' + str(
                                 int(stop_name_j.arrival_time.split(':')[0]) - 24) + ':' + \
                                              stop_name_j.arrival_time.split(':')[1] + ':' + \
@@ -756,8 +753,7 @@ class CreatePlan(QObject):
                             time_arrival_j = datetime.strptime(time_arrival_j, '%Y-%m-%d %H:%M:%S')
                             time_arrival_j = time_arrival_j + timedelta(days=1)
                         else:
-                            time_arrival_j = str((datetime.strptime(stop_name_j.date,
-                                                                    '%Y-%m-%d %H:%M:%S.%f').strftime(
+                            time_arrival_j = str((stop_name_j.date.strftime(
                                 '%Y-%m-%d'))) + ' ' + stop_name_j.arrival_time
                             time_arrival_j = datetime.strptime(time_arrival_j, '%Y-%m-%d %H:%M:%S')
 
@@ -820,7 +816,7 @@ class CreatePlan(QObject):
                 d[str(k)]["stop_sequence"] = stopsequence[j]['stop_sequence']
                 d[str(k)]["stop_name"] = stopsequence[j]['stop_name']
 
-        if self.sortmode == 1:
+        if self.create_settings_for_table_dto.individual_sorting == 1:
             # bubble sort
             for i in range(sequence_count - 1):
                 for j in range(0, sequence_count - i - 1):
