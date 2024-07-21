@@ -5,3 +5,7 @@ class CreateTableDataframeDto:
         self.RequestedDates = None
         self.RouteShortName = None
         self.SelectedAgency = None
+        self.FahrplanDates = None
+        self.FahrplanStops = None
+        self.SortedDataframe = None
+        self.FilteredStopNamesDataframe = None

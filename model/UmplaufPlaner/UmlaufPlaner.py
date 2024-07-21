@@ -12,7 +12,6 @@ import sys
 import os
 from ..Base.ImportData import ImportData
 from ..Base.SelectData import SelectData
-from ..Base.PrepareData import PrepareData
 from ..Base.CreatePlan import CreatePlan
 from ..Base.ExportPlan import ExportPlan
 

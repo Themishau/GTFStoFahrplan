@@ -64,6 +64,7 @@ class UpdateGuiEnum(Enum):
     data_changed = 'data_changed'
     restart = 'restart'
 
+
 class ModelTriggerActionsEnum(Enum):
     planer_start_load_data = 'planer_start_load_data'
     planer_select_agency = 'planer_select_agency'
