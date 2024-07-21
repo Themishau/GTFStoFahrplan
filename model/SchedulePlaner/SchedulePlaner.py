@@ -115,13 +115,21 @@ class SchedulePlaner(QObject):
 
     def create_table(self) -> bool:
         #try:
-        dataframe = self.create_plan.create_table()
-        self.export_plan.export_plan(dataframe)
+        self.create_plan.create_table()
+        self.export_plan.export_plan()
         self.create_finished.emit(True)
         return True
         #except AttributeError:
         #    self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
         #    return False
+
+        def create_table_individual_sorting(self) -> bool:
+            self.create_plan.create_table()
+            return True
+
+        def create_table_individual_sorting(self) -> bool:
+            self.create_plan.create_table()
+            return True
 
     def import_gtfs_data(self) -> bool:
         try:
