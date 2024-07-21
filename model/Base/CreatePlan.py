@@ -98,55 +98,52 @@ class CreatePlan(QObject):
             self.progress = 0
             logging.debug(f"PREPARE date ")
             self.progress = 10
-            dataframe = self.dates_prepare_data_fahrplan()
+            self.dates_prepare_data_fahrplan()
             self.progress = 20
-            dataframe = self.datesWeekday_select_dates_for_date_range()
+            self.datesWeekday_select_dates_for_date_range()
             self.progress = 30
-            dataframe = self.dates_select_dates_delete_exception_2()
+            self.dates_select_dates_delete_exception_2()
             self.progress = 40
-            dataframe = self.datesWeekday_select_stops_for_trips()
+            self.datesWeekday_select_stops_for_trips()
             self.progress = 50
-            dataframe = self.datesWeekday_select_for_every_date_trips_stops()
+            self.datesWeekday_select_for_every_date_trips_stops()
             self.progress = 70
-            dataframe = self.datesWeekday_create_fahrplan()
+            self.datesWeekday_create_fahrplan()
             self.progress = 80
 
         elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.weekday and self.create_settings_for_table_dto.individual_sorting:
             self.progress = 10
-            dataframe = self.weekday_prepare_data_fahrplan()
+            self.weekday_prepare_data_fahrplan()
             self.progress = 20
-            dataframe = self.datesWeekday_select_dates_for_date_range(dataframe)
+            self.datesWeekday_select_dates_for_date_range()
             self.progress = 30
-            dataframe = self.weekday_select_weekday_exception_2(dataframe)
+            self.weekday_select_weekday_exception_2()
             self.progress = 40
-            dataframe = self.datesWeekday_select_stops_for_trips(dataframe)
+            self.datesWeekday_select_stops_for_trips()
             self.progress = 50
-            dataframe = self.datesWeekday_select_for_every_date_trips_stops(dataframe)
+            self.datesWeekday_select_for_every_date_trips_stops()
             self.progress = 70
-            dataframe = self.datesWeekday_create_sort_stopnames(dataframe)
+            self.datesWeekday_create_sort_stopnames()
             self.create_sorting.emit()
 
         elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.weekday:
             self.progress = 10
-            dataframe = self.weekday_prepare_data_fahrplan()
+            self.weekday_prepare_data_fahrplan()
             self.progress = 20
-            dataframe = self.datesWeekday_select_dates_for_date_range(dataframe)
+            self.datesWeekday_select_dates_for_date_range()
             self.progress = 30
-            dataframe = self.weekday_select_weekday_exception_2(dataframe)
+            self.weekday_select_weekday_exception_2()
             self.progress = 40
-            dataframe = self.datesWeekday_select_stops_for_trips(dataframe)
+            self.datesWeekday_select_stops_for_trips()
             self.progress = 50
-            dataframe = self.datesWeekday_select_for_every_date_trips_stops(dataframe)
+            self.datesWeekday_select_for_every_date_trips_stops()
             self.progress = 70
-            dataframe = self.datesWeekday_create_fahrplan(dataframe)
+            self.datesWeekday_create_fahrplan()
             self.progress = 80
 
-        return dataframe
-
-    def create_table_continue(self, dataframe):
-        dataframe = self.datesWeekday_create_fahrplan_continue(dataframe)
+    def create_table_continue(self):
+        dataframe = self.datesWeekday_create_fahrplan_continue()
         self.progress = 80
-        return dataframe
 
 
     def dates_prepare_data_fahrplan(self):
@@ -335,7 +332,7 @@ class CreatePlan(QObject):
 
         self.fahrplan_dates_all_dates = fahrplan_dates_all_dates
 
-    def dates_select_dates_delete_exception_2(self, dataframe):
+    def dates_select_dates_delete_exception_2(self):
 
         dfDates = self.gtfs_data_frame_dto.Calendardates
         requested_datesdf = pd.DataFrame([self.create_settings_for_table_dto.dates], columns=['date'])
@@ -437,7 +434,7 @@ class CreatePlan(QObject):
                                                               format='%Y-%m-%d %H:%M:%S.%f')
         self.create_dataframe.FahrplanDates = fahrplan_dates
 
-    def datesWeekday_select_stops_for_trips(self, dataframe):
+    def datesWeekday_select_stops_for_trips(self):
 
         requested_datesdf = pd.DataFrame([self.create_settings_for_table_dto.dates], columns=['date'])
         requested_datesdf['date'] = pd.to_datetime(requested_datesdf['date'], format='%Y%m%d')

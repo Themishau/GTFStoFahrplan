@@ -99,6 +99,7 @@ class SchedulePlaner(QObject):
 
     def initialize_create_plan(self):
         self.create_plan = CreatePlan(self.app, progress=self.progress)
+        self.create_plan.progress_Update.connect(self.update_progress_bar)
         self.create_plan.create_sorting.connect(self.create_sorting_start)
 
     def create_sorting_start(self):

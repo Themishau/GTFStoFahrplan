@@ -312,7 +312,7 @@ class View(QMainWindow):
 
     def update_individualsorting_table(self):
         self.CreateCreate_Tab.ui.tableView_sorting_stops.setModel(
-            TableModelSort(self.viewModel.model.planer.create_plan.df_filtered_stop_names))
+            TableModelSort(self.viewModel.model.planer.create_plan.create_dataframe.FilteredStopNamesDataframe))
         self.CreateCreate_Tab.ui.btnContinueCreate.setEnabled(True)
         # self.CreateCreate_Tab.ui.tableView_sorting_stops.populate()
 
