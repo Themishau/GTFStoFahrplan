@@ -142,7 +142,7 @@ class CreatePlan(QObject):
             self.progress = 80
 
     def create_table_continue(self):
-        dataframe = self.datesWeekday_create_fahrplan_continue()
+        self.datesWeekday_create_fahrplan_continue()
         self.progress = 80
 
 
@@ -533,8 +533,8 @@ class CreatePlan(QObject):
         self.create_dataframe.FilteredStopNamesDataframe = df_filtered_stop_names
 
     def datesWeekday_create_fahrplan_continue(self):
-        fahrplan_calendar_weeks = self.fahrplan_calendar_weeks
-        df_filtered_stop_names = self.df_filtered_stop_names
+        fahrplan_calendar_weeks = self.create_dataframe.FahrplanStops
+        df_filtered_stop_names = self.create_dataframe.FilteredStopNamesDataframe
 
         # Assuming fahrplan_calendar_weeks and df_filtered_stop_names are already defined
 
@@ -571,23 +571,19 @@ class CreatePlan(QObject):
         # fahrplan_calendar_weeks['trip_id'] = fahrplan_calendar_weeks['trip_id'].astype('int32')
 
         fahrplan_calendar_weeks['arrival_time'] = fahrplan_calendar_weeks['arrival_time'].astype('string')
-        if self.timeformat == 1:
+        if self.create_settings_for_table_dto.timeformat == 1:
             fahrplan_calendar_weeks['arrival_time'] = fahrplan_calendar_weeks['arrival_time'].apply(
                 lambda x: self.time_delete_seconds(x))
 
         fahrplan_calendar_weeks['start_time'] = fahrplan_calendar_weeks['start_time'].astype('string')
 
-        self.fahrplan_calendar_filter_days_pivot = fahrplan_calendar_weeks.pivot(
+        self.create_dataframe.FahrplanCalendarFilterDaysPivot = fahrplan_calendar_weeks.pivot(
             index=['date', 'day', 'stop_sequence_sorted', 'stop_name', 'stop_id'], columns=['start_time', 'trip_id'],
             values='arrival_time')
 
         # fahrplan_calendar_filter_days_pivot['date'] = pd.to_datetime(fahrplan_calendar_filter_days_pivot['date'], format='%Y-%m-%d %H:%M:%S.%f')
-        self.fahrplan_calendar_filter_days_pivot = self.fahrplan_calendar_filter_days_pivot.sort_index(axis=1)
-        self.fahrplan_calendar_filter_days_pivot = self.fahrplan_calendar_filter_days_pivot.sort_index(axis=0)
-
-        self.zeit = time.time() - self.last_time
-        now = datetime.now()
-        self.now = now.strftime("%Y_%m_%d_%H_%M_%S")
+        self.create_dataframe.FahrplanCalendarFilterDaysPivot = self.create_dataframe.FahrplanCalendarFilterDaysPivot.sort_index(axis=1)
+        self.create_dataframe.FahrplanCalendarFilterDaysPivot = self.create_dataframe.FahrplanCalendarFilterDaysPivot.sort_index(axis=0)
 
     def datesWeekday_create_fahrplan(self):
 

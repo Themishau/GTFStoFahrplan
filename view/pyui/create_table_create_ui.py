@@ -10,6 +10,8 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+from view.custom_table_view import customTableView
+
 
 class Ui_Form(object):
     def setupUi(self, Form):
@@ -171,8 +173,10 @@ class Ui_Form(object):
         self.btnStop.setStyleSheet("")
         self.btnStop.setObjectName("btnStop")
         self.gridLayout.addWidget(self.btnStop, 2, 1, 1, 1)
-        self.tableView_sorting_stops = QtWidgets.QTableView(Form)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
+        # self.tableView_sorting_stops = QtWidgets.QTableView(Form)
+        self.tableView_sorting_stops = customTableView()
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding,
+                                           QtWidgets.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.tableView_sorting_stops.sizePolicy().hasHeightForWidth())

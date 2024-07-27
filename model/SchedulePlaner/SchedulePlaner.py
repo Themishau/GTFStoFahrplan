@@ -128,6 +128,10 @@ class SchedulePlaner(QObject):
         self.create_sorting_signal.emit()
         return True
 
+    def create_table_continue(self):
+        self.create_plan.create_table_continue()
+        self.export_plan.export_plan()
+        self.create_finished.emit(True)
 
     def import_gtfs_data(self) -> bool:
         try:

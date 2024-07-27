@@ -47,6 +47,9 @@ class Model(QObject):
         else:
             self.planer.create_table()
 
+    def  planer_start_create_table_continue(self):
+        self.planer.create_table_continue()
+
     def trigger_action_reset_schedule_planer(self):
         self.planer = None
         self.set_up_schedule_planer()
