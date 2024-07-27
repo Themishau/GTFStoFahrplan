@@ -123,13 +123,11 @@ class SchedulePlaner(QObject):
         #    self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
         #    return False
 
-        def create_table_individual_sorting(self) -> bool:
-            self.create_plan.create_table()
-            return True
+    def create_table_individual_sorting(self) -> bool:
+        self.create_plan.create_table()
+        self.create_sorting_signal.emit()
+        return True
 
-        def create_table_individual_sorting(self) -> bool:
-            self.create_plan.create_table()
-            return True
 
     def import_gtfs_data(self) -> bool:
         try:

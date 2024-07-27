@@ -42,7 +42,10 @@ class Model(QObject):
         self.planer.import_gtfs_data()
 
     def planer_start_create_table(self):
-        self.planer.create_table()
+        if self.planer.create_settings_for_table_dto.individual_sorting:
+            self.planer.create_table_individual_sorting()
+        else:
+            self.planer.create_table()
 
     def trigger_action_reset_schedule_planer(self):
         self.planer = None
