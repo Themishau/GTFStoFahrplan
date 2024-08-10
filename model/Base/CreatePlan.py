@@ -1,21 +1,17 @@
 # -*- coding: utf-8 -*-
-from model.observer import Publisher, Subscriber
-import time
-import pandas as pd
-from pandasql import sqldf
-import zipfile
-import io
-from datetime import datetime, timedelta
-import re
 import logging
-from PyQt5.QtCore import pyqtSignal, QObject, QCoreApplication
-import sys
-import os
+import re
+import time
+from datetime import datetime, timedelta
+
+import pandas as pd
+from PyQt5.QtCore import pyqtSignal, QObject
+from pandasql import sqldf
+
 from ..Base.GTFSEnums import CreatePlanMode
-from model.Base.ProgressBar import ProgressBar
 from ..DTO.CreateSettingsForTableDTO import CreateSettingsForTableDTO
 from ..DTO.CreateTableDataframeDto import CreateTableDataframeDto
-from ..DTO.General_Transit_Feed_Specification import GtfsListDto, GtfsDataFrameDto
+from ..DTO.General_Transit_Feed_Specification import GtfsDataFrameDto
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
@@ -26,6 +22,7 @@ class CreatePlan(QObject):
     progress_Update = pyqtSignal(int)
     error_occured = pyqtSignal(str)
     create_sorting = pyqtSignal()
+
     def __init__(self, app, progress: int):
         super().__init__()
         self.reset_create = False
@@ -145,7 +142,6 @@ class CreatePlan(QObject):
         self.datesWeekday_create_fahrplan_continue()
         self.progress = 80
 
-
     def dates_prepare_data_fahrplan(self):
 
         # Create a dictionary for headers
@@ -162,8 +158,10 @@ class CreatePlan(QObject):
         self.create_dataframe = CreateTableDataframeDto()
         self.create_dataframe.Header = df_header_for_export_data
         self.create_dataframe.Direction = pd.DataFrame({'direction_id': [self.create_settings_for_table_dto.direction]})
-        self.create_dataframe.RequestedDates = pd.DataFrame({'date': pd.to_datetime([self.create_settings_for_table_dto.dates], format='%Y%m%d')})
-        self.create_dataframe.RouteShortName = pd.DataFrame({'route_short_name': [self.create_settings_for_table_dto.route]})
+        self.create_dataframe.RequestedDates = pd.DataFrame(
+            {'date': pd.to_datetime([self.create_settings_for_table_dto.dates], format='%Y%m%d')})
+        self.create_dataframe.RouteShortName = pd.DataFrame(
+            {'route_short_name': [self.create_settings_for_table_dto.route]})
         self.create_dataframe.SelectedAgency = pd.DataFrame({'agency_id': [self.create_settings_for_table_dto.agency]})
 
     def datesWeekday_select_dates_for_date_range(self):
@@ -172,8 +170,8 @@ class CreatePlan(QObject):
         dfWeek = self.gtfs_data_frame_dto.Calendarweeks
         dfRoutes = self.gtfs_data_frame_dto.Routes
         route_short_namedf = self.create_dataframe.RouteShortName
-        requested_directiondf =  self.create_dataframe.Direction
-        varTestAgency =  self.create_dataframe.SelectedAgency
+        requested_directiondf = self.create_dataframe.Direction
+        varTestAgency = self.create_dataframe.SelectedAgency
 
         cond_select_dates_for_date_range = '''
                     select  
@@ -233,8 +231,6 @@ class CreatePlan(QObject):
         route_short_namedf = self.route_short_namedf
         varTestAgency = self.varTestAgency
         requested_directiondf = self.requested_directiondf
-
-
 
         """
         add date column for every date in date range
@@ -320,7 +316,8 @@ class CreatePlan(QObject):
         ordered_fahrplan_dates_all_dates_final = fahrplan_dates_all_dates_final.sort_values('date')
 
         # Select the required columns
-        selected_columns = ['date', 'day', 'trip_id', 'service_id', 'route_id', 'start_date', 'end_date', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+        selected_columns = ['date', 'day', 'trip_id', 'service_id', 'route_id', 'start_date', 'end_date', 'monday',
+                            'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
         fahrplan_dates_all_dates = ordered_fahrplan_dates_all_dates_final[selected_columns]
 
         fahrplan_dates_all_dates['date'] = pd.to_datetime(fahrplan_dates_all_dates['date'],
@@ -427,11 +424,11 @@ class CreatePlan(QObject):
         # delete exceptions = 2 or add exceptions = 1
         fahrplan_dates = sqldf(cond_select_dates_delete_exception_2, locals())
         fahrplan_dates['date'] = pd.to_datetime(fahrplan_dates['date'],
-                                                          format='%Y-%m-%d %H:%M:%S.%f')
+                                                format='%Y-%m-%d %H:%M:%S.%f')
         fahrplan_dates['start_date'] = pd.to_datetime(fahrplan_dates['start_date'],
-                                                                format='%Y-%m-%d %H:%M:%S.%f')
+                                                      format='%Y-%m-%d %H:%M:%S.%f')
         fahrplan_dates['end_date'] = pd.to_datetime(fahrplan_dates['end_date'],
-                                                              format='%Y-%m-%d %H:%M:%S.%f')
+                                                    format='%Y-%m-%d %H:%M:%S.%f')
         self.create_dataframe.FahrplanDates = fahrplan_dates
 
     def datesWeekday_select_stops_for_trips(self):
@@ -440,8 +437,8 @@ class CreatePlan(QObject):
         requested_datesdf['date'] = pd.to_datetime(requested_datesdf['date'], format='%Y%m%d')
 
         route_short_namedf = self.create_dataframe.RouteShortName
-        requested_directiondf =  self.create_dataframe.Direction.astype('string')
-        varTestAgency =  self.create_dataframe.SelectedAgency
+        requested_directiondf = self.create_dataframe.Direction.astype('string')
+        varTestAgency = self.create_dataframe.SelectedAgency
 
         dfRoutes = self.gtfs_data_frame_dto.Routes
         dfRoutes = pd.merge(left=dfRoutes, right=route_short_namedf, how='inner', on='route_short_name')
@@ -449,35 +446,37 @@ class CreatePlan(QObject):
         dfTrip = self.gtfs_data_frame_dto.Trips
         dfTrip['direction_id'] = dfTrip['direction_id'].astype('string')
 
-        #dfTrip['trip_id_dup'] = dfTrip.index
-        #dfTrip = dfTrip.reset_index(drop=True)
-        #dfTrip['trip_id_dup'] = dfTrip['trip_id_dup'].astype('string')
+        # dfTrip['trip_id_dup'] = dfTrip.index
+        # dfTrip = dfTrip.reset_index(drop=True)
+        # dfTrip['trip_id_dup'] = dfTrip['trip_id_dup'].astype('string')
         dfTrip = pd.merge(left=dfTrip, right=requested_directiondf, how='inner', on='direction_id')
         # pd.concat([self.dfTrips, self.requested_directiondf], join='inner', keys='direction_id')
         dfTrip = pd.merge(left=dfTrip, right=dfRoutes, how='inner', on='route_id')
         dfStopTimes = self.gtfs_data_frame_dto.Stoptimes
-        #dfStopTimes['stop_id'] = dfStopTimes.index
-        #dfStopTimes = dfStopTimes.reset_index(drop=True)
+        # dfStopTimes['stop_id'] = dfStopTimes.index
+        # dfStopTimes = dfStopTimes.reset_index(drop=True)
         dfTrip['trip_id'] = dfTrip['trip_id'].astype('string')
         dfStopTimes['trip_id'] = dfStopTimes['trip_id'].astype('string')
         dfStopTimes = pd.merge(left=dfStopTimes, right=dfTrip, how='inner', left_on='trip_id', right_on='trip_id')
         dfStops = self.gtfs_data_frame_dto.Stops
 
-
         # Join dfStopTimes with dfTrip and dfStops
-        joined_df = pd.merge(dfStopTimes, dfTrip[['trip_id', 'service_id']], left_on=['trip_id', 'service_id'], right_on=['trip_id', 'service_id'])
+        joined_df = pd.merge(dfStopTimes, dfTrip[['trip_id', 'service_id']], left_on=['trip_id', 'service_id'],
+                             right_on=['trip_id', 'service_id'])
         joined_df = pd.merge(joined_df, dfStops[['stop_id', 'stop_name']], left_on='stop_id', right_on='stop_id')
 
         # Select the arrival time at the first stop for each trip
         first_stop_times = joined_df[joined_df['stop_sequence'] == 0][['arrival_time', 'trip_id']]
 
-        merged_df = pd.merge(joined_df, first_stop_times.rename(columns={'arrival_time': 'start_time'}), on='trip_id', how='left')
+        merged_df = pd.merge(joined_df, first_stop_times.rename(columns={'arrival_time': 'start_time'}), on='trip_id',
+                             how='left')
 
         # Add the start_time column to the main DataFrame
-        #joined_df['start_time'] = first_stop_times.values
+        # joined_df['start_time'] = first_stop_times.values
 
         # Select the required columns
-        selected_columns = ['start_time', 'trip_id', 'stop_name', 'stop_sequence', 'arrival_time', 'service_id', 'stop_id']
+        selected_columns = ['start_time', 'trip_id', 'stop_name', 'stop_sequence', 'arrival_time', 'service_id',
+                            'stop_id']
         cond_select_stops_for_trips_pandas = merged_df[selected_columns]
 
         if cond_select_stops_for_trips_pandas.empty:
@@ -485,16 +484,17 @@ class CreatePlan(QObject):
             second_stop_times = joined_df[joined_df['stop_sequence'] == 1][['arrival_time', 'trip_id']]
 
             # Add the start_time column to the main DataFrame for the second stop
-            merged_df = pd.merge(joined_df, second_stop_times.rename(columns={'arrival_time': 'start_time'}), on='trip_id', how='left')
+            merged_df = pd.merge(joined_df, second_stop_times.rename(columns={'arrival_time': 'start_time'}),
+                                 on='trip_id', how='left')
 
             # Select the required columns for the second stop
-            selected_columns_one = ['start_time', 'trip_id', 'stop_name', 'stop_sequence', 'arrival_time', 'service_id', 'stop_id']
+            selected_columns_one = ['start_time', 'trip_id', 'stop_name', 'stop_sequence', 'arrival_time', 'service_id',
+                                    'stop_id']
             cond_select_stops_for_tripsOne_pandas = merged_df[selected_columns_one]
             self.create_dataframe.FahrplanStops = cond_select_stops_for_tripsOne_pandas
             return
 
         self.create_dataframe.FahrplanStops = cond_select_stops_for_trips_pandas
-
 
     def datesWeekday_select_for_every_date_trips_stops(self):
 
@@ -504,11 +504,13 @@ class CreatePlan(QObject):
         fahrplan_dates_all_dates['trip_id'] = fahrplan_dates_all_dates['trip_id'].astype(int)
         # Perform a left join between fahrplan_dates_all_dates and fahrplan_calendar_weeks
         # use indicator=True for debug reasons!
-        joined_df = pd.merge(fahrplan_dates_all_dates, fahrplan_calendar_weeks, left_on=['trip_id', 'service_id'], right_on=['trip_id', 'service_id'], how='left')
+        joined_df = pd.merge(fahrplan_dates_all_dates, fahrplan_calendar_weeks, left_on=['trip_id', 'service_id'],
+                             right_on=['trip_id', 'service_id'], how='left')
         # Order the resulting DataFrame by date, stop_sequence, start_time, and trip_id
         ordered_df = joined_df.sort_values(by=['date', 'stop_sequence', 'start_time', 'trip_id'])
         # Select the required columns
-        selected_columns = ['date', 'day', 'start_time', 'trip_id', 'stop_name', 'stop_sequence', 'arrival_time', 'service_id', 'stop_id']
+        selected_columns = ['date', 'day', 'start_time', 'trip_id', 'stop_name', 'stop_sequence', 'arrival_time',
+                            'service_id', 'stop_id']
         ordered_df = ordered_df[selected_columns]
         ordered_df['arrival_time'] = ordered_df['arrival_time'].apply(
             lambda x: self.time_in_string(x))
@@ -517,7 +519,8 @@ class CreatePlan(QObject):
         # Sort the DataFrame by trip_id, date, and stop_sequence
         sorted_df = ordered_df.sort_values(by=['trip_id', 'date', 'stop_sequence'])
         # Select the required columns
-        selected_columns = ['date', 'day', 'start_time', 'arrival_time', 'stop_name', 'stop_sequence', 'stop_id', 'trip_id']
+        selected_columns = ['date', 'day', 'start_time', 'arrival_time', 'stop_name', 'stop_sequence', 'stop_id',
+                            'trip_id']
         sorted_df = sorted_df[selected_columns]
         self.create_dataframe.SortedDataframe = sorted_df
 
@@ -530,63 +533,70 @@ class CreatePlan(QObject):
         df_filtered_stop_names["stop_sequence"] = df_filtered_stop_names["stop_sequence"].astype('int32')
         # self.df_filtered_stop_names = self.df_filtered_stop_names.set_index("stop_sequence")
         df_filtered_stop_names = df_filtered_stop_names.sort_index(axis=0)
+
         self.create_dataframe.FilteredStopNamesDataframe = df_filtered_stop_names
 
     def datesWeekday_create_fahrplan_continue(self):
-        fahrplan_calendar_weeks = self.create_dataframe.FahrplanStops
+        sortedDataframe = self.create_dataframe.SortedDataframe
+        sortedDataframe.rename(columns=lambda x: f'sorted_{x}', inplace=True)
         df_filtered_stop_names = self.create_dataframe.FilteredStopNamesDataframe
 
         # Assuming fahrplan_calendar_weeks and df_filtered_stop_names are already defined
 
         # Perform a left join between fahrplan_calendar_weeks and df_filtered_stop_names
-        joined_df = pd.merge(fahrplan_calendar_weeks, df_filtered_stop_names, left_on='stop_id', right_on='stop_id', how='left')
+        joined_df = pd.merge(sortedDataframe, df_filtered_stop_names, left_on='sorted_stop_id', right_on='stop_id',
+                             how='left')
 
         # Group the resulting DataFrame by the specified columns
-        grouped_df = joined_df.groupby(['date', 'day', 'start_time', 'arrival_time', 'trip_id', 'stop_name', 'stop_sequence_sorted', 'stop_sequence', 'service_id', 'stop_id'])
+        grouped_df = joined_df.groupby(
+            ['sorted_date', 'sorted_day', 'sorted_start_time', 'sorted_arrival_time', 'sorted_trip_id', 'sorted_stop_name', 'stop_sequence',
+             'sorted_stop_sequence', 'sorted_service_id', 'sorted_stop_id'])
 
         # Aggregate the grouped data (if needed, adjust the aggregation function as necessary)
         aggregated_df = grouped_df.size().reset_index(name='count')  # Example aggregation, adjust as needed
 
         # Order the aggregated DataFrame by date, stop_sequence, start_time, and trip_id
-        ordered_df = aggregated_df.sort_values(by=['date', 'stop_sequence', 'start_time', 'trip_id'])
+        ordered_df = aggregated_df.sort_values(by=['sorted_date', 'stop_sequence', 'start_time', 'sorted_trip_id'])
 
         # Select the required columns
-        selected_columns = ['date', 'day', 'start_time', 'trip_id', 'stop_name', 'stop_sequence_sorted', 'stop_sequence', 'arrival_time', 'service_id', 'stop_id']
+        selected_columns = ['sorted_date', 'sorted_day', 'sorted_start_time', 'sorted_trip_id', 'sorted_stop_name', 'sorted_stop_sequence',
+                            'sorted_stop_sequence', 'sorted_arrival_time', 'sorted_service_id', 'sorted_stop_id']
         fahrplan_calendar_weeks = ordered_df[selected_columns]
 
         ###########################
 
-        fahrplan_calendar_weeks['date'] = pd.to_datetime(fahrplan_calendar_weeks['date'], format='%Y-%m-%d %H:%M:%S.%f')
+        fahrplan_calendar_weeks['sorted_date'] = pd.to_datetime(fahrplan_calendar_weeks['sorted_date'], format='%Y-%m-%d %H:%M:%S.%f')
         # fahrplan_calendar_weeks['trip_id'] = fahrplan_calendar_weeks['trip_id'].astype('int32')
-        fahrplan_calendar_weeks['arrival_time'] = fahrplan_calendar_weeks['arrival_time'].astype('string')
-        fahrplan_calendar_weeks['start_time'] = fahrplan_calendar_weeks['start_time'].astype('string')
+        fahrplan_calendar_weeks['sorted_arrival_time'] = fahrplan_calendar_weeks['sorted_arrival_time'].astype('string')
+        fahrplan_calendar_weeks['sorted_start_time'] = fahrplan_calendar_weeks['sorted_start_time'].astype('string')
 
         # fahrplan_calendar_weeks = fahrplan_calendar_weeks.drop(columns=['stop_sequence', 'service_id', 'stop_id'])
-        fahrplan_calendar_weeks = fahrplan_calendar_weeks.drop(columns=['stop_sequence', 'service_id'])
+        fahrplan_calendar_weeks = fahrplan_calendar_weeks.drop(columns=['sorted_stop_sequence', 'sorted_service_id'])
         fahrplan_calendar_weeks = fahrplan_calendar_weeks.groupby(
-            ['date', 'day', 'stop_sequence_sorted', 'stop_name', 'stop_id', 'start_time',
-             'trip_id']).first().reset_index()
+            ['sorted_date', 'sorted_day', 'sorted_stop_sequence', 'sorted_stop_name', 'sorted_stop_id', 'sorted_start_time',
+             'sorted_trip_id']).first().reset_index()
 
-        fahrplan_calendar_weeks['date'] = pd.to_datetime(fahrplan_calendar_weeks['date'], format='%Y-%m-%d')
+        fahrplan_calendar_weeks['sorted_date'] = pd.to_datetime(fahrplan_calendar_weeks['sorted_date'], format='%Y-%m-%d')
         # fahrplan_calendar_weeks['trip_id'] = fahrplan_calendar_weeks['trip_id'].astype('int32')
 
-        fahrplan_calendar_weeks['arrival_time'] = fahrplan_calendar_weeks['arrival_time'].astype('string')
+        fahrplan_calendar_weeks['arrival_time'] = fahrplan_calendar_weeks['sorted_arrival_time'].astype('string')
         if self.create_settings_for_table_dto.timeformat == 1:
-            fahrplan_calendar_weeks['arrival_time'] = fahrplan_calendar_weeks['arrival_time'].apply(
+            fahrplan_calendar_weeks['arrival_time'] = fahrplan_calendar_weeks['sorted_arrival_time'].apply(
                 lambda x: self.time_delete_seconds(x))
 
-        fahrplan_calendar_weeks['start_time'] = fahrplan_calendar_weeks['start_time'].astype('string')
+        fahrplan_calendar_weeks['start_time'] = fahrplan_calendar_weeks['sorted_start_time'].astype('string')
 
         self.create_dataframe.FahrplanCalendarFilterDaysPivot = fahrplan_calendar_weeks.pivot(
-            index=['date', 'day', 'stop_sequence_sorted', 'stop_name', 'stop_id'], columns=['start_time', 'trip_id'],
-            values='arrival_time')
+            index=['sorted_date', 'sorted_day', 'sorted_stop_sequence', 'sorted_stop_name', 'sorted_stop_id'], columns=['sorted_start_time', 'sorted_trip_id'],
+            values='sorted_arrival_time')
 
         # fahrplan_calendar_filter_days_pivot['date'] = pd.to_datetime(fahrplan_calendar_filter_days_pivot['date'], format='%Y-%m-%d %H:%M:%S.%f')
-        self.create_dataframe.FahrplanCalendarFilterDaysPivot = self.create_dataframe.FahrplanCalendarFilterDaysPivot.sort_index(axis=1)
-        self.create_dataframe.FahrplanCalendarFilterDaysPivot = self.create_dataframe.FahrplanCalendarFilterDaysPivot.sort_index(axis=0)
+        self.create_dataframe.FahrplanCalendarFilterDaysPivot = self.create_dataframe.FahrplanCalendarFilterDaysPivot.sort_index(
+            axis=1)
+        self.create_dataframe.FahrplanCalendarFilterDaysPivot = self.create_dataframe.FahrplanCalendarFilterDaysPivot.sort_index(
+            axis=0)
 
     def datesWeekday_create_fahrplan(self):
-
 
         fahrplan_calendar_weeks = self.fahrplan_calendar_weeks
         self.fahrplan_calendar_weeks = None
@@ -605,14 +615,16 @@ class CreatePlan(QObject):
         self.df_filtered_stop_names = self.df_filtered_stop_names.sort_index(axis=0)
         df_filtered_stop_names = self.df_filtered_stop_names
 
-
         # Assuming fahrplan_calendar_weeks and df_filtered_stop_names are already defined
 
         # Perform a left join between fahrplan_calendar_weeks and df_filtered_stop_names
-        joined_df = pd.merge(fahrplan_calendar_weeks, df_filtered_stop_names, left_on='stop_id', right_on='stop_id', how='left')
+        joined_df = pd.merge(fahrplan_calendar_weeks, df_filtered_stop_names, left_on='stop_id', right_on='stop_id',
+                             how='left')
 
         # Group the resulting DataFrame by the specified columns
-        grouped_df = joined_df.groupby(['date', 'day', 'start_time', 'arrival_time', 'trip_id', 'stop_name', 'stop_sequence_sorted', 'stop_sequence', 'service_id', 'stop_id'])
+        grouped_df = joined_df.groupby(
+            ['date', 'day', 'start_time', 'arrival_time', 'trip_id', 'stop_name', 'stop_sequence_sorted',
+             'stop_sequence', 'service_id', 'stop_id'])
 
         # Since the SQL query doesn't specify an aggregate function, we'll just keep the unique groups
         unique_groups_df = grouped_df.first().reset_index()
@@ -621,9 +633,9 @@ class CreatePlan(QObject):
         ordered_df = unique_groups_df.sort_values(by=['date', 'stop_sequence', 'start_time', 'trip_id'])
 
         # Select the required columns
-        selected_columns = ['date', 'day', 'start_time', 'trip_id', 'stop_name', 'stop_sequence_sorted', 'stop_sequence', 'arrival_time', 'service_id', 'stop_id']
+        selected_columns = ['date', 'day', 'start_time', 'trip_id', 'stop_name', 'stop_sequence_sorted',
+                            'stop_sequence', 'arrival_time', 'service_id', 'stop_id']
         fahrplan_calendar_weeks = ordered_df[selected_columns]
-
 
         ###########################
 
@@ -684,7 +696,6 @@ class CreatePlan(QObject):
                 temp["stop_sequence"] = stop_name_i.stop_sequence
                 temp["stop_name"] = stop_name_i.stop_name
                 temp["trip_id"] = stop_name_i.trip_id
-
 
                 if self.check_hour_24(stop_name_i.start_time):
                     comparetime_i = str((stop_name_i.date.strftime(
@@ -778,7 +789,6 @@ class CreatePlan(QObject):
             sorted_stopsequence['stop_sequence'].append(stop_sequence)
             sorted_stopsequence['stop_name'].append(new_stopsequence[stop_sequence]['stop_name'])
             sorted_stopsequence['start_time'].append(new_stopsequence[stop_sequence]['start_time'])
-
 
         return sorted_stopsequence
 
