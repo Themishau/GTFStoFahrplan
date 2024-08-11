@@ -550,18 +550,19 @@ class CreatePlan(QObject):
         # Group the resulting DataFrame by the specified columns
         grouped_df = joined_df.groupby(
             ['sorted_date', 'sorted_day', 'sorted_start_time', 'sorted_arrival_time', 'sorted_trip_id', 'sorted_stop_name', 'stop_sequence',
-             'sorted_stop_sequence', 'sorted_service_id', 'sorted_stop_id'])
+             'sorted_stop_sequence', 'sorted_stop_id'])
 
         # Aggregate the grouped data (if needed, adjust the aggregation function as necessary)
         aggregated_df = grouped_df.size().reset_index(name='count')  # Example aggregation, adjust as needed
 
         # Order the aggregated DataFrame by date, stop_sequence, start_time, and trip_id
-        ordered_df = aggregated_df.sort_values(by=['sorted_date', 'stop_sequence', 'start_time', 'sorted_trip_id'])
+        ordered_df = aggregated_df.sort_values(by=['sorted_date', 'sorted_stop_sequence', 'sorted_start_time', 'sorted_trip_id'])
 
         # Select the required columns
-        selected_columns = ['sorted_date', 'sorted_day', 'sorted_start_time', 'sorted_trip_id', 'sorted_stop_name', 'sorted_stop_sequence',
-                            'sorted_stop_sequence', 'sorted_arrival_time', 'sorted_service_id', 'sorted_stop_id']
-        fahrplan_calendar_weeks = ordered_df[selected_columns]
+        selected_columns = ['sorted_date', 'sorted_day', 'sorted_start_time', 'sorted_trip_id', 'sorted_stop_name', 'stop_sequence',
+                            'sorted_stop_sequence', 'sorted_arrival_time', 'sorted_stop_id']
+
+        fahrplan_calendar_weeks = ordered_df[selected_columns].copy()
 
         ###########################
 
@@ -571,23 +572,23 @@ class CreatePlan(QObject):
         fahrplan_calendar_weeks['sorted_start_time'] = fahrplan_calendar_weeks['sorted_start_time'].astype('string')
 
         # fahrplan_calendar_weeks = fahrplan_calendar_weeks.drop(columns=['stop_sequence', 'service_id', 'stop_id'])
-        fahrplan_calendar_weeks = fahrplan_calendar_weeks.drop(columns=['sorted_stop_sequence', 'sorted_service_id'])
+        fahrplan_calendar_weeks = fahrplan_calendar_weeks.drop(columns=['sorted_stop_sequence'])
         fahrplan_calendar_weeks = fahrplan_calendar_weeks.groupby(
-            ['sorted_date', 'sorted_day', 'sorted_stop_sequence', 'sorted_stop_name', 'sorted_stop_id', 'sorted_start_time',
+            ['sorted_date', 'sorted_day', 'stop_sequence', 'sorted_stop_name', 'sorted_stop_id', 'sorted_start_time',
              'sorted_trip_id']).first().reset_index()
 
         fahrplan_calendar_weeks['sorted_date'] = pd.to_datetime(fahrplan_calendar_weeks['sorted_date'], format='%Y-%m-%d')
         # fahrplan_calendar_weeks['trip_id'] = fahrplan_calendar_weeks['trip_id'].astype('int32')
 
-        fahrplan_calendar_weeks['arrival_time'] = fahrplan_calendar_weeks['sorted_arrival_time'].astype('string')
+        fahrplan_calendar_weeks['sorted_arrival_time'] = fahrplan_calendar_weeks['sorted_arrival_time'].astype('string')
         if self.create_settings_for_table_dto.timeformat == 1:
-            fahrplan_calendar_weeks['arrival_time'] = fahrplan_calendar_weeks['sorted_arrival_time'].apply(
+            fahrplan_calendar_weeks['sorted_arrival_time'] = fahrplan_calendar_weeks['sorted_arrival_time'].apply(
                 lambda x: self.time_delete_seconds(x))
 
-        fahrplan_calendar_weeks['start_time'] = fahrplan_calendar_weeks['sorted_start_time'].astype('string')
+        fahrplan_calendar_weeks['sorted_start_time'] = fahrplan_calendar_weeks['sorted_start_time'].astype('string')
 
         self.create_dataframe.FahrplanCalendarFilterDaysPivot = fahrplan_calendar_weeks.pivot(
-            index=['sorted_date', 'sorted_day', 'sorted_stop_sequence', 'sorted_stop_name', 'sorted_stop_id'], columns=['sorted_start_time', 'sorted_trip_id'],
+            index=['sorted_date', 'sorted_day', 'stop_sequence', 'sorted_stop_name', 'sorted_stop_id'], columns=['sorted_start_time', 'sorted_trip_id'],
             values='sorted_arrival_time')
 
         # fahrplan_calendar_filter_days_pivot['date'] = pd.to_datetime(fahrplan_calendar_filter_days_pivot['date'], format='%Y-%m-%d %H:%M:%S.%f')
