@@ -130,7 +130,7 @@ class SchedulePlaner(QObject):
 
     def create_table_continue(self):
         self.create_plan.create_table_continue()
-        self.export_plan.export_plan()
+        self.export_plan.export_plan(self.create_settings_for_table_dto, self.create_plan.create_dataframe)
         self.create_finished.emit(True)
 
     def import_gtfs_data(self) -> bool:

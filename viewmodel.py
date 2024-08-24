@@ -106,6 +106,7 @@ class ViewModel(QObject):
         self.model.planer.update_routes_list_signal.connect(self.on_loaded_trip_list)
         self.model.planer.update_options_state_signal.connect(self.on_changed_options_state)
         self.model.planer.create_sorting_signal.connect(self.on_create_sorting_signal)
+        self.model.planer.create_finished.connect(self.on_create_plan_finished)
 
     def on_changed_options_state(self, value):
         self.update_options_state_signal.emit(value)
@@ -172,6 +173,9 @@ class ViewModel(QObject):
 
     def on_create_sorting_signal(self):
         self.on_changed_individualsorting_table.emit()
+
+    def on_create_plan_finished(self):
+        self.create_table_finshed.emit()
 
 
 def get_current_time():
