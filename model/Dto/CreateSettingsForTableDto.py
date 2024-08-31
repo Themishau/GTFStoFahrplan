@@ -1,4 +1,4 @@
-from model.Base.GTFSEnums import CreatePlanMode
+from model.Enum.GTFSEnums import CreatePlanMode
 
 
 class CreateSettingsForTableDTO:

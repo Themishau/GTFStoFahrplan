@@ -6,11 +6,11 @@ from PyQt5.QtCore import pyqtSignal, QObject
 from ..Base.AnalyzeData import AnalyzeData
 from ..Base.CreatePlan import CreatePlan
 from ..Base.ExportPlan import ExportPlan
-from ..Base.GTFSEnums import *
+from model.Enum.GTFSEnums import *
 from ..Base.ImportData import ImportData
 from ..Base.SelectData import SelectData
-from ..DTO.CreateSettingsForTableDTO import CreateSettingsForTableDTO
-from ..DTO.General_Transit_Feed_Specification import GtfsDataFrameDto
+from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO
+from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",

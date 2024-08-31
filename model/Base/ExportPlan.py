@@ -4,9 +4,9 @@ from datetime import datetime
 from PyQt5.QtCore import pyqtSignal, QObject, QCoreApplication
 import logging
 
-from ..DTO import CreateTableDataframeDto
-from ..DTO.General_Transit_Feed_Specification import GtfsListDto, GtfsDataFrameDto
-from ..DTO.CreateSettingsForTableDTO import CreateSettingsForTableDTO
+from ..Dto import CreateTableDataframeDto
+from ..Dto.GeneralTransitFeedSpecificationDto import GtfsListDto, GtfsDataFrameDto
+from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",

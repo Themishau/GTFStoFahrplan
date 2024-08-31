@@ -1,22 +1,11 @@
 # -*- coding: utf-8 -*-
-from PyQt5.QtCore import pyqtSignal, QObject, QCoreApplication
+from PyQt5.QtCore import pyqtSignal, QObject
 
-from model.observer import Publisher, Subscriber
 import time
 import pandas as pd
-from pandasql import sqldf
-import zipfile
-import io
-from datetime import datetime, timedelta
-import re
 import logging
-import sys
-import os
-from model.Base.GTFSEnums import *
-from model.Base.ProgressBar import ProgressBar
-from model.Base.ImportData import ImportData
-from ..DTO.CreateSettingsForTableDTO import CreateSettingsForTableDTO
-from ..DTO.General_Transit_Feed_Specification import GtfsListDto, GtfsDataFrameDto
+from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO
+from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",

@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
-from model.observer import Publisher, Subscriber
-from PyQt5.QtCore import pyqtSignal, QObject, QCoreApplication
+from PyQt5.QtCore import pyqtSignal, QObject
 import pandas as pd
 import zipfile
 import io
 import logging
 import os
-from model.Base.GTFSEnums import *
-from ..DTO.General_Transit_Feed_Specification import GtfsListDto, GtfsDataFrameDto
+from model.Enum.GTFSEnums import *
+from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
 
-from threading import Thread
 import concurrent.futures
 
 logging.basicConfig(level=logging.DEBUG,

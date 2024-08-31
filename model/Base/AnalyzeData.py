@@ -3,7 +3,7 @@ import logging
 
 from PyQt5.QtCore import pyqtSignal, QObject
 
-from ..DTO.General_Transit_Feed_Specification import GtfsDataFrameDto
+from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
@@ -48,19 +48,19 @@ class AnalyzeData(QObject):
     @property
     def gtfs_data_frame_dto(self):
         """
-        Getter method for the GTFS data frame DTO.
+        Getter method for the GTFS data frame Dto.
         Returns:
-            GtfsDataFrameDto: The GTFS data frame DTO.
+            GtfsDataFrameDto: The GTFS data frame Dto.
         """
         return self._gtfs_data_frame_dto
 
     @gtfs_data_frame_dto.setter
     def gtfs_data_frame_dto(self, value: GtfsDataFrameDto):
         """
-        Setter method for the GTFS data frame DTO.
+        Setter method for the GTFS data frame Dto.
 
         Args:
-            value (GtfsDataFrameDto): The value to set for the GTFS data frame DTO.
+            value (GtfsDataFrameDto): The value to set for the GTFS data frame Dto.
         """
         self._gtfs_data_frame_dto = value
         if value is not None:

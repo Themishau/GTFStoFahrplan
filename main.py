@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
 import sys
 
-import networkx as nx
-import matplotlib.pyplot as plt
-
 from viewmodel import ViewModel
 from view.view import View
 from model.model import Model
-from model.Base.GTFSEnums import ModelTriggerActionsEnum
 from view.splash_screen import SplashScreen
 
 from PyQt5.QtWidgets import *

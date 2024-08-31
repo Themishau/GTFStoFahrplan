@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
 import logging
 import re
-import time
 from datetime import datetime, timedelta
 
 import pandas as pd
 from PyQt5.QtCore import pyqtSignal, QObject
 from pandasql import sqldf
 
-from ..Base.GTFSEnums import CreatePlanMode
-from ..DTO.CreateSettingsForTableDTO import CreateSettingsForTableDTO
-from ..DTO.CreateTableDataframeDto import CreateTableDataframeDto
-from ..DTO.General_Transit_Feed_Specification import GtfsDataFrameDto
+from model.Enum.GTFSEnums import CreatePlanMode
+from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO
+from ..Dto.CreateTableDataframeDto import CreateTableDataframeDto
+from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",

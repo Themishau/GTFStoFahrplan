@@ -1,21 +1,21 @@
 import logging
 import os
+
 from PyQt5 import QtCore
 from PyQt5.Qt import QPoint, QMessageBox, QDesktopWidget, QMainWindow
-from PyQt5.QtCore import Qt, QEvent
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QFileDialog
 
 from helpFunctions import string_to_qdate
-from .round_progress_bar import RoundProgress
-from .pyui.main_window_ui import Ui_MainWindow
-from .general_window_information import GeneralInformation
 from .create_table_create import CreateTableCreate
 from .create_table_import import CreateTableImport
 from .create_table_select import CreateTableSelect
 from .download_gtfs import DownloadGTFS
+from .general_window_information import GeneralInformation
+from .pyui.main_window_ui import Ui_MainWindow
+from .round_progress_bar import RoundProgress
 from .select_table_view import TableModel
 from .sort_table_view import TableModelSort
-from model.Base.GTFSEnums import *
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
@@ -147,7 +147,8 @@ class View(QMainWindow):
         self.viewModel.on_changed_selected_record_agency(id_us)
 
     def update_create_table(self):
-        self.send_message_box(f"Success. Create table successfully. Saved here: {self.viewModel.model.planer.export_plan.full_output_path}")
+        self.send_message_box(
+            f"Success. Create table successfully. Saved here: {self.viewModel.model.planer.export_plan.full_output_path}")
 
     def update_file_input_path(self, input_path):
         self.CreateImport_Tab.ui.lineInputPath.setText(input_path)
@@ -163,8 +164,10 @@ class View(QMainWindow):
 
     def update_time_format(self, time_format):
         self.CreateCreate_Tab.ui.line_Selection_format.setText(time_format)
+
     def update_time_format_based_on_dto(self):
-            self.CreateCreate_Tab.ui.line_Selection_format.setText(f'time format {self.viewModel.model.planer.create_settings_for_table_dto.timeformat}')
+        self.CreateCreate_Tab.ui.line_Selection_format.setText(
+            f'time format {self.viewModel.model.planer.create_settings_for_table_dto.timeformat}')
 
     def update_direction_mode(self, mode):
         self.CreateCreate_Tab.ui.comboBox_direction.setCurrentText(mode)
@@ -173,7 +176,8 @@ class View(QMainWindow):
         self.CreateCreate_Tab.ui.comboBox.setCurrentText(mode)
         if mode == 'date':
             self.CreateCreate_Tab.ui.listDatesWeekday.clear()
-            self.CreateCreate_Tab.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
+            self.CreateCreate_Tab.ui.dateEdit.setDate(
+                string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
             self.CreateCreate_Tab.ui.dateEdit.setEnabled(True)
             self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(False)
         elif mode == 'weekday':
@@ -183,11 +187,11 @@ class View(QMainWindow):
             self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(True)
 
     def update_create_options_state(self):
-        self.CreateCreate_Tab.ui.line_Selection_agency.setText(f"selected agency: {self.viewModel.model.planer.create_settings_for_table_dto.agency}")
-        self.CreateCreate_Tab.ui.line_Selection_trips.setText(f"selected Trip: {self.viewModel.model.planer.create_settings_for_table_dto.route}")
+        self.CreateCreate_Tab.ui.line_Selection_agency.setText(
+            f"selected agency: {self.viewModel.model.planer.create_settings_for_table_dto.agency}")
+        self.CreateCreate_Tab.ui.line_Selection_trips.setText(
+            f"selected Trip: {self.viewModel.model.planer.create_settings_for_table_dto.route}")
         self.update_time_format_based_on_dto()
-
-
 
     def initialize_window(self):
         self.setFixedSize(1350, 900)
@@ -246,10 +250,6 @@ class View(QMainWindow):
         self.ui.stackedWidget.setCurrentWidget(self.CreateImport_Tab)
         self.ui.stackedWidget.resize(1100, 900)
 
-    """
-    TODO: is this bugged? 
-    """
-
     def show_Create_Select_Window(self):
         self.set_btn_checked(self.createTableSelect_btn)
         self.ui.stackedWidget.setCurrentWidget(self.CreateSelect_Tab)
@@ -265,6 +265,7 @@ class View(QMainWindow):
                 button.setChecked(False)
             else:
                 button.setChecked(True)
+
     def send_message_box(self, text):
         self.messageBox_model.setStandardButtons(QMessageBox.Ok)
         self.messageBox_model.setText(text)
@@ -287,10 +288,12 @@ class View(QMainWindow):
         self.CreateCreate_Tab.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
         self.CreateCreate_Tab.ui.dateEdit.setEnabled(True)
         self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(False)
-        self.CreateCreate_Tab.ui.listDatesWeekday.addItems(self.viewModel.model.planer.select_data.week_day_options_list)
+        self.CreateCreate_Tab.ui.listDatesWeekday.addItems(
+            self.viewModel.model.planer.select_data.week_day_options_list)
 
     def get_selected_weekday(self):
-        self.viewModel.select_weekday_option(self.CreateCreate_Tab.ui.listDatesWeekday.currentItem().text().split(',')[0])
+        self.viewModel.select_weekday_option(
+            self.CreateCreate_Tab.ui.listDatesWeekday.currentItem().text().split(',')[0])
 
     def handle_selected_date(self):
         date = self.CreateCreate_Tab.ui.dateEdit.date()
@@ -305,10 +308,12 @@ class View(QMainWindow):
 
     def sub_update_weekday_list(self, ):
         self.CreateCreate_Tab.ui.listDatesWeekday.clear()
-        self.CreateCreate_Tab.ui.listDatesWeekday.addItems(self.viewModel.model.planer.select_data.week_day_options_list)
+        self.CreateCreate_Tab.ui.listDatesWeekday.addItems(
+            self.viewModel.model.planer.select_data.week_day_options_list)
 
     def update_routes_list(self):
-        self.CreateSelect_Tab.ui.TripsTableView.setModel(TableModel(self.viewModel.model.planer.select_data.df_selected_routes))
+        self.CreateSelect_Tab.ui.TripsTableView.setModel(
+            TableModel(self.viewModel.model.planer.select_data.df_selected_routes))
 
     def update_individualsorting_table(self):
         self.CreateCreate_Tab.ui.tableView_sorting_stops.setModel(
@@ -325,8 +330,6 @@ class View(QMainWindow):
         # self.model.start_get_date_range()
         logging.debug("done with creating dfs")
         # self.model.gtfs.save_h5(h5_filename="C:/Tmp/test.h5", data=self.model.gtfs.dfTrips, labels="trips")
-
-
 
     def get_file_path(self):
         try:
@@ -392,4 +395,3 @@ class View(QMainWindow):
 
         self.CreateCreate_Tab.ui.listDatesWeekday.clear()
         self.CreateCreate_Tab.ui.tableView_sorting_stops.clear()
-

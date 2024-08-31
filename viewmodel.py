@@ -6,7 +6,7 @@ from PyQt5.Qt import QObject
 from PyQt5.QtCore import pyqtSignal
 
 from helpFunctions import qdate_to_string
-from model.Base.GTFSEnums import *
+from model.Enum.GTFSEnums import *
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
@@ -50,12 +50,9 @@ class ViewModel(QObject):
 
     def on_changed_create_plan_mode(self, text):
         if text == 'date':
-            # self.model.planer.select_data.date_range =
             self.model.planer.select_data.selected_weekday = None
         elif text == 'weekday':
-            # self.model.planer.select_data.selected_weekday =
             self.model.planer.select_data.selected_dates = None
-        # change property in view
         self.update_create_plan_mode.emit(text)
 
     def on_change_input_file_path(self, path):

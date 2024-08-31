@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # https://www.protechtraining.com/blog/post/tutorial-the-observer-pattern-in-python-879
 import logging
-from .Base.GTFSEnums import *
+from model.Enum.GTFSEnums import *
 import asyncio
 
 logging.basicConfig(level=logging.DEBUG,
