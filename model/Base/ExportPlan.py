@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class ExportPlan(QObject):
-    progress_update = pyqtSignal(int)
+    progress_Update = pyqtSignal(int)
     create_settings_for_table_dto_changed = pyqtSignal()
 
     def __init__(self, app, progress: int):
@@ -34,7 +34,7 @@ class ExportPlan(QObject):
     @progress.setter
     def progress(self, value):
         self._progress = value
-        self.progress_update.emit(self.progress)
+        self.progress_Update.emit(self.progress)
 
     def sub_worker_create_output_fahrplan_date(self):
         NotImplementedError
@@ -52,7 +52,7 @@ class ExportPlan(QObject):
 
     def export_plan(self, exportSettings, createTableDto: CreateTableDataframeDto):
         self.datesWeekday_create_output_fahrplan(exportSettings, createTableDto)
-        self.progress(100)
+        self.progress = 100
 
     def datesWeekday_create_output_fahrplan(self, exportSettings, createTableDto: CreateTableDataframeDto):
         # save as csv

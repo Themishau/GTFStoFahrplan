@@ -96,6 +96,7 @@ class SchedulePlaner(QObject):
     def initialize_export_plan(self):
         self.export_plan = ExportPlan(self.app, progress=self.progress)
         self.export_plan.create_settings_for_table_dto_changed.connect(self.update_create_settings_output)
+        self.export_plan.progress_Update.connect(self.update_progress_bar)
 
     def initialize_create_plan(self):
         self.create_plan = CreatePlan(self.app, progress=self.progress)
@@ -116,7 +117,7 @@ class SchedulePlaner(QObject):
     def create_table(self) -> bool:
         #try:
         self.create_plan.create_table()
-        self.export_plan.export_plan()
+        self.export_plan.export_plan(self.create_settings_for_table_dto, self.create_plan.create_dataframe)
         self.create_finished.emit(True)
         return True
         #except AttributeError:

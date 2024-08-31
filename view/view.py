@@ -147,7 +147,7 @@ class View(QMainWindow):
         self.viewModel.on_changed_selected_record_agency(id_us)
 
     def update_create_table(self):
-        self.send_message_box(f"Success. Create table successfully. Saved here: {self.viewModel.model.planer.export_plan.output_path}")
+        self.send_message_box(f"Success. Create table successfully. Saved here: {self.viewModel.model.planer.export_plan.full_output_path}")
 
     def update_file_input_path(self, input_path):
         self.CreateImport_Tab.ui.lineInputPath.setText(input_path)
