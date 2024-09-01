@@ -7,6 +7,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QFileDialog
 
 from helpFunctions import string_to_qdate
+from .BusySpinner import BusySpinner
 from .create_table_create import CreateTableCreate
 from .create_table_import import CreateTableImport
 from .create_table_select import CreateTableSelect
@@ -28,6 +29,7 @@ class View(QMainWindow):
         self.viewModel = viewModel
 
         self.progressRound = None
+        self.spinner = None
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
@@ -52,6 +54,7 @@ class View(QMainWindow):
 
         self.initialize_window()
         self.initialize_modified_progress_bar()
+        self.initialize_busy_inficator()
         self.initialize_tabs()
         self.initialize_buttons_links()
         self.init_signals()
@@ -121,6 +124,10 @@ class View(QMainWindow):
 
         self.viewModel.update_progress_value.connect(self.update_progress_bar)
         self.viewModel.error_message.connect(self.send_message_box)
+
+    def initialize_busy_inficator(self):
+        self.spinner = BusySpinner()
+        self.ui.gridLayout.addWidget(self.spinner)
 
     def update_selected_agency(self, row):
         self.CreateSelect_Tab.ui.AgenciesTableView.selectRow(row)
@@ -244,6 +251,7 @@ class View(QMainWindow):
     def show_home_window(self):
         self.set_btn_checked(self.generalNavPush_btn)
         self.ui.stackedWidget.setCurrentWidget(self.CreateMainTab)
+        self.spinner.start()
 
     def show_Create_Import_Window(self):
         self.set_btn_checked(self.createTableImport_btn)
