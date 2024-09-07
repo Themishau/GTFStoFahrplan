@@ -170,10 +170,10 @@ class View(QMainWindow):
         self.CreateImport_Tab.ui.checkBox_savepickle.setChecked(checked)
 
     def update_time_format(self, time_format):
-        self.CreateCreate_Tab.ui.line_Selection_format.setText(time_format)
+        self.ui.line_Selection_format.setText(time_format)
 
     def update_time_format_based_on_dto(self):
-        self.CreateCreate_Tab.ui.line_Selection_format.setText(
+        self.ui.line_Selection_format.setText(
             f'time format {self.viewModel.model.planer.create_settings_for_table_dto.timeformat}')
 
     def update_direction_mode(self, mode):
@@ -194,9 +194,9 @@ class View(QMainWindow):
             self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(True)
 
     def update_create_options_state(self):
-        self.CreateCreate_Tab.ui.line_Selection_agency.setText(
+        self.ui.line_Selection_agency.setText(
             f"selected agency: {self.viewModel.model.planer.create_settings_for_table_dto.agency}")
-        self.CreateCreate_Tab.ui.line_Selection_trips.setText(
+        self.ui.line_Selection_trips.setText(
             f"selected Trip: {self.viewModel.model.planer.create_settings_for_table_dto.route}")
         self.update_time_format_based_on_dto()
 
@@ -235,7 +235,8 @@ class View(QMainWindow):
         self.progressRound = RoundProgress()
         self.progressRound.value = 0
         self.progressRound.setMinimumSize(self.progressRound.width, self.progressRound.height)
-        self.ui.gridLayout_7.addWidget(self.progressRound, 4, 0, 1, 1, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        self.ui.gridLayout_7.addWidget(self.ui.label_progress, 5, 0, 1, 1, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        self.ui.gridLayout_7.addWidget(self.progressRound, 6, 0, 1, 1, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
 
     def initialize_tabs(self):
         self.ui.stackedWidget.addWidget(self.CreateImport_Tab)

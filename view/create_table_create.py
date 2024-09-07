@@ -8,11 +8,11 @@ class CreateTableCreate(QWidget):
         super(CreateTableCreate, self).__init__()
         self.ui = Ui_CreateTableCreate()
         self.ui.setupUi(self)
-        # self.ui.tableView_sorting_stops.setSelectionBehavior(QAbstractItemView.SelectRows)
-        # self.ui.tableView_sorting_stops.setSelectionMode(QAbstractItemView.SingleSelection)
 
-        # self.ui.tableView_sorting_stops.setSelectionBehavior(QAbstractItemView.SelectRows) #Select whole rows
-        # self.ui.tableView_sorting_stops.setSelectionMode(QAbstractItemView.SingleSelection) # Only select/drag one row each time
-        # self.ui.tableView_sorting_stops.setDragDropMode(QAbstractItemView.InternalMove) # Objects can only be drag/dropped internally and are moved instead of copied
-        # self.ui.tableView_sorting_stops.setDragDropOverwriteMode(False) # Removes the original item after moving instead of clearing it
-        # self.ui.tableView_sorting_stops.setDragEnabled(True)
+
+        # # self.tableView_sorting_stops = QtWidgets.QTableView(Form)
+        # self.tableView_sorting_stops = customTableView()
+        # sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding,
+        #                                    QtWidgets.QSizePolicy.MinimumExpanding)
+        # sizePolicy.setHorizontalStretch(0)
+        # sizePolicy.setVerticalStretch(0)

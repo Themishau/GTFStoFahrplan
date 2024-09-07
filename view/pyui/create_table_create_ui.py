@@ -27,7 +27,8 @@ class Ui_Form(object):
 "border-style: solid;\n"
 "border-color:  #f2f7f5;\n"
 "background: #cfe2da; \n"
-"\n"
+"padding: 20px;\n"
+"box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\n"
 "}\n"
 "\n"
 "#Form QListWidget {\n"
@@ -37,9 +38,15 @@ class Ui_Form(object):
 "    color:#41312b;\n"
 "}\n"
 "\n"
+"#Form QListWidget::item {\n"
+"    padding: 10px;\n"
+"    border-bottom: 1px solid #ddd;\n"
+"}\n"
+"\n"
 "#Form QPushButton {\n"
 "    background-color: #587b6d;\n"
-"   border-radius: 10px;\n"
+"    border-radius: 10px;\n"
+"    margin-bottom: 15px;\n"
 "    padding: 5px 5px 5px 5px;\n"
 "    text-align: center;\n"
 "    color:#f2b198;\n"
@@ -55,74 +62,170 @@ class Ui_Form(object):
 "\n"
 "#Form QLabel {\n"
 "    text-align: center;\n"
-"    color:#41312b;\n"
+"    color: #41312b;\n"
+"    font-size: 16px;\n"
+"    font-weight: bold;\n"
+"    margin-bottom: 10px;\n"
 "}\n"
 "\n"
 "#Form QComboBox {\n"
 "    background-color: #587b6d;\n"
 "   border-radius: 10px;\n"
 "    padding: 5px 5px 5px 100px;\n"
-"    text-align: center;\n"
+"    text-align: left;\n"
 "    color:#f2b198;\n"
-"    \n"
+"    border: 1px solid #ccc;\n"
+"    appearance: none;\n"
+"    -webkit-appearance: none;\n"
+"    -moz-appearance: none;\n"
+"}\n"
+"\n"
+"#Form QComboBox::drop-down {\n"
+"    subcontrol-origin: border;\n"
+"    subcontrol-position: right bottom;\n"
+"    width: 40px;\n"
+"    border-left: 1px solid #ccc;\n"
 "}\n"
 "\n"
 "#Form QPushButton:hover {\n"
 "    background-color: #408d49;\n"
 "   border-radius: 10px;\n"
 "       color:#fde1d6;\n"
+"}\n"
+"\n"
+"#Form QTableView {\n"
+"    color: black;\n"
+"    gridline-color: black;\n"
+"    border-color: #f2f7f5;\n"
+"    font: 10px;\n"
+"    background: #eaeaea;\n"
+"    padding: 10px;\n"
+"    border: 1px solid #f2f7f5;\n"
+"}\n"
+"\n"
+"#Form QTableView::item {\n"
+"    padding: 5px;\n"
+"    border-bottom: 1px solid #ddd;\n"
+"}\n"
+"\n"
+"#Form QTableView::item:hover {\n"
+"    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #F0FCF7, stop: 1 #EAEAEA);\n"
+"    border: 1px solid #587b6d;\n"
+"}\n"
+"\n"
+"#Form QTableView::item:selected {\n"
+"    background: #587b6d;\n"
+"    color: white;\n"
+"    border: 1px solid #587b6d;\n"
+"}\n"
+"\n"
+"#Form QTableView::item:selected:active {\n"
+"    background: #408d49;\n"
+"    color: #fde1d6;\n"
+"}\n"
+"\n"
+"#Form QTableCornerButton::section {\n"
+"    background: #587b6d;\n"
+"    border: 2px outset #587b6d;\n"
+"}\n"
+"\n"
+"#Form QTableView::indicator:checked {\n"
+"    background-color: #408d49;\n"
+"    color: white;\n"
+"}\n"
+"\n"
+"#Form QTableView::indicator:unchecked {\n"
+"    background-color: #f2f7f5;\n"
+"    color: #587b6d;\n"
+"}\n"
+"\n"
+"#Form QScrollBar:vertical {\n"
+"    background: #F0FCF7;\n"
+"    width: 10px;\n"
+"}\n"
+"\n"
+"#Form QScrollBar::handle:vertical {\n"
+"    background: #587b6d;\n"
+"    min-height: 50px;\n"
+"}\n"
+"\n"
+"#Form QScrollBar::add-page:vertical {\n"
+"    background: #F0FCF7;\n"
+"}\n"
+"\n"
+"#Form QScrollBar::sub-page:vertical {\n"
+"    background: #F0FCF7;\n"
+"}\n"
+"\n"
+"#Form QScrollBar:horizontal {\n"
+"    background: #F0FCF7;\n"
+"    height: 10px;\n"
+"}\n"
+"\n"
+"#Form QScrollBar::handle:horizontal {\n"
+"    background: #587b6d;\n"
+"    min-width: 50px;\n"
+"}\n"
+"\n"
+"#Form QScrollBar::add-page:horizontal {\n"
+"    background: #F0FCF7;\n"
+"}\n"
+"\n"
+"#Form QScrollBar::sub-page:horizontal {\n"
+"    background: #F0FCF7;\n"
 "}")
         self.gridLayout = QtWidgets.QGridLayout(Form)
         self.gridLayout.setObjectName("gridLayout")
-        self.widget_8 = QtWidgets.QWidget(Form)
-        self.widget_8.setObjectName("widget_8")
-        self.gridLayout_15 = QtWidgets.QGridLayout(self.widget_8)
-        self.gridLayout_15.setObjectName("gridLayout_15")
-        self.gridLayout.addWidget(self.widget_8, 9, 0, 1, 1)
+        self.gridLayout_3 = QtWidgets.QGridLayout()
+        self.gridLayout_3.setObjectName("gridLayout_3")
+        self.btnContinueCreate = QtWidgets.QPushButton(Form)
+        self.btnContinueCreate.setEnabled(False)
+        self.btnContinueCreate.setObjectName("btnContinueCreate")
+        self.gridLayout_3.addWidget(self.btnContinueCreate, 2, 0, 1, 1)
+        #self.tableView_sorting_stops = QtWidgets.QTableView(Form)
+        self.tableView_sorting_stops = customTableView()
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.tableView_sorting_stops.sizePolicy().hasHeightForWidth())
+        self.tableView_sorting_stops.setSizePolicy(sizePolicy)
+        self.tableView_sorting_stops.setObjectName("tableView_sorting_stops")
+        self.gridLayout_3.addWidget(self.tableView_sorting_stops, 2, 2, 1, 1)
+        spacerItem = QtWidgets.QSpacerItem(20, 200, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.gridLayout_3.addItem(spacerItem, 2, 1, 1, 1)
+        self.gridLayout.addLayout(self.gridLayout_3, 3, 0, 1, 1)
         self.gridLayout_5 = QtWidgets.QGridLayout()
         self.gridLayout_5.setObjectName("gridLayout_5")
-        self.label_17 = QtWidgets.QLabel(Form)
-        font = QtGui.QFont()
-        font.setFamily("72")
-        font.setPointSize(8)
-        font.setBold(False)
-        font.setItalic(False)
-        self.label_17.setFont(font)
-        self.label_17.setStyleSheet("")
-        self.label_17.setObjectName("label_17")
-        self.gridLayout_5.addWidget(self.label_17, 5, 0, 1, 1)
-        self.dateEdit = QtWidgets.QDateEdit(Form)
-        self.dateEdit.setObjectName("dateEdit")
-        self.gridLayout_5.addWidget(self.dateEdit, 3, 0, 1, 1)
-        self.comboBox = QtWidgets.QComboBox(Form)
-        self.comboBox.setEnabled(False)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.comboBox.setFont(font)
-        self.comboBox.setStyleSheet("")
-        self.comboBox.setObjectName("comboBox")
-        self.comboBox.addItem("")
-        self.comboBox.addItem("")
-        self.gridLayout_5.addWidget(self.comboBox, 0, 1, 1, 1)
         self.label_12 = QtWidgets.QLabel(Form)
         self.label_12.setStyleSheet("")
         self.label_12.setObjectName("label_12")
-        self.gridLayout_5.addWidget(self.label_12, 0, 0, 1, 1)
+        self.gridLayout_5.addWidget(self.label_12, 1, 0, 1, 1)
+        self.dateEdit = QtWidgets.QDateEdit(Form)
+        self.dateEdit.setObjectName("dateEdit")
+        self.gridLayout_5.addWidget(self.dateEdit, 2, 2, 1, 1)
+        self.gridLayout_2 = QtWidgets.QGridLayout()
+        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.gridLayout_5.addLayout(self.gridLayout_2, 5, 0, 1, 1)
         self.label_13 = QtWidgets.QLabel(Form)
         font = QtGui.QFont()
         font.setFamily("72")
-        font.setPointSize(8)
-        font.setBold(False)
+        font.setPointSize(-1)
+        font.setBold(True)
         font.setItalic(False)
         self.label_13.setFont(font)
         self.label_13.setStyleSheet("")
         self.label_13.setObjectName("label_13")
-        self.gridLayout_5.addWidget(self.label_13, 2, 0, 1, 1)
-        self.line_Selection_date_range = QtWidgets.QLineEdit(Form)
-        self.line_Selection_date_range.setEnabled(False)
-        self.line_Selection_date_range.setStyleSheet("")
-        self.line_Selection_date_range.setObjectName("line_Selection_date_range")
-        self.gridLayout_5.addWidget(self.line_Selection_date_range, 6, 0, 1, 1)
+        self.gridLayout_5.addWidget(self.label_13, 1, 2, 1, 1)
+        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.gridLayout_5.addItem(spacerItem1, 0, 2, 1, 1)
+        self.btnStart = QtWidgets.QPushButton(Form)
+        self.btnStart.setEnabled(False)
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.btnStart.setFont(font)
+        self.btnStart.setStyleSheet("")
+        self.btnStart.setObjectName("btnStart")
+        self.gridLayout_5.addWidget(self.btnStart, 12, 0, 1, 1)
         self.listDatesWeekday = QtWidgets.QListWidget(Form)
         self.listDatesWeekday.setEnabled(False)
         font = QtGui.QFont()
@@ -132,17 +235,19 @@ class Ui_Form(object):
         self.listDatesWeekday.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.listDatesWeekday.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.listDatesWeekday.setObjectName("listDatesWeekday")
-        self.gridLayout_5.addWidget(self.listDatesWeekday, 3, 1, 5, 1)
+        self.gridLayout_5.addWidget(self.listDatesWeekday, 8, 2, 5, 1)
         self.label_6 = QtWidgets.QLabel(Form)
         font = QtGui.QFont()
         font.setFamily("72")
-        font.setPointSize(8)
-        font.setBold(False)
+        font.setPointSize(-1)
+        font.setBold(True)
         font.setItalic(False)
         self.label_6.setFont(font)
         self.label_6.setStyleSheet("")
         self.label_6.setObjectName("label_6")
-        self.gridLayout_5.addWidget(self.label_6, 2, 1, 1, 1)
+        self.gridLayout_5.addWidget(self.label_6, 7, 2, 1, 1)
+        spacerItem2 = QtWidgets.QSpacerItem(300, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Maximum)
+        self.gridLayout_5.addItem(spacerItem2, 1, 1, 1, 1)
         self.comboBox_direction = QtWidgets.QComboBox(Form)
         self.comboBox_direction.setEnabled(False)
         font = QtGui.QFont()
@@ -152,19 +257,35 @@ class Ui_Form(object):
         self.comboBox_direction.setObjectName("comboBox_direction")
         self.comboBox_direction.addItem("")
         self.comboBox_direction.addItem("")
-        self.gridLayout_5.addWidget(self.comboBox_direction, 1, 1, 1, 1)
-        self.gridLayout.addLayout(self.gridLayout_5, 0, 0, 1, 1)
-        self.btnStart = QtWidgets.QPushButton(Form)
-        self.btnStart.setEnabled(False)
+        self.gridLayout_5.addWidget(self.comboBox_direction, 2, 0, 1, 1)
+        self.comboBox = QtWidgets.QComboBox(Form)
+        self.comboBox.setEnabled(False)
         font = QtGui.QFont()
         font.setPointSize(12)
-        self.btnStart.setFont(font)
-        self.btnStart.setStyleSheet("")
-        self.btnStart.setObjectName("btnStart")
-        self.gridLayout.addWidget(self.btnStart, 2, 0, 1, 1)
+        self.comboBox.setFont(font)
+        self.comboBox.setStyleSheet("")
+        self.comboBox.setObjectName("comboBox")
+        self.comboBox.addItem("")
+        self.comboBox.addItem("")
+        self.gridLayout_5.addWidget(self.comboBox, 3, 0, 1, 1)
         self.UseIndividualSorting = QtWidgets.QCheckBox(Form)
         self.UseIndividualSorting.setObjectName("UseIndividualSorting")
-        self.gridLayout.addWidget(self.UseIndividualSorting, 1, 0, 1, 1)
+        self.gridLayout_5.addWidget(self.UseIndividualSorting, 4, 0, 1, 1)
+        self.line_Selection_date_range = QtWidgets.QLineEdit(Form)
+        self.line_Selection_date_range.setEnabled(False)
+        self.line_Selection_date_range.setStyleSheet("")
+        self.line_Selection_date_range.setObjectName("line_Selection_date_range")
+        self.gridLayout_5.addWidget(self.line_Selection_date_range, 4, 2, 1, 1)
+        self.label_17 = QtWidgets.QLabel(Form)
+        font = QtGui.QFont()
+        font.setFamily("72")
+        font.setPointSize(-1)
+        font.setBold(True)
+        font.setItalic(False)
+        self.label_17.setFont(font)
+        self.label_17.setStyleSheet("")
+        self.label_17.setObjectName("label_17")
+        self.gridLayout_5.addWidget(self.label_17, 3, 2, 1, 1)
         self.btnStop = QtWidgets.QPushButton(Form)
         self.btnStop.setEnabled(False)
         font = QtGui.QFont()
@@ -172,49 +293,8 @@ class Ui_Form(object):
         self.btnStop.setFont(font)
         self.btnStop.setStyleSheet("")
         self.btnStop.setObjectName("btnStop")
-        self.gridLayout.addWidget(self.btnStop, 2, 1, 1, 1)
-        # self.tableView_sorting_stops = QtWidgets.QTableView(Form)
-        self.tableView_sorting_stops = customTableView()
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding,
-                                           QtWidgets.QSizePolicy.MinimumExpanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.tableView_sorting_stops.sizePolicy().hasHeightForWidth())
-        self.tableView_sorting_stops.setSizePolicy(sizePolicy)
-        self.tableView_sorting_stops.setObjectName("tableView_sorting_stops")
-        self.gridLayout.addWidget(self.tableView_sorting_stops, 3, 0, 1, 2)
-        self.gridLayout_3 = QtWidgets.QGridLayout()
-        self.gridLayout_3.setObjectName("gridLayout_3")
-        self.line_Selection_agency = QtWidgets.QLineEdit(Form)
-        self.line_Selection_agency.setEnabled(False)
-        self.line_Selection_agency.setStyleSheet("")
-        self.line_Selection_agency.setObjectName("line_Selection_agency")
-        self.gridLayout_3.addWidget(self.line_Selection_agency, 12, 0, 1, 1)
-        self.line_Selection_trips = QtWidgets.QLineEdit(Form)
-        self.line_Selection_trips.setEnabled(False)
-        self.line_Selection_trips.setStyleSheet("")
-        self.line_Selection_trips.setObjectName("line_Selection_trips")
-        self.gridLayout_3.addWidget(self.line_Selection_trips, 13, 0, 1, 1)
-        self.line_Selection_format = QtWidgets.QLineEdit(Form)
-        self.line_Selection_format.setEnabled(False)
-        self.line_Selection_format.setStyleSheet("")
-        self.line_Selection_format.setObjectName("line_Selection_format")
-        self.gridLayout_3.addWidget(self.line_Selection_format, 11, 0, 1, 1)
-        self.label_16 = QtWidgets.QLabel(Form)
-        font = QtGui.QFont()
-        font.setFamily("72")
-        font.setPointSize(8)
-        font.setBold(False)
-        font.setItalic(False)
-        self.label_16.setFont(font)
-        self.label_16.setStyleSheet("")
-        self.label_16.setObjectName("label_16")
-        self.gridLayout_3.addWidget(self.label_16, 0, 0, 1, 1)
-        self.gridLayout.addLayout(self.gridLayout_3, 0, 1, 1, 1)
-        self.btnContinueCreate = QtWidgets.QPushButton(Form)
-        self.btnContinueCreate.setEnabled(False)
-        self.btnContinueCreate.setObjectName("btnContinueCreate")
-        self.gridLayout.addWidget(self.btnContinueCreate, 4, 0, 1, 1)
+        self.gridLayout_5.addWidget(self.btnStop, 13, 0, 1, 1)
+        self.gridLayout.addLayout(self.gridLayout_5, 0, 0, 1, 1)
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
@@ -222,16 +302,15 @@ class Ui_Form(object):
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Form"))
-        self.label_17.setText(_translate("Form", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">detected date range</span></p></body></html>"))
-        self.comboBox.setItemText(0, _translate("Form", "date"))
-        self.comboBox.setItemText(1, _translate("Form", "weekday"))
-        self.label_12.setText(_translate("Form", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">mode</span></p></body></html>"))
+        self.btnContinueCreate.setText(_translate("Form", "Continue Creating Table"))
+        self.label_12.setText(_translate("Form", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Mode Settings</span></p></body></html>"))
         self.label_13.setText(_translate("Form", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Date</span></p></body></html>"))
+        self.btnStart.setText(_translate("Form", "Create Table"))
         self.label_6.setText(_translate("Form", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Weekday</span></p></body></html>"))
         self.comboBox_direction.setItemText(0, _translate("Form", "direction 1"))
         self.comboBox_direction.setItemText(1, _translate("Form", "direction 2"))
-        self.btnStart.setText(_translate("Form", "Create Table"))
+        self.comboBox.setItemText(0, _translate("Form", "date"))
+        self.comboBox.setItemText(1, _translate("Form", "weekday"))
         self.UseIndividualSorting.setText(_translate("Form", "Use individual sorting"))
+        self.label_17.setText(_translate("Form", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Detected Date Range</span></p></body></html>"))
         self.btnStop.setText(_translate("Form", "Stop"))
-        self.label_16.setText(_translate("Form", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Selection</span></p></body></html>"))
-        self.btnContinueCreate.setText(_translate("Form", "Continue Creating Table"))

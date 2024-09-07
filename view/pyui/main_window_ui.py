@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '.\main_window.ui'
+# Form implementation generated from reading ui file '.\ui\main_window.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.10
 #
@@ -28,13 +28,13 @@ class Ui_MainWindow(object):
         MainWindow.setFont(font)
         MainWindow.setAutoFillBackground(False)
         MainWindow.setStyleSheet("background: #cfe2da; \n"
-                                 "color: #00473e;\n"
-                                 "")
+"color: #00473e;\n"
+"")
         MainWindow.setTabShape(QtWidgets.QTabWidget.Triangular)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setStyleSheet("background-color: #00332c;\n"
-                                         "color: #ee9462;\n"
-                                         "")
+"color: #ee9462;\n"
+"")
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout_3 = QtWidgets.QGridLayout(self.centralwidget)
         self.gridLayout_3.setSizeConstraint(QtWidgets.QLayout.SetNoConstraint)
@@ -63,40 +63,40 @@ class Ui_MainWindow(object):
         font.setStyleStrategy(QtGui.QFont.NoAntialias)
         self.menu_widget.setFont(font)
         self.menu_widget.setStyleSheet("#toolBox {\n"
-                                       "    color:#00473e;\n"
-                                       "\n"
-                                       "}\n"
-                                       "\n"
-                                       "#toolBox::tab {\n"
-                                       "    padding-left: 5px;\n"
-                                       "    text-align: left;\n"
-                                       "    border-style: solid;\n"
-                                       "}\n"
-                                       "\n"
-                                       "#toolBox::tab:selected {\n"
-                                       "    background-color: #256531;\n"
-                                       "    font-weight: bold;\n"
-                                       "}\n"
-                                       "\n"
-                                       "#toolBox QPushButton {\n"
-                                       "    padding: 5px 0px 5px 20px;\n"
-                                       "    text-align: left;\n"
-                                       "    border-radius: 3px;\n"
-                                       "}\n"
-                                       "\n"
-                                       "#toolBox QPushButton:hover {\n"
-                                       "    background-color: #587b6d;\n"
-                                       "   border-radius: 3px;\n"
-                                       "}\n"
-                                       "\n"
-                                       "#toolBox QPushButton:checked {\n"
-                                       "    background-color: #585d1c;\n"
-                                       "    font-weight: bold;\n"
-                                       "}\n"
-                                       "\n"
-                                       "#toolBox label {\n"
-                                       "text-align: center;\n"
-                                       "}")
+"    color:#00473e;\n"
+"\n"
+"}\n"
+"\n"
+"#toolBox::tab {\n"
+"    padding-left: 5px;\n"
+"    text-align: left;\n"
+"    border-style: solid;\n"
+"}\n"
+"\n"
+"#toolBox::tab:selected {\n"
+"    background-color: #256531;\n"
+"    font-weight: bold;\n"
+"}\n"
+"\n"
+"#toolBox QPushButton {\n"
+"    padding: 5px 0px 5px 20px;\n"
+"    text-align: left;\n"
+"    border-radius: 3px;\n"
+"}\n"
+"\n"
+"#toolBox QPushButton:hover {\n"
+"    background-color: #587b6d;\n"
+"   border-radius: 3px;\n"
+"}\n"
+"\n"
+"#toolBox QPushButton:checked {\n"
+"    background-color: #585d1c;\n"
+"    font-weight: bold;\n"
+"}\n"
+"\n"
+"#toolBox label {\n"
+"text-align: center;\n"
+"}")
         self.menu_widget.setObjectName("menu_widget")
         self.gridLayout = QtWidgets.QGridLayout(self.menu_widget)
         self.gridLayout.setSizeConstraint(QtWidgets.QLayout.SetNoConstraint)
@@ -108,14 +108,10 @@ class Ui_MainWindow(object):
         self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame.setObjectName("frame")
-        self.gridLayout_7 = QtWidgets.QGridLayout(self.frame)
-        self.gridLayout_7.setObjectName("gridLayout_7")
-        self.textBrowser = QtWidgets.QTextBrowser(self.frame)
-        self.textBrowser.setMaximumSize(QtCore.QSize(100, 25))
-        self.textBrowser.setObjectName("textBrowser")
-        self.gridLayout_7.addWidget(self.textBrowser, 7, 0, 1, 1, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.frame)
+        self.verticalLayout.setObjectName("verticalLayout")
         self.toolBox = QtWidgets.QToolBox(self.frame)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.toolBox.sizePolicy().hasHeightForWidth())
@@ -138,11 +134,10 @@ class Ui_MainWindow(object):
         self.pushButton_5.setCheckable(True)
         self.pushButton_5.setObjectName("pushButton_5")
         self.gridLayout_6.addWidget(self.pushButton_5, 0, 0, 1, 2)
-        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
         self.gridLayout_6.addItem(spacerItem, 1, 0, 1, 1)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/newPrefix/icons/bootstrap-icons-1.10.3/house-door.svg"), QtGui.QIcon.Normal,
-                       QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(":/newPrefix/icons/bootstrap-icons-1.10.3/house-door.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.toolBox.addItem(self.page, icon, "")
         self.page_2 = QtWidgets.QWidget()
         self.page_2.setGeometry(QtCore.QRect(0, 0, 209, 312))
@@ -169,8 +164,7 @@ class Ui_MainWindow(object):
         spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.gridLayout_5.addItem(spacerItem1, 3, 0, 1, 1)
         icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap(":/newPrefix/icons/bootstrap-icons-1.10.3/table.svg"), QtGui.QIcon.Normal,
-                        QtGui.QIcon.Off)
+        icon1.addPixmap(QtGui.QPixmap(":/newPrefix/icons/bootstrap-icons-1.10.3/table.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.toolBox.addItem(self.page_2, icon1, "")
         self.page_3 = QtWidgets.QWidget()
         self.page_3.setGeometry(QtCore.QRect(0, 0, 209, 312))
@@ -184,25 +178,56 @@ class Ui_MainWindow(object):
         spacerItem2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.gridLayout_2.addItem(spacerItem2, 1, 0, 1, 1)
         icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap(":/newPrefix/icons/bootstrap-icons-1.10.3/download.svg"), QtGui.QIcon.Normal,
-                        QtGui.QIcon.Off)
+        icon2.addPixmap(QtGui.QPixmap(":/newPrefix/icons/bootstrap-icons-1.10.3/download.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.toolBox.addItem(self.page_3, icon2, "")
-        self.gridLayout_7.addWidget(self.toolBox, 2, 0, 1, 1, QtCore.Qt.AlignTop)
+        self.verticalLayout.addWidget(self.toolBox)
+        self.label_progress = QtWidgets.QLabel(self.frame)
+        self.label_progress.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_progress.setObjectName("label_progress")
+        #self.verticalLayout.addWidget(self.label_progress)
+        #self.progressBar = QtWidgets.QProgressBar(self.frame)
+        #self.progressBar.setProperty("value", 24)
+        #self.progressBar.setObjectName("progressBar")
+        #self.verticalLayout.addWidget(self.progressBar)
+        spacerItem3 = QtWidgets.QSpacerItem(20, 80, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout.addItem(spacerItem3)
+        self.gridLayout_7 = QtWidgets.QGridLayout()
+        self.gridLayout_7.setObjectName("gridLayout_7")
+        self.label_16 = QtWidgets.QLabel(self.frame)
+        font = QtGui.QFont()
+        font.setFamily("72")
+        font.setPointSize(8)
+        font.setBold(False)
+        font.setItalic(False)
+        self.label_16.setFont(font)
+        self.label_16.setStyleSheet("")
+        self.label_16.setObjectName("label_16")
+        self.gridLayout_7.addWidget(self.label_16, 1, 0, 1, 1)
+        self.line_Selection_format = QtWidgets.QLineEdit(self.frame)
+        self.line_Selection_format.setEnabled(False)
+        self.line_Selection_format.setStyleSheet("")
+        self.line_Selection_format.setObjectName("line_Selection_format")
+        self.gridLayout_7.addWidget(self.line_Selection_format, 2, 0, 1, 1)
+        self.line_Selection_trips = QtWidgets.QLineEdit(self.frame)
+        self.line_Selection_trips.setEnabled(False)
+        self.line_Selection_trips.setStyleSheet("")
+        self.line_Selection_trips.setObjectName("line_Selection_trips")
+        self.gridLayout_7.addWidget(self.line_Selection_trips, 3, 0, 1, 1)
+        self.line_Selection_agency = QtWidgets.QLineEdit(self.frame)
+        self.line_Selection_agency.setEnabled(False)
+        self.line_Selection_agency.setStyleSheet("")
+        self.line_Selection_agency.setObjectName("line_Selection_agency")
+        self.gridLayout_7.addWidget(self.line_Selection_agency, 4, 0, 1, 1)
+        self.verticalLayout.addLayout(self.gridLayout_7)
         self.btnExit = QtWidgets.QPushButton(self.frame)
         self.btnExit.setMinimumSize(QtCore.QSize(100, 40))
         self.btnExit.setStyleSheet("background-color: #3f7444;")
         self.btnExit.setObjectName("btnExit")
-        self.gridLayout_7.addWidget(self.btnExit, 6, 0, 1, 1)
-        spacerItem3 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.gridLayout_7.addItem(spacerItem3, 5, 0, 1, 1)
-        # self.progressBar = QtWidgets.QProgressBar(self.frame)
-        # self.progressBar.setProperty("value", 24)
-        # self.progressBar.setObjectName("progressBar")
-        # self.gridLayout_7.addWidget(self.progressBar, 4, 0, 1, 1)
-        self.label_progress = QtWidgets.QLabel(self.frame)
-        self.label_progress.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_progress.setObjectName("label_progress")
-        self.gridLayout_7.addWidget(self.label_progress, 3, 0, 1, 1)
+        self.verticalLayout.addWidget(self.btnExit)
+        self.textBrowser = QtWidgets.QTextBrowser(self.frame)
+        self.textBrowser.setMaximumSize(QtCore.QSize(100, 25))
+        self.textBrowser.setObjectName("textBrowser")
+        self.verticalLayout.addWidget(self.textBrowser)
         self.gridLayout.addWidget(self.frame, 1, 0, 1, 1)
         self.main_widget = QtWidgets.QWidget(self.splitter)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
@@ -212,7 +237,7 @@ class Ui_MainWindow(object):
         self.main_widget.setSizePolicy(sizePolicy)
         self.main_widget.setMinimumSize(QtCore.QSize(1000, 0))
         self.main_widget.setStyleSheet("background: #cfe2da;\n"
-                                       "color: #475d5b;")
+"color: #475d5b;")
         self.main_widget.setObjectName("main_widget")
         self.gridLayout_4 = QtWidgets.QGridLayout(self.main_widget)
         self.gridLayout_4.setSizeConstraint(QtWidgets.QLayout.SetMaximumSize)
@@ -226,18 +251,16 @@ class Ui_MainWindow(object):
         self.pushButton = QtWidgets.QPushButton(self.widget)
         self.pushButton.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.pushButton.setStyleSheet("background-color: #256531;\n"
-                                      "border-style: solid;\n"
-                                      "border-width: 2px;\n"
-                                      "border-radius: 14px;\n"
-                                      "border-color: #256531;\n"
-                                      "padding: 5px;\n"
-                                      "color: #f4edea;")
+"border-style: solid;\n"
+"border-width: 2px;\n"
+"border-radius: 14px;\n"
+"border-color: #256531;\n"
+"padding: 5px;\n"
+"color: #f4edea;")
         self.pushButton.setText("")
         icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap(":/newPrefix/icons/bootstrap-icons-1.10.3/arrow-left-square.svg"),
-                        QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        icon3.addPixmap(QtGui.QPixmap(":/newPrefix/icons/bootstrap-icons-1.10.3/arrow-right-square.svg"),
-                        QtGui.QIcon.Normal, QtGui.QIcon.On)
+        icon3.addPixmap(QtGui.QPixmap(":/newPrefix/icons/bootstrap-icons-1.10.3/arrow-left-square.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon3.addPixmap(QtGui.QPixmap(":/newPrefix/icons/bootstrap-icons-1.10.3/arrow-right-square.svg"), QtGui.QIcon.Normal, QtGui.QIcon.On)
         self.pushButton.setIcon(icon3)
         self.pushButton.setCheckable(True)
         self.pushButton.setChecked(False)
@@ -247,7 +270,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout.addItem(spacerItem4)
         self.gridLayout_4.addWidget(self.widget, 0, 0, 1, 1)
         self.stackedWidget = QtWidgets.QStackedWidget(self.main_widget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum)
         sizePolicy.setHorizontalStretch(10)
         sizePolicy.setVerticalStretch(10)
         sizePolicy.setHeightForWidth(self.stackedWidget.sizePolicy().hasHeightForWidth())
@@ -256,55 +279,46 @@ class Ui_MainWindow(object):
         self.stackedWidget.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.stackedWidget.setAutoFillBackground(False)
         self.stackedWidget.setStyleSheet("QTabWidget {\n"
-                                         "         border: solid;\n"
-                                         "         padding:0 px;\n"
-                                         "        }\n"
-                                         "\n"
-                                         "QTabWidget::panel {\n"
-                                         "  background: #F8B195;\n"
-                                         "  color: black;\n"
-                                         "  border: none;\n"
-                                         "} \n"
-                                         "\n"
-                                         "QTabBar {\n"
-                                         "         border: none;\n"
-                                         "        }\n"
-                                         "\n"
-                                         "QTabBar::tab {\n"
-                                         "  background: #F67280; \n"
-                                         "  padding: 15px;\n"
-                                         "\n"
-                                         "} \n"
-                                         "\n"
-                                         "QTabBar::tab:selected { \n"
-                                         "  background-color: #f8e395;\n"
-                                         "  border-radius: 5px;\n"
-                                         "}\n"
-                                         "\n"
-                                         "")
+"         border: solid;\n"
+"         padding:0 px;\n"
+"        }\n"
+"\n"
+"QTabWidget::panel {\n"
+"  background: #F8B195;\n"
+"  color: black;\n"
+"  border: none;\n"
+"} \n"
+"\n"
+"QTabBar {\n"
+"         border: none;\n"
+"        }\n"
+"\n"
+"QTabBar::tab {\n"
+"  background: #F67280; \n"
+"  padding: 15px;\n"
+"\n"
+"} \n"
+"\n"
+"QTabBar::tab:selected { \n"
+"  background-color: #f8e395;\n"
+"  border-radius: 5px;\n"
+"}\n"
+"\n"
+"")
         self.stackedWidget.setObjectName("stackedWidget")
         self.gridLayout_4.addWidget(self.stackedWidget, 1, 0, 1, 1)
         self.gridLayout_3.addWidget(self.splitter, 0, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
-        self.toolBox.setCurrentIndex(0)
-        self.pushButton.toggled['bool'].connect(self.menu_widget.setHidden)  # type: ignore
-        self.btnExit.clicked.connect(MainWindow.close)  # type: ignore
+        self.toolBox.setCurrentIndex(1)
+        self.pushButton.toggled['bool'].connect(self.menu_widget.setHidden) # type: ignore
+        self.btnExit.clicked.connect(MainWindow.close) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.textBrowser.setHtml(_translate("MainWindow",
-                                            "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-                                            "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
-                                            "p, li { white-space: pre-wrap; }\n"
-                                            "hr { height: 1px; border-width: 0; }\n"
-                                            "li.unchecked::marker { content: \"\\2610\"; }\n"
-                                            "li.checked::marker { content: \"\\2612\"; }\n"
-                                            "</style></head><body style=\" font-family:\'Segoe UI\'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
-                                            "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt;\">Version 0.8</span></p></body></html>"))
         self.pushButton_5.setText(_translate("MainWindow", "General Information"))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page), _translate("MainWindow", "General"))
         self.pushButton_3.setText(_translate("MainWindow", "Select"))
@@ -313,9 +327,16 @@ class Ui_MainWindow(object):
         self.toolBox.setItemText(self.toolBox.indexOf(self.page_2), _translate("MainWindow", "Create Table"))
         self.pushButton_6.setText(_translate("MainWindow", "Download GTFS Data"))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page_3), _translate("MainWindow", "Download GTFS"))
-        self.btnExit.setText(_translate("MainWindow", "Exit"))
         self.label_progress.setText(_translate("MainWindow", "Progress"))
-
-
+        self.label_16.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Selection</span></p></body></html>"))
+        self.btnExit.setText(_translate("MainWindow", "Exit"))
+        self.textBrowser.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"hr { height: 1px; border-width: 0; }\n"
+"li.unchecked::marker { content: \"\\2610\"; }\n"
+"li.checked::marker { content: \"\\2612\"; }\n"
+"</style></head><body style=\" font-family:\'Segoe UI\'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt;\">Version 0.8</span></p></body></html>"))
 from add_files.res import resource_boot
 from add_files.res import resource_rc

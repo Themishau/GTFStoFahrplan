@@ -30,7 +30,8 @@
 border-style: solid;
 border-color:  #f2f7f5;
 background: #cfe2da; 
-
+padding: 20px;
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 #Form QListWidget {
@@ -40,9 +41,15 @@ background: #cfe2da;
     color:#41312b;
 }
 
+#Form QListWidget::item {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
 #Form QPushButton {
 	background-color: #587b6d;
-   border-radius: 10px;
+    border-radius: 10px;
+    margin-bottom: 15px;
 	padding: 5px 5px 5px 5px;
 	text-align: center;
     color:#f2b198;
@@ -58,55 +65,208 @@ background: #cfe2da;
 
 #Form QLabel {
 	text-align: center;
-    color:#41312b;
+    color: #41312b;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 10px;
 }
 
 #Form QComboBox {
 	background-color: #587b6d;
    border-radius: 10px;
 	padding: 5px 5px 5px 100px;
-	text-align: center;
+	text-align: left;
     color:#f2b198;
-    
+    border: 1px solid #ccc;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+#Form QComboBox::drop-down {
+    subcontrol-origin: border;
+    subcontrol-position: right bottom;
+    width: 40px;
+    border-left: 1px solid #ccc;
 }
 
 #Form QPushButton:hover {
 	background-color: #408d49;
    border-radius: 10px;
        color:#fde1d6;
+}
+
+#Form QTableView {
+    color: black;
+    gridline-color: black;
+    border-color: #f2f7f5;
+    font: 10px;
+    background: #eaeaea;
+    padding: 10px;
+    border: 1px solid #f2f7f5;
+}
+
+#Form QTableView::item {
+    padding: 5px;
+    border-bottom: 1px solid #ddd;
+}
+
+#Form QTableView::item:hover {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #F0FCF7, stop: 1 #EAEAEA);
+    border: 1px solid #587b6d;
+}
+
+#Form QTableView::item:selected {
+    background: #587b6d;
+    color: white;
+    border: 1px solid #587b6d;
+}
+
+#Form QTableView::item:selected:active {
+    background: #408d49;
+    color: #fde1d6;
+}
+
+#Form QTableCornerButton::section {
+    background: #587b6d;
+    border: 2px outset #587b6d;
+}
+
+#Form QTableView::indicator:checked {
+    background-color: #408d49;
+    color: white;
+}
+
+#Form QTableView::indicator:unchecked {
+    background-color: #f2f7f5;
+    color: #587b6d;
+}
+
+#Form QScrollBar:vertical {
+    background: #F0FCF7;
+    width: 10px;
+}
+
+#Form QScrollBar::handle:vertical {
+    background: #587b6d;
+    min-height: 50px;
+}
+
+#Form QScrollBar::add-page:vertical {
+    background: #F0FCF7;
+}
+
+#Form QScrollBar::sub-page:vertical {
+    background: #F0FCF7;
+}
+
+#Form QScrollBar:horizontal {
+    background: #F0FCF7;
+    height: 10px;
+}
+
+#Form QScrollBar::handle:horizontal {
+    background: #587b6d;
+    min-width: 50px;
+}
+
+#Form QScrollBar::add-page:horizontal {
+    background: #F0FCF7;
+}
+
+#Form QScrollBar::sub-page:horizontal {
+    background: #F0FCF7;
 }</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="9" column="0">
-    <widget class="QWidget" name="widget_8" native="true">
-     <layout class="QGridLayout" name="gridLayout_15"/>
-    </widget>
+   <item row="3" column="0">
+    <layout class="QGridLayout" name="gridLayout_3">
+     <item row="2" column="0">
+      <widget class="QPushButton" name="btnContinueCreate">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Continue Creating Table</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="QTableView" name="tableView_sorting_stops">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <spacer name="verticalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>200</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
    </item>
    <item row="0" column="0">
     <layout class="QGridLayout" name="gridLayout_5">
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_12">
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+       <property name="text">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Mode Settings&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="QDateEdit" name="dateEdit"/>
+     </item>
      <item row="5" column="0">
-      <widget class="QLabel" name="label_17">
+      <layout class="QGridLayout" name="gridLayout_2"/>
+     </item>
+     <item row="1" column="2">
+      <widget class="QLabel" name="label_13">
        <property name="font">
         <font>
          <family>72</family>
-         <pointsize>8</pointsize>
+         <pointsize>-1</pointsize>
          <italic>false</italic>
-         <bold>false</bold>
+         <bold>true</bold>
         </font>
        </property>
        <property name="styleSheet">
         <string notr="true"/>
        </property>
        <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;detected date range&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Date&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="0">
-      <widget class="QDateEdit" name="dateEdit"/>
+     <item row="0" column="2">
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
      </item>
-     <item row="0" column="1">
-      <widget class="QComboBox" name="comboBox">
+     <item row="12" column="0">
+      <widget class="QPushButton" name="btnStart">
        <property name="enabled">
         <bool>false</bool>
        </property>
@@ -118,57 +278,12 @@ background: #cfe2da;
        <property name="styleSheet">
         <string notr="true"/>
        </property>
-       <item>
-        <property name="text">
-         <string>date</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>weekday</string>
-        </property>
-       </item>
-      </widget>
-     </item>
-     <item row="0" column="0">
-      <widget class="QLabel" name="label_12">
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
        <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;mode&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>Create Table</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label_13">
-       <property name="font">
-        <font>
-         <family>72</family>
-         <pointsize>8</pointsize>
-         <italic>false</italic>
-         <bold>false</bold>
-        </font>
-       </property>
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
-       <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Date&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="0">
-      <widget class="QLineEdit" name="line_Selection_date_range">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1" rowspan="5">
+     <item row="8" column="2" rowspan="5">
       <widget class="QListWidget" name="listDatesWeekday">
        <property name="enabled">
         <bool>false</bool>
@@ -189,14 +304,14 @@ background: #cfe2da;
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
+     <item row="7" column="2">
       <widget class="QLabel" name="label_6">
        <property name="font">
         <font>
          <family>72</family>
-         <pointsize>8</pointsize>
+         <pointsize>-1</pointsize>
          <italic>false</italic>
-         <bold>false</bold>
+         <bold>true</bold>
         </font>
        </property>
        <property name="styleSheet">
@@ -208,6 +323,22 @@ background: #cfe2da;
       </widget>
      </item>
      <item row="1" column="1">
+      <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Maximum</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>300</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="2" column="0">
       <widget class="QComboBox" name="comboBox_direction">
        <property name="enabled">
         <bool>false</bool>
@@ -232,65 +363,40 @@ background: #cfe2da;
        </item>
       </widget>
      </item>
-    </layout>
-   </item>
-   <item row="2" column="0">
-    <widget class="QPushButton" name="btnStart">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="font">
-      <font>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true"/>
-     </property>
-     <property name="text">
-      <string>Create Table</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <widget class="QCheckBox" name="UseIndividualSorting">
-     <property name="text">
-      <string>Use individual sorting</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="1">
-    <widget class="QPushButton" name="btnStop">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="font">
-      <font>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true"/>
-     </property>
-     <property name="text">
-      <string>Stop</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0" colspan="2">
-    <widget class="QTableView" name="tableView_sorting_stops">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="1">
-    <layout class="QGridLayout" name="gridLayout_3">
-     <item row="12" column="0">
-      <widget class="QLineEdit" name="line_Selection_agency">
+     <item row="3" column="0">
+      <widget class="QComboBox" name="comboBox">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+       <item>
+        <property name="text">
+         <string>date</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>weekday</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QCheckBox" name="UseIndividualSorting">
+       <property name="text">
+        <string>Use individual sorting</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="2">
+      <widget class="QLineEdit" name="line_Selection_date_range">
        <property name="enabled">
         <bool>false</bool>
        </property>
@@ -299,55 +405,43 @@ background: #cfe2da;
        </property>
       </widget>
      </item>
-     <item row="13" column="0">
-      <widget class="QLineEdit" name="line_Selection_trips">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
-      </widget>
-     </item>
-     <item row="11" column="0">
-      <widget class="QLineEdit" name="line_Selection_format">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0">
-      <widget class="QLabel" name="label_16">
+     <item row="3" column="2">
+      <widget class="QLabel" name="label_17">
        <property name="font">
         <font>
          <family>72</family>
-         <pointsize>8</pointsize>
+         <pointsize>-1</pointsize>
          <italic>false</italic>
-         <bold>false</bold>
+         <bold>true</bold>
         </font>
        </property>
        <property name="styleSheet">
         <string notr="true"/>
        </property>
        <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Selection&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Detected Date Range&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
+     </item>
+     <item row="13" column="0">
+      <widget class="QPushButton" name="btnStop">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+       <property name="text">
+        <string>Stop</string>
        </property>
       </widget>
      </item>
     </layout>
-   </item>
-   <item row="4" column="0">
-    <widget class="QPushButton" name="btnContinueCreate">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="text">
-      <string>Continue Creating Table</string>
-     </property>
-    </widget>
    </item>
   </layout>
  </widget>
