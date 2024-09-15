@@ -3,11 +3,11 @@ import os
 
 from PyQt5 import QtCore
 from PyQt5.Qt import QPoint, QMessageBox, QDesktopWidget, QMainWindow
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtWidgets import QFileDialog, QLabel, QVBoxLayout
 
 from helpFunctions import string_to_qdate
-from .BusySpinner import BusySpinner
+from .BusySpinner import IndicatorWidget, BusyIndicator
 from .create_table_create import CreateTableCreate
 from .create_table_import import CreateTableImport
 from .create_table_select import CreateTableSelect
@@ -29,7 +29,7 @@ class View(QMainWindow):
         self.viewModel = viewModel
 
         self.progressRound = None
-        self.spinner = None
+        self.spinner_label = None
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
@@ -61,6 +61,7 @@ class View(QMainWindow):
         self.ui.toolBox.setCurrentIndex(0)
 
         self.show_home_window()
+
 
     def initialize_buttons_links(self):
 
@@ -126,8 +127,15 @@ class View(QMainWindow):
         self.viewModel.error_message.connect(self.send_message_box)
 
     def initialize_busy_inficator(self):
-        self.spinner = BusySpinner()
-        self.ui.gridLayout.addWidget(self.spinner)
+        self.spinner_label = BusyIndicator()
+
+    def start_busy(self):
+        self.spinner_label.show()
+        self.spinner_label.startAnimation()
+
+    def stop_busy(self):
+        self.spinner_label.stopAnimation()
+        self.spinner_label.hide()
 
     def update_selected_agency(self, row):
         self.CreateSelect_Tab.ui.AgenciesTableView.selectRow(row)
@@ -252,7 +260,8 @@ class View(QMainWindow):
     def show_home_window(self):
         self.set_btn_checked(self.generalNavPush_btn)
         self.ui.stackedWidget.setCurrentWidget(self.CreateMainTab)
-        self.spinner.start()
+        self.start_busy()
+
 
     def show_Create_Import_Window(self):
         self.set_btn_checked(self.createTableImport_btn)

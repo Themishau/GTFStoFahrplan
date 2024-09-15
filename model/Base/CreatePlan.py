@@ -215,6 +215,10 @@ class CreatePlan(QObject):
         """
         fahrplan_dates = sqldf(cond_select_dates_for_date_range, locals())
 
+        if len(fahrplan_dates) == 0:
+            raise ValueError("fahrplan_dates is empty")
+
+
         # change format
         fahrplan_dates['start_date'] = pd.to_datetime(fahrplan_dates['start_date'], format='%Y%m%d')
         fahrplan_dates['end_date'] = pd.to_datetime(fahrplan_dates['end_date'], format='%Y%m%d')

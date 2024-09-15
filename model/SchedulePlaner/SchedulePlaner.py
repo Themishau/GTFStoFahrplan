@@ -32,12 +32,13 @@ class SchedulePlaner(QObject):
         self.app = app
 
         self.progress = 0
+
         self.create_plan = None
         self.export_plan = None
         self.analyze_data = None
         self.select_data = None
-
         self.import_Data = None
+
         self.create_settings_for_table_dto = CreateSettingsForTableDTO()
 
     """ methods """
@@ -115,14 +116,16 @@ class SchedulePlaner(QObject):
         self.select_data.create_settings_for_table_dto = self.create_settings_for_table_dto
 
     def create_table(self) -> bool:
-        #try:
-        self.create_plan.create_table()
-        self.export_plan.export_plan(self.create_settings_for_table_dto, self.create_plan.create_dataframe)
-        self.create_finished.emit(True)
-        return True
-        #except AttributeError:
-        #    self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
-        #    return False
+        try:
+            self.create_plan.create_table()
+            self.export_plan.export_plan(self.create_settings_for_table_dto, self.create_plan.create_dataframe)
+            self.create_finished.emit(True)
+            return True
+        except AttributeError as e:
+            self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
+            return False
+        except ValueError as e:
+            self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value + e)
 
     def create_table_individual_sorting(self) -> bool:
         self.create_plan.create_table()

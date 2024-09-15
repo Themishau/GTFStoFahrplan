@@ -13,7 +13,6 @@ class CreatePlanMode(Enum):
     weekday = 'weekday'
 
 
-
 class GtfsColumnNames(Enum):
     stopsList = 'stopsList'
     stopTimesList = 'stopTimesList'
@@ -67,9 +66,6 @@ class UpdateGuiEnum(Enum):
 
 class ModelTriggerActionsEnum(Enum):
     planer_start_load_data = 'planer_start_load_data'
-    planer_select_agency = 'planer_select_agency'
-    planer_select_weekday = 'planer_select_weekday'
-    planer_reset_gtfs = 'planer_reset_gtfs'
     planer_start_create_table = 'planer_start_create_table'
     planer_start_create_table_continue = 'planer_start_create_table_continue'
 

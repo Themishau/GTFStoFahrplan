@@ -31,7 +31,7 @@ class RoundProgress(QWidget):
         self.start_time = QTime.currentTime() # Initialize start_time
 
         # Set the timer interval to make the update slower
-        fps = 1 # Desired frames per second
+        fps = 20 # Desired frames per second
         self.timer.setInterval(round(1000 / fps)) # Calculate interval in milliseconds
         self.timer.start(500) # Update every 100 ms
 
