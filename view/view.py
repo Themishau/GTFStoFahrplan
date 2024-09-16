@@ -7,7 +7,6 @@ from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtWidgets import QFileDialog, QLabel, QVBoxLayout
 
 from helpFunctions import string_to_qdate
-from .BusySpinner import IndicatorWidget, BusyIndicator
 from .create_table_create import CreateTableCreate
 from .create_table_import import CreateTableImport
 from .create_table_select import CreateTableSelect
@@ -54,7 +53,6 @@ class View(QMainWindow):
 
         self.initialize_window()
         self.initialize_modified_progress_bar()
-        self.initialize_busy_inficator()
         self.initialize_tabs()
         self.initialize_buttons_links()
         self.init_signals()
@@ -127,15 +125,8 @@ class View(QMainWindow):
         self.viewModel.error_message.connect(self.send_message_box)
 
     def initialize_busy_inficator(self):
-        self.spinner_label = BusyIndicator()
+        NotImplemented()
 
-    def start_busy(self):
-        self.spinner_label.show()
-        self.spinner_label.startAnimation()
-
-    def stop_busy(self):
-        self.spinner_label.stopAnimation()
-        self.spinner_label.hide()
 
     def update_selected_agency(self, row):
         self.CreateSelect_Tab.ui.AgenciesTableView.selectRow(row)
@@ -209,7 +200,7 @@ class View(QMainWindow):
         self.update_time_format_based_on_dto()
 
     def initialize_window(self):
-        self.setFixedSize(1350, 900)
+        self.setFixedSize(1920, 1080)
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.center()
         self.oldPos = self.pos()
@@ -243,8 +234,8 @@ class View(QMainWindow):
         self.progressRound = RoundProgress()
         self.progressRound.value = 0
         self.progressRound.setMinimumSize(self.progressRound.width, self.progressRound.height)
-        self.ui.gridLayout_7.addWidget(self.ui.label_progress, 5, 0, 1, 1, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-        self.ui.gridLayout_7.addWidget(self.progressRound, 6, 0, 1, 1, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        self.ui.progress_widget.addWidget(self.ui.label_progress, 5, 0, 1, 1, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        self.ui.progress_widget.addWidget(self.progressRound, 6, 0, 1, 1, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
 
     def initialize_tabs(self):
         self.ui.stackedWidget.addWidget(self.CreateImport_Tab)
@@ -260,7 +251,6 @@ class View(QMainWindow):
     def show_home_window(self):
         self.set_btn_checked(self.generalNavPush_btn)
         self.ui.stackedWidget.setCurrentWidget(self.CreateMainTab)
-        self.start_busy()
 
 
     def show_Create_Import_Window(self):
