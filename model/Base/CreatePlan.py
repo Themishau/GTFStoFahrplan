@@ -22,7 +22,7 @@ class CreatePlan(QObject):
     error_occured = pyqtSignal(str)
     create_sorting = pyqtSignal()
 
-    def __init__(self, app, progress: int):
+    def __init__(self, progress: int):
         super().__init__()
         self.reset_create = False
         self.create_plan_mode = None
@@ -171,58 +171,42 @@ class CreatePlan(QObject):
         requested_directiondf = self.create_dataframe.Direction
         varTestAgency = self.create_dataframe.SelectedAgency
 
-        cond_select_dates_for_date_range = '''
-                    select  
-                            dfTrips.trip_id,
-                            dfTrips.service_id,
-                            dfTrips.route_id, 
-                            dfWeek.start_date,
-                            dfWeek.end_date,
-                            dfWeek.monday,
-                            dfWeek.tuesday,
-                            dfWeek.wednesday,
-                            dfWeek.thursday,
-                            dfWeek.friday,
-                            dfWeek.saturday,
-                            dfWeek.sunday
-                    from dfWeek 
-                    inner join dfTrips on dfWeek.service_id = dfTrips.service_id
-                    inner join dfRoutes on dfRoutes.route_id  = dfTrips.route_id
-                    inner join route_short_namedf on dfRoutes.route_short_name = route_short_namedf.route_short_name
-                    inner join varTestAgency on dfRoutes.agency_id = varTestAgency.agency_id
-                    inner join requested_directiondf on dfTrips.direction_id = requested_directiondf.direction_id
-                    where dfRoutes.route_short_name = route_short_namedf.route_short_name -- in this case the bus line number
-                      and dfRoutes.agency_id = varTestAgency.agency_id -- in this case the bus line number
-                      and dfTrips.direction_id = requested_directiondf.direction_id -- shows the direction of the line 
-                    order by dfTrips.service_id;
-                   '''
+        selected_columns = [
+            'trip_id',
+            'service_id',
+            'route_id',
+            'start_date',
+            'end_date',
+            'monday',
+            'tuesday',
+            'wednesday',
+            'thursday',
+            'friday',
+            'saturday',
+            'sunday'
+        ]
 
-        # get dates for start and end dates for date range function
-        # TODO: Sortieren nach neue Spalte
-        """
-        dfTrips.trip_id,
-        dfTrips.service_id,
-        dfTrips.route_id, 
-        dfWeek.start_date,
-        dfWeek.end_date,
-        dfWeek.monday,
-        dfWeek.tuesday,
-        dfWeek.wednesday,
-        dfWeek.thursday,
-        dfWeek.friday,
-        dfWeek.saturday,
-        dfWeek.sunday
-        """
-        fahrplan_dates = sqldf(cond_select_dates_for_date_range, locals())
+        result = (
+            dfWeek
+            .merge(dfTrips, on='service_id', how='inner')
+            .merge(dfRoutes, on='route_id', how='inner')
+            .merge(route_short_namedf, on='route_short_name', how='inner')
+            .merge(varTestAgency, on='agency_id', how='inner')
+            .merge(requested_directiondf, on='direction_id', how='inner')
+            .loc[lambda df: df['route_short_name'] == df['route_short_name']]
+            .loc[lambda df: df['agency_id'] == df['agency_id']]
+            .loc[lambda df: df['direction_id'] == df['direction_id']]
+            .sort_values('service_id')
+        )
+        result = result[selected_columns]
 
-        if len(fahrplan_dates) == 0:
+        if len(result) == 0:
             raise ValueError("fahrplan_dates is empty")
 
-
         # change format
-        fahrplan_dates['start_date'] = pd.to_datetime(fahrplan_dates['start_date'], format='%Y%m%d')
-        fahrplan_dates['end_date'] = pd.to_datetime(fahrplan_dates['end_date'], format='%Y%m%d')
-        self.create_dataframe.FahrplanDates = fahrplan_dates
+        result['start_date'] = pd.to_datetime(result['start_date'], format='%Y%m%d')
+        result['end_date'] = pd.to_datetime(result['end_date'], format='%Y%m%d')
+        self.create_dataframe.FahrplanDates = result
 
     def weekday_select_weekday_exception_2(self):
         dfDates = self.dfDates
