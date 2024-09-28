@@ -234,8 +234,13 @@ class View(QMainWindow):
         self.progressRound = RoundProgress()
         self.progressRound.value = 0
         self.progressRound.setMinimumSize(self.progressRound.width, self.progressRound.height)
-        self.ui.progress_widget.addWidget(self.ui.label_progress, 5, 0, 1, 1, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-        self.ui.progress_widget.addWidget(self.progressRound, 6, 0, 1, 1, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        self.ui.progress_widget.addWidget(self.ui.label_progress, 0, 1, 1, 1, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        self.ui.progress_widget.addWidget(self.progressRound, 1, 1, 1, 1, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+
+        #self.progressBar = QtWidgets.QProgressBar(self.main_widget)
+        #self.progressBar.setProperty("value", 24)
+        #self.progressBar.setObjectName("progressBar")
+        #self.progress_widget.addWidget(self.progressBar, 1, 1, 1, 1)
 
     def initialize_tabs(self):
         self.ui.stackedWidget.addWidget(self.CreateImport_Tab)
