@@ -73,8 +73,8 @@ class CreatePlan(QObject):
         return True
 
     def create_table(self):
+        self.progress = 0
         if self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date and self.create_settings_for_table_dto.individual_sorting:
-            self.progress = 0
             self.progress = 10
             self.dates_prepare_data_fahrplan()
             self.progress = 20
@@ -89,7 +89,6 @@ class CreatePlan(QObject):
             self.datesWeekday_create_sort_stopnames()
             self.create_sorting.emit()
         elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date:
-            self.progress = 0
             self.progress = 10
             self.dates_prepare_data_fahrplan()
             self.progress = 20

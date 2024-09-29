@@ -45,6 +45,15 @@ class Model(QObject):
     def  planer_start_create_table_continue(self):
         self.planer.create_table_continue()
 
+    def  planer_start_create_umlaufplan(self):
+        self.planer.create_table_continue()
+
+    def  planer_start_create_umlaufplan_continue(self):
+        if self.planer.create_settings_for_table_dto.individual_sorting:
+            self.planer.create_table_individual_sorting()
+        else:
+            self.planer.create_table()
+
     def trigger_action_reset_schedule_planer(self):
         self.planer = None
         self.set_up_schedule_planer()

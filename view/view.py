@@ -237,11 +237,6 @@ class View(QMainWindow):
         self.ui.progress_widget.addWidget(self.ui.label_progress, 0, 1, 1, 1, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
         self.ui.progress_widget.addWidget(self.progressRound, 1, 1, 1, 1, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
 
-        #self.progressBar = QtWidgets.QProgressBar(self.main_widget)
-        #self.progressBar.setProperty("value", 24)
-        #self.progressBar.setObjectName("progressBar")
-        #self.progress_widget.addWidget(self.progressBar, 1, 1, 1, 1)
-
     def initialize_tabs(self):
         self.ui.stackedWidget.addWidget(self.CreateImport_Tab)
         self.ui.stackedWidget.addWidget(self.CreateSelect_Tab)
@@ -408,3 +403,4 @@ class View(QMainWindow):
 
         self.CreateCreate_Tab.ui.listDatesWeekday.clear()
         self.CreateCreate_Tab.ui.tableView_sorting_stops.clear()
+        self.viewModel.model.planer.initilize_scheduler()

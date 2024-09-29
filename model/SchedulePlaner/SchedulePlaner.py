@@ -133,9 +133,34 @@ class SchedulePlaner(QObject):
         return True
 
     def create_table_continue(self):
-        self.create_plan.create_table_continue()
-        self.export_plan.export_plan(self.create_settings_for_table_dto, self.create_plan.create_dataframe)
-        self.create_finished.emit(True)
+        try:
+            self.create_plan.create_table_continue()
+            self.export_plan.export_plan(self.create_settings_for_table_dto, self.create_plan.create_dataframe)
+            self.create_finished.emit(True)
+        except AttributeError as e:
+            self.error_occured.emit(ErrorMessageRessources.no_import_object_generated.value)
+            return False
+
+    def create_umlaufplan(self):
+        try:
+            self.create_plan.create_table()
+            self.export_plan.export_plan(self.create_settings_for_table_dto, self.create_plan.create_dataframe)
+            self.create_finished.emit(True)
+            return True
+        except AttributeError as e:
+            self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
+            return False
+        except ValueError as e:
+            self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value + e)
+
+    def create_umlaufplan_continue(self):
+        try:
+            self.create_plan.create_table_continue()
+            self.export_plan.export_plan(self.create_settings_for_table_dto, self.create_plan.create_dataframe)
+            self.create_finished.emit(True)
+        except AttributeError as e:
+            self.error_occured.emit(ErrorMessageRessources.no_import_object_generated.value)
+            return False
 
     def import_gtfs_data(self) -> bool:
         try:
