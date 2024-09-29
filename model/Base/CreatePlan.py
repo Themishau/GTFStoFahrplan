@@ -31,11 +31,6 @@ class CreatePlan(QObject):
         self.create_settings_for_table_dto = CreateSettingsForTableDTO()
         self.create_dataframe = CreateTableDataframeDto()
 
-        """ property """
-        self.input_path = ""
-        self.pickle_save_path = ""
-        self.time_format = 1
-
         """ visual internal property """
         self.progress = progress
 
