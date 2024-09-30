@@ -1,86 +1,68 @@
 # -*- coding: utf-8 -*-
-from model.observer import Publisher, Subscriber
-import time
-import pandas as pd
-from pandasql import sqldf
-import zipfile
-import io
-from datetime import datetime, timedelta
-import re
+from PyQt5.QtCore import QObject, pyqtSignal
 import logging
-import sys
-import os
-from ..Base.ImportData import ImportData
-from ..Base.SelectData import SelectData
-from ..Base.CreatePlan import CreatePlan
-from ..Base.ExportPlan import ExportPlan
+from pandasql import sqldf
+import re
+from datetime import datetime, timedelta
+import pandas as pd
+from model.Enum.GTFSEnums import CreatePlanMode
+from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO
+from ..Dto.CreateTableDataframeDto import CreateTableDataframeDto
+from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
                     datefmt="%Y-%m-%d %H:%M:%S")
 
 
-class UmlaufPlaner(Publisher, Subscriber):
-    def __init__(self, events, name):
-        super().__init__(events=events, name=name)
+class UmlaufPlaner(QObject):
+    progress_Update = pyqtSignal(int)
+    error_occured = pyqtSignal(str)
+    create_sorting = pyqtSignal()
 
+    def __init__(self, progress: int):
+        super().__init__()
+        self.reset_create = False
         self.create_plan_direction_two = None
         self.create_plan_direction_one = None
-        self.export_plan = None
         self.create_plan_direction_one = None
         self.create_plan_direction_two = None
-        self.prepare_data = None
-        self.select_data = None
-        self.import_Data = None
 
-        self.notify_functions = {
-            'ImportGTFS': [self.async_task_load_GTFS_data, False],
-        }
+        self.create_settings_for_table_dto = CreateSettingsForTableDTO()
+        self.create_dataframe = CreateTableDataframeDto()
 
-    @property
-    def export_plan(self):
-        return self._exportPlan
+        """ visual internal property """
+        self.progress = progress
 
-    @export_plan.setter
-    def export_plan(self, value):
-        self._exportPlan = value
-
-    @property
-    def create_plan_direction_one(self):
-        return self._createPlan_Direction_one
-
-    @create_plan_direction_one.setter
-    def create_plan_direction_one(self, value):
-        self._createPlan_Direction_one = value
+        self.weekDayOptionsList = ['0,Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday',
+                                   '1,Monday, Tuesday, Wednesday, Thursday, Friday',
+                                   '2,Monday',
+                                   '3,Tuesday',
+                                   '4,Wednesday',
+                                   '5,Thursday',
+                                   '6,Friday',
+                                   '7,Saturday',
+                                   '8,Sunday']
 
     @property
-    def create_plan_direction_two(self):
-        return self._createPlan_Direction_two
+    def progress(self):
+        return self._progress
 
-    @create_plan_direction_two.setter
-    def create_plan_direction_two(self, value):
-        self._createPlan_Direction_two = value
-
-    @property
-    def prepare_data(self):
-        return self._prepare_data
-
-    @prepare_data.setter
-    def prepare_data(self, value):
-        self._prepare_data = value
+    @progress.setter
+    def progress(self, value):
+        self._progress = value
+        self.progress_Update.emit(self._progress)
 
     @property
-    def select_data(self):
-        return self._select_data
+    def gtfs_data_frame_dto(self):
+        return self._gtfs_data_frame_dto
 
-    @select_data.setter
-    def _select_data(self, value):
-        self._select_data = value
+    @gtfs_data_frame_dto.setter
+    def gtfs_data_frame_dto(self, value: GtfsDataFrameDto):
+        self._gtfs_data_frame_dto = value
 
-    @property
-    def import_Data(self):
-        return self._import_Data
+    def check_setting_data(self) -> bool:
+        if not self.check_dates_input(self.create_settings_for_table_dto.dates):
+            return False
 
-    @import_Data.setter
-    def import_Data(self, value):
-        self._import_Data = value
+        return True
