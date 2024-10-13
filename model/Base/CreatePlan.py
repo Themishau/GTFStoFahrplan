@@ -29,7 +29,6 @@ class CreatePlan(QObject):
         self.reset_create = False
         self.create_plan_mode = None
         self.gtfs_data_frame_dto = None
-        self.df_filtered_stop_names = None
         self.create_settings_for_table_dto = CreateSettingsForTableDTO()
         self.create_dataframe = CreateTableDataframeDto()
         self.plans = None
@@ -76,6 +75,7 @@ class CreatePlan(QObject):
             self.plans = UmlaufPlaner()
             self.plans.create_settings_for_table_dto = self.create_settings_for_table_dto
             self.plans.create_dataframe = self.create_dataframe
+            self.plans.gtfs_data_frame_dto = self.gtfs_data_frame_dto
             self.progress = 10
             self.plans.dates_prepare_data_fahrplan()
             self.progress = 20
@@ -93,6 +93,7 @@ class CreatePlan(QObject):
             self.plans = UmlaufPlaner()
             self.plans.create_settings_for_table_dto = self.create_settings_for_table_dto
             self.plans.create_dataframe = self.create_dataframe
+            self.plans.gtfs_data_frame_dto = self.gtfs_data_frame_dto
             self.progress = 10
             self.plans.dates_prepare_data_fahrplan()
             self.progress = 20
@@ -113,6 +114,7 @@ class CreatePlan(QObject):
             self.plans = UmlaufPlaner()
             self.plans.create_settings_for_table_dto = self.create_settings_for_table_dto
             self.plans.create_dataframe = self.create_dataframe
+            self.plans.gtfs_data_frame_dto = self.gtfs_data_frame_dto
             self.progress = 10
             self.plans.weekday_prepare_data_fahrplan()
             self.progress = 20
@@ -131,6 +133,7 @@ class CreatePlan(QObject):
             self.plans = UmlaufPlaner()
             self.plans.create_settings_for_table_dto = self.create_settings_for_table_dto
             self.plans.create_dataframe = self.create_dataframe
+            self.plans.gtfs_data_frame_dto = self.gtfs_data_frame_dto
             self.progress = 10
             self.plans.weekday_prepare_data_fahrplan()
             self.progress = 20

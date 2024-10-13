@@ -89,6 +89,7 @@ class SchedulePlaner(QObject):
         self.select_data.create_settings_for_table_dto_changed.connect(self.update_create_settings_selected_data)
 
     def update_settings_for_create_table(self):
+        self.initialize_create_plan()
         self.create_plan.create_settings_for_table_dto = self.create_settings_for_table_dto
 
     def initialize_analyze_data(self):
@@ -103,6 +104,7 @@ class SchedulePlaner(QObject):
         self.create_plan = CreatePlan(self.app, progress=self.progress)
         self.create_plan.progress_Update.connect(self.update_progress_bar)
         self.create_plan.create_sorting.connect(self.create_sorting_start)
+        self.create_plan.gtfs_data_frame_dto = self.gtfs_data_frame_dto
 
     def create_sorting_start(self):
         self.create_sorting_signal.emit()
@@ -226,4 +228,3 @@ class SchedulePlaner(QObject):
             self.analyze_data.gtfs_data_frame_dto = value
             self.initialize_setting_dto()
             self.select_data.gtfs_data_frame_dto = value
-            self.create_plan.gtfs_data_frame_dto = value

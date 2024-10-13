@@ -21,6 +21,8 @@ class UmlaufPlaner(QObject):
         super().__init__()
         self.create_settings_for_table_dto = CreateSettingsForTableDTO()
         self.create_dataframe = CreateTableDataframeDto()
+        self.gtfs_data_frame_dto = None
+        self.df_filtered_stop_names = None
 
         self.weekDayOptionsList = ['0,Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday',
                                    '1,Monday, Tuesday, Wednesday, Thursday, Friday',
@@ -31,7 +33,6 @@ class UmlaufPlaner(QObject):
                                    '6,Friday',
                                    '7,Saturday',
                                    '8,Sunday']
-
 
     @property
     def gtfs_data_frame_dto(self):
