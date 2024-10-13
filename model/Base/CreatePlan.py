@@ -30,7 +30,6 @@ class CreatePlan(QObject):
         self.create_plan_mode = None
         self.gtfs_data_frame_dto = None
         self.create_settings_for_table_dto = CreateSettingsForTableDTO()
-        self.create_dataframe = CreateTableDataframeDto()
         self.plans = None
 
         """ visual internal property """
@@ -74,7 +73,6 @@ class CreatePlan(QObject):
         if self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date and self.create_settings_for_table_dto.individual_sorting:
             self.plans = UmlaufPlaner()
             self.plans.create_settings_for_table_dto = self.create_settings_for_table_dto
-            self.plans.create_dataframe = self.create_dataframe
             self.plans.gtfs_data_frame_dto = self.gtfs_data_frame_dto
             self.progress = 10
             self.plans.dates_prepare_data_fahrplan()
@@ -92,7 +90,6 @@ class CreatePlan(QObject):
         elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date:
             self.plans = UmlaufPlaner()
             self.plans.create_settings_for_table_dto = self.create_settings_for_table_dto
-            self.plans.create_dataframe = self.create_dataframe
             self.plans.gtfs_data_frame_dto = self.gtfs_data_frame_dto
             self.progress = 10
             self.plans.dates_prepare_data_fahrplan()
@@ -113,7 +110,6 @@ class CreatePlan(QObject):
         elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.weekday and self.create_settings_for_table_dto.individual_sorting:
             self.plans = UmlaufPlaner()
             self.plans.create_settings_for_table_dto = self.create_settings_for_table_dto
-            self.plans.create_dataframe = self.create_dataframe
             self.plans.gtfs_data_frame_dto = self.gtfs_data_frame_dto
             self.progress = 10
             self.plans.weekday_prepare_data_fahrplan()
@@ -132,7 +128,6 @@ class CreatePlan(QObject):
         elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.weekday:
             self.plans = UmlaufPlaner()
             self.plans.create_settings_for_table_dto = self.create_settings_for_table_dto
-            self.plans.create_dataframe = self.create_dataframe
             self.plans.gtfs_data_frame_dto = self.gtfs_data_frame_dto
             self.progress = 10
             self.plans.weekday_prepare_data_fahrplan()
