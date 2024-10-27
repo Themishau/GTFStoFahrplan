@@ -49,10 +49,20 @@ class ViewModel(QObject):
         self.update_pickle_export_checked.emit(checked)
 
     def on_changed_create_plan_mode(self, text):
-        if text == 'date':
-            self.model.planer.select_data.selected_weekday = None
-        elif text == 'weekday':
-            self.model.planer.select_data.selected_dates = None
+        match text:
+            case CreatePlanMode.date.value:
+                mode = CreatePlanMode.date
+                self.model.planer.select_data.selected_weekday = None
+            case CreatePlanMode.weekday.value:
+                mode = CreatePlanMode.weekday
+                self.model.planer.select_data.selected_dates = None
+            case CreatePlanMode.umlauf_date.value:
+                mode = CreatePlanMode.umlauf_date
+                self.model.planer.select_data.selected_weekday = None
+            case CreatePlanMode.umlauf_weekday.value:
+                mode = CreatePlanMode.umlauf_weekday
+                self.model.planer.select_data.selected_dates = None
+        self.model.planer.select_data.create_settings_for_table_dto.create_plan_mode = mode
         self.update_create_plan_mode.emit(text)
 
     def on_change_input_file_path(self, path):

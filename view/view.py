@@ -7,6 +7,7 @@ from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtWidgets import QFileDialog, QLabel, QVBoxLayout
 
 from helpFunctions import string_to_qdate
+from model.Enum.GTFSEnums import CreatePlanMode
 from .create_table_create import CreateTableCreate
 from .create_table_import import CreateTableImport
 from .create_table_select import CreateTableSelect
@@ -180,13 +181,24 @@ class View(QMainWindow):
 
     def update_create_plan_mode(self, mode):
         self.CreateCreate_Tab.ui.comboBox.setCurrentText(mode)
-        if mode == 'date':
+        if mode == CreatePlanMode.date.value:
             self.CreateCreate_Tab.ui.listDatesWeekday.clear()
             self.CreateCreate_Tab.ui.dateEdit.setDate(
                 string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
             self.CreateCreate_Tab.ui.dateEdit.setEnabled(True)
             self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(False)
-        elif mode == 'weekday':
+        elif mode == CreatePlanMode.weekday.value:
+            self.CreateCreate_Tab.ui.listDatesWeekday.addItems(
+                self.viewModel.model.planer.select_data.week_day_options_list)
+            self.CreateCreate_Tab.ui.dateEdit.setEnabled(False)
+            self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(True)
+        elif mode == CreatePlanMode.umlauf_date.value:
+            self.CreateCreate_Tab.ui.listDatesWeekday.clear()
+            self.CreateCreate_Tab.ui.dateEdit.setDate(
+                string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
+            self.CreateCreate_Tab.ui.dateEdit.setEnabled(True)
+            self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(False)
+        elif mode == CreatePlanMode.umlauf_weekday.value:
             self.CreateCreate_Tab.ui.listDatesWeekday.addItems(
                 self.viewModel.model.planer.select_data.week_day_options_list)
             self.CreateCreate_Tab.ui.dateEdit.setEnabled(False)

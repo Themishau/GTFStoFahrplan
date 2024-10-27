@@ -9,8 +9,10 @@ For learning reasons, I implemented a Subscriber/Observer
 
 class CreatePlanMode(Enum):
     """ Types of methods """
-    date = 'date'
-    weekday = 'weekday'
+    date = 'Date'
+    weekday = 'Weekday'
+    umlauf_date = 'Umlaufplan Date'
+    umlauf_weekday = 'Umlaufplan Weekday'
 
 
 class GtfsColumnNames(Enum):

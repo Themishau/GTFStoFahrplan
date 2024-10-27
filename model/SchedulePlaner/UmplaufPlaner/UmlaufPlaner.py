@@ -16,7 +16,6 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class UmlaufPlaner(QObject):
-
     def __init__(self):
         super().__init__()
         self.create_settings_for_table_dto = CreateSettingsForTableDTO()
