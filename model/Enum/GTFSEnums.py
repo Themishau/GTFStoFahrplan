@@ -2,9 +2,6 @@ from enum import Enum, auto
 
 '''
 This file contains all used types and names
-
-For learning reasons, I implemented a Subscriber/Observer
-
 '''
 
 class CreatePlanMode(Enum):
@@ -104,6 +101,7 @@ class ErrorMessageRessources(Enum):
     import_data_error = 'no data in imported_data.'
     no_import_object_generated = 'There has been an error while importing GTFS data.'
     no_create_object_generated = 'There has been an error while creating file.'
+    no_export_object_generated = 'There has been an error while exporting data to file.'
     error_in_SchedulePlaner_class = 'error_in_SchedulePlaner_class'
     error_load_data = 'Error. Could not load data.'
 

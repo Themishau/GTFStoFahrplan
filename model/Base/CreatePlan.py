@@ -13,6 +13,8 @@ from ..Dto.CreateTableDataframeDto import CreateTableDataframeDto
 from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
 from ..SchedulePlaner.UmplaufPlaner.UmlaufPlaner import UmlaufPlaner
 
+import concurrent.futures
+
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
                     datefmt="%Y-%m-%d %H:%M:%S")
@@ -109,7 +111,18 @@ class CreatePlan(QObject):
             self.progress = 90
 
         elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_date and self.create_settings_for_table_dto.individual_sorting:
-            self.plans = UmlaufPlaner()
+            self.plans = [UmlaufPlaner(), UmlaufPlaner()]
+
+            with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+                processes = [executor.submit(self.plans[0].),
+                             executor.submit(self.plans[1].)]
+
+                results = concurrent.futures.as_completed(processes)
+                raw_dict_data = {}
+                for result in results:
+                    temp_result = result.result()
+                    raw_dict_data[temp_result[0]] = temp_result[1]
+
             self.plans.create_settings_for_table_dto = self.create_settings_for_table_dto
             self.plans.gtfs_data_frame_dto = self.gtfs_data_frame_dto
             self.progress = 10

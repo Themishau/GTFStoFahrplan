@@ -22,6 +22,8 @@ logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
                     datefmt="%Y-%m-%d %H:%M:%S")
 
+# todo: add custom progressUpdated = pyqtSignal(int, str, ProgressBar)
+# display it in a list to track all processes (also in parallel)
 
 class View(QMainWindow):
     def __init__(self, viewModel):
@@ -128,7 +130,6 @@ class View(QMainWindow):
     def initialize_busy_inficator(self):
         NotImplemented()
 
-
     def update_selected_agency(self, row):
         self.CreateSelect_Tab.ui.AgenciesTableView.selectRow(row)
 
@@ -198,11 +199,13 @@ class View(QMainWindow):
                 string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
             self.CreateCreate_Tab.ui.dateEdit.setEnabled(True)
             self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(False)
+            self.CreateCreate_Tab.ui.comboBox_direction.setEnabled(False)
         elif mode == CreatePlanMode.umlauf_weekday.value:
             self.CreateCreate_Tab.ui.listDatesWeekday.addItems(
                 self.viewModel.model.planer.select_data.week_day_options_list)
             self.CreateCreate_Tab.ui.dateEdit.setEnabled(False)
             self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(True)
+            self.CreateCreate_Tab.ui.comboBox_direction.setEnabled(False)
 
     def update_create_options_state(self):
         self.ui.line_Selection_agency.setText(
