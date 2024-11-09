@@ -4,6 +4,7 @@ import logging
 from PyQt5.QtCore import pyqtSignal, QObject
 
 from ..Base.AnalyzeData import AnalyzeData
+from ..Base.CirclePlaner import CirclePlaner
 from ..Base.CreatePlan import CreatePlan
 from ..Base.ExportPlan import ExportPlan
 from model.Enum.GTFSEnums import *
@@ -146,6 +147,9 @@ class SchedulePlaner(QObject):
     def create_umlaufplan(self):
         try:
             self.create_plan.create_table()
+            circle_plan = CirclePlaner(self.create_plan.plans)
+            circle_plan.CreateCirclePlan()
+
             self.export_plan.export_plan(self.create_settings_for_table_dto, self.create_plan.plans.create_dataframe)
             self.create_finished.emit(True)
             return True

@@ -2,7 +2,7 @@
 import logging
 import re
 from datetime import datetime, timedelta
-
+import copy
 import pandas as pd
 from PyQt5.QtCore import pyqtSignal, QObject
 from pandasql import sqldf
@@ -77,26 +77,22 @@ class CreatePlan(QObject):
             self.plans[0].create_settings_for_table_dto = self.create_settings_for_table_dto
             self.plans[0].gtfs_data_frame_dto = self.gtfs_data_frame_dto
 
-            self.plans[1].create_settings_for_table_dto = self.create_settings_for_table_dto
+            self.plans[1].create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
             self.plans[1].create_settings_for_table_dto.direction = 1
-            self.plans[1].gtfs_data_frame_dto = self.gtfs_data_frame_dto
+            self.plans[1].gtfs_data_frame_dto = copy.deepcopy(self.gtfs_data_frame_dto)
 
             logging.debug(f"plans: {self.plans[0].create_settings_for_table_dto.direction}\n"
                           f"       {self.plans[1].create_settings_for_table_dto.direction}")
 
-            with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
                 processes = [executor.submit(self.plans[0].create_table),
                              executor.submit(self.plans[1].create_table)]
 
-                results = concurrent.futures.as_completed(processes)
-                raw_dict_data = {}
-                for result in results:
-                    temp_result = result.result()
-                    raw_dict_data[temp_result[0]] = temp_result[1]
+                _ = concurrent.futures.as_completed(processes)
 
             self.create_sorting.emit()
 
-        elif ((self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date or self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.weekday)
+        elif (self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date
                and self.create_settings_for_table_dto.individual_sorting):
             self.plans = UmlaufPlaner()
             self.plans.create_settings_for_table_dto = self.create_settings_for_table_dto
@@ -104,15 +100,27 @@ class CreatePlan(QObject):
             self.plans.create_table()
             self.create_sorting.emit()
 
-        elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date or self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.weekday:
-            self.plans = UmlaufPlaner()
-            self.plans.create_settings_for_table_dto = self.create_settings_for_table_dto
-            self.plans.gtfs_data_frame_dto = self.gtfs_data_frame_dto
-            self.plans.create_table()
+        elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_date or self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_weekday:
+            self.plans = [UmlaufPlaner(), UmlaufPlaner()]
+            self.plans[0].create_settings_for_table_dto = self.create_settings_for_table_dto
+            self.plans[0].gtfs_data_frame_dto = self.gtfs_data_frame_dto
+
+            self.plans[1].create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
+            self.plans[1].create_settings_for_table_dto.direction = 1
+            self.plans[1].gtfs_data_frame_dto = copy.deepcopy(self.gtfs_data_frame_dto)
+
+            logging.debug(f"plans: {self.plans[0].create_settings_for_table_dto.direction}\n"
+                          f"       {self.plans[1].create_settings_for_table_dto.direction}")
+
+            with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+                processes = [executor.submit(self.plans[0].create_table),
+                             executor.submit(self.plans[1].create_table)]
+
+                _ = concurrent.futures.as_completed(processes)
 
 
 
-        elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_date:
+        elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date:
             self.plans = UmlaufPlaner()
             self.plans.create_settings_for_table_dto = self.create_settings_for_table_dto
             self.plans.gtfs_data_frame_dto = self.gtfs_data_frame_dto
