@@ -16,6 +16,8 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class UmlaufPlaner(QObject):
+    progress_Update = pyqtSignal(int)
+
     def __init__(self):
         super().__init__()
         self.create_settings_for_table_dto = CreateSettingsForTableDTO()
@@ -34,6 +36,15 @@ class UmlaufPlaner(QObject):
                                    '8,Sunday']
 
     @property
+    def progress(self):
+        return self._progress
+
+    @progress.setter
+    def progress(self, value):
+        self._progress = value
+        self.progress_Update.emit(self._progress)
+
+    @property
     def gtfs_data_frame_dto(self):
         return self._gtfs_data_frame_dto
 
@@ -47,8 +58,173 @@ class UmlaufPlaner(QObject):
 
         return True
 
-    def dates_prepare_data_fahrplan(self):
 
+    def create_table(self):
+        self.progress = 0
+        if self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date and self.create_settings_for_table_dto.individual_sorting:
+            self.plans = UmlaufPlaner()
+            self.plans.create_settings_for_table_dto = self.create_settings_for_table_dto
+            self.plans.gtfs_data_frame_dto = self.gtfs_data_frame_dto
+            self.progress = 10
+            self.plans.dates_prepare_data_fahrplan()
+            self.progress = 20
+            self.plans.datesWeekday_select_dates_for_date_range()
+            self.progress = 30
+            self.plans.dates_select_dates_delete_exception_2()
+            self.progress = 40
+            self.plans.datesWeekday_select_stops_for_trips()
+            self.progress = 50
+            self.plans.datesWeekday_select_for_every_date_trips_stops()
+            self.progress = 70
+            self.plans.datesWeekday_create_sort_stopnames()
+            self.create_sorting.emit()
+
+        elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date:
+            self.plans = UmlaufPlaner()
+            self.plans.create_settings_for_table_dto = self.create_settings_for_table_dto
+            self.plans.gtfs_data_frame_dto = self.gtfs_data_frame_dto
+            self.progress = 10
+            self.plans.dates_prepare_data_fahrplan()
+            self.progress = 20
+            self.plans.datesWeekday_select_dates_for_date_range()
+            self.progress = 30
+            self.plans.dates_select_dates_delete_exception_2()
+            self.progress = 40
+            self.plans.datesWeekday_select_stops_for_trips()
+            self.progress = 50
+            self.plans.datesWeekday_select_for_every_date_trips_stops()
+            self.progress = 70
+            self.plans.datesWeekday_create_sort_stopnames()
+            self.progress = 80
+            self.plans.datesWeekday_create_fahrplan()
+            self.progress = 90
+
+        elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_date and self.create_settings_for_table_dto.individual_sorting:
+            self.plans = [UmlaufPlaner(), UmlaufPlaner()]
+
+            with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+                processes = [executor.submit(self.plans[0].),
+                             executor.submit(self.plans[1].)]
+
+                results = concurrent.futures.as_completed(processes)
+                raw_dict_data = {}
+                for result in results:
+                    temp_result = result.result()
+                    raw_dict_data[temp_result[0]] = temp_result[1]
+
+            self.plans.create_settings_for_table_dto = self.create_settings_for_table_dto
+            self.plans.gtfs_data_frame_dto = self.gtfs_data_frame_dto
+            self.progress = 10
+            self.plans.dates_prepare_data_fahrplan()
+            self.progress = 20
+            self.plans.datesWeekday_select_dates_for_date_range()
+            self.progress = 30
+            self.plans.dates_select_dates_delete_exception_2()
+            self.progress = 40
+            self.plans.datesWeekday_select_stops_for_trips()
+            self.progress = 50
+            self.plans.datesWeekday_select_for_every_date_trips_stops()
+            self.progress = 70
+            self.plans.datesWeekday_create_sort_stopnames()
+            self.create_sorting.emit()
+
+        elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_date:
+            self.plans = UmlaufPlaner()
+            self.plans.create_settings_for_table_dto = self.create_settings_for_table_dto
+            self.plans.gtfs_data_frame_dto = self.gtfs_data_frame_dto
+            self.progress = 10
+            self.plans.dates_prepare_data_fahrplan()
+            self.progress = 20
+            self.plans.datesWeekday_select_dates_for_date_range()
+            self.progress = 30
+            self.plans.dates_select_dates_delete_exception_2()
+            self.progress = 40
+            self.plans.datesWeekday_select_stops_for_trips()
+            self.progress = 50
+            self.plans.datesWeekday_select_for_every_date_trips_stops()
+            self.progress = 70
+            self.plans.datesWeekday_create_sort_stopnames()
+            self.progress = 80
+            self.plans.datesWeekday_create_fahrplan()
+            self.progress = 90
+
+        elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.weekday and self.create_settings_for_table_dto.individual_sorting:
+            self.plans = UmlaufPlaner()
+            self.plans.create_settings_for_table_dto = self.create_settings_for_table_dto
+            self.plans.gtfs_data_frame_dto = self.gtfs_data_frame_dto
+            self.progress = 10
+            self.plans.weekday_prepare_data_fahrplan()
+            self.progress = 20
+            self.plans.datesWeekday_select_dates_for_date_range()
+            self.progress = 30
+            self.plans.weekday_select_weekday_exception_2()
+            self.progress = 40
+            self.plans.datesWeekday_select_stops_for_trips()
+            self.progress = 50
+            self.plans.datesWeekday_select_for_every_date_trips_stops()
+            self.progress = 70
+            self.plans.datesWeekday_create_sort_stopnames()
+            self.create_sorting.emit()
+
+        elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.weekday:
+            self.plans = UmlaufPlaner()
+            self.plans.create_settings_for_table_dto = self.create_settings_for_table_dto
+            self.plans.gtfs_data_frame_dto = self.gtfs_data_frame_dto
+            self.progress = 10
+            self.plans.weekday_prepare_data_fahrplan()
+            self.progress = 20
+            self.plans.datesWeekday_select_dates_for_date_range()
+            self.progress = 30
+            self.plans.weekday_select_weekday_exception_2()
+            self.progress = 40
+            self.plans.datesWeekday_select_stops_for_trips()
+            self.progress = 50
+            self.plans.datesWeekday_select_for_every_date_trips_stops()
+            self.progress = 70
+            self.plans.datesWeekday_create_fahrplan()
+            self.progress = 80
+
+        elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_weekday and self.create_settings_for_table_dto.individual_sorting:
+            self.plans = UmlaufPlaner()
+            self.plans.create_settings_for_table_dto = self.create_settings_for_table_dto
+            self.plans.gtfs_data_frame_dto = self.gtfs_data_frame_dto
+            self.progress = 10
+            self.plans.weekday_prepare_data_fahrplan()
+            self.progress = 20
+            self.plans.datesWeekday_select_dates_for_date_range()
+            self.progress = 30
+            self.plans.weekday_select_weekday_exception_2()
+            self.progress = 40
+            self.plans.datesWeekday_select_stops_for_trips()
+            self.progress = 50
+            self.plans.datesWeekday_select_for_every_date_trips_stops()
+            self.progress = 70
+            self.plans.datesWeekday_create_sort_stopnames()
+            self.create_sorting.emit()
+
+        elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_weekday:
+            self.plans = UmlaufPlaner()
+            self.plans.create_settings_for_table_dto = self.create_settings_for_table_dto
+            self.plans.gtfs_data_frame_dto = self.gtfs_data_frame_dto
+            self.progress = 10
+            self.plans.weekday_prepare_data_fahrplan()
+            self.progress = 20
+            self.plans.datesWeekday_select_dates_for_date_range()
+            self.progress = 30
+            self.plans.weekday_select_weekday_exception_2()
+            self.progress = 40
+            self.plans.datesWeekday_select_stops_for_trips()
+            self.progress = 50
+            self.plans.datesWeekday_select_for_every_date_trips_stops()
+            self.progress = 70
+            self.plans.datesWeekday_create_fahrplan()
+            self.progress = 80
+
+
+
+
+
+    def dates_prepare_data_fahrplan(self):
         # Create a dictionary for headers
         headers = {
             'Agency': [self.create_settings_for_table_dto.agency],
