@@ -118,6 +118,9 @@ class CreatePlan(QObject):
 
                 _ = concurrent.futures.as_completed(processes)
 
+            logging.debug(f"plans: {self.plans[0].create_settings_for_table_dto.direction}\n"
+                          f"       {self.plans[1].create_settings_for_table_dto.direction}")
+
 
 
         elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date:

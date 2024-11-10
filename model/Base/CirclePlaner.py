@@ -48,7 +48,7 @@ class CirclePlaner(QObject):
         NotImplementedError()
 
     def CreateCirclePlan(self):
-        NotImplementedError()
+        self.MergePlans()
 
     def MergePlans(self):
         NotImplementedError()

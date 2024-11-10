@@ -38,9 +38,17 @@ class Model(QObject):
 
     def planer_start_create_table(self):
         if self.planer.create_settings_for_table_dto.individual_sorting:
-            self.planer.create_table_individual_sorting()
+            if(self.planer.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_date
+                    or self.planer.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_weekday):
+                self.planer.create_table_individual_sorting()
+            else:
+                self.planer.create_table_individual_sorting()
         else:
-            self.planer.create_table()
+            if(self.planer.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_date
+                    or self.planer.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_weekday):
+                self.planer.create_umlaufplan()
+            else:
+                self.planer.create_table()
 
     def  planer_start_create_table_continue(self):
         self.planer.create_table_continue()
