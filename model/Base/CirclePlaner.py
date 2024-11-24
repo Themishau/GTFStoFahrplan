@@ -5,7 +5,7 @@ from pandasql import sqldf
 import re
 from datetime import datetime, timedelta
 import pandas as pd
-from model.Enum.GTFSEnums import CreatePlanMode
+from model.Enum.GTFSEnums import CreatePlanMode, ErrorMessageRessources
 from model.Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO
 from model.Dto.CreateTableDataframeDto import CreateTableDataframeDto
 from model.Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
@@ -18,11 +18,14 @@ logging.basicConfig(level=logging.DEBUG,
 
 class CirclePlaner(QObject):
     progress_Update = pyqtSignal(int)
+    error_occured = pyqtSignal(str)
 
-    def __init__(self, plans):
+    def __init__(self, plans, app, progress: int):
         super().__init__()
+        self.app = app
         self.create_settings_for_table_dto = CreateSettingsForTableDTO()
         self.plans =  plans
+        self.progress = progress
 
         self.weekDayOptionsList = ['0,Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday',
                                    '1,Monday, Tuesday, Wednesday, Thursday, Friday',
@@ -48,7 +51,16 @@ class CirclePlaner(QObject):
         NotImplementedError()
 
     def CreateCirclePlan(self):
+        if self.CheckintegrityPlans() is False:
+            return False
         self.MergePlans()
+
+    def CheckintegrityPlans(self) -> False:
+        if len(self.plans) != 2:
+            self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
+            return False
 
     def MergePlans(self):
         NotImplementedError()
+
+

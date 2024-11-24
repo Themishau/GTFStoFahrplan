@@ -305,53 +305,6 @@ class UmlaufPlaner(QObject):
         requested_datesdf['date'] = pd.to_datetime(requested_datesdf['date'], format='%Y%m%d')
         fahrplan_dates = self.create_dataframe.FahrplanDates
 
-        cond_select_dates_delete_exception_2 = '''
-                    select  
-                            fahrplan_dates.date,
-                            fahrplan_dates.day,
-                            fahrplan_dates.trip_id,
-                            fahrplan_dates.service_id,
-                            fahrplan_dates.route_id, 
-                            fahrplan_dates.start_date,
-                            fahrplan_dates.end_date,
-                            fahrplan_dates.monday,
-                            fahrplan_dates.tuesday,
-                            fahrplan_dates.wednesday,
-                            fahrplan_dates.thursday,
-                            fahrplan_dates.friday,
-                            fahrplan_dates.saturday,
-                            fahrplan_dates.sunday
-                    from fahrplan_dates 
-                    where fahrplan_dates.date not in (select dfDates.date 
-                                                                  from dfDates                                                            
-                                                                    where fahrplan_dates.service_id = dfDates.service_id
-                                                                      and fahrplan_dates.date = dfDates.date 
-                                                                      and dfDates.exception_type = 2 
-                                                               )
-                     and fahrplan_dates.date in (select requested_datesdf.date 
-                                                                  from requested_datesdf                                                            
-                                                                    where fahrplan_dates.date = requested_datesdf.date
-                                                          )
-                     and (   (   fahrplan_dates.day = fahrplan_dates.monday
-                              or fahrplan_dates.day = fahrplan_dates.tuesday
-                              or fahrplan_dates.day = fahrplan_dates.wednesday
-                              or fahrplan_dates.day = fahrplan_dates.thursday
-                              or fahrplan_dates.day = fahrplan_dates.friday
-                              or fahrplan_dates.day = fahrplan_dates.saturday
-                              or fahrplan_dates.day = fahrplan_dates.sunday
-                             )
-                             or 
-                             (   fahrplan_dates.date in (select dfDates.date
-                                                                   from dfDates                                                            
-                                                                    where fahrplan_dates.service_id = dfDates.service_id 
-                                                                      and fahrplan_dates.date = dfDates.date
-                                                                      and dfDates.exception_type = 1
-                                                                  )    
-                             )
-                        ) 
-                    order by fahrplan_dates.date;
-                   '''
-
         fahrplan_dates = pd.concat(
             [pd.DataFrame
              ({'date': pd.date_range(row.start_date, row.end_date, freq='D'),
@@ -388,17 +341,24 @@ class UmlaufPlaner(QObject):
                                       fahrplan_dates['saturday']]
         fahrplan_dates['sunday'] = ['Sunday' if x == '1' else '-' for x in fahrplan_dates['sunday']]
 
-        fahrplan_dates = fahrplan_dates.set_index('date')
+        #fahrplan_dates = fahrplan_dates.set_index('date')
 
-        # delete exceptions = 2 or add exceptions = 1
-        fahrplan_dates = sqldf(cond_select_dates_delete_exception_2, locals())
-        fahrplan_dates['date'] = pd.to_datetime(fahrplan_dates['date'],
+        fahrplan_dates_df = fahrplan_dates[['date', 'day', 'trip_id', 'service_id', 'route_id', 'start_date', 'end_date','monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']]
+        fahrplan_dates_df = fahrplan_dates_df[~fahrplan_dates_df['date'].isin(dfDates[dfDates['exception_type'] == 2][['date']])]
+        days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+        fahrplan_dates_df = fahrplan_dates_df[fahrplan_dates_df['day'].isin(days)]
+        exception_type_1_dates = dfDates[dfDates['exception_type'] == 1][['date']]
+        exception_type_1_dates = pd.to_datetime(exception_type_1_dates['date'], format='%Y%m%d')
+        fahrplan_dates_df = fahrplan_dates_df[fahrplan_dates_df['date'].isin(exception_type_1_dates)]
+        fahrplan_dates_df = fahrplan_dates_df.sort_values('date')
+
+        fahrplan_dates_df['date'] = pd.to_datetime(fahrplan_dates_df['date'],
                                                 format='%Y-%m-%d %H:%M:%S.%f')
-        fahrplan_dates['start_date'] = pd.to_datetime(fahrplan_dates['start_date'],
+        fahrplan_dates_df['start_date'] = pd.to_datetime(fahrplan_dates_df['start_date'],
                                                       format='%Y-%m-%d %H:%M:%S.%f')
-        fahrplan_dates['end_date'] = pd.to_datetime(fahrplan_dates['end_date'],
+        fahrplan_dates_df['end_date'] = pd.to_datetime(fahrplan_dates_df['end_date'],
                                                     format='%Y-%m-%d %H:%M:%S.%f')
-        self.create_dataframe.FahrplanDates = fahrplan_dates
+        self.create_dataframe.FahrplanDates = fahrplan_dates_df
 
     def datesWeekday_select_stops_for_trips(self):
 

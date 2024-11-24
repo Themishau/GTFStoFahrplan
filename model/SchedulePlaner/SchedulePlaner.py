@@ -33,7 +33,7 @@ class SchedulePlaner(QObject):
         self.app = app
 
         self.progress = 0
-
+        self.circle_plan = None
         self.create_plan = None
         self.export_plan = None
         self.analyze_data = None
@@ -82,6 +82,11 @@ class SchedulePlaner(QObject):
         self.import_Data = ImportData(self.app, progress=self.progress)
         self.import_Data.progress_Update.connect(self.update_progress_bar)
         self.import_Data.error_occured.connect(self.sub_not_implemented)
+
+    def initialize_cirle_planer(self):
+        self.circle_plan = CirclePlaner(plans=self.create_plan.plans, app=self.app, progress=self.progress)
+        self.circle_plan.progress_Update.connect(self.update_progress_bar)
+        self.circle_plan.error_occured.connect(self.sub_not_implemented)
 
     def initialize_select_data(self):
         self.select_data = SelectData(self.app, progress=self.progress)
@@ -147,10 +152,9 @@ class SchedulePlaner(QObject):
     def create_umlaufplan(self):
         try:
             self.create_plan.create_table()
-            circle_plan = CirclePlaner(self.create_plan.plans)
-            circle_plan.CreateCirclePlan()
-
-            self.export_plan.export_plan(self.create_settings_for_table_dto, self.create_plan.plans.create_dataframe)
+            self.initialize_cirle_planer()
+            #self.circle_plan.CreateCirclePlan()
+            self.export_plan.export_circle_plan(self.create_settings_for_table_dto, self.circle_plan.plans)
             self.create_finished.emit(True)
             return True
         except AttributeError as e:
