@@ -345,9 +345,8 @@ class UmlaufPlaner(QObject):
         #fahrplan_dates = fahrplan_dates.set_index('date')
 
         fahrplan_dates_df = fahrplan_dates[['date', 'day', 'trip_id', 'service_id', 'route_id', 'start_date', 'end_date','monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']]
-
+        dfDates['date'] =  pd.to_datetime(dfDates['date'], format='%Y%m%d')
         exception_type_dates = dfDates[dfDates['service_id'].isin(fahrplan_dates_df['service_id'])]
-        exception_type_dates['date'] =  pd.to_datetime(exception_type_dates['date'], format='%Y%m%d')
         exception_type_dates = exception_type_dates[exception_type_dates['date'].isin(requested_datesdf['date'])]
         exception_type_1_dates = exception_type_dates[exception_type_dates['exception_type'] == 1]
         exception_type_2_dates = exception_type_dates[exception_type_dates['exception_type'] == 2]
