@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import numpy as np
 from PyQt5.QtCore import QObject, pyqtSignal
 import logging
 from pandasql import sqldf
@@ -344,13 +345,21 @@ class UmlaufPlaner(QObject):
         #fahrplan_dates = fahrplan_dates.set_index('date')
 
         fahrplan_dates_df = fahrplan_dates[['date', 'day', 'trip_id', 'service_id', 'route_id', 'start_date', 'end_date','monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']]
-        fahrplan_dates_df = fahrplan_dates_df[~fahrplan_dates_df['date'].isin(dfDates[dfDates['exception_type'] == 2][['date']])]
+
+        exception_type_dates = dfDates[dfDates['service_id'].isin(fahrplan_dates_df['service_id'])]
+        exception_type_dates['date'] =  pd.to_datetime(exception_type_dates['date'], format='%Y%m%d')
+        exception_type_dates = exception_type_dates[exception_type_dates['date'].isin(requested_datesdf['date'])]
+        exception_type_1_dates = exception_type_dates[exception_type_dates['exception_type'] == 1]
+        exception_type_2_dates = exception_type_dates[exception_type_dates['exception_type'] == 2]
+
         days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-        fahrplan_dates_df = fahrplan_dates_df[fahrplan_dates_df['day'].isin(days)]
-        exception_type_1_dates = dfDates[dfDates['exception_type'] == 1][['date']]
-        exception_type_1_dates = pd.to_datetime(exception_type_1_dates['date'], format='%Y%m%d')
-        fahrplan_dates_df = fahrplan_dates_df[fahrplan_dates_df['date'].isin(exception_type_1_dates)]
-        fahrplan_dates_df = fahrplan_dates_df.sort_values('date')
+        fahrplan_dates_df_date = fahrplan_dates_df[(fahrplan_dates_df['date'].isin(requested_datesdf['date']))]
+
+        fahrplan_dates_df_date = fahrplan_dates_df_date[(fahrplan_dates_df_date['service_id'].isin(exception_type_1_dates['service_id']))]
+        fahrplan_dates_df_date = fahrplan_dates_df_date[(~fahrplan_dates_df_date['service_id'].isin(exception_type_2_dates['service_id']))]
+        fahrplan_dates_df_date = fahrplan_dates_df_date[(fahrplan_dates_df_date['day'].isin(days))]
+
+        fahrplan_dates_df = fahrplan_dates_df_date.drop_duplicates()
 
         fahrplan_dates_df['date'] = pd.to_datetime(fahrplan_dates_df['date'],
                                                 format='%Y-%m-%d %H:%M:%S.%f')
