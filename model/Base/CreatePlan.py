@@ -74,8 +74,8 @@ class CreatePlan(QObject):
         self.progress = 0
         if self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_date and self.create_settings_for_table_dto.individual_sorting:
             self.plans = [UmlaufPlaner(), UmlaufPlaner()]
-            self.plans[0].create_settings_for_table_dto = self.create_settings_for_table_dto
-            self.plans[0].gtfs_data_frame_dto = self.gtfs_data_frame_dto
+            self.plans[0].create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
+            self.plans[0].gtfs_data_frame_dto = copy.deepcopy(self.gtfs_data_frame_dto)
 
             self.plans[1].create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
             self.plans[1].create_settings_for_table_dto.direction = 1
@@ -88,45 +88,51 @@ class CreatePlan(QObject):
                 processes = [executor.submit(self.plans[0].create_table),
                              executor.submit(self.plans[1].create_table)]
 
-                _ = concurrent.futures.as_completed(processes)
+                test = concurrent.futures.as_completed(processes)
 
             self.create_sorting.emit()
 
         elif (self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date
                and self.create_settings_for_table_dto.individual_sorting):
             self.plans = UmlaufPlaner()
-            self.plans.create_settings_for_table_dto = self.create_settings_for_table_dto
-            self.plans.gtfs_data_frame_dto = self.gtfs_data_frame_dto
+            self.plans.create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
+            self.plans.gtfs_data_frame_dto = copy.deepcopy(self.gtfs_data_frame_dto)
             self.plans.create_table()
             self.create_sorting.emit()
 
         elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_date or self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_weekday:
             self.plans = [UmlaufPlaner(), UmlaufPlaner()]
-            self.plans[0].create_settings_for_table_dto = self.create_settings_for_table_dto
-            self.plans[0].gtfs_data_frame_dto = self.gtfs_data_frame_dto
+            self.plans[0].create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
+            self.plans[0].gtfs_data_frame_dto = copy.deepcopy(self.gtfs_data_frame_dto)
 
             self.plans[1].create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
             self.plans[1].create_settings_for_table_dto.direction = 1
             self.plans[1].gtfs_data_frame_dto = copy.deepcopy(self.gtfs_data_frame_dto)
 
-            logging.debug(f"plans: {self.plans[0].create_settings_for_table_dto.direction}\n"
-                          f"       {self.plans[1].create_settings_for_table_dto.direction}")
+            logging.debug(f"plans: Direction {self.plans[0].create_settings_for_table_dto.direction}\n"
+                          f"       Direction {self.plans[1].create_settings_for_table_dto.direction}")
 
-            with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-                processes = [executor.submit(self.plans[0].create_table),
-                             executor.submit(self.plans[1].create_table)]
+            try:
+                with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+                    futures = [executor.submit(self.plans[0].create_table),
+                               executor.submit(self.plans[1].create_table)]
 
-                _ = concurrent.futures.as_completed(processes)
+                for future in concurrent.futures.as_completed(futures):
+                    try:
+                        result = future.result()
+                        # Process the result here
+                    except Exception as exc:
+                        print(f'Thread generated an exception: {exc}')
+            except Exception as exc:
+                print(f'An error occurred during execution: {exc}')
 
-            logging.debug(f"plans: {self.plans[0].create_settings_for_table_dto.direction}\n"
-                          f"       {self.plans[1].create_settings_for_table_dto.direction}")
 
 
 
         elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date:
             self.plans = UmlaufPlaner()
-            self.plans.create_settings_for_table_dto = self.create_settings_for_table_dto
-            self.plans.gtfs_data_frame_dto = self.gtfs_data_frame_dto
+            self.plans.create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
+            self.plans.gtfs_data_frame_dto = copy.deepcopy(self.gtfs_data_frame_dto)
             self.progress = 10
             self.plans.dates_prepare_data_fahrplan()
             self.progress = 20
@@ -145,8 +151,8 @@ class CreatePlan(QObject):
 
         elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.weekday and self.create_settings_for_table_dto.individual_sorting:
             self.plans = UmlaufPlaner()
-            self.plans.create_settings_for_table_dto = self.create_settings_for_table_dto
-            self.plans.gtfs_data_frame_dto = self.gtfs_data_frame_dto
+            self.plans.create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
+            self.plans.gtfs_data_frame_dto = copy.deepcopy(self.gtfs_data_frame_dto)
             self.progress = 10
             self.plans.weekday_prepare_data_fahrplan()
             self.progress = 20
@@ -163,8 +169,8 @@ class CreatePlan(QObject):
 
         elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.weekday:
             self.plans = UmlaufPlaner()
-            self.plans.create_settings_for_table_dto = self.create_settings_for_table_dto
-            self.plans.gtfs_data_frame_dto = self.gtfs_data_frame_dto
+            self.plans.create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
+            self.plans.gtfs_data_frame_dto = copy.deepcopy(self.gtfs_data_frame_dto)
             self.progress = 10
             self.plans.weekday_prepare_data_fahrplan()
             self.progress = 20
@@ -181,8 +187,8 @@ class CreatePlan(QObject):
 
         elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_weekday and self.create_settings_for_table_dto.individual_sorting:
             self.plans = UmlaufPlaner()
-            self.plans.create_settings_for_table_dto = self.create_settings_for_table_dto
-            self.plans.gtfs_data_frame_dto = self.gtfs_data_frame_dto
+            self.plans.create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
+            self.plans.gtfs_data_frame_dto = copy.deepcopy(self.gtfs_data_frame_dto)
             self.progress = 10
             self.plans.weekday_prepare_data_fahrplan()
             self.progress = 20
@@ -199,8 +205,8 @@ class CreatePlan(QObject):
 
         elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_weekday:
             self.plans = UmlaufPlaner()
-            self.plans.create_settings_for_table_dto = self.create_settings_for_table_dto
-            self.plans.gtfs_data_frame_dto = self.gtfs_data_frame_dto
+            self.plans.create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
+            self.plans.gtfs_data_frame_dto = copy.deepcopy(self.gtfs_data_frame_dto)
             self.progress = 10
             self.plans.weekday_prepare_data_fahrplan()
             self.progress = 20

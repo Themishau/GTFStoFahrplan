@@ -78,50 +78,50 @@ class UmlaufPlaner(QObject):
 
         elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date or self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_date:
             self.progress = 10
-            self.plans.dates_prepare_data_fahrplan()
+            self.dates_prepare_data_fahrplan()
             self.progress = 20
-            self.plans.datesWeekday_select_dates_for_date_range()
+            self.datesWeekday_select_dates_for_date_range()
             self.progress = 30
-            self.plans.dates_select_dates_delete_exception_2()
+            self.dates_select_dates_delete_exception_2()
             self.progress = 40
-            self.plans.datesWeekday_select_stops_for_trips()
+            self.datesWeekday_select_stops_for_trips()
             self.progress = 50
-            self.plans.datesWeekday_select_for_every_date_trips_stops()
+            self.datesWeekday_select_for_every_date_trips_stops()
             self.progress = 70
-            self.plans.datesWeekday_create_sort_stopnames()
+            self.datesWeekday_create_sort_stopnames()
             self.progress = 80
-            self.plans.datesWeekday_create_fahrplan()
+            self.datesWeekday_create_fahrplan()
             self.progress = 90
 
         elif ((self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.weekday or self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_weekday)
               and self.create_settings_for_table_dto.individual_sorting):
             self.progress = 10
-            self.plans.weekday_prepare_data_fahrplan()
+            self.weekday_prepare_data_fahrplan()
             self.progress = 20
-            self.plans.datesWeekday_select_dates_for_date_range()
+            self.datesWeekday_select_dates_for_date_range()
             self.progress = 30
-            self.plans.weekday_select_weekday_exception_2()
+            self.weekday_select_weekday_exception_2()
             self.progress = 40
-            self.plans.datesWeekday_select_stops_for_trips()
+            self.datesWeekday_select_stops_for_trips()
             self.progress = 50
-            self.plans.datesWeekday_select_for_every_date_trips_stops()
+            self.datesWeekday_select_for_every_date_trips_stops()
             self.progress = 70
-            self.plans.datesWeekday_create_sort_stopnames()
+            self.datesWeekday_create_sort_stopnames()
             self.create_sorting.emit()
 
         elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.weekday or self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_weekday:
             self.progress = 10
-            self.plans.weekday_prepare_data_fahrplan()
+            self.weekday_prepare_data_fahrplan()
             self.progress = 20
-            self.plans.datesWeekday_select_dates_for_date_range()
+            self.datesWeekday_select_dates_for_date_range()
             self.progress = 30
-            self.plans.weekday_select_weekday_exception_2()
+            self.weekday_select_weekday_exception_2()
             self.progress = 40
-            self.plans.datesWeekday_select_stops_for_trips()
+            self.datesWeekday_select_stops_for_trips()
             self.progress = 50
-            self.plans.datesWeekday_select_for_every_date_trips_stops()
+            self.datesWeekday_select_for_every_date_trips_stops()
             self.progress = 70
-            self.plans.datesWeekday_create_fahrplan()
+            self.datesWeekday_create_fahrplan()
             self.progress = 80
 
 

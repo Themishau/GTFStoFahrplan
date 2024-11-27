@@ -55,7 +55,7 @@ class ExportPlan(QObject):
         self.progress = 100
 
     def export_circle_plan(self, exportSettings, createTableDto: list[CreateTableDataframeDto]):
-        self.datesWeekday_create_output_fahrplan(exportSettings, createTableDto)
+        self.datesWeekday_create_output_circleplan(exportSettings, createTableDto)
         self.progress = 100
 
     def datesWeekday_create_output_fahrplan(self, exportSettings, createTableDto: CreateTableDataframeDto):
@@ -69,17 +69,17 @@ class ExportPlan(QObject):
         createTableDto.FahrplanCalendarFilterDaysPivot.to_csv(self.full_output_path, header=True, quotechar=' ',
                                                               index=True, sep=';', mode='a', encoding='utf8')
 
-    def datesWeekday_create_output_circleplan(self, exportSettings, createTableDto: list[CreateTableDataframeDto]):
+    def datesWeekday_create_output_circleplan(self, exportSettings, CreateTableDataframeDto):
         # save as csv
         now = datetime.now()
         now = now.strftime("%Y_%m_%d_%H_%M_%S")
         self.full_output_path = self.output_path + '/' + str(
-            createTableDto[0].RouteShortName['route_short_name'][0]) + 'dates_' + str(now) + 'pivot_table.csv'
-        createTableDto[0].Header.to_csv(self.full_output_path, header=True, quotechar=' ', sep=';', mode='w',
+            CreateTableDataframeDto[0].create_settings_for_table_dto.route) + 'circle_plan_dates_' + str(now) + 'pivot_table.csv'
+        CreateTableDataframeDto[0].create_dataframe.Header.to_csv(self.full_output_path, header=True, quotechar=' ', sep=';', mode='w',
                                      encoding='utf8')
-        createTableDto[0].FahrplanCalendarFilterDaysPivot.to_csv(self.full_output_path, header=True, quotechar=' ',
+        CreateTableDataframeDto[0].create_dataframe.FahrplanCalendarFilterDaysPivot.to_csv(self.full_output_path, header=True, quotechar=' ',
                                                               index=True, sep=';', mode='a', encoding='utf8')
-        createTableDto[1].Header.to_csv(self.full_output_path, header=True, quotechar=' ', sep=';', mode='w',
+        CreateTableDataframeDto[1].create_dataframe.Header.to_csv(self.full_output_path, header=True, quotechar=' ', sep=';', mode='a',
                                         encoding='utf8')
-        createTableDto[2].FahrplanCalendarFilterDaysPivot.to_csv(self.full_output_path, header=True, quotechar=' ',
+        CreateTableDataframeDto[1].create_dataframe.FahrplanCalendarFilterDaysPivot.to_csv(self.full_output_path, header=True, quotechar=' ',
                                                              index=True, sep=';', mode='a', encoding='utf8')
