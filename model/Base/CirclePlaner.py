@@ -74,20 +74,23 @@ class CirclePlaner(QObject):
         merged_df = pd.concat([self.plans[0].create_dataframe.SortedDataframe, self.plans[1].create_dataframe.SortedDataframe], axis=0)
 
         # get the first and last station of each trip id and merge these two dfs
-        filtered_first_stations_df = merged_df.groupby('trip_id')['sequence_number'].min().reset_index()
-        filtered_last_station_sequence_df = merged_df.groupby('trip_id')['sequence_number'].max().reset_index()
+        filtered_first_stations_df = merged_df.groupby('sorted_trip_id')['sorted_stop_sequence'].min().reset_index()
+        filtered_last_station_sequence_df = merged_df.groupby('sorted_trip_id')['sorted_stop_sequence'].max().reset_index()
         merged_filtered_df = pd.concat([filtered_first_stations_df, filtered_last_station_sequence_df], axis=0)
         test = self.assign_vehicle_numbers(merged_filtered_df)
 
     def assign_vehicle_numbers(self, df):
 
-        # get the first trip_id with sequence 0 and set the vehicle_number to 1
-        # get the next entry with same trip_id and sequence != 0 (there are only two entries)
-        # use the last entry and look for the next fitting trip_id with sequence 0 based on start_time (trip_id 123 start_time : 04:26:00 -> trip_id 234 start_time: 04:46:00)
+        # given is a df with trip_id, arrival_time (at a station), sequence_number (number in order of stops), vehicle_number and  start_time (of the trip)
+        # vehicle_number is init with 0
+        # get the first trip_id with sequence 0 and set the vehicle_number to int: x
+        # get the next entry with same trip_id and sequence != 0 (there are only two entries) use the last entry and set also vehicle_number to int: x
+        # look for the next fitting trip_id with sequence 0 based on arrival_time (trip_id 123 start_time : 04:26:00 -> trip_id 234 start_time: 04:46:00)
         # if found set also the vehicle number to 1 because we assume that it is the next trip and also search for the entry with same trip_id and sequence != 0
-        # do it till no trip is found and continue with vehicle number 2 and then 3 and so on
+        # do it till no trip is found
+        # set int: x + 1 and continue with next entry with vehicle_number = 0
 
-        df = df.sort_values(by=['start_time', 'trip_id', 'sequence_number'])
+        df = df.sort_values(by=['sorted_start_time', 'sorted_trip_id', 'sorted_stop_sequence'])
         # Initialize variables
         current_trip_id = None
         current_vehicle_number = 1
@@ -95,24 +98,28 @@ class CirclePlaner(QObject):
 
         # Create a new DataFrame to store the result
         result_df = copy.deepcopy(df)
-        result_df = result_df.sort_values(by=['start_time', 'trip_id', 'sequence_number'])
+        result_df = result_df.sort_values(by=['sorted_start_time', 'sorted_trip_id', 'sorted_stop_sequence'])
 
         for _, row in df.iterrows():
 
-            if row['vehicle_number'] != 0:
+            if current_vehicle_number != 1 and row['vehicle_number'] < current_vehicle_number:
                 continue
 
-            trip_id = row['trip_id']
-            last_entry_df = result_df[result_df['trip_id'] == trip_id]
-            last_entry_df.loc[:, 'vehicle_number'] = current_vehicle_number
+            current_trip_id = row
 
-            current_last_time_stop = result_df[(result_df['trip_id'] == trip_id) & (result_df['trip_id'] != trip_id)]['arrival_time']
+            while True:
 
-            vehicle_number = current_vehicle_number
+                last_entry_df = result_df[result_df['sorted_trip_id'] == current_trip_id['sorted_trip_id']]
+                last_entry_df.loc[:, 'vehicle_number'] = current_vehicle_number
+                current_last_time_stop = result_df[(result_df['sorted_trip_id'] == current_trip_id) & (result_df['sorted_stop_sequence'] != 0)]
+                current_trip_id =
+
+                if ()
+
+
+
             current_vehicle_number += 1
 
-
-            current_trip_id = trip_id
 
         return result_df
 
