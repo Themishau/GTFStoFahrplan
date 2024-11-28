@@ -98,18 +98,19 @@ class CirclePlaner(QObject):
         result_df = result_df.sort_values(by=['start_time', 'trip_id', 'sequence_number'])
 
         for _, row in df.iterrows():
-            trip_id = row['trip_id']
-            sequence_number = row['sequence_number']
-            # result_df[result_df['arrival_time']]
-            current_last_time_stop = result_df[(result_df['trip_id'] == trip_id) & (result_df['trip_id'] != trip_id) ]
 
-            if current_trip_id != trip_id:
-                current_vehicle_number = 1
+            if row['vehicle_number'] != 0:
+                continue
+
+            trip_id = row['trip_id']
+            last_entry_df = result_df[result_df['trip_id'] == trip_id]
+            last_entry_df.loc[:, 'vehicle_number'] = current_vehicle_number
+
+            current_last_time_stop = result_df[(result_df['trip_id'] == trip_id) & (result_df['trip_id'] != trip_id)]['arrival_time']
 
             vehicle_number = current_vehicle_number
             current_vehicle_number += 1
 
-            result_df.loc[_, 'vehicle_number'] = vehicle_number
 
             current_trip_id = trip_id
 
