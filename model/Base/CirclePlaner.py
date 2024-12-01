@@ -77,7 +77,9 @@ class CirclePlaner(QObject):
         filtered_first_stations_df = merged_df.groupby('sorted_trip_id')['sorted_stop_sequence'].min().reset_index()
         filtered_last_station_sequence_df = merged_df.groupby('sorted_trip_id')['sorted_stop_sequence'].max().reset_index()
         merged_filtered_df = pd.concat([filtered_first_stations_df, filtered_last_station_sequence_df], axis=0)
-        test = self.assign_vehicle_numbers(merged_filtered_df)
+        filtered_df_mask = merged_df['sorted_trip_id'].isin(merged_filtered_df['sorted_trip_id'])
+        filtered_df = merged_df[filtered_df_mask]
+        test = self.assign_vehicle_numbers(filtered_df)
 
     def assign_vehicle_numbers(self, df):
 
@@ -92,13 +94,11 @@ class CirclePlaner(QObject):
 
         df = df.sort_values(by=['sorted_start_time', 'sorted_trip_id', 'sorted_stop_sequence'])
         # Initialize variables
-        current_trip_id = None
         current_vehicle_number = 1
-        current_last_time_stop = None
 
         # Create a new DataFrame to store the result
         result_df = copy.deepcopy(df)
-        result_df = result_df.sort_values(by=['sorted_start_time', 'sorted_trip_id', 'sorted_stop_sequence'])
+        result_df = result_df.sort_values(by=['sorted_start_time','sorted_stop_sequence', 'sorted_trip_id'])
 
         for _, row in df.iterrows():
 
@@ -112,10 +112,12 @@ class CirclePlaner(QObject):
                 last_entry_df = result_df[result_df['sorted_trip_id'] == current_trip_id['sorted_trip_id']]
                 last_entry_df.loc[:, 'vehicle_number'] = current_vehicle_number
                 current_last_time_stop = result_df[(result_df['sorted_trip_id'] == current_trip_id) & (result_df['sorted_stop_sequence'] != 0)]
-                current_trip_id =
 
-                if ()
+                current_trip_id = result_df[(result_df['sorted_trip_id'] != current_last_time_stop['sorted_trip_id']) & (result_df['sorted_stop_sequence'] == 0) & (result_df['sorted_start_time'] >= current_last_time_stop['sorted_arrival_time'])]
+                if len(current_trip_id) == 0:
+                    break
 
+                current_trip_id = current_trip_id[0]
 
 
             current_vehicle_number += 1
