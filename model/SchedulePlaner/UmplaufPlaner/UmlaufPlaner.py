@@ -439,13 +439,11 @@ class UmlaufPlaner(QObject):
         fahrplan_calendar_weeks['trip_id'] = fahrplan_calendar_weeks['trip_id'].astype(int)
         fahrplan_dates_all_dates = self.create_dataframe.FahrplanDates
         fahrplan_dates_all_dates['trip_id'] = fahrplan_dates_all_dates['trip_id'].astype(int)
-        # Perform a left join between fahrplan_dates_all_dates and fahrplan_calendar_weeks
-        # use indicator=True for debug reasons!
+
         joined_df = pd.merge(fahrplan_dates_all_dates, fahrplan_calendar_weeks, left_on=['trip_id', 'service_id'],
                              right_on=['trip_id', 'service_id'], how='left')
-        # Order the resulting DataFrame by date, stop_sequence, start_time, and trip_id
+
         ordered_df = joined_df.sort_values(by=['date', 'stop_sequence', 'start_time', 'trip_id'])
-        # Select the required columns
         selected_columns = ['date', 'day', 'start_time', 'trip_id', 'stop_name', 'stop_sequence', 'arrival_time',
                             'service_id', 'stop_id']
         ordered_df = ordered_df[selected_columns]
@@ -453,9 +451,7 @@ class UmlaufPlaner(QObject):
             lambda x: self.time_in_string(x))
         ordered_df['start_time'] = ordered_df['start_time'].apply(
             lambda x: self.time_in_string(x))
-        # Sort the DataFrame by trip_id, date, and stop_sequence
         sorted_df = ordered_df.sort_values(by=['trip_id', 'date', 'stop_sequence'])
-        # Select the required columns
         selected_columns = ['date', 'day', 'start_time', 'arrival_time', 'stop_name', 'stop_sequence', 'stop_id',
                             'trip_id']
         sorted_df = sorted_df[selected_columns]
@@ -464,11 +460,9 @@ class UmlaufPlaner(QObject):
     def datesWeekday_create_sort_stopnames(self):
         sorted_df = self.create_dataframe.SortedDataframe
         filtered_df = self.filterStopSequence(sorted_df)
-        # create new def with filterStopSequence
+
         df_filtered_stop_names = pd.DataFrame.from_dict(filtered_df)
-        # df_deleted_dupl_stop_names["stop_name"] = df_deleted_dupl_stop_names["stop_name"].astype('string')
         df_filtered_stop_names["stop_sequence"] = df_filtered_stop_names["stop_sequence"].astype('int32')
-        # self.df_filtered_stop_names = self.df_filtered_stop_names.set_index("stop_sequence")
         df_filtered_stop_names = df_filtered_stop_names.sort_index(axis=0)
 
         self.create_dataframe.FilteredStopNamesDataframe = df_filtered_stop_names
@@ -477,47 +471,31 @@ class UmlaufPlaner(QObject):
         sortedDataframe = self.create_dataframe.SortedDataframe
         sortedDataframe.rename(columns=lambda x: f'sorted_{x}', inplace=True)
         df_filtered_stop_names = self.create_dataframe.FilteredStopNamesDataframe
-
-        # Assuming fahrplan_calendar_weeks and df_filtered_stop_names are already defined
-
-        # Perform a left join between fahrplan_calendar_weeks and df_filtered_stop_names
         joined_df = pd.merge(sortedDataframe, df_filtered_stop_names, left_on='sorted_stop_id', right_on='stop_id',
                              how='left')
 
-        # Group the resulting DataFrame by the specified columns
         grouped_df = joined_df.groupby(
             ['sorted_date', 'sorted_day', 'sorted_start_time', 'sorted_arrival_time', 'sorted_trip_id', 'sorted_stop_name', 'stop_sequence',
              'sorted_stop_sequence', 'sorted_stop_id'])
 
-        # Aggregate the grouped data (if needed, adjust the aggregation function as necessary)
-        aggregated_df = grouped_df.size().reset_index(name='count')  # Example aggregation, adjust as needed
 
-        # Order the aggregated DataFrame by date, stop_sequence, start_time, and trip_id
+        aggregated_df = grouped_df.size().reset_index(name='count')
         ordered_df = aggregated_df.sort_values(by=['sorted_date', 'sorted_stop_sequence', 'sorted_start_time', 'sorted_trip_id'])
 
-        # Select the required columns
         selected_columns = ['sorted_date', 'sorted_day', 'sorted_start_time', 'sorted_trip_id', 'sorted_stop_name', 'stop_sequence',
                             'sorted_stop_sequence', 'sorted_arrival_time', 'sorted_stop_id']
 
         fahrplan_calendar_weeks = ordered_df[selected_columns].copy()
-
-        ###########################
-
         fahrplan_calendar_weeks['sorted_date'] = pd.to_datetime(fahrplan_calendar_weeks['sorted_date'], format='%Y-%m-%d %H:%M:%S.%f')
-        # fahrplan_calendar_weeks['trip_id'] = fahrplan_calendar_weeks['trip_id'].astype('int32')
         fahrplan_calendar_weeks['sorted_arrival_time'] = fahrplan_calendar_weeks['sorted_arrival_time'].astype('string')
         fahrplan_calendar_weeks['sorted_start_time'] = fahrplan_calendar_weeks['sorted_start_time'].astype('string')
-
-        # fahrplan_calendar_weeks = fahrplan_calendar_weeks.drop(columns=['stop_sequence', 'service_id', 'stop_id'])
         fahrplan_calendar_weeks = fahrplan_calendar_weeks.drop(columns=['sorted_stop_sequence'])
         fahrplan_calendar_weeks = fahrplan_calendar_weeks.groupby(
             ['sorted_date', 'sorted_day', 'stop_sequence', 'sorted_stop_name', 'sorted_stop_id', 'sorted_start_time',
              'sorted_trip_id']).first().reset_index()
-
         fahrplan_calendar_weeks['sorted_date'] = pd.to_datetime(fahrplan_calendar_weeks['sorted_date'], format='%Y-%m-%d')
-        # fahrplan_calendar_weeks['trip_id'] = fahrplan_calendar_weeks['trip_id'].astype('int32')
-
         fahrplan_calendar_weeks['sorted_arrival_time'] = fahrplan_calendar_weeks['sorted_arrival_time'].astype('string')
+
         if self.create_settings_for_table_dto.timeformat == 1:
             fahrplan_calendar_weeks['sorted_arrival_time'] = fahrplan_calendar_weeks['sorted_arrival_time'].apply(
                 lambda x: self.time_delete_seconds(x))
@@ -528,7 +506,6 @@ class UmlaufPlaner(QObject):
             index=['sorted_date', 'sorted_day', 'stop_sequence', 'sorted_stop_name', 'sorted_stop_id'], columns=['sorted_start_time', 'sorted_trip_id'],
             values='sorted_arrival_time')
 
-        # fahrplan_calendar_filter_days_pivot['date'] = pd.to_datetime(fahrplan_calendar_filter_days_pivot['date'], format='%Y-%m-%d %H:%M:%S.%f')
         self.create_dataframe.FahrplanCalendarFilterDaysPivot = self.create_dataframe.FahrplanCalendarFilterDaysPivot.sort_index(
             axis=1)
         self.create_dataframe.FahrplanCalendarFilterDaysPivot = self.create_dataframe.FahrplanCalendarFilterDaysPivot.sort_index(
@@ -539,12 +516,6 @@ class UmlaufPlaner(QObject):
         sortedDataframe = self.create_dataframe.SortedDataframe
         sortedDataframe.rename(columns=lambda x: f'sorted_{x}', inplace=True)
         df_filtered_stop_names = self.create_dataframe.FilteredStopNamesDataframe
-
-
-        #old
-        # fahrplan_calendar_weeks = self.fahrplan_calendar_weeks
-        # self.fahrplan_calendar_weeks = None
-        # self.filtered_stop_names = self.filterStopSequence(self.fahrplan_sorted_stops)
 
         """
         
@@ -710,15 +681,6 @@ class UmlaufPlaner(QObject):
                             # temp["arrival_time"] = stop_name_j.arrival_time
                             temp["stop_sequence"] = stop_name_j.stop_sequence
 
-                        # if time_j < time_i \
-                        # and time_j < time_temp \
-                        # and time_arrival_j < time_arrival_i \
-                        # and time_arrival_j < arrival_time_temp\
-                        # and stop_name_j.stop_sequence > stop_name_i.stop_sequence:
-                        #     temp["start_time"] = time_j
-                        #     temp["arrival_time"] = time_arrival_j
-                        #     # temp["arrival_time"] = stop_name_j.arrival_time
-                        #     temp["stop_sequence"] = stop_name_j.stop_sequence
 
                 stopsequence[stop_name_i.stop_id] = temp
 
@@ -736,7 +698,6 @@ class UmlaufPlaner(QObject):
         """
         sort dict of stops (cust. bubble sort)
         """
-        # get all possible stops
         sequence_count = len(stopsequence)
 
         # init data structure
@@ -776,19 +737,6 @@ class UmlaufPlaner(QObject):
                     elif d[str(j)]["stop_sequence"] == d[str(j + 1)]["stop_sequence"]:
                         if d[str(j)]["start_time"] > d[str(j + 1)]["start_time"]:
                             d[str(j)], d[str(j + 1)] = d[str(j + 1)], d[str(j)]
-            # -> hier ist etwas komisch!
-            # for i in range(sequence_count - 1):
-            #     for j in range(0, sequence_count - i - 1):
-            #         # 23072022
-            #         # if d[str(j)]["arrival_time"] > d[str(j + 1)]["arrival_time"]:
-            #         #     d[str(j)], d[str(j + 1)] = d[str(j + 1)], d[str(j)]
-            #         if d[str(j)]["stop_sequence"] > d[str(j + 1)]["stop_sequence"] \
-            #                 and d[str(j)]["start_time"] > d[str(j + 1)]["start_time"]:
-            #             d[str(j)], d[str(j + 1)] = d[str(j + 1)], d[str(j)]
-            #         elif d[str(j)]["stop_sequence"] == d[str(j + 1)]["stop_sequence"]:
-            #             if d[str(j)]["start_time"] > d[str(j + 1)]["start_time"] \
-            #                     and d[str(j)]["arrival_time"] > d[str(j + 1)]["arrival_time"]:
-            #                 d[str(j)], d[str(j + 1)] = d[str(j + 1)], d[str(j)]
         return d
 
     # checks if in dictonary
