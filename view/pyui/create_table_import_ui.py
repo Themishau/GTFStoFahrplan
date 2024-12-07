@@ -214,3 +214,6 @@ class Ui_Form(object):
         self.lineInputPath.setPlaceholderText(_translate("Form", "C:/Tmp/GTFS.zip"))
         self.btnImport.setText(_translate("Form", "Start Import"))
 
+
+from view.ui.res import resource_boot
+from view.ui.res import resource_rc

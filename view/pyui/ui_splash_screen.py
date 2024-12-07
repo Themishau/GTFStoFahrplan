@@ -106,3 +106,5 @@ class Ui_SplashScreen(object):
         self.label_credits.setText(QCoreApplication.translate("SplashScreen", u"<strong>Created</strong>: Themishau", None))
     # retranslateUi
 
+from view.ui.res import resource_boot
+from view.ui.res import resource_rc

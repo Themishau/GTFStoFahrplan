@@ -323,3 +323,6 @@ class Ui_Form(object):
         self.label_6.setText(_translate("Form", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Weekday</span></p></body></html>"))
         self.label_17.setText(_translate("Form", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Detected Date Range</span></p></body></html>"))
         self.label_13.setText(_translate("Form", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Date</span></p></body></html>"))
+
+from view.ui.res import resource_boot
+from view.ui.res import resource_rc
