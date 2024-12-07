@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
 
-from viewmodel import ViewModel
+from viewmodel.viewmodel import ViewModel
 from view.view import View
 from model.model import Model
 from view.splash_screen import SplashScreen

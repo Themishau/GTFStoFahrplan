@@ -429,5 +429,4 @@ class Ui_MainWindow(object):
         self.label_3.setText(_translate("MainWindow", "TextLabel"))
         self.label.setText(_translate("MainWindow", "current Progress: "))
         self.label_16.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Selection</span></p></body></html>"))
-from add_files.res import resource_boot
-from add_files.res import resource_rc
+

@@ -146,5 +146,4 @@ class Ui_Form(object):
         self.comboBox_display.setItemText(1, _translate("Form", "opendata.vbb"))
         self.btnLoadOnlineData.setText(_translate("Form", "Load Online Data"))
         self.btnDownloadSelected.setText(_translate("Form", "Download Selected Data"))
-from add_files.res import resource_boot
-from add_files.res import resource_rc
+
