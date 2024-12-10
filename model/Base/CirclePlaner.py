@@ -75,11 +75,15 @@ class CirclePlaner(QObject):
 
         # get the first and last station of each trip id and merge these two dfs
         merged_df['trip_sequence_id'] = merged_df['sorted_trip_id'].astype(str) + '_' + merged_df['sorted_stop_sequence'].astype(str)
-        filtered_first_stations_df = merged_df.groupby('sorted_trip_id')['sorted_stop_sequence'].min().reset_index()
-        filtered_last_station_sequence_df = merged_df.groupby('sorted_trip_id')['sorted_stop_sequence'].max().reset_index()
+        filtered_first_stations_df = merged_df.groupby('sorted_trip_id', as_index=False).agg({'sorted_stop_sequence': 'min'}).rename(columns={'sorted_stop_sequence': 'sorted_stop_sequence'})
+        filtered_last_station_sequence_df = merged_df.groupby('sorted_trip_id', as_index=False).agg({'sorted_stop_sequence': 'max'}).rename(columns={'sorted_stop_sequence': 'sorted_stop_sequence'})
         merged_filtered_df = pd.concat([filtered_first_stations_df, filtered_last_station_sequence_df], axis=0)
+        merged_filtered_df['trip_sequence_id'] = merged_filtered_df['sorted_trip_id'].astype(str) + '_' + merged_filtered_df['sorted_stop_sequence'].astype(str)
+
         # add ['trip_sequence_id'] also to the concat series and use it with isin to filter
-        filtered_df_mask = merged_df['sorted_trip_id'].isin(merged_filtered_df['sorted_trip_id'])
+
+
+        filtered_df_mask = merged_df['trip_sequence_id'].isin(merged_filtered_df['trip_sequence_id'])
         filtered_df = merged_df[filtered_df_mask]
         test = self.assign_vehicle_numbers(filtered_df)
 
