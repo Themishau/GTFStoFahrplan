@@ -115,11 +115,17 @@ class CirclePlaner(QObject):
 
             while True:
 
-                last_entry_df = result_df[result_df['sorted_trip_id'] == current_trip_id['sorted_trip_id']]
-                last_entry_df.loc[:, 'vehicle_number'] = current_vehicle_number
-                current_last_time_stop = result_df[(result_df['sorted_trip_id'] == current_trip_id) & (result_df['sorted_stop_sequence'] != 0)]
+                result_df.loc[result_df['sorted_trip_id'] == current_trip_id['sorted_trip_id'], 'vehicle_number'] = 1
 
-                current_trip_id = result_df[(result_df['sorted_trip_id'] != current_last_time_stop['sorted_trip_id']) & (result_df['sorted_stop_sequence'] == 0) & (result_df['sorted_start_time'] >= current_last_time_stop['sorted_arrival_time'])]
+                current_last_time_stop = result_df[(result_df['sorted_trip_id'] == current_trip_id['sorted_trip_id']) & (result_df['sorted_stop_sequence'] != 0)]
+                current_last_time_stop = current_last_time_stop.iloc[0] if not current_last_time_stop.empty else None
+                current_trip_id = result_df[
+                    result_df['sorted_trip_id'] != current_last_time_stop['sorted_trip_id']  &
+                    (result_df['sorted_stop_sequence'] == 0) &
+                    (result_df['sorted_start_time'] >= current_last_time_stop['sorted_arrival_time']) &
+                    (result_df['vehicle_number'] == 0)
+                    ]
+                current_trip_id.sort_values('sorted_start_time')
                 if len(current_trip_id) == 0:
                     break
 
