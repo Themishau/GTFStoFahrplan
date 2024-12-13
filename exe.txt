@@ -1,0 +1,3 @@
+auto-py-to-exe
+
+add GTFSQT5Q.ui to add files

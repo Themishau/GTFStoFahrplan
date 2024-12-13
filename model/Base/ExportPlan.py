@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 
-from PyQt5.QtCore import pyqtSignal, QObject, QCoreApplication
+from PyQt5.QtCore import pyqtSignal, QObject
 import logging
 
 from ..Dto import CreateTableDataframeDto
-from ..Dto.GeneralTransitFeedSpecificationDto import GtfsListDto, GtfsDataFrameDto
 from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO
 
 logging.basicConfig(level=logging.DEBUG,

@@ -108,34 +108,37 @@ class CirclePlaner(QObject):
 
         for _, row in df.iterrows():
 
-            if current_vehicle_number != 1 and row['vehicle_number'] < current_vehicle_number:
+            if current_vehicle_number != 1 and self.has_records_with_vehicle_number(row, result_df):
                 continue
 
             current_trip_id = row
 
             while True:
 
-                result_df.loc[result_df['sorted_trip_id'] == current_trip_id['sorted_trip_id'], 'vehicle_number'] = 1
+                result_df.loc[result_df['sorted_trip_id'] == current_trip_id['sorted_trip_id'], 'vehicle_number'] = current_vehicle_number
 
                 current_last_time_stop = result_df[(result_df['sorted_trip_id'] == current_trip_id['sorted_trip_id']) & (result_df['sorted_stop_sequence'] != 0)]
                 current_last_time_stop = current_last_time_stop.iloc[0] if not current_last_time_stop.empty else None
                 current_trip_id = result_df[
-                    result_df['sorted_trip_id'] != current_last_time_stop['sorted_trip_id']  &
+                    (result_df['sorted_trip_id'] != current_last_time_stop['sorted_trip_id'])  &
                     (result_df['sorted_stop_sequence'] == 0) &
                     (result_df['sorted_start_time'] >= current_last_time_stop['sorted_arrival_time']) &
                     (result_df['vehicle_number'] == 0)
                     ]
-                current_trip_id.sort_values('sorted_start_time')
-                if len(current_trip_id) == 0:
+
+                if current_trip_id.empty:
                     break
 
-                current_trip_id = current_trip_id[0]
+                current_trip_id = current_trip_id.sort_values('sorted_start_time').iloc[0]
 
 
             current_vehicle_number += 1
 
 
         return result_df
+
+    def has_records_with_vehicle_number(self, row, result_df):
+        return result_df[(result_df['sorted_trip_id'] == row['sorted_trip_id']) & (result_df['vehicle_number'] == 0)].empty
 
 
 
