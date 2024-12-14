@@ -560,7 +560,7 @@ class UmlaufPlaner(QObject):
         fahrplan_calendar_weeks['sorted_start_time'] = fahrplan_calendar_weeks['sorted_start_time'].astype('string')
 
         # fahrplan_calendar_weeks = fahrplan_calendar_weeks.drop(columns=['stop_sequence', 'service_id', 'stop_id'])
-        fahrplan_calendar_weeks = fahrplan_calendar_weeks.drop(columns=['sorted_stop_sequence'])
+        #fahrplan_calendar_weeks = fahrplan_calendar_weeks.drop(columns=['sorted_stop_sequence'])
         fahrplan_calendar_weeks = fahrplan_calendar_weeks.groupby(
             ['sorted_date', 'sorted_day', 'stop_sequence', 'sorted_stop_name', 'sorted_stop_id', 'sorted_start_time',
              'sorted_trip_id']).first().reset_index()
@@ -574,6 +574,8 @@ class UmlaufPlaner(QObject):
                 lambda x: self.time_delete_seconds(x))
 
         fahrplan_calendar_weeks['sorted_start_time'] = fahrplan_calendar_weeks['sorted_start_time'].astype('string')
+
+        self.create_dataframe.GftsTableData = fahrplan_calendar_weeks
 
         self.create_dataframe.FahrplanCalendarFilterDaysPivot = fahrplan_calendar_weeks.pivot(
             index=['sorted_date', 'sorted_day', 'stop_sequence', 'sorted_stop_name', 'sorted_stop_id'], columns=['sorted_start_time', 'sorted_trip_id'],

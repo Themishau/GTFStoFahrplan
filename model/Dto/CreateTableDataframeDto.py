@@ -9,4 +9,5 @@ class CreateTableDataframeDto:
         self.FahrplanStops = None
         self.SortedDataframe = None
         self.FilteredStopNamesDataframe = None
+        self.GftsTableData = None
         self.FahrplanCalendarFilterDaysPivot = None

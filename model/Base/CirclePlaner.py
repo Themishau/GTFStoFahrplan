@@ -69,9 +69,13 @@ class CirclePlaner(QObject):
         NotImplementedError()
 
     def add_vehicle_number(self):
-        self.plans[0].create_dataframe.SortedDataframe['vehicle_number'] = 0
-        self.plans[1].create_dataframe.SortedDataframe['vehicle_number'] = 0
-        merged_df = pd.concat([self.plans[0].create_dataframe.SortedDataframe, self.plans[1].create_dataframe.SortedDataframe], axis=0)
+        self.plans[0].create_dataframe.GftsTableData['vehicle_number'] = 0
+        self.plans[1].create_dataframe.GftsTableData['vehicle_number'] = 0
+        self.plans[0].create_dataframe.GftsTableData['direction'] = 0
+        self.plans[1].create_dataframe.GftsTableData['direction'] = 1
+        self.plans[0].create_dataframe.GftsTableData['first_vehicle_trip'] = False
+        self.plans[1].create_dataframe.GftsTableData['first_vehicle_trip'] = False
+        merged_df = pd.concat([self.plans[0].create_dataframe.GftsTableData, self.plans[1].create_dataframe.GftsTableData], axis=0)
 
         # get the first and last station of each trip id and merge these two dfs
         merged_df['trip_sequence_id'] = merged_df['sorted_trip_id'].astype(str) + '_' + merged_df['sorted_stop_sequence'].astype(str)
@@ -85,9 +89,24 @@ class CirclePlaner(QObject):
 
         filtered_df_mask = merged_df['trip_sequence_id'].isin(merged_filtered_df['trip_sequence_id'])
         filtered_df = merged_df[filtered_df_mask]
-        test = self.assign_vehicle_numbers(filtered_df)
+        merged_df = self.assign_vehicle_numbers(filtered_df, merged_df)
+        df_direction_0 = merged_df[merged_df['direction'] == 0].reset_index(drop=True)
+        df_direction_1 = merged_df[merged_df['direction'] == 1].reset_index(drop=True)
+        .pivot(
+            index=['sorted_date', 'sorted_day', 'stop_sequence', 'sorted_stop_name', 'sorted_stop_id'], columns=['sorted_start_time', 'sorted_trip_id', 'vehicle_number'],
+            values='vehicle_number').sort_index(
+            axis=1).sort_index(
+            axis=0)
+        .pivot(
+            index=['sorted_date', 'sorted_day', 'stop_sequence', 'sorted_stop_name', 'sorted_stop_id'], columns=['sorted_start_time', 'sorted_trip_id', 'vehicle_number'],
+            values='vehicle_number').sort_index(
+            axis=1).sort_index(
+            axis=0)
 
-    def assign_vehicle_numbers(self, df):
+
+
+
+    def assign_vehicle_numbers(self, df, all_df):
 
         # given is a df with trip_id, arrival_time (at a station), sequence_number (number in order of stops), vehicle_number and  start_time (of the trip)
         # vehicle_number is init with 0
@@ -112,10 +131,13 @@ class CirclePlaner(QObject):
                 continue
 
             current_trip_id = row
+            result_df.loc[(result_df['sorted_trip_id'] == current_trip_id['sorted_trip_id']) & (result_df['sorted_stop_sequence'] == 0), 'first_vehicle_trip'] = True
+            all_df.loc[(all_df['sorted_trip_id'] == current_trip_id['sorted_trip_id']) & (all_df['sorted_stop_sequence'] == 0), 'first_vehicle_trip'] = True
 
             while True:
 
                 result_df.loc[result_df['sorted_trip_id'] == current_trip_id['sorted_trip_id'], 'vehicle_number'] = current_vehicle_number
+                all_df.loc[all_df['sorted_trip_id'] == current_trip_id['sorted_trip_id'], 'vehicle_number'] = current_vehicle_number
 
                 current_last_time_stop = result_df[(result_df['sorted_trip_id'] == current_trip_id['sorted_trip_id']) & (result_df['sorted_stop_sequence'] != 0)]
                 current_last_time_stop = current_last_time_stop.iloc[0] if not current_last_time_stop.empty else None
@@ -135,7 +157,7 @@ class CirclePlaner(QObject):
             current_vehicle_number += 1
 
 
-        return result_df
+        return all_df
 
     def has_records_with_vehicle_number(self, row, result_df):
         return result_df[(result_df['sorted_trip_id'] == row['sorted_trip_id']) & (result_df['vehicle_number'] == 0)].empty
