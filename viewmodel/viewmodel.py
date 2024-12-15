@@ -153,6 +153,9 @@ class ViewModel(QObject):
     def create_table_continue(self):
         self.model.start_function_async(ModelTriggerActionsEnum.planer_start_create_table_continue.value)
 
+    def create_table_stop(self):
+        self.model.model_instance.cancel_async_operation()
+
     @staticmethod
     def find(name, path):
         for root, dirs, files in os.walk(path):

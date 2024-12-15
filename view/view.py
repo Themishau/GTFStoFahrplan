@@ -108,6 +108,8 @@ class View(QMainWindow):
 
         self.CreateCreate_Tab.ui.btnContinueCreate.clicked.connect(self.viewModel.create_table_continue)
 
+        self.CreateCreate_Tab.ui.btnStopCreate.clicked.connect(self.viewModel.create_table_stop)
+
         self.CreateCreate_Tab.ui.UseIndividualSorting.clicked.connect(self.viewModel.on_changed_individualsorting)
         self.viewModel.update_individualsorting.connect(self.update_individualsorting)
 

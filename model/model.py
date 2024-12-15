@@ -31,8 +31,27 @@ class Model(QObject):
         """
         self.thread = QThread()
         self.moveToThread(self.thread)
-        self.thread.started.connect(getattr(self, function_name))
+
+        def wrapped_function():
+            try:
+                func = getattr(self, function_name)
+                if callable(func):
+                    func()
+            except Exception as e:
+                logging.error(f"Error in async function: {e}")
+            finally:
+                self.thread.quit()
+
+        self.thread.started.connect(wrapped_function)
         self.thread.start()
+
+    def cancel_async_operation(self):
+        if self.thread.isRunning():
+            logging.info("Cancelling ongoing operation...")
+            self.cancel_event.set()
+            self.thread.quit()
+            self.thread.wait()
+            logging.info("Operation cancelled.")
 
     def planer_start_load_data(self):
         self.planer.import_gtfs_data()

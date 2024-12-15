@@ -4,15 +4,9 @@ from copy import deepcopy
 from PyQt5.QtCore import QObject, pyqtSignal
 import logging
 import copy
-from pandasql import sqldf
-import re
-from datetime import datetime, timedelta
 import pandas as pd
-from model.Enum.GTFSEnums import CreatePlanMode, ErrorMessageRessources
+from model.Enum.GTFSEnums import ErrorMessageRessources
 from model.Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO
-from model.Dto.CreateTableDataframeDto import CreateTableDataframeDto
-from model.Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
-from model.SchedulePlaner.UmplaufPlaner.UmlaufPlaner import UmlaufPlaner
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
