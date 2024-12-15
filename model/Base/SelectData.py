@@ -177,34 +177,8 @@ class SelectData(QObject):
             self.find_routes_from_agency()
 
     def find_routes_from_agency(self):
-        # df_routes = self.imported_data[GtfsDfNames.Routes]
-        # input_var = [{'agency_id': self.selected_agency}]
-        # var_test = pd.DataFrame(input_var).set_index('agency_id')
-        # cond_routes_of_agency = '''
-        #             select *
-        #             from df_routes
-        #             left join var_test
-        #             where var_test.agency_id = df_routes.agency_id
-        #             order by df_routes.route_short_name;
-        #            '''
-        # routes_list = sqldf(cond_routes_of_agency, locals())
-        #
-        # self.df_selected_routes = routes_list
-
-        df_routes = self.gtfs_data_frame_dto.Routes
-
-        # Create a DataFrame from input_var and set 'agency_id' as the index
         input_var = [{'agency_id': self.selected_agency}]
-        var_test = pd.DataFrame(input_var).set_index('agency_id')
-
-        # Perform a left join between df_routes and var_test on 'agency_id'
-        # Filter rows where 'agency_id' in var_test matches 'agency_id' in df_routes
-        # Order the result by 'route_short_name'
-        routes_list = df_routes.merge(var_test, left_on='agency_id', right_index=True, how='left')
-        routes_list = routes_list[routes_list['agency_id'].notna()].sort_values(by='route_short_name')
-
-        # Assign the filtered and sorted DataFrame to self.df_selected_routes
-        self.df_selected_routes = routes_list
+        self.df_selected_routes = self.gtfs_data_frame_dto.Routes[self.gtfs_data_frame_dto.Routes['agency_id'].isin(pd.DataFrame(input_var)['agency_id'])]
         return True
 
     def read_gtfs_agencies(self):

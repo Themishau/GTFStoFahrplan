@@ -32,17 +32,7 @@ class Model(QObject):
         self.thread = QThread()
         self.moveToThread(self.thread)
 
-        def wrapped_function():
-            try:
-                func = getattr(self, function_name)
-                if callable(func):
-                    func()
-            except Exception as e:
-                logging.error(f"Error in async function: {e}")
-            finally:
-                self.thread.quit()
-
-        self.thread.started.connect(wrapped_function)
+        self.thread.started.connect(getattr(self, function_name))
         self.thread.start()
 
     def cancel_async_operation(self):

@@ -403,7 +403,8 @@ class UmlaufPlaner(QObject):
         joined_df = pd.merge(joined_df, dfStops[['stop_id', 'stop_name']], left_on='stop_id', right_on='stop_id')
 
         # Select the arrival time at the first stop for each trip
-        first_stop_times = joined_df[joined_df['stop_sequence'] == 0][['arrival_time', 'trip_id']]
+        min_stop_sequence = joined_df['stop_sequence'].min()
+        first_stop_times = joined_df[joined_df['stop_sequence'] == min_stop_sequence][['arrival_time', 'trip_id']]
 
         merged_df = pd.merge(joined_df, first_stop_times.rename(columns={'arrival_time': 'start_time'}), on='trip_id',
                              how='left')
@@ -436,9 +437,9 @@ class UmlaufPlaner(QObject):
     def datesWeekday_select_for_every_date_trips_stops(self):
 
         fahrplan_calendar_weeks = self.create_dataframe.FahrplanStops
-        fahrplan_calendar_weeks['trip_id'] = fahrplan_calendar_weeks['trip_id'].astype(int)
+        fahrplan_calendar_weeks['trip_id'] = fahrplan_calendar_weeks['trip_id'].astype('string')
         fahrplan_dates_all_dates = self.create_dataframe.FahrplanDates
-        fahrplan_dates_all_dates['trip_id'] = fahrplan_dates_all_dates['trip_id'].astype(int)
+        fahrplan_dates_all_dates['trip_id'] = fahrplan_dates_all_dates['trip_id'].astype('string')
 
         joined_df = pd.merge(fahrplan_dates_all_dates, fahrplan_calendar_weeks, left_on=['trip_id', 'service_id'],
                              right_on=['trip_id', 'service_id'], how='left')

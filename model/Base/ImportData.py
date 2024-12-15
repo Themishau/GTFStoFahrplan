@@ -520,24 +520,34 @@ class ImportData(QObject):
         df_trips.name = GtfsDfNames.Trips
         """ lets try to convert every column to speed computing """
         try:
-            df_trips['trip_id'] = df_trips['trip_id'].astype('int32')
+            df_trips['trip_id'] = df_trips['trip_id'].astype('string')
         except KeyError:
+            logging.debug("can not convert dfTrips")
+        except ValueError:
             logging.debug("can not convert dfTrips")
         try:
             df_trips['direction_id'] = pd.to_numeric(df_trips['direction_id'], errors='coerce').fillna(0).astype(int)
         except KeyError:
             logging.debug("can not convert dfTrips")
+        except ValueError:
+            logging.debug("can not convert dfTrips")
         try:
             df_trips['shape_id'] = pd.to_numeric(df_trips['shape_id'], errors='coerce').fillna(0).astype(int)
         except KeyError:
+            logging.debug("can not convert dfTrips")
+        except ValueError:
             logging.debug("can not convert dfTrips")
         try:
             df_trips['wheelchair_accessible'] = pd.to_numeric(df_trips['wheelchair_accessible'], errors='coerce').fillna(0).astype(int)
         except KeyError:
             logging.debug("can not convert dfTrips")
+        except ValueError:
+            logging.debug("can not convert dfTrips")
         try:
             df_trips['bikes_allowed'] = pd.to_numeric(df_trips['bikes_allowed'], errors='coerce').fillna(0).astype(int)
         except KeyError:
+            logging.debug("can not convert dfTrips")
+        except ValueError:
             logging.debug("can not convert dfTrips")
 
         logging.debug("convert to df: create_df_trips finished")
