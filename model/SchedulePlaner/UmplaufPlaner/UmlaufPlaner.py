@@ -382,16 +382,9 @@ class UmlaufPlaner(QObject):
         dfRoutes = pd.merge(left=dfRoutes, right=varTestAgency, how='inner', on='agency_id')
         dfTrip = self.gtfs_data_frame_dto.Trips
         dfTrip['direction_id'] = dfTrip['direction_id'].astype('string')
-
-        # dfTrip['trip_id_dup'] = dfTrip.index
-        # dfTrip = dfTrip.reset_index(drop=True)
-        # dfTrip['trip_id_dup'] = dfTrip['trip_id_dup'].astype('string')
         dfTrip = pd.merge(left=dfTrip, right=requested_directiondf, how='inner', on='direction_id')
-        # pd.concat([self.dfTrips, self.requested_directiondf], join='inner', keys='direction_id')
         dfTrip = pd.merge(left=dfTrip, right=dfRoutes, how='inner', on='route_id')
         dfStopTimes = self.gtfs_data_frame_dto.Stoptimes
-        # dfStopTimes['stop_id'] = dfStopTimes.index
-        # dfStopTimes = dfStopTimes.reset_index(drop=True)
         dfTrip['trip_id'] = dfTrip['trip_id'].astype('string')
         dfStopTimes['trip_id'] = dfStopTimes['trip_id'].astype('string')
         dfStopTimes = pd.merge(left=dfStopTimes, right=dfTrip, how='inner', left_on='trip_id', right_on='trip_id')
@@ -408,9 +401,6 @@ class UmlaufPlaner(QObject):
 
         merged_df = pd.merge(joined_df, first_stop_times.rename(columns={'arrival_time': 'start_time'}), on='trip_id',
                              how='left')
-
-        # Add the start_time column to the main DataFrame
-        # joined_df['start_time'] = first_stop_times.values
 
         # Select the required columns
         selected_columns = ['start_time', 'trip_id', 'stop_name', 'stop_sequence', 'arrival_time', 'service_id',
@@ -518,20 +508,6 @@ class UmlaufPlaner(QObject):
         sortedDataframe.rename(columns=lambda x: f'sorted_{x}', inplace=True)
         df_filtered_stop_names = self.create_dataframe.FilteredStopNamesDataframe
 
-        """
-        
-        create new def with filterStopSequence
-        
-        """
-
-        #self.df_filtered_stop_names = pd.DataFrame.from_dict(self.filtered_stop_names)
-        # df_deleted_dupl_stop_names["stop_name"] = df_deleted_dupl_stop_names["stop_name"].astype('string')
-        #self.df_filtered_stop_names["stop_sequence"] = self.df_filtered_stop_names["stop_sequence"].astype('int32')
-        # self.df_filtered_stop_names = self.df_filtered_stop_names.set_index("stop_sequence")
-        #df_filtered_stop_names = df_filtered_stop_names.sort_index(axis=0)
-
-        # Assuming fahrplan_calendar_weeks and df_filtered_stop_names are already defined
-
         # Perform a left join between fahrplan_calendar_weeks and df_filtered_stop_names
         joined_df = pd.merge(sortedDataframe, df_filtered_stop_names, left_on='sorted_stop_id', right_on='stop_id',
                              how='left')
@@ -556,19 +532,13 @@ class UmlaufPlaner(QObject):
         ###########################
 
         fahrplan_calendar_weeks['sorted_date'] = pd.to_datetime(fahrplan_calendar_weeks['sorted_date'], format='%Y-%m-%d %H:%M:%S.%f')
-        # fahrplan_calendar_weeks['trip_id'] = fahrplan_calendar_weeks['trip_id'].astype('int32')
         fahrplan_calendar_weeks['sorted_arrival_time'] = fahrplan_calendar_weeks['sorted_arrival_time'].astype('string')
         fahrplan_calendar_weeks['sorted_start_time'] = fahrplan_calendar_weeks['sorted_start_time'].astype('string')
-
-        # fahrplan_calendar_weeks = fahrplan_calendar_weeks.drop(columns=['stop_sequence', 'service_id', 'stop_id'])
-        #fahrplan_calendar_weeks = fahrplan_calendar_weeks.drop(columns=['sorted_stop_sequence'])
         fahrplan_calendar_weeks = fahrplan_calendar_weeks.groupby(
             ['sorted_date', 'sorted_day', 'stop_sequence', 'sorted_stop_name', 'sorted_stop_id', 'sorted_start_time',
              'sorted_trip_id']).first().reset_index()
 
         fahrplan_calendar_weeks['sorted_date'] = pd.to_datetime(fahrplan_calendar_weeks['sorted_date'], format='%Y-%m-%d')
-        # fahrplan_calendar_weeks['trip_id'] = fahrplan_calendar_weeks['trip_id'].astype('int32')
-
         fahrplan_calendar_weeks['sorted_arrival_time'] = fahrplan_calendar_weeks['sorted_arrival_time'].astype('string')
         if self.create_settings_for_table_dto.timeformat == 1:
             fahrplan_calendar_weeks['sorted_arrival_time'] = fahrplan_calendar_weeks['sorted_arrival_time'].apply(
@@ -582,7 +552,6 @@ class UmlaufPlaner(QObject):
             index=['sorted_date', 'sorted_day', 'stop_sequence', 'sorted_stop_name', 'sorted_stop_id'], columns=['sorted_start_time', 'sorted_trip_id'],
             values='sorted_arrival_time')
 
-        # fahrplan_calendar_filter_days_pivot['date'] = pd.to_datetime(fahrplan_calendar_filter_days_pivot['date'], format='%Y-%m-%d %H:%M:%S.%f')
         self.create_dataframe.FahrplanCalendarFilterDaysPivot = self.create_dataframe.FahrplanCalendarFilterDaysPivot.sort_index(
             axis=1)
         self.create_dataframe.FahrplanCalendarFilterDaysPivot = self.create_dataframe.FahrplanCalendarFilterDaysPivot.sort_index(
@@ -600,8 +569,6 @@ class UmlaufPlaner(QObject):
             "stop_name": [],
             "start_time": []
         }
-        # data['date'] = pd.to_datetime(data['date'], format='%Y-%m-%d %H:%M:%S.%f')
-        # data['date'] = data['date'].dt.strftime('%m-%Y-%d %Y')
 
         for stop_name_i in data.itertuples():
 
