@@ -182,28 +182,9 @@ class SelectData(QObject):
         return True
 
     def read_gtfs_agencies(self):
-        # df_agency = self.imported_data[GtfsDfNames.Agencies]
-        # cond_agencies = '''
-        #             select *
-        #             from df_agency
-        #             order by df_agency.agency_id;
-        #            '''
-        # agency_list = sqldf(cond_agencies, locals())
-        # agency_list = agency_list.values.tolist()
-        # agency_str_list = []
-
-        # for lists in agency_list:
-        #     agency_str_list.append('{},{}'.format(lists[0], lists[1]))
-        # self.agencies_list = agency_str_list
-        # print (agency_list.values.tolist())
-
         df_agency = self.gtfs_data_frame_dto.Agencies
-        # Order the DataFrame by agency_id
         df_agency_ordered = df_agency.sort_values(by='agency_id')
-        # Convert the DataFrame to a list of lists
         agency_list = df_agency_ordered.values.tolist()
-        # Format each row into a string and store in agency_str_list
         agency_str_list = [f'{row[0]},{row[1]}' for row in agency_list]
-        # Assign the list of strings to self.agencies_list
         self.agencies_list = agency_str_list
         return True
