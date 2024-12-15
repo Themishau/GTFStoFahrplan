@@ -44,11 +44,8 @@ class SchedulePlaner(QObject):
 
     """ methods """
 
-    def notify_not_function(self, event):
-        logging.debug('event not found in class gui: {}'.format(event))
-
-    def sub_not_implemented(self):
-        logging.debug("sub method not implemented")
+    def send_error(self, e):
+        self.error_occured.emit(e)
 
     def update_progress_bar(self, value):
         self.progress = int(value)
@@ -81,22 +78,18 @@ class SchedulePlaner(QObject):
     def initialize_import_data(self):
         self.import_Data = ImportData(self.app, progress=self.progress)
         self.import_Data.progress_Update.connect(self.update_progress_bar)
-        self.import_Data.error_occured.connect(self.sub_not_implemented)
+        self.import_Data.error_occured.connect(self.send_error)
 
     def initialize_cirle_planer(self):
         self.circle_plan = CirclePlaner(plans=self.create_plan.plans, app=self.app, progress=self.progress)
         self.circle_plan.progress_Update.connect(self.update_progress_bar)
-        self.circle_plan.error_occured.connect(self.sub_not_implemented)
+        self.circle_plan.error_occured.connect(self.send_error)
 
     def initialize_select_data(self):
         self.select_data = SelectData(self.app, progress=self.progress)
         self.select_data.update_routes_list_signal.connect(self.update_routes_list)
         self.select_data.data_selected.connect(self.update_options_state)
         self.select_data.create_settings_for_table_dto_changed.connect(self.update_create_settings_selected_data)
-
-    def update_settings_for_create_table(self):
-        self.initialize_create_plan()
-        self.create_plan.create_settings_for_table_dto = self.create_settings_for_table_dto
 
     def initialize_analyze_data(self):
         self.analyze_data = AnalyzeData(self.app, progress=self.progress)
@@ -112,6 +105,13 @@ class SchedulePlaner(QObject):
         self.create_plan.create_sorting.connect(self.create_sorting_start)
         self.create_plan.gtfs_data_frame_dto = self.gtfs_data_frame_dto
 
+    def initialize_setting_dto(self):
+        self.select_data.create_settings_for_table_dto = self.create_settings_for_table_dto
+
+    def update_settings_for_create_table(self):
+        self.initialize_create_plan()
+        self.create_plan.create_settings_for_table_dto = self.create_settings_for_table_dto
+
     def create_sorting_start(self):
         self.create_sorting_signal.emit()
 
@@ -119,9 +119,6 @@ class SchedulePlaner(QObject):
         self.import_Data.input_path = input_path
         self.import_Data.pickle_save_path_filename = picklesavepath
         self.export_plan.output_path = output_path
-
-    def initialize_setting_dto(self):
-        self.select_data.create_settings_for_table_dto = self.create_settings_for_table_dto
 
     def create_table(self) -> bool:
         try:
@@ -150,19 +147,20 @@ class SchedulePlaner(QObject):
             return False
 
     def create_umlaufplan(self):
-        # try:
-        self.create_plan.create_table()
-        self.initialize_cirle_planer()
-        self.circle_plan.CreateCirclePlan()
-        self.export_plan.export_circle_plan(self.create_settings_for_table_dto, self.circle_plan.plans)
-        self.create_finished.emit(True)
-        return True
+        try:
+            self.create_plan.create_table()
+            self.initialize_cirle_planer()
+            self.circle_plan.CreateCirclePlan()
+            self.export_plan.export_circle_plan(self.create_settings_for_table_dto, self.circle_plan.plans)
+            self.create_finished.emit(True)
+            return True
 
-        # except AttributeError as e:
-        #     self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
-        #     return False
-        # except ValueError as e:
-        #     self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value + e)
+        except AttributeError as e:
+            self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value + e)
+            return False
+        except ValueError as e:
+            self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value + e)
+            return False
 
     def create_umlaufplan_continue(self):
         try:
@@ -170,7 +168,7 @@ class SchedulePlaner(QObject):
             self.export_plan.export_plan(self.create_settings_for_table_dto, self.create_plan.plans.create_dataframe)
             self.create_finished.emit(True)
         except AttributeError as e:
-            self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
+            self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value + e)
             return False
 
     def import_gtfs_data(self) -> bool:
@@ -182,8 +180,8 @@ class SchedulePlaner(QObject):
                 return False
 
             self.import_finished.emit(True)
-        except AttributeError:
-            self.error_occured.emit(ErrorMessageRessources.no_import_object_generated.value)
+        except AttributeError as e:
+            self.error_occured.emit(ErrorMessageRessources.no_import_object_generated.value + e)
             return False
 
     @property

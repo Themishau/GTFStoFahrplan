@@ -35,9 +35,6 @@ class ExportPlan(QObject):
         self._progress = value
         self.progress_Update.emit(self.progress)
 
-    def sub_worker_create_output_fahrplan_date(self):
-        NotImplementedError
-
     @property
     def output_path(self):
         return self._output_path
@@ -50,14 +47,14 @@ class ExportPlan(QObject):
         logging.debug(value)
 
     def export_plan(self, exportSettings, createTableDto: CreateTableDataframeDto):
-        self.datesWeekday_create_output_fahrplan(exportSettings, createTableDto)
+        self.datesWeekday_create_output_fahrplan(createTableDto)
         self.progress = 100
 
     def export_circle_plan(self, exportSettings, createTableDto: list[CreateTableDataframeDto]):
-        self.datesWeekday_create_output_circleplan(exportSettings, createTableDto)
+        self.datesWeekday_create_output_circleplan(createTableDto)
         self.progress = 100
 
-    def datesWeekday_create_output_fahrplan(self, exportSettings, createTableDto: CreateTableDataframeDto):
+    def datesWeekday_create_output_fahrplan(self, createTableDto: CreateTableDataframeDto):
         # save as csv
         now = datetime.now()
         now = now.strftime("%Y_%m_%d_%H_%M_%S")
@@ -68,7 +65,7 @@ class ExportPlan(QObject):
         createTableDto.FahrplanCalendarFilterDaysPivot.to_csv(self.full_output_path, header=True, quotechar=' ',
                                                               index=True, sep=';', mode='a', encoding='utf8')
 
-    def datesWeekday_create_output_circleplan(self, exportSettings, CreateTableDataframeDto):
+    def datesWeekday_create_output_circleplan(self, CreateTableDataframeDto):
         # save as csv
         now = datetime.now()
         now = now.strftime("%Y_%m_%d_%H_%M_%S")
