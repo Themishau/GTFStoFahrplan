@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import sys
 
+from view import View
 from viewmodel import ViewModel
-from view.view import View
-from model.model import Model
-from view.splash_screen import SplashScreen
+from model import Model
+from view import SplashScreen
 
 from PySide6.QtWidgets import *
 

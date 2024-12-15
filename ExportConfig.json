@@ -7,7 +7,7 @@
   },
   {
    "optionDest": "filenames",
-   "value": "E:/onedrive/1_Daten_Dokumente_Backup/1_Laptop_Backup_PC/Programmieren_Python/GTFSFahrplan/mainq5.py"
+   "value": "E:/GTFS/GTFSFahrplan/main.py"
   },
   {
    "optionDest": "onefile",
@@ -15,27 +15,11 @@
   },
   {
    "optionDest": "console",
-   "value": false
-  },
-  {
-   "optionDest": "icon_file",
-   "value": "E:/onedrive/1_Daten_Dokumente_Backup/1_Laptop_Backup_PC/Programmieren_Python/GTFSFahrplan/add_files/5282_Q5p_icon.ico"
-  },
-  {
-   "optionDest": "name",
-   "value": "TimeTabler"
-  },
-  {
-   "optionDest": "ascii",
-   "value": false
+   "value": true
   },
   {
    "optionDest": "clean_build",
    "value": false
-  },
-  {
-   "optionDest": "loglevel",
-   "value": "ERROR"
   },
   {
    "optionDest": "strip",
@@ -50,10 +34,6 @@
    "value": false
   },
   {
-   "optionDest": "embed_manifest",
-   "value": true
-  },
-  {
    "optionDest": "uac_admin",
    "value": false
   },
@@ -62,11 +42,7 @@
    "value": false
   },
   {
-   "optionDest": "win_private_assemblies",
-   "value": false
-  },
-  {
-   "optionDest": "win_no_prefer_redirects",
+   "optionDest": "argv_emulation",
    "value": false
   },
   {
@@ -74,8 +50,8 @@
    "value": false
   },
   {
-   "optionDest": "datas",
-   "value": "E:/onedrive/1_Daten_Dokumente_Backup/1_Laptop_Backup_PC/Programmieren_Python/GTFSFahrplan/add_files;add_files/"
+   "optionDest": "pathex",
+   "value": "E:/GTFS/GTFSFahrplan"
   }
  ],
  "nonPyinstallerOptions": {
