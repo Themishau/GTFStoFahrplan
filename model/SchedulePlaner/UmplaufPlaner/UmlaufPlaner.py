@@ -745,7 +745,7 @@ class UmlaufPlaner(QObject):
         else:
             return False
 
-    # checks if time-string exceeds 24 hour
+    # checks if time-string exceeds 24 hour format
     def check_hour_24(self, time):
         try:
             pattern1 = re.findall('^2{1}[4-9]{1}:[0-9]{2}', time)
