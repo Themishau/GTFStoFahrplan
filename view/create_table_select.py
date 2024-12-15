@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QAbstractItemView,QHeaderView
+from PySide6.QtWidgets import QWidget, QAbstractItemView,QHeaderView
 from view.pyui.create_table_select_ui import  Ui_Form as Ui_CreateTableSelect
 
 

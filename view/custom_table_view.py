@@ -1,10 +1,5 @@
-from PyQt5.QtCore import (Qt)
-from PyQt5.QtGui import (QStandardItemModel, QStandardItem)
-from PyQt5.QtWidgets import (QProxyStyle, QStyleOption,
-                             QTableView, QHeaderView,
-                             QItemDelegate,
-                             QApplication)
-from view.sort_table_view import TableModelSort
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QProxyStyle, QStyleOption, QTableView, QHeaderView, QAbstractItemView, QStyle
 
 """
 based on
@@ -18,7 +13,7 @@ class customTableView(QTableView):
             """Draw a line across the entire row rather than just the column we're hovering over.
             This may not always work depending on global style - for instance I think it won't
             work on OSX."""
-            if element == self.PE_IndicatorItemViewItemDrop and not option.rect.isNull():
+            if element == QStyle.PE_IndicatorItemViewItemDrop and not option.rect.isNull():
                 option_new = QStyleOption(option)
                 option_new.rect.setLeft(0)
                 if widget:
@@ -30,9 +25,9 @@ class customTableView(QTableView):
         super().__init__(parent)
 
         self.verticalHeader().hide()
-        self.setSelectionBehavior(self.SelectRows)
-        self.setSelectionMode(self.SingleSelection)
-        self.setDragDropMode(self.InternalMove)
+        self.setSelectionBehavior(QAbstractItemView.SelectRows)  # Fixed line
+        self.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.setDragDropMode(QAbstractItemView.InternalMove)
         self.setDragDropOverwriteMode(False)
         self.setStyle(self.DropmarkerStyle())
         self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)

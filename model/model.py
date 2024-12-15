@@ -1,5 +1,5 @@
 import logging
-from PyQt5.Qt import QThread, QObject
+from PySide6.QtCore import QObject, QThread
 from model.SchedulePlaner.SchedulePlaner import SchedulePlaner
 from model.Enum.GTFSEnums import CreatePlanMode
 

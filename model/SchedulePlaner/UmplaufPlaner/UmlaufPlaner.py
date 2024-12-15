@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
-from PyQt5.QtCore import QObject, pyqtSignal
+from PySide6.QtCore import Signal, QObject
 import logging
-from pandasql import sqldf
 import re
 from datetime import datetime, timedelta
 import pandas as pd
@@ -17,7 +16,7 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class UmlaufPlaner(QObject):
-    progress_Update = pyqtSignal(int)
+    progress_Update = Signal(int)
 
     def __init__(self):
         super().__init__()

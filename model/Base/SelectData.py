@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from PyQt5.QtCore import pyqtSignal, QObject
+from PySide6.QtCore import Signal, QObject
 
 import time
 import pandas as pd
@@ -13,12 +13,12 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class SelectData(QObject):
-    progress_update = pyqtSignal(int)
-    select_agency_signal = pyqtSignal()
-    update_routes_list_signal = pyqtSignal()
-    error_occured = pyqtSignal(str)
-    data_selected = pyqtSignal(bool)
-    create_settings_for_table_dto_changed = pyqtSignal()
+    progress_update = Signal(int)
+    select_agency_signal = Signal()
+    update_routes_list_signal = Signal()
+    error_occured = Signal(str)
+    data_selected = Signal(bool)
+    create_settings_for_table_dto_changed = Signal()
 
     def __init__(self, app, progress: int):
         super().__init__()

@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget
+from PySide6.QtWidgets import QWidget
 
 from view.pyui.create_table_create_ui import  Ui_Form as Ui_CreateTableCreate
 

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from PyQt5.QtCore import pyqtSignal, QObject
-
+from PySide6.QtCore import Signal
+from PySide6.QtCore import QObject
 from ..Base.AnalyzeData import AnalyzeData
 from ..Base.CirclePlaner import CirclePlaner
 from ..Base.CreatePlan import CreatePlan
@@ -19,13 +19,13 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class SchedulePlaner(QObject):
-    progress_Update = pyqtSignal(int)
-    error_occured = pyqtSignal(str)
-    import_finished = pyqtSignal(bool)
-    create_finished = pyqtSignal(bool)
-    update_routes_list_signal = pyqtSignal()
-    update_options_state_signal = pyqtSignal(bool)
-    create_sorting_signal = pyqtSignal()
+    progress_Update = Signal(int)
+    error_occured = Signal(str)
+    import_finished = Signal(bool)
+    create_finished = Signal(bool)
+    update_routes_list_signal = Signal()
+    update_options_state_signal = Signal(bool)
+    create_sorting_signal = Signal()
 
     def __init__(self, app):
         super().__init__()

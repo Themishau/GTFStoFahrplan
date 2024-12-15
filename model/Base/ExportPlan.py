@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 
-from PyQt5.QtCore import pyqtSignal, QObject
+from PySide6.QtCore import Signal
+from PySide6.QtCore import QObject
 import logging
 
 from ..Dto import CreateTableDataframeDto
@@ -13,8 +14,8 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class ExportPlan(QObject):
-    progress_Update = pyqtSignal(int)
-    create_settings_for_table_dto_changed = pyqtSignal()
+    progress_Update = Signal(int)
+    create_settings_for_table_dto_changed = Signal()
 
     def __init__(self, app, progress: int):
         super().__init__()

@@ -1,7 +1,7 @@
 import sys
-from PyQt5.QtCore import Qt, QTimer, pyqtSignal
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton
-from PyQt5.QtGui import QPainter, QPen, QBrush
+from PySide6.QtCore import Qt, QTimer
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
+from PySide6.QtGui import QPainter, QPen, QBrush
 
 class BusyIndicator(QWidget):
     def __init__(self, *args, **kwargs):

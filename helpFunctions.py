@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QDate
+from PySide6.QtCore import QDate
 
 
 def string_to_qdate(date_string):

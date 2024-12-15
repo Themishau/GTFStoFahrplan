@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from PyQt5.QtCore import pyqtSignal, QObject
+from PySide6.QtCore import Signal
+from PySide6.QtCore import QObject
 
 from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
 
@@ -11,8 +12,8 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class AnalyzeData(QObject):
-    progress_Update = pyqtSignal(int)
-    error_occured = pyqtSignal(str)
+    progress_Update = Signal(int)
+    error_occured = Signal(str)
 
     def __init__(self, app, progress: int):
         super().__init__()

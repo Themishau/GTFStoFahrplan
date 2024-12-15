@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from PyQt5.QtCore import pyqtSignal, QObject
+from PySide6.QtCore import Signal
+from PySide6.QtCore import QObject
 import pandas as pd
 import zipfile
 import io
@@ -16,8 +17,8 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class ImportData(QObject):
-    progress_Update = pyqtSignal(int)
-    error_occured = pyqtSignal(str)
+    progress_Update = Signal(int)
+    error_occured = Signal(str)
 
     def __init__(self, app, progress: int):
         super().__init__()

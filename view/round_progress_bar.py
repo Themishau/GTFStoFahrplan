@@ -1,13 +1,13 @@
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
+from PySide6.QtGui import *
+from PySide6.QtCore import *
+from PySide6.QtWidgets import *
 import math
 
 """
 https://www.youtube.com/watch?v=E7lhFwcDpMI
 """
 class RoundProgress(QWidget):
-    valueChanged = pyqtSignal(int)
+    valueChanged = Signal(int)
 
     def __init__(self, *args, **kwargs):
         QWidget.__init__(self, *args, **kwargs)

@@ -2,8 +2,7 @@ import datetime as dt
 import logging
 import os
 
-from PyQt5.Qt import QObject
-from PyQt5.QtCore import pyqtSignal
+from PySide6.QtCore import Signal, QObject
 
 from helpFunctions import qdate_to_string
 from model.Enum.GTFSEnums import *
@@ -16,27 +15,27 @@ lineend = '\n'
 
 
 class ViewModel(QObject):
-    input_file_path = pyqtSignal(str)
-    pickle_file_path = pyqtSignal(str)
-    output_file_path = pyqtSignal(str)
-    export_plan_time_format = pyqtSignal(str)
-    reset_view = pyqtSignal()
-    update_create_plan_mode = pyqtSignal(str)
-    update_direction_mode = pyqtSignal(str)
-    update_pickle_export_checked = pyqtSignal(bool)
-    update_agency_list = pyqtSignal()
-    update_routes_list_signal = pyqtSignal()
-    update_selected_agency = pyqtSignal(int)
-    update_create_plan_continue = pyqtSignal()
-    update_select_data = pyqtSignal(str)
-    update_weekdate_option = pyqtSignal(str)
-    update_individualsorting = pyqtSignal(bool)
-    update_progress_value = pyqtSignal(int)
-    update_options_state_signal = pyqtSignal(bool)
-    error_message = pyqtSignal(str)
-    create_table_finshed = pyqtSignal()
-    on_changed_individualsorting_table = pyqtSignal()
-    set_up_create_tab_signal = pyqtSignal()
+    input_file_path = Signal(str)
+    pickle_file_path = Signal(str)
+    output_file_path = Signal(str)
+    export_plan_time_format = Signal(str)
+    reset_view = Signal()
+    update_create_plan_mode = Signal(str)
+    update_direction_mode = Signal(str)
+    update_pickle_export_checked = Signal(bool)
+    update_agency_list = Signal()
+    update_routes_list_signal = Signal()
+    update_selected_agency = Signal(int)
+    update_create_plan_continue = Signal()
+    update_select_data = Signal(str)
+    update_weekdate_option = Signal(str)
+    update_individualsorting = Signal(bool)
+    update_progress_value = Signal(int)
+    update_options_state_signal = Signal(bool)
+    error_message = Signal(str)
+    create_table_finshed = Signal()
+    on_changed_individualsorting_table = Signal()
+    set_up_create_tab_signal = Signal()
 
     def __init__(self, app, model):
         super().__init__()
@@ -62,8 +61,14 @@ class ViewModel(QObject):
             case CreatePlanMode.umlauf_weekday.value:
                 mode = CreatePlanMode.umlauf_weekday
                 self.model.planer.select_data.selected_dates = None
-        self.model.planer.select_data.create_settings_for_table_dto.create_plan_mode = mode
-        self.update_create_plan_mode.emit(text)
+            case _:
+                logging.error(f"Unexpected text value: {text}")
+                mode = None
+        if mode is not None:
+            self.model.planer.select_data.create_settings_for_table_dto.create_plan_mode = mode
+            self.update_create_plan_mode.emit(text)
+        else:
+            self.send_error_message("Invalid create plan mode selected. Please select a valid mode.")
 
     def on_change_input_file_path(self, path):
         self.model.planer.import_Data.input_path = path[0]

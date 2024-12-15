@@ -1,15 +1,10 @@
 # -*- coding: utf-8 -*-
 import logging
-import re
-from datetime import datetime, timedelta
 import copy
-import pandas as pd
-from PyQt5.QtCore import pyqtSignal, QObject
-from pandasql import sqldf
+from PySide6.QtCore import Signal, QObject
 
 from model.Enum.GTFSEnums import CreatePlanMode
 from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO
-from ..Dto.CreateTableDataframeDto import CreateTableDataframeDto
 from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
 from ..SchedulePlaner.UmplaufPlaner.UmlaufPlaner import UmlaufPlaner
 
@@ -21,9 +16,9 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class CreatePlan(QObject):
-    progress_Update = pyqtSignal(int)
-    error_occured = pyqtSignal(str)
-    create_sorting = pyqtSignal()
+    progress_Update = Signal(int)
+    error_occured = Signal(str)
+    create_sorting = Signal()
 
     def __init__(self, app, progress: int):
         super().__init__()

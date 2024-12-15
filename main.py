@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 import sys
 
-from viewmodel.viewmodel import ViewModel
+from viewmodel import ViewModel
 from view.view import View
 from model.model import Model
 from view.splash_screen import SplashScreen
 
-from PyQt5.QtWidgets import *
+from PySide6.QtWidgets import *
 
 if __name__ == '__main__':
     gtfs_app = QApplication(sys.argv)
@@ -16,4 +16,4 @@ if __name__ == '__main__':
     # show a nice loading window first
     window = SplashScreen(view)
 
-    sys.exit(gtfs_app.exec_())
+    sys.exit(gtfs_app.exec())

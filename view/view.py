@@ -1,11 +1,8 @@
 import logging
 import os
 
-from PyQt5 import QtCore
-from PyQt5.Qt import QPoint, QMessageBox, QDesktopWidget, QMainWindow
-from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtWidgets import QFileDialog, QLabel, QVBoxLayout
-
+from PySide6.QtCore import QObject, Qt, QPoint
+from PySide6.QtWidgets import QLabel, QVBoxLayout, QFileDialog, QMessageBox, QMainWindow, QApplication
 from helpFunctions import string_to_qdate
 from model.Enum.GTFSEnums import CreatePlanMode
 from .create_table_create import CreateTableCreate
@@ -91,7 +88,7 @@ class View(QMainWindow):
         self.CreateImport_Tab.ui.checkBox_savepickle.clicked.connect(self.viewModel.on_changed_pickle_export_checked)
         self.viewModel.update_pickle_export_checked.connect(self.update_pickle_export_checked)
 
-        self.CreateImport_Tab.ui.comboBox_display.activated[str].connect(self.viewModel.on_changed_time_format_mode)
+        self.CreateImport_Tab.ui.comboBox_display.activated[int].connect(self.viewModel.on_changed_time_format_mode)
         self.viewModel.export_plan_time_format.connect(self.update_time_format)
 
         self.viewModel.update_agency_list.connect(self.update_agency_list)
@@ -118,10 +115,10 @@ class View(QMainWindow):
         self.CreateCreate_Tab.ui.dateEdit.editingFinished.connect(self.handle_selected_date)
         self.viewModel.update_select_data.connect(self.update_select_data)
 
-        self.CreateCreate_Tab.ui.comboBox.activated[str].connect(self.viewModel.on_changed_create_plan_mode)
+        self.CreateCreate_Tab.ui.comboBox.activated[int].connect(self.viewModel.on_changed_create_plan_mode)
         self.viewModel.update_create_plan_mode.connect(self.update_create_plan_mode)
 
-        self.CreateCreate_Tab.ui.comboBox_direction.activated[str].connect(self.viewModel.on_changed_direction_mode)
+        self.CreateCreate_Tab.ui.comboBox_direction.activated[int].connect(self.viewModel.on_changed_direction_mode)
         self.viewModel.update_direction_mode.connect(self.update_direction_mode)
 
         self.viewModel.set_up_create_tab_signal.connect(self.initialize_create_view_weekdaydate_option)
@@ -223,7 +220,7 @@ class View(QMainWindow):
         self.oldPos = self.pos()
 
     def init_signals(self):
-        self.CreateImport_Tab.ui.comboBox_display.activated[str].connect(self.viewModel.export_plan_time_format.emit)
+        self.CreateImport_Tab.ui.comboBox_display.activated[int].connect(self.viewModel.export_plan_time_format.emit)
         self.CreateImport_Tab.ui.lineInputPath.textChanged.connect(self.viewModel.input_file_path.emit)
         self.CreateImport_Tab.ui.lineOutputPath.textChanged.connect(self.viewModel.output_file_path.emit)
         self.CreateImport_Tab.ui.picklesavename.textChanged.connect(self.viewModel.pickle_file_path.emit)
@@ -238,7 +235,9 @@ class View(QMainWindow):
 
     def center(self):
         qr = self.frameGeometry()
-        cp = QDesktopWidget().availableGeometry().center()
+        screen = QApplication.primaryScreen()  # Get the primary screen
+        screen_geometry = screen.availableGeometry()  # Retrieve available screen geometry
+        cp = screen_geometry.center()  # Get the center point of the screen
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
@@ -251,8 +250,8 @@ class View(QMainWindow):
         self.progressRound = RoundProgress()
         self.progressRound.value = 0
         self.progressRound.setMinimumSize(self.progressRound.width, self.progressRound.height)
-        self.ui.progress_widget.addWidget(self.ui.label_progress, 0, 1, 1, 1, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-        self.ui.progress_widget.addWidget(self.progressRound, 1, 1, 1, 1, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        self.ui.progress_widget.addWidget(self.ui.label_progress, 0, 1, 1, 1, Qt.AlignHCenter | Qt.AlignVCenter)
+        self.ui.progress_widget.addWidget(self.progressRound, 1, 1, 1, 1, Qt.AlignHCenter | Qt.AlignVCenter)
 
     def initialize_tabs(self):
         self.ui.stackedWidget.addWidget(self.CreateImport_Tab)
@@ -360,23 +359,23 @@ class View(QMainWindow):
         try:
             input_file_path = QFileDialog.getOpenFileName(parent=self,
                                                           caption='Select GTFS Zip File',
-                                                          directory='C:/Tmp',
+                                                          dir='C:/Tmp',
                                                           filter='Zip File (*.zip)',
-                                                          initialFilter='Zip File (*.zip)')
+                                                          selectedFilter='Zip File (*.zip)')
 
         except:
             input_file_path = QFileDialog.getOpenFileName(parent=self,
                                                           caption='Select GTFS Zip File',
-                                                          directory=os.getcwd(),
+                                                          dir=os.getcwd(),
                                                           filter='Zip File (*.zip)',
-                                                          initialFilter='Zip File (*.zip)')
+                                                          selectedFilter='Zip File (*.zip)')
         if input_file_path[0] > '':
             self.viewModel.on_change_input_file_path(input_file_path)
 
     def get_output_dir_path(self):
         output_file_path = QFileDialog.getExistingDirectory(self,
                                                             caption='Select GTFS Zip File',
-                                                            directory='C:/Tmp')
+                                                            dir='C:/Tmp')
         if output_file_path > '':
             self.viewModel.on_change_output_file_path(output_file_path)
 
@@ -384,16 +383,16 @@ class View(QMainWindow):
         try:
             pickle_file_path = QFileDialog.getSaveFileName(parent=self,
                                                            caption='Select GTFS Zip File',
-                                                           directory='C:/Tmp',
+                                                           dir='C:/Tmp',
                                                            filter='Zip File (*.zip)',
-                                                           initialFilter='Zip File (*.zip)')
+                                                           selectedFilter='Zip File (*.zip)')
 
         except:
             pickle_file_path = QFileDialog.getSaveFileName(parent=self,
                                                            caption='Select GTFS Zip File',
-                                                           directory=os.getcwd(),
+                                                           dir=os.getcwd(),
                                                            filter='Zip File (*.zip)',
-                                                           initialFilter='Zip File (*.zip)')
+                                                           selectedFilter='Zip File (*.zip)')
         if pickle_file_path[0] > '':
             self.viewModel.on_changed_pickle_path(pickle_file_path)
 

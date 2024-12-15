@@ -6,10 +6,10 @@ This file contains all used types and names
 
 class CreatePlanMode(Enum):
     """ Types of methods """
-    date = 'Date'
-    weekday = 'Weekday'
-    umlauf_date = 'Umlaufplan Date'
-    umlauf_weekday = 'Umlaufplan Weekday'
+    date = 0
+    weekday = 1
+    umlauf_date = 2
+    umlauf_weekday = 3
 
 
 class GtfsColumnNames(Enum):

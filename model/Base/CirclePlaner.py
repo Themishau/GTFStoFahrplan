@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from copy import deepcopy
 
-from PyQt5.QtCore import QObject, pyqtSignal
+from PySide6.QtCore import Signal, QObject
 import logging
 import copy
 import pandas as pd
@@ -14,8 +14,8 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class CirclePlaner(QObject):
-    progress_Update = pyqtSignal(int)
-    error_occured = pyqtSignal(str)
+    progress_Update = Signal(int)
+    error_occured = Signal(str)
 
     def __init__(self, plans, app, progress: int):
         super().__init__()

@@ -1,5 +1,5 @@
-from PyQt5.QtWidgets import QWidget
 
+from PySide6.QtWidgets import QWidget
 from view.pyui.general_window_information_ui import  Ui_Form as Ui_GeneralInformation
 
 class GeneralInformation(QWidget):
