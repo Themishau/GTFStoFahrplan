@@ -1,5 +1,5 @@
 import logging
-from PySide6.QtCore import QObject, QThread
+from PySide6.QtCore import QObject, QThread, Signal
 from model.SchedulePlaner.SchedulePlaner import SchedulePlaner
 from model.Enum.GTFSEnums import CreatePlanMode
 
@@ -7,10 +7,27 @@ logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
                     datefmt="%Y-%m-%d %H:%M:%S")
 
+
+class Worker(QObject):
+    finished = Signal()  # Signal to indicate when the function is done
+    error = Signal(Exception)  # Signal to communicate errors (optional)
+
+    def __init__(self, function):
+        super().__init__()
+        self.function = function
+
+    def run(self):
+        try:
+            self.function()  # Execute the function passed to the worker
+            self.finished.emit()
+        except Exception as e:
+            self.error.emit(e)
+
 # noinspection PyUnresolvedReferences
 class Model(QObject):
     def __init__(self, event_loop):
         super().__init__()
+        self.worker = None
         self.event_loop = event_loop
         self.planer = None
         # we use this thread, to start processes not in the main gui thread
@@ -24,16 +41,28 @@ class Model(QObject):
         NotImplemented
 
     def start_function_async(self, function_name):
-        """
-        pass argument via getattr (object_name: self.model, function_name: foo)
-        :param function_name: getattr (object_name: self.model, function_name: foo)
-        :return:
-        """
+        # Create a thread
         self.thread = QThread()
-        self.moveToThread(self.thread)
 
-        self.thread.started.connect(getattr(self, function_name))
+        # Ensure the correct function is passed
+        worker_function = getattr(self, function_name)
+
+        # Create Worker and move it to the thread
+        self.worker = Worker(worker_function)
+        self.worker.moveToThread(self.thread)
+
+        # Connect signals and slots
+        self.thread.started.connect(self.worker.run)  # Start worker when the thread starts
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.worker.error.connect(self.handle_worker_error)
+
+        # Start the thread
         self.thread.start()
+
+    def handle_worker_error(self, error):
+        logging.error(f"Worker encountered an error: {error}")
 
     def cancel_async_operation(self):
         if self.thread.isRunning():

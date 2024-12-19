@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import numpy as np
 from PySide6.QtCore import Signal, QObject
 import logging
 import re
@@ -717,7 +716,7 @@ class UmlaufPlaner(QObject):
 
     # the is the one way to add a 0 to the time hh:mm:ss, if 0 is missing like in 6:44:33
     def time_in_string(self, time):
-        pattern = re.findall('^\d{1}:\d{2}:\d{2}$', time)
+        pattern = re.findall(r'^\d{1}:\d{2}:\d{2}$', time)
 
         if pattern:
             return '0' + time
@@ -730,14 +729,14 @@ class UmlaufPlaner(QObject):
 
     # checks if date string
     def check_dates_input(self, dates):
-        pattern1 = re.findall('^\d{8}(?:\d{8})*(?:,\d{8})*$', dates)
+        pattern1 = re.findall(r'^\d{8}(?:\d{8})*(?:,\d{8})*$', dates)
         if pattern1:
             return True
         else:
             return False
 
     def check_KommaInText(self, dates):
-        pattern1 = re.findall('"\w*,\w*"', dates)
+        pattern1 = re.findall(r'"\w*,\w*"', dates)
         if pattern1:
             logging.debug(pattern1)
             return True
@@ -747,7 +746,7 @@ class UmlaufPlaner(QObject):
     # checks if time-string exceeds 24 hour format
     def check_hour_24(self, time):
         try:
-            pattern1 = re.findall('^2{1}[4-9]{1}:[0-9]{2}', time)
+            pattern1 = re.findall(r'^2{1}[4-9]{1}:[0-9]{2}', time)
             if pattern1:
                 return True
             else:

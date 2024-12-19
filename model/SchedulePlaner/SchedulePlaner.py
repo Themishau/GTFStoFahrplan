@@ -121,16 +121,16 @@ class SchedulePlaner(QObject):
         self.export_plan.output_path = output_path
 
     def create_table(self) -> bool:
-        try:
+        #try:
             self.create_plan.create_table()
             self.export_plan.export_plan(self.create_settings_for_table_dto, self.create_plan.plans.create_dataframe)
             self.create_finished.emit(True)
             return True
-        except AttributeError as e:
-            self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
-            return False
-        except ValueError as e:
-            self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
+        #except AttributeError as e:
+           # self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
+           # return False
+        #except ValueError as e:
+           # self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
 
     def create_table_individual_sorting(self) -> bool:
         self.create_plan.create_table()
