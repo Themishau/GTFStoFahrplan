@@ -1,7 +1,7 @@
 import logging
 import os
 
-from PySide6.QtCore import QObject, Qt, QPoint
+from PySide6.QtCore import QObject, Qt, QPoint, QSize
 from PySide6.QtWidgets import QLabel, QVBoxLayout, QFileDialog, QMessageBox, QMainWindow, QApplication
 from helpFunctions import string_to_qdate
 from model.Enum.GTFSEnums import CreatePlanMode
@@ -10,7 +10,7 @@ from .create_table_import import CreateTableImport
 from .create_table_select import CreateTableSelect
 from .download_gtfs import DownloadGTFS
 from .general_window_information import GeneralInformation
-from .pyui.main_window_ui import Ui_MainWindow
+from .pyui.ui_main_window import Ui_MainWindow
 from .round_progress_bar import RoundProgress
 from .select_table_view import TableModel
 from .sort_table_view import TableModelSort
@@ -36,6 +36,7 @@ class View(QMainWindow):
 
         self.CreateMainTab = GeneralInformation()
         self.CreateImport_Tab = CreateTableImport()
+        self.CreateImport_Tab.setMaximumSize(QSize(1682, 759))
         self.CreateSelect_Tab = CreateTableSelect()
         self.CreateCreate_Tab = CreateTableCreate()
         self.DownloadGTFS_Tab = DownloadGTFS()
@@ -255,6 +256,7 @@ class View(QMainWindow):
 
     def initialize_tabs(self):
         self.ui.stackedWidget.addWidget(self.CreateImport_Tab)
+
         self.ui.stackedWidget.addWidget(self.CreateSelect_Tab)
         self.ui.stackedWidget.addWidget(self.CreateCreate_Tab)
         self.ui.stackedWidget.addWidget(self.DownloadGTFS_Tab)

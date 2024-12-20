@@ -131,6 +131,7 @@ font: bold;
         <font>
          <family>Segoe UI</family>
          <pointsize>18</pointsize>
+         <weight>75</weight>
          <italic>false</italic>
          <bold>true</bold>
          <stylestrategy>NoAntialias</stylestrategy>
@@ -243,6 +244,7 @@ text-align: center;
               <font>
                <family>Segoe UI</family>
                <pointsize>12</pointsize>
+               <weight>75</weight>
                <italic>false</italic>
                <bold>true</bold>
               </font>
@@ -257,7 +259,7 @@ text-align: center;
               <string notr="true"/>
              </property>
              <property name="currentIndex">
-              <number>1</number>
+              <number>0</number>
              </property>
              <widget class="QWidget" name="page">
               <property name="geometry">
@@ -265,7 +267,7 @@ text-align: center;
                 <x>0</x>
                 <y>0</y>
                 <width>209</width>
-                <height>332</height>
+                <height>335</height>
                </rect>
               </property>
               <property name="sizePolicy">
@@ -319,7 +321,7 @@ text-align: center;
                 <x>0</x>
                 <y>0</y>
                 <width>209</width>
-                <height>332</height>
+                <height>335</height>
                </rect>
               </property>
               <property name="sizePolicy">
@@ -350,6 +352,10 @@ text-align: center;
                  <property name="text">
                   <string>Select</string>
                  </property>
+                 <property name="icon">
+                  <iconset resource="res/resource_boot.qrc">
+                   <normaloff>:/newPrefix/icons/bootstrap-icons-1.10.3/layout-text-window-reverse.svg</normaloff>:/newPrefix/icons/bootstrap-icons-1.10.3/layout-text-window-reverse.svg</iconset>
+                 </property>
                  <property name="checkable">
                   <bool>true</bool>
                  </property>
@@ -362,6 +368,10 @@ text-align: center;
                  </property>
                  <property name="text">
                   <string>Import</string>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="res/resource_boot.qrc">
+                   <normaloff>:/newPrefix/icons/bootstrap-icons-1.10.3/file-earmark-arrow-up.svg</normaloff>:/newPrefix/icons/bootstrap-icons-1.10.3/file-earmark-arrow-up.svg</iconset>
                  </property>
                  <property name="checkable">
                   <bool>true</bool>
@@ -378,6 +388,10 @@ text-align: center;
                  </property>
                  <property name="text">
                   <string>Create</string>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="res/resource_boot.qrc">
+                   <normaloff>:/newPrefix/icons/bootstrap-icons-1.10.3/arrow-repeat.svg</normaloff>:/newPrefix/icons/bootstrap-icons-1.10.3/arrow-repeat.svg</iconset>
                  </property>
                  <property name="checkable">
                   <bool>true</bool>
@@ -408,7 +422,7 @@ text-align: center;
                 <x>0</x>
                 <y>0</y>
                 <width>209</width>
-                <height>332</height>
+                <height>335</height>
                </rect>
               </property>
               <property name="sizePolicy">
@@ -658,6 +672,46 @@ QTabBar::tab:selected {
 
 </string>
           </property>
+          <widget class="QWidget" name="general_information_page">
+           <property name="maximumSize">
+            <size>
+             <width>1682</width>
+             <height>759</height>
+            </size>
+           </property>
+          </widget>
+          <widget class="QWidget" name="create_import_page">
+           <property name="maximumSize">
+            <size>
+             <width>1682</width>
+             <height>759</height>
+            </size>
+           </property>
+          </widget>
+          <widget class="QWidget" name="create_select_page">
+           <property name="maximumSize">
+            <size>
+             <width>1682</width>
+             <height>759</height>
+            </size>
+           </property>
+          </widget>
+          <widget class="QWidget" name="create_create_page">
+           <property name="maximumSize">
+            <size>
+             <width>1682</width>
+             <height>759</height>
+            </size>
+           </property>
+          </widget>
+          <widget class="QWidget" name="download_page">
+           <property name="maximumSize">
+            <size>
+             <width>1682</width>
+             <height>759</height>
+            </size>
+           </property>
+          </widget>
          </widget>
         </item>
         <item row="3" column="0">
@@ -780,6 +834,7 @@ border-radius: 1px;</string>
                  <font>
                   <family>72</family>
                   <pointsize>8</pointsize>
+                  <weight>75</weight>
                   <italic>false</italic>
                   <bold>true</bold>
                  </font>
