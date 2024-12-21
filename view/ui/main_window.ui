@@ -38,9 +38,7 @@
    <bool>false</bool>
   </property>
   <property name="styleSheet">
-   <string notr="true">background: #768f09; 
-color: #de425b
-</string>
+   <string notr="true"/>
   </property>
   <property name="tabShape">
    <enum>QTabWidget::Triangular</enum>
@@ -53,9 +51,15 @@ color: #de425b
     </sizepolicy>
    </property>
    <property name="styleSheet">
-    <string notr="true">background-color:#40582e;
-color: #ffffff;
+    <string notr="true">* {
+background-color:#f2ccae;
+color: #1e1e1e;
 font: bold;
+}
+
+
+
+
 
 
 </string>
@@ -137,15 +141,21 @@ font: bold;
         </font>
        </property>
        <property name="styleSheet">
-        <string notr="true">#textBrowser {
+        <string notr="true">* {
+
+color: #1e1e1e;
+font: bold;
+}
+
+#frame  {
+    border-right: 1px solid #1e1e1e;
+    border-style: solid;
+}
+
+#textBrowser {
 	text-align: center;
-
 }
 
-#toolBox {
-	color:#00473e;
-
-}
 
 #toolBox::tab {
 	padding-left: 5px;
@@ -154,7 +164,7 @@ font: bold;
 }
 
 #toolBox::tab:selected {
-	background-color: #256531;
+	background-color: #ae636f;
 	font-weight: bold;
 }
 
@@ -165,17 +175,21 @@ font: bold;
 }
 
 #toolBox QPushButton:hover {
-	background-color: #587b6d;
+	background-color: #f8a196;
    border-radius: 3px;
 }
 
 #toolBox QPushButton:checked {
-	background-color: #585d1c;
+	background-color: #ae636f;
 	font-weight: bold;
 }
 
 #toolBox label {
 text-align: center;
+}
+
+#btnExit {
+background-color: #ae636f;
 }</string>
        </property>
        <layout class="QGridLayout" name="gridLayout">
@@ -213,6 +227,9 @@ text-align: center;
           </property>
           <property name="layoutDirection">
            <enum>Qt::LeftToRight</enum>
+          </property>
+          <property name="styleSheet">
+           <string notr="true"/>
           </property>
           <property name="frameShape">
            <enum>QFrame::StyledPanel</enum>
@@ -256,15 +273,15 @@ text-align: center;
               <string notr="true"/>
              </property>
              <property name="currentIndex">
-              <number>0</number>
+              <number>1</number>
              </property>
              <widget class="QWidget" name="page">
               <property name="geometry">
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>209</width>
-                <height>332</height>
+                <width>210</width>
+                <height>333</height>
                </rect>
               </property>
               <property name="sizePolicy">
@@ -317,8 +334,8 @@ text-align: center;
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>209</width>
-                <height>332</height>
+                <width>210</width>
+                <height>333</height>
                </rect>
               </property>
               <property name="sizePolicy">
@@ -418,8 +435,8 @@ text-align: center;
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>209</width>
-                <height>332</height>
+                <width>210</width>
+                <height>333</height>
                </rect>
               </property>
               <property name="sizePolicy">
@@ -500,7 +517,7 @@ text-align: center;
               </size>
              </property>
              <property name="styleSheet">
-              <string notr="true">background-color: #3f7444;</string>
+              <string notr="true"/>
              </property>
              <property name="text">
               <string>Exit</string>
@@ -526,7 +543,16 @@ text-align: center;
         </size>
        </property>
        <property name="styleSheet">
-        <string notr="true">background:#ccd3c6</string>
+        <string notr="true">
+* {
+  background-color: #f4d6b7;
+}
+
+#bottom_info_widget {
+  border-top: 1px solid #1e1e1e;
+}
+
+</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_4">
         <property name="sizeConstraint">
@@ -553,7 +579,10 @@ text-align: center;
            </sizepolicy>
           </property>
           <property name="styleSheet">
-           <string notr="true"/>
+           <string notr="true">#pushButton  {
+    border: 1px solid #1e1e1e;
+    border-style: solid;
+}</string>
           </property>
           <layout class="QHBoxLayout" name="horizontalLayout">
            <property name="sizeConstraint">
@@ -577,13 +606,7 @@ text-align: center;
               <enum>Qt::LeftToRight</enum>
              </property>
              <property name="styleSheet">
-              <string notr="true">background-color: #40582e;
-border-style: solid;
-border-width: 2px;
-border-radius: 14px;
-border-color: #256531;
-padding: 5px;
-color: #f4edea;</string>
+              <string notr="true"/>
              </property>
              <property name="text">
               <string/>
@@ -641,10 +664,14 @@ color: #f4edea;</string>
            <bool>false</bool>
           </property>
           <property name="styleSheet">
-           <string notr="true">
+           <string notr="true">* {
+  background-color: #f4d6b7;
+  color:  #1e1e1e;
+   font: bold;
+}
 
 QPlainTextEdit {
-  color: #40582e;
+  color:  #1e1e1e;
    font: bold;
 }
 
@@ -654,9 +681,7 @@ QTabWidget {
         }
 
 QTabWidget::panel {
-  background: #F8B195;
-  color: black;
-  border: none;
+
 } 
 
 QTabBar {
@@ -664,14 +689,11 @@ QTabBar {
         }
 
 QTabBar::tab {
-  background: #F67280; 
-  padding: 15px;
 
 } 
 
 QTabBar::tab:selected { 
-  background-color: #f8e395;
-  border-radius: 5px;
+
 }
 
 </string>
@@ -798,9 +820,7 @@ Ressources:
         <item row="3" column="0">
          <widget class="QWidget" name="bottom_info_widget" native="true">
           <property name="styleSheet">
-           <string notr="true">background-color: #9ba890;
-color:#40582e;
-
+           <string notr="true">
 
 
 </string>
@@ -955,6 +975,9 @@ border-radius: 1px;</string>
          </widget>
         </item>
        </layout>
+       <zorder>stackedWidget</zorder>
+       <zorder>bottom_info_widget</zorder>
+       <zorder>widget</zorder>
       </widget>
      </widget>
     </item>
