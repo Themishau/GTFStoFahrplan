@@ -268,7 +268,7 @@ class View(QMainWindow):
 
     def show_home_window(self):
         self.set_btn_checked(self.generalNavPush_btn)
-        self.ui.stackedWidget.setCurrentWidget(self.CreateMainTab)
+        self.ui.stackedWidget.setCurrentWidget(self.ui.general_information_page)
 
 
     def show_Create_Import_Window(self):

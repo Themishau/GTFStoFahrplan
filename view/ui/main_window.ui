@@ -131,15 +131,13 @@ font: bold;
         <font>
          <family>Segoe UI</family>
          <pointsize>18</pointsize>
-         <weight>75</weight>
          <italic>false</italic>
          <bold>true</bold>
          <stylestrategy>NoAntialias</stylestrategy>
         </font>
        </property>
        <property name="styleSheet">
-        <string notr="true">
-#textBrowser {
+        <string notr="true">#textBrowser {
 	text-align: center;
 
 }
@@ -244,7 +242,6 @@ text-align: center;
               <font>
                <family>Segoe UI</family>
                <pointsize>12</pointsize>
-               <weight>75</weight>
                <italic>false</italic>
                <bold>true</bold>
               </font>
@@ -267,7 +264,7 @@ text-align: center;
                 <x>0</x>
                 <y>0</y>
                 <width>209</width>
-                <height>335</height>
+                <height>332</height>
                </rect>
               </property>
               <property name="sizePolicy">
@@ -321,7 +318,7 @@ text-align: center;
                 <x>0</x>
                 <y>0</y>
                 <width>209</width>
-                <height>335</height>
+                <height>332</height>
                </rect>
               </property>
               <property name="sizePolicy">
@@ -422,7 +419,7 @@ text-align: center;
                 <x>0</x>
                 <y>0</y>
                 <width>209</width>
-                <height>335</height>
+                <height>332</height>
                </rect>
               </property>
               <property name="sizePolicy">
@@ -644,7 +641,14 @@ color: #f4edea;</string>
            <bool>false</bool>
           </property>
           <property name="styleSheet">
-           <string notr="true">QTabWidget {
+           <string notr="true">
+
+QPlainTextEdit {
+  color: #40582e;
+   font: bold;
+}
+
+QTabWidget {
          border: solid;
          padding:0 px;
         }
@@ -672,6 +676,9 @@ QTabBar::tab:selected {
 
 </string>
           </property>
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
           <widget class="QWidget" name="general_information_page">
            <property name="maximumSize">
             <size>
@@ -679,6 +686,69 @@ QTabBar::tab:selected {
              <height>759</height>
             </size>
            </property>
+           <widget class="QWidget" name="gridLayoutWidget">
+            <property name="geometry">
+             <rect>
+              <x>9</x>
+              <y>19</y>
+              <width>1661</width>
+              <height>731</height>
+             </rect>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_7">
+             <item row="1" column="0">
+              <widget class="Line" name="line_3">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <spacer name="horizontalSpacer_2">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="0" column="0">
+              <widget class="QPlainTextEdit" name="plainTextEdit">
+               <property name="font">
+                <font>
+                 <family>MS Reference Sans Serif</family>
+                 <italic>false</italic>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="plainText">
+                <string>GTFStoFahrplan is a Python script designed to convert GTFS (General Transit Feed Specification) data into Fahrplan-compatible format. Fahrplan is a widely-used transit schedule format primarily used in the German-speaking regions.
+
+Before using GTFStoFahrplan, make sure you have GTFS data available. GTFS data can be obtained from various public transportation agencies or repositories.
+
+For more information visit:
+https://github.com/Themishau/GTFStoFahrplan
+
+Ressources:
+
+- VBB - Verkehrsverbund Berlin-Brandenburg GmbH https://daten.berlin.de/datensaetze/vbb-fahrplandaten-gtfs
+
+- Open Data Portal Metropole Ruhr https://opendata.ruhr/
+
+- Img by Menschen Vektor erstellt von pch.vector - de.freepik.com
+
+- Icons by Petras Nargela
+
+- PySide6 is used.</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
           </widget>
           <widget class="QWidget" name="create_import_page">
            <property name="maximumSize">
@@ -711,6 +781,17 @@ QTabBar::tab:selected {
              <height>759</height>
             </size>
            </property>
+           <widget class="QWidget" name="gridLayoutWidget_2">
+            <property name="geometry">
+             <rect>
+              <x>9</x>
+              <y>19</y>
+              <width>1661</width>
+              <height>731</height>
+             </rect>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_8"/>
+           </widget>
           </widget>
          </widget>
         </item>
@@ -724,24 +805,11 @@ color:#40582e;
 
 </string>
           </property>
-          <layout class="QGridLayout" name="info_widget">
+          <layout class="QGridLayout" name="info_widget" rowstretch="0,0,0">
            <property name="sizeConstraint">
-            <enum>QLayout::SetDefaultConstraint</enum>
+            <enum>QLayout::SetMinimumSize</enum>
            </property>
-           <item row="1" column="1">
-            <spacer name="horizontalSpacer_3">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item row="1" column="0">
+           <item row="2" column="0">
             <widget class="QWidget" name="progress_box" native="true">
              <property name="styleSheet">
               <string notr="true">border-style: solid;
@@ -777,7 +845,7 @@ border-radius: 1px;</string>
                </widget>
               </item>
               <item row="1" column="1">
-               <widget class="QProgressBar" name="progressBar">
+               <widget class="round_progress_bar" name="progressBar">
                 <property name="value">
                  <number>24</number>
                 </property>
@@ -786,7 +854,7 @@ border-radius: 1px;</string>
              </layout>
             </widget>
            </item>
-           <item row="1" column="2">
+           <item row="2" column="5">
             <widget class="QWidget" name="selection_box" native="true">
              <property name="styleSheet">
               <string notr="true">border-style: solid;
@@ -834,7 +902,6 @@ border-radius: 1px;</string>
                  <font>
                   <family>72</family>
                   <pointsize>8</pointsize>
-                  <weight>75</weight>
                   <italic>false</italic>
                   <bold>true</bold>
                  </font>
@@ -850,6 +917,40 @@ border-radius: 1px;</string>
              </layout>
             </widget>
            </item>
+           <item row="2" column="4">
+            <widget class="Line" name="line_2">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="Line" name="line">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="2">
+            <layout class="QGridLayout" name="progess_log">
+             <item row="0" column="0">
+              <widget class="QListView" name="listView">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>500</width>
+                 <height>100</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
           </layout>
          </widget>
         </item>
@@ -860,6 +961,13 @@ border-radius: 1px;</string>
    </layout>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>round_progress_bar</class>
+   <extends>QProgressBar</extends>
+   <header>round_progress_bar.py</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="res/resource.qrc"/>
   <include location="res/resource_boot.qrc"/>
