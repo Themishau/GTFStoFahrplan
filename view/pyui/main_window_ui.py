@@ -11,6 +11,9 @@
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtGui import QFont
 
+from view.Custom.FadingButton import FadingButton
+
+
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")

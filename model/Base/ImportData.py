@@ -529,9 +529,9 @@ class ImportData(QObject):
         try:
             df_trips['direction_id'] = pd.to_numeric(df_trips['direction_id'], errors='coerce').fillna(0).astype(int)
         except KeyError:
-            logging.debug("can not convert dfTrips")
+            logging.debug("can not convert direction_id in  dfTrips")
         except ValueError:
-            logging.debug("can not convert dfTrips")
+            logging.debug("can not convert direction_id in  dfTrips")
         try:
             df_trips['shape_id'] = pd.to_numeric(df_trips['shape_id'], errors='coerce').fillna(0).astype(int)
         except KeyError:

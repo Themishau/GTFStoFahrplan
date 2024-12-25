@@ -10,7 +10,7 @@
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from view.custom_table_view import customTableView
+from view.Custom.custom_table_view import customTableView
 
 
 class Ui_Form(object):
@@ -324,5 +324,3 @@ class Ui_Form(object):
         self.label_17.setText(_translate("Form", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Detected Date Range</span></p></body></html>"))
         self.label_13.setText(_translate("Form", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Date</span></p></body></html>"))
 
-from view.ui.res import resource_boot
-from view.ui.res import resource_rc

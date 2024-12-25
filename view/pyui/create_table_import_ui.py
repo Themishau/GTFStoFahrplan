@@ -19,6 +19,8 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QGridLayout,
     QHeaderView, QLabel, QLayout, QLineEdit,
     QPushButton, QSizePolicy, QSpacerItem, QTableWidget,
     QTableWidgetItem, QWidget)
+
+from view.Custom.FadingButton import FadingButton
 from view.ui.res import resource_boot
 from view.ui.res import resource_rc
 
@@ -115,6 +117,9 @@ class Ui_Form(object):
         icon = QIcon()
         icon.addFile(u":/newPrefix/icons/bootstrap-icons-1.10.3/file-earmark-arrow-up.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.btnGetPickleFile.setIcon(icon)
+        self.TestButtoon = FadingButton("Click me")
+        self.TestButtoon.setEnabled(True)
+        self.gridLayout_3.addWidget(self.TestButtoon, 4, 2, 1, 1)
 
         self.gridLayout_3.addWidget(self.btnGetPickleFile, 3, 2, 1, 1)
 

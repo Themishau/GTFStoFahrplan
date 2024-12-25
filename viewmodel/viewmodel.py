@@ -144,7 +144,7 @@ class ViewModel(QObject):
 
     def on_changed_selected_record_agency(self, index):
         self.model.planer.select_data.selected_agency = index
-        self.update_selected_agency.emit(index)
+        #self.update_selected_agency.emit(index)
 
     def on_changed_selected_record_trip(self, id_us):
         self.model.planer.select_data.selected_route = id_us

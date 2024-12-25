@@ -168,18 +168,30 @@ class UmlaufPlaner(QObject):
             'sunday'
         ]
 
-        result = (
-            dfWeek
-            .merge(dfTrips, on='service_id', how='inner')
-            .merge(dfRoutes, on='route_id', how='inner')
-            .merge(route_short_namedf, on='route_short_name', how='inner')
-            .merge(varTestAgency, on='agency_id', how='inner')
-            .merge(requested_directiondf, on='direction_id', how='inner')
-            .loc[lambda df: df['route_short_name'] == df['route_short_name']]
-            .loc[lambda df: df['agency_id'] == df['agency_id']]
-            .loc[lambda df: df['direction_id'] == df['direction_id']]
-            .sort_values('service_id')
-        )
+        if "direction_id" in dfWeek.columns:
+            result = (
+                dfWeek
+                .merge(dfTrips, on='service_id', how='inner')
+                .merge(dfRoutes, on='route_id', how='inner')
+                .merge(route_short_namedf, on='route_short_name', how='inner')
+                .merge(varTestAgency, on='agency_id', how='inner')
+                .merge(requested_directiondf, on='direction_id', how='inner')
+                .loc[lambda df: df['route_short_name'] == df['route_short_name']]
+                .loc[lambda df: df['agency_id'] == df['agency_id']]
+                .loc[lambda df: df['direction_id'] == df['direction_id']]
+                .sort_values('service_id')
+            )
+        else:
+            result = (
+                dfWeek
+                .merge(dfTrips, on='service_id', how='inner')
+                .merge(dfRoutes, on='route_id', how='inner')
+                .merge(route_short_namedf, on='route_short_name', how='inner')
+                .merge(varTestAgency, on='agency_id', how='inner')
+                .loc[lambda df: df['route_short_name'] == df['route_short_name']]
+                .loc[lambda df: df['agency_id'] == df['agency_id']]
+                .sort_values('service_id')
+            )
         result = result[selected_columns]
 
         if len(result) == 0:
@@ -379,8 +391,9 @@ class UmlaufPlaner(QObject):
         dfRoutes = pd.merge(left=dfRoutes, right=route_short_namedf, how='inner', on='route_short_name')
         dfRoutes = pd.merge(left=dfRoutes, right=varTestAgency, how='inner', on='agency_id')
         dfTrip = self.gtfs_data_frame_dto.Trips
-        dfTrip['direction_id'] = dfTrip['direction_id'].astype('string')
-        dfTrip = pd.merge(left=dfTrip, right=requested_directiondf, how='inner', on='direction_id')
+        if "direction_id" in dfTrip.columns:
+            dfTrip['direction_id'] = dfTrip['direction_id'].astype('string')
+            dfTrip = pd.merge(left=dfTrip, right=requested_directiondf, how='inner', on='direction_id')
         dfTrip = pd.merge(left=dfTrip, right=dfRoutes, how='inner', on='route_id')
         dfStopTimes = self.gtfs_data_frame_dto.Stoptimes
         dfTrip['trip_id'] = dfTrip['trip_id'].astype('string')

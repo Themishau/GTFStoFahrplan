@@ -242,7 +242,7 @@ background-color: #ae636f;
             <enum>QLayout::SetMaximumSize</enum>
            </property>
            <item>
-            <widget class="QToolBox" name="toolBox">
+            <widget class="AnimatedQToolBox" name="toolBox">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
                <horstretch>0</horstretch>
@@ -273,7 +273,7 @@ background-color: #ae636f;
               <string notr="true"/>
              </property>
              <property name="currentIndex">
-              <number>1</number>
+              <number>2</number>
              </property>
              <widget class="QWidget" name="page">
               <property name="geometry">
@@ -302,7 +302,7 @@ background-color: #ae636f;
                 <enum>QLayout::SetMinimumSize</enum>
                </property>
                <item row="0" column="0" colspan="2">
-                <widget class="QPushButton" name="pushButton_5">
+                <widget class="FadingButton" name="pushButton_5">
                  <property name="text">
                   <string>General Information</string>
                  </property>
@@ -359,7 +359,7 @@ background-color: #ae636f;
                 <enum>QLayout::SetMinimumSize</enum>
                </property>
                <item row="1" column="0" colspan="2">
-                <widget class="QPushButton" name="pushButton_3">
+                <widget class="FadingButton" name="pushButton_3">
                  <property name="styleSheet">
                   <string notr="true"/>
                  </property>
@@ -376,7 +376,7 @@ background-color: #ae636f;
                 </widget>
                </item>
                <item row="0" column="0" colspan="2">
-                <widget class="QPushButton" name="pushButton_2">
+                <widget class="FadingButton" name="pushButton_2">
                  <property name="styleSheet">
                   <string notr="true"/>
                  </property>
@@ -393,10 +393,13 @@ background-color: #ae636f;
                  <property name="checked">
                   <bool>false</bool>
                  </property>
+                 <property name="flat">
+                  <bool>false</bool>
+                 </property>
                 </widget>
                </item>
                <item row="2" column="0" colspan="2">
-                <widget class="QPushButton" name="pushButton_4">
+                <widget class="FadingButton" name="pushButton_4">
                  <property name="styleSheet">
                   <string notr="true"/>
                  </property>
@@ -457,7 +460,7 @@ background-color: #ae636f;
                 <enum>QLayout::SetMinimumSize</enum>
                </property>
                <item row="0" column="0">
-                <widget class="QPushButton" name="pushButton_6">
+                <widget class="FadingButton" name="pushButton_6">
                  <property name="text">
                   <string>Download GTFS Data</string>
                  </property>
@@ -820,10 +823,7 @@ Ressources:
         <item row="3" column="0">
          <widget class="QWidget" name="bottom_info_widget" native="true">
           <property name="styleSheet">
-           <string notr="true">
-
-
-</string>
+           <string notr="true"/>
           </property>
           <layout class="QGridLayout" name="info_widget" rowstretch="0,0,0">
            <property name="sizeConstraint">
@@ -989,6 +989,17 @@ border-radius: 1px;</string>
    <class>round_progress_bar</class>
    <extends>QProgressBar</extends>
    <header>round_progress_bar.py</header>
+  </customwidget>
+  <customwidget>
+   <class>FadingButton</class>
+   <extends>QPushButton</extends>
+   <header>view.Custom.FadingButton</header>
+  </customwidget>
+  <customwidget>
+   <class>AnimatedQToolBox</class>
+   <extends>QToolBox</extends>
+   <header>view.Custom.AnimatedQToolBox</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>

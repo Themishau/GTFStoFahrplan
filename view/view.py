@@ -1,19 +1,20 @@
 import logging
 import os
 
-from PySide6.QtCore import QObject, Qt, QPoint, QSize
-from PySide6.QtWidgets import QLabel, QVBoxLayout, QFileDialog, QMessageBox, QMainWindow, QApplication
+from PySide6.QtCore import Qt, QPoint, QSize
+from PySide6.QtWidgets import QFileDialog, QMessageBox, QMainWindow, QApplication
 from helpFunctions import string_to_qdate
 from model.Enum.GTFSEnums import CreatePlanMode
+from .Custom.FadingButton import FadingButton
 from .create_table_create import CreateTableCreate
 from .create_table_import import CreateTableImport
 from .create_table_select import CreateTableSelect
 from .download_gtfs import DownloadGTFS
 from .general_window_information import GeneralInformation
 from .pyui.ui_main_window import Ui_MainWindow
-from .round_progress_bar import RoundProgress
-from .select_table_view import TableModel
-from .sort_table_view import TableModelSort
+from view.Custom.round_progress_bar import RoundProgress
+from view.Custom.select_table_view import TableModel
+from view.Custom.sort_table_view import TableModelSort
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
@@ -29,6 +30,7 @@ class View(QMainWindow):
 
         self.progressRound = None
         self.spinner_label = None
+
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
@@ -254,6 +256,7 @@ class View(QMainWindow):
         self.ui.progress_widget.addWidget(self.ui.label_progress, 0, 1, 1, 1, Qt.AlignHCenter | Qt.AlignVCenter)
         self.ui.progress_widget.addWidget(self.progressRound, 1, 1, 1, 1, Qt.AlignHCenter | Qt.AlignVCenter)
 
+
     def initialize_tabs(self):
         self.ui.stackedWidget.addWidget(self.CreateImport_Tab)
 
@@ -401,9 +404,9 @@ class View(QMainWindow):
     def get_changed_selected_record_trip(self):
         index = self.CreateSelect_Tab.ui.TripsTableView.selectedIndexes()[2]
         logging.debug(f"index {index}")
-        id_us = self.CreateSelect_Tab.ui.TripsTableView.model().data(index)
-        logging.debug(f"id {id_us}")
-        self.viewModel.on_changed_selected_record_trip(id_us)
+        id_us = self.CreateSelect_Tab.ui.TripsTableView.model().wholeData(index)
+        logging.debug(f"id {id_us["route_short_name"]}")
+        self.viewModel.on_changed_selected_record_trip(id_us["route_short_name"])
 
     def reset_view(self):
         self.CreateImport_Tab.ui.btnImport.setEnabled(True)
