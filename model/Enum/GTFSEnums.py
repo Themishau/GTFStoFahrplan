@@ -34,6 +34,60 @@ class GtfsDfNames(Enum):
     Feedinfos = 'Feedinfos'
 
 
+class DfStopColumnEnum(Enum):
+    stop_id = 'stop_id'
+    stop_name = 'stop_name'
+
+class DfTripColumnEnum(Enum):
+    trip_id = 'trip_id'
+    route_id = 'route_id'
+    service_id = 'service_id'
+    direction_id = 'direction_id'
+
+class DfRouteColumnEnum(Enum):
+    route_id = 'route_id'
+    route_short_name = 'route_short_name'
+    route_long_name = 'route_long_name'
+    agency_id = 'agency_id'
+
+class DfAgencyColumnEnum(Enum):
+    agency_id = 'agency_id'
+    agency_name = 'agency_name'
+
+class DfFeedinfoColumnEnum(Enum):
+    feed_publisher_name = 'feed_publisher_name'
+    feed_publisher_url = 'feed_publisher_url'
+    feed_start_date = 'feed_start_date'
+    feed_end_date = 'feed_end_date'
+
+class DfCalendarweekColumnEnum(Enum):
+    service_id = 'service_id'
+    start_date = 'start_date'
+    end_date = 'end_date'
+    monday = 'monday'
+    tuesday = 'tuesday'
+    wednesday = 'wednesday'
+    thursday = 'thursday'
+    friday = 'friday'
+    saturday = 'saturday'
+    sunday = 'sunday'
+
+class DfCalendardateColumnEnum(Enum):
+    date_day_format = 'date_day_format'
+    service_id = 'service_id'
+    date = 'date'
+    day = 'day'
+    exception_type = 'exception_type'
+
+class DfStopTimesColumnEnum(Enum):
+    trip_id = 'trip_id'
+    arrival_time = 'arrival_time'
+    departure_time = 'departure_time'
+    stop_id = 'stop_id'
+    stop_sequence = 'stop_sequence'
+    stop_headsign = 'stop_headsign'
+
+
 class SubscriberTypes(Enum):
     update_gui = 'update_gui'
     trigger_action = 'trigger_action'

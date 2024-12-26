@@ -60,7 +60,7 @@ class ExportPlan(QObject):
         now = datetime.now()
         now = now.strftime("%Y_%m_%d_%H_%M_%S")
         self.full_output_path = self.output_path + '/' + str(
-            createTableDto.RouteShortName['route_short_name'][0]) + 'dates_' + str(now) + 'pivot_table.csv'
+            createTableDto.Route['route_short_name'][0]) + 'dates_' + str(now) + 'pivot_table.csv'
         createTableDto.Header.to_csv(self.full_output_path, header=True, quotechar=' ', sep=';', mode='w',
                                      encoding='utf8')
         createTableDto.FahrplanCalendarFilterDaysPivot.to_csv(self.full_output_path, header=True, quotechar=' ',

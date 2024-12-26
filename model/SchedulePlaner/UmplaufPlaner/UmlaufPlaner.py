@@ -127,7 +127,7 @@ class UmlaufPlaner(QObject):
         # Create a dictionary for headers
         headers = {
             'Agency': [self.create_settings_for_table_dto.agency],
-            'Route': [self.create_settings_for_table_dto.route],
+            'Route': [self.create_settings_for_table_dto.route['route_id']],
             'Dates': [self.create_settings_for_table_dto.dates]
         }
 
@@ -140,8 +140,8 @@ class UmlaufPlaner(QObject):
         self.create_dataframe.Direction = pd.DataFrame({'direction_id': [self.create_settings_for_table_dto.direction]})
         self.create_dataframe.RequestedDates = pd.DataFrame(
             {'date': pd.to_datetime([self.create_settings_for_table_dto.dates], format='%Y%m%d')})
-        self.create_dataframe.RouteShortName = pd.DataFrame(
-            {'route_short_name': [self.create_settings_for_table_dto.route]})
+        self.create_dataframe.Route = pd.DataFrame(
+            {'route_id': [self.create_settings_for_table_dto.route['route_id']]})
         self.create_dataframe.SelectedAgency = pd.DataFrame({'agency_id': [self.create_settings_for_table_dto.agency]})
 
     def datesWeekday_select_dates_for_date_range(self):
@@ -149,7 +149,7 @@ class UmlaufPlaner(QObject):
         dfTrips = self.gtfs_data_frame_dto.Trips
         dfWeek = self.gtfs_data_frame_dto.Calendarweeks
         dfRoutes = self.gtfs_data_frame_dto.Routes
-        route_short_namedf = self.create_dataframe.RouteShortName
+        route_short_namedf = self.create_dataframe.Route
         requested_directiondf = self.create_dataframe.Direction
         varTestAgency = self.create_dataframe.SelectedAgency
 
@@ -173,10 +173,10 @@ class UmlaufPlaner(QObject):
                 dfWeek
                 .merge(dfTrips, on='service_id', how='inner')
                 .merge(dfRoutes, on='route_id', how='inner')
-                .merge(route_short_namedf, on='route_short_name', how='inner')
+                .merge(route_short_namedf, on='route_id', how='inner')
                 .merge(varTestAgency, on='agency_id', how='inner')
                 .merge(requested_directiondf, on='direction_id', how='inner')
-                .loc[lambda df: df['route_short_name'] == df['route_short_name']]
+                .loc[lambda df: df['route_id'] == df['route_id']]
                 .loc[lambda df: df['agency_id'] == df['agency_id']]
                 .loc[lambda df: df['direction_id'] == df['direction_id']]
                 .sort_values('service_id')
@@ -186,9 +186,9 @@ class UmlaufPlaner(QObject):
                 dfWeek
                 .merge(dfTrips, on='service_id', how='inner')
                 .merge(dfRoutes, on='route_id', how='inner')
-                .merge(route_short_namedf, on='route_short_name', how='inner')
+                .merge(route_short_namedf, on='route_id', how='inner')
                 .merge(varTestAgency, on='agency_id', how='inner')
-                .loc[lambda df: df['route_short_name'] == df['route_short_name']]
+                .loc[lambda df: df['route_id'] == df['route_id']]
                 .loc[lambda df: df['agency_id'] == df['agency_id']]
                 .sort_values('service_id')
             )
@@ -383,7 +383,7 @@ class UmlaufPlaner(QObject):
         requested_datesdf = pd.DataFrame([self.create_settings_for_table_dto.dates], columns=['date'])
         requested_datesdf['date'] = pd.to_datetime(requested_datesdf['date'], format='%Y%m%d')
 
-        route_short_namedf = self.create_dataframe.RouteShortName
+        route_short_namedf = self.create_dataframe.Route
         requested_directiondf = self.create_dataframe.Direction.astype('string')
         varTestAgency = self.create_dataframe.SelectedAgency
 
@@ -444,6 +444,7 @@ class UmlaufPlaner(QObject):
 
         joined_df = pd.merge(fahrplan_dates_all_dates, fahrplan_calendar_weeks, left_on=['trip_id', 'service_id'],
                              right_on=['trip_id', 'service_id'], how='left')
+        joined_df = joined_df.dropna(subset=['stop_id'])
 
         ordered_df = joined_df.sort_values(by=['date', 'stop_sequence', 'start_time', 'trip_id'])
         selected_columns = ['date', 'day', 'start_time', 'trip_id', 'stop_name', 'stop_sequence', 'arrival_time',

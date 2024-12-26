@@ -312,8 +312,12 @@ class ImportData(QObject):
             results = concurrent.futures.as_completed(processes)
             df_collection = {}
             for result in results:
-                temp_result = result.result()
-                df_collection[temp_result.name] = temp_result
+                try:
+                    temp_result = result.result()
+                    df_collection[temp_result.name] = temp_result
+                except Exception as e:
+                    logging.debug(f"An error occurred for: {str(e)}:")
+                    return None
 
         self.progress = 90
 
@@ -512,12 +516,27 @@ class ImportData(QObject):
     def create_df_routes(self, raw_data):
         logging.debug("convert to df: create_df_routes")
         df_routes = pd.DataFrame.from_dict(raw_data[GtfsDfNames.Routes])
+        df_routes = self.drop_columns_by_enum(df_routes, DfRouteColumnEnum)
         df_routes.name = GtfsDfNames.Routes
+        try:
+            df_routes['route_long_name'] = df_routes['route_long_name'].astype('string')
+            df_routes['agency_id'] = df_routes['agency_id'].astype('string')
+            df_routes['route_type'] = df_routes['route_type'].astype('string')
+            df_routes['route_id'] = df_routes['route_id'].astype('string')
+        except KeyError:
+            logging.debug("can not convert df_routes: stop_id into int ")
+        except ValueError:
+            logging.debug("can not convert df_routes")
+        except AttributeError:
+            logging.debug("can not convert df_routes Attribute")
+        logging.debug("convert to df: df_routes finished")
+
         return df_routes
 
     def create_df_trips(self, raw_data):
         logging.debug("convert to df: create_df_trips")
         df_trips = pd.DataFrame.from_dict(raw_data[GtfsDfNames.Trips])
+        df_trips = self.drop_columns_by_enum(df_trips, DfTripColumnEnum)
         df_trips.name = GtfsDfNames.Trips
         """ lets try to convert every column to speed computing """
         try:
@@ -527,76 +546,90 @@ class ImportData(QObject):
         except ValueError:
             logging.debug("can not convert dfTrips")
         try:
+            df_trips['service_id'] = df_trips['service_id'].astype('string')
+        except KeyError:
+            logging.debug("can not convert service_id")
+        except ValueError:
+            logging.debug("can not convert service_id")
+        try:
+            df_trips['route_id'] = df_trips['route_id'].astype('string')
+        except KeyError:
+            logging.debug("can not convert route_id")
+        except ValueError:
+            logging.debug("can not convert route_id")
+        try:
             df_trips['direction_id'] = pd.to_numeric(df_trips['direction_id'], errors='coerce').fillna(0).astype(int)
         except KeyError:
             logging.debug("can not convert direction_id in  dfTrips")
         except ValueError:
             logging.debug("can not convert direction_id in  dfTrips")
-        try:
-            df_trips['shape_id'] = pd.to_numeric(df_trips['shape_id'], errors='coerce').fillna(0).astype(int)
-        except KeyError:
-            logging.debug("can not convert dfTrips")
-        except ValueError:
-            logging.debug("can not convert dfTrips")
-        try:
-            df_trips['wheelchair_accessible'] = pd.to_numeric(df_trips['wheelchair_accessible'], errors='coerce').fillna(0).astype(int)
-        except KeyError:
-            logging.debug("can not convert dfTrips")
-        except ValueError:
-            logging.debug("can not convert dfTrips")
-        try:
-            df_trips['bikes_allowed'] = pd.to_numeric(df_trips['bikes_allowed'], errors='coerce').fillna(0).astype(int)
-        except KeyError:
-            logging.debug("can not convert dfTrips")
-        except ValueError:
-            logging.debug("can not convert dfTrips")
 
         logging.debug("convert to df: create_df_trips finished")
+
         return df_trips
 
     def create_df_stop_times(self, raw_data):
         logging.debug("convert to df: create_df_stop_times")
         # DataFrame with every stop (time)
         df_stoptimes = pd.DataFrame.from_dict(raw_data[GtfsDfNames.Stoptimes])
+        df_stoptimes = self.drop_columns_by_enum(df_stoptimes, DfStopTimesColumnEnum)
         df_stoptimes.name = GtfsDfNames.Stoptimes
         try:
             df_stoptimes['stop_sequence'] = df_stoptimes['stop_sequence'].astype('int32')
+            df_stoptimes['arrival_time'] = df_stoptimes['arrival_time'].astype('string')
+            df_stoptimes['departure_time'] = df_stoptimes['departure_time'].astype('string')
             df_stoptimes['stop_id'] = df_stoptimes['stop_id'].astype('string')
             df_stoptimes['trip_id'] = df_stoptimes['trip_id'].astype('string')
         except KeyError:
             logging.debug("can not convert df_stoptimes")
         except OverflowError:
             logging.debug("can not convert df_stoptimes")
+        except ValueError:
+            logging.debug("can not convert df_stoptimes")
+        except AttributeError:
+            logging.debug("can not convert df_stoptimes Attribute")
+
         logging.debug("convert to df: create_df_stop_times finished")
+
         return df_stoptimes
 
     def create_df_stops(self, raw_data):
         logging.debug("convert to df: create_df_stops")
         # DataFrame with every stop
         df_stops = pd.DataFrame.from_dict(raw_data[GtfsDfNames.Stops])
+        df_stops = self.drop_columns_by_enum(df_stops, DfStopColumnEnum)
         df_stops.name = GtfsDfNames.Stops
         try:
-            df_stops['stop_id'] = df_stops['stop_id']
+            df_stops['stop_id'] = df_stops['stop_id'].astype('string')
+            df_stops['parent_station'] = df_stops['parent_station'].astype('string')
+            df_stops['stop_name'] = df_stops['stop_name'].astype('string')
         except KeyError:
             logging.debug("can not convert df_Stops: stop_id into int ")
+        except ValueError:
+            logging.debug("can not convert df_Stops")
+        except AttributeError:
+            logging.debug("can not convert df_Stops Attribute")
         logging.debug("convert to df: create_df_stops finished")
+
         return df_stops
 
     def create_df_week(self, raw_data):
         logging.debug("convert to df: create_df_week")
         df_week = pd.DataFrame.from_dict(raw_data[GtfsDfNames.Calendarweeks])
+        df_week = self.drop_columns_by_enum(df_week, DfCalendarweekColumnEnum)
         df_week.name = GtfsDfNames.Calendarweeks
         try:
             df_week['start_date'] = df_week['start_date'].astype('string')
             df_week['end_date'] = df_week['end_date'].astype('string')
         except KeyError:
             logging.debug("can not convert df_week")
+
         logging.debug("convert to df: df_week finished")
+
         return df_week
 
     def create_df_dates(self, raw_data):
         logging.debug("convert to df: create_df_dates")
-
         df_dates = pd.DataFrame.from_dict(raw_data[GtfsDfNames.Calendardates])
         df_dates.name = GtfsDfNames.Calendardates
         try:
@@ -606,14 +639,16 @@ class ImportData(QObject):
             df_dates['date'] = pd.to_datetime(df_dates['date'], format='%Y%m%d')
         except KeyError:
             logging.debug("can not convert df_dateS")
-            logging.debug("convert to df: create_df_dates finished")
-        logging.debug("convert to df: create_df_dates")
+        logging.debug("convert to df: create_df_dates finished")
+        df_dates = self.drop_columns_by_enum(df_dates, DfCalendardateColumnEnum)
         return df_dates
 
     def create_df_agency(self, raw_data):
         logging.debug("convert to df: create_df_agency")
         df_agencies = pd.DataFrame.from_dict(raw_data[GtfsDfNames.Agencies])
+        df_agencies = self.drop_columns_by_enum(df_agencies, DfAgencyColumnEnum)
         df_agencies.name = GtfsDfNames.Agencies
+
         return df_agencies
 
     def create_df_feed(self, raw_data):
@@ -621,8 +656,17 @@ class ImportData(QObject):
         if raw_data["feed_info"]:
             df_feedinfo = pd.DataFrame.from_dict(raw_data[GtfsDfNames.Feedinfos])
             df_feedinfo.name = GtfsDfNames.Feedinfos
+            self.drop_columns_by_enum(df_feedinfo, DfFeedinfoColumnEnum)
             return df_feedinfo
         return None
+
+    def drop_columns_by_enum(self, df, enum_class):
+        columns_to_keep = [col.value for col in enum_class]
+        columns_to_drop = [col for col in df.columns if col not in columns_to_keep]
+
+        if len(columns_to_drop) > 0:
+            return df.drop(columns=columns_to_drop)
+        return df
 
     # region end
 

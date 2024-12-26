@@ -406,7 +406,7 @@ class View(QMainWindow):
         logging.debug(f"index {index}")
         id_us = self.CreateSelect_Tab.ui.TripsTableView.model().wholeData(index)
         logging.debug(f"id {id_us["route_short_name"]}")
-        self.viewModel.on_changed_selected_record_trip(id_us["route_short_name"])
+        self.viewModel.on_changed_selected_record_trip(id_us)
 
     def reset_view(self):
         self.CreateImport_Tab.ui.btnImport.setEnabled(True)

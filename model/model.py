@@ -45,21 +45,23 @@ class Model(QObject):
         self.thread = QThread()
 
         # Ensure the correct function is passed
-        worker_function = getattr(self, function_name)
-
-        # Create Worker and move it to the thread
-        self.worker = Worker(worker_function)
-        self.worker.moveToThread(self.thread)
-
-        # Connect signals and slots
-        self.thread.started.connect(self.worker.run)  # Start worker when the thread starts
-        self.worker.finished.connect(self.thread.quit)
-        self.worker.finished.connect(self.worker.deleteLater)
-        self.thread.finished.connect(self.thread.deleteLater)
-        self.worker.error.connect(self.handle_worker_error)
-
-        # Start the thread
+        self.thread.started.connect(getattr(self, function_name))
         self.thread.start()
+
+        # worker_function = getattr(self, function_name)
+        # # Create Worker and move it to the thread
+        # self.worker = Worker(worker_function)
+        # self.worker.moveToThread(self.thread)
+        #
+        # # Connect signals and slots
+        # self.thread.started.connect(self.worker.run)  # Start worker when the thread starts
+        # self.worker.finished.connect(self.thread.quit)
+        # self.worker.finished.connect(self.worker.deleteLater)
+        # self.thread.finished.connect(self.thread.deleteLater)
+        # self.worker.error.connect(self.handle_worker_error)
+        #
+        # # Start the thread
+        # self.thread.start()
 
     def handle_worker_error(self, error):
         logging.error(f"Worker encountered an error: {error}")

@@ -172,7 +172,7 @@ class SchedulePlaner(QObject):
             return False
 
     def import_gtfs_data(self) -> bool:
-        try:
+        #try:
             self.gtfs_data_frame_dto = self.import_Data.import_gtfs()
 
             if self.gtfs_data_frame_dto is None:
@@ -180,9 +180,9 @@ class SchedulePlaner(QObject):
                 return False
 
             self.import_finished.emit(True)
-        except AttributeError as e:
-            self.error_occured.emit(ErrorMessageRessources.no_import_object_generated.value)
-            return False
+        #except AttributeError as e:
+            #self.error_occured.emit(ErrorMessageRessources.no_import_object_generated.value)
+            #return False
 
     @property
     def progress(self):

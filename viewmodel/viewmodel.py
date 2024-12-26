@@ -148,7 +148,7 @@ class ViewModel(QObject):
 
     def on_changed_selected_record_trip(self, id_us):
         self.model.planer.select_data.selected_route = id_us
-        logging.debug(f"{id_us}")
+        logging.debug(f"{id_us["route_short_name"]}")
 
     def on_changed_selected_dates(self, selected_dates):
         # gtfs format uses "YYYYMMDD" as date format
