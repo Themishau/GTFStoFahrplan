@@ -4,7 +4,7 @@ import os
 from PySide6.QtCore import Qt, QPoint, QSize
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QMainWindow, QApplication
 from helpFunctions import string_to_qdate
-from model.Enum.GTFSEnums import CreatePlanMode
+from model.Enum.GTFSEnums import CreatePlanMode, DfRouteColumnEnum, DfAgencyColumnEnum
 from .Custom.FadingButton import FadingButton
 from .create_table_create import CreateTableCreate
 from .create_table_import import CreateTableImport
@@ -152,8 +152,8 @@ class View(QMainWindow):
     def get_selected_agency_table_record(self):
         index = self.CreateSelect_Tab.ui.AgenciesTableView.selectedIndexes()[0]
         logging.debug(f"index {index}")
-        id_us = self.CreateSelect_Tab.ui.AgenciesTableView.model().data(index)
-        logging.debug(f"index {id_us}")
+        id_us = self.CreateSelect_Tab.ui.AgenciesTableView.model().wholeData(index)
+        logging.debug(f"index {id_us["agency_id"]}")
         self.viewModel.on_changed_selected_record_agency(id_us)
 
     def update_create_table(self):
@@ -211,9 +211,9 @@ class View(QMainWindow):
 
     def update_create_options_state(self):
         self.ui.line_Selection_agency.setText(
-            f"selected agency: {self.viewModel.model.planer.create_settings_for_table_dto.agency}")
+            f"selected agency: {self.viewModel.model.planer.create_settings_for_table_dto.agency[DfAgencyColumnEnum.agency_name.value].iloc[0]}")
         self.ui.line_Selection_trips.setText(
-            f"selected Trip: {self.viewModel.model.planer.create_settings_for_table_dto.route}")
+            f"selected Trip: {self.viewModel.model.planer.create_settings_for_table_dto.route[DfRouteColumnEnum.route_short_name.value].iloc[0]}")
         self.update_time_format_based_on_dto()
 
     def initialize_window(self):

@@ -4,7 +4,7 @@ import logging
 import re
 from datetime import datetime, timedelta
 import pandas as pd
-from model.Enum.GTFSEnums import CreatePlanMode
+from model.Enum.GTFSEnums import *
 from model.Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO
 from model.Dto.CreateTableDataframeDto import CreateTableDataframeDto
 from model.Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
@@ -140,18 +140,17 @@ class UmlaufPlaner(QObject):
         self.create_dataframe.Direction = pd.DataFrame({'direction_id': [self.create_settings_for_table_dto.direction]})
         self.create_dataframe.RequestedDates = pd.DataFrame(
             {'date': pd.to_datetime([self.create_settings_for_table_dto.dates], format='%Y%m%d')})
-        self.create_dataframe.Route = pd.DataFrame(
-            {'route_id': [self.create_settings_for_table_dto.route['route_id']]})
-        self.create_dataframe.SelectedAgency = pd.DataFrame({'agency_id': [self.create_settings_for_table_dto.agency]})
+        self.create_dataframe.SelectedRoute = self.create_settings_for_table_dto.route
+        self.create_dataframe.SelectedAgency = self.create_settings_for_table_dto.agency
 
     def datesWeekday_select_dates_for_date_range(self):
         # conditions for searching in dfs
         dfTrips = self.gtfs_data_frame_dto.Trips
         dfWeek = self.gtfs_data_frame_dto.Calendarweeks
         dfRoutes = self.gtfs_data_frame_dto.Routes
-        route_short_namedf = self.create_dataframe.Route
+        dfSelectedRoute = self.create_dataframe.SelectedRoute
         requested_directiondf = self.create_dataframe.Direction
-        varTestAgency = self.create_dataframe.SelectedAgency
+        dfSelectedAgency = self.create_dataframe.SelectedAgency
 
         selected_columns = [
             'trip_id',
@@ -168,17 +167,14 @@ class UmlaufPlaner(QObject):
             'sunday'
         ]
 
-        if "direction_id" in dfWeek.columns:
+        if DfTripColumnEnum.direction_id.value in dfTrips.columns:
             result = (
                 dfWeek
                 .merge(dfTrips, on='service_id', how='inner')
                 .merge(dfRoutes, on='route_id', how='inner')
-                .merge(route_short_namedf, on='route_id', how='inner')
-                .merge(varTestAgency, on='agency_id', how='inner')
+                .merge(dfSelectedRoute, on=['route_id','route_short_name','agency_id', 'route_long_name'], how='inner')
+                .merge(dfSelectedAgency, on='agency_id', how='inner')
                 .merge(requested_directiondf, on='direction_id', how='inner')
-                .loc[lambda df: df['route_id'] == df['route_id']]
-                .loc[lambda df: df['agency_id'] == df['agency_id']]
-                .loc[lambda df: df['direction_id'] == df['direction_id']]
                 .sort_values('service_id')
             )
         else:
@@ -186,10 +182,8 @@ class UmlaufPlaner(QObject):
                 dfWeek
                 .merge(dfTrips, on='service_id', how='inner')
                 .merge(dfRoutes, on='route_id', how='inner')
-                .merge(route_short_namedf, on='route_id', how='inner')
-                .merge(varTestAgency, on='agency_id', how='inner')
-                .loc[lambda df: df['route_id'] == df['route_id']]
-                .loc[lambda df: df['agency_id'] == df['agency_id']]
+                .merge(dfSelectedRoute, on=['route_id','route_short_name','agency_id', 'route_long_name'], how='inner')
+                .merge(dfSelectedAgency, on='agency_id', how='inner')
                 .sort_values('service_id')
             )
         result = result[selected_columns]
@@ -383,13 +377,13 @@ class UmlaufPlaner(QObject):
         requested_datesdf = pd.DataFrame([self.create_settings_for_table_dto.dates], columns=['date'])
         requested_datesdf['date'] = pd.to_datetime(requested_datesdf['date'], format='%Y%m%d')
 
-        route_short_namedf = self.create_dataframe.Route
+        dfselected_Route_Id = self.create_dataframe.SelectedRoute
         requested_directiondf = self.create_dataframe.Direction.astype('string')
         varTestAgency = self.create_dataframe.SelectedAgency
 
         dfRoutes = self.gtfs_data_frame_dto.Routes
-        dfRoutes = pd.merge(left=dfRoutes, right=route_short_namedf, how='inner', on='route_short_name')
-        dfRoutes = pd.merge(left=dfRoutes, right=varTestAgency, how='inner', on='agency_id')
+        dfRoutes = pd.merge(left=dfRoutes, right=dfselected_Route_Id, how='inner', on=DfRouteColumnEnum.route_id.value)
+        dfRoutes = pd.merge(left=dfRoutes, right=varTestAgency, how='inner', on=DfRouteColumnEnum.agency_id.value)
         dfTrip = self.gtfs_data_frame_dto.Trips
         if "direction_id" in dfTrip.columns:
             dfTrip['direction_id'] = dfTrip['direction_id'].astype('string')

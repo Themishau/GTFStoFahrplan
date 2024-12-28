@@ -177,8 +177,7 @@ class SelectData(QObject):
             self.find_routes_from_agency()
 
     def find_routes_from_agency(self):
-        input_var = [{'agency_id': self.selected_agency}]
-        self.df_selected_routes = self.gtfs_data_frame_dto.Routes[self.gtfs_data_frame_dto.Routes['agency_id'].isin(pd.DataFrame(input_var)['agency_id'])]
+        self.df_selected_routes = self.gtfs_data_frame_dto.Routes[self.gtfs_data_frame_dto.Routes['agency_id'].isin(self.selected_agency['agency_id'])]
         return True
 
     def read_gtfs_agencies(self):
