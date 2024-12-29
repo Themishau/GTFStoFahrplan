@@ -192,9 +192,10 @@ class UmlaufPlaner(QObject):
             raise ValueError("fahrplan_dates is empty")
 
         # change format
-        result['start_date'] = pd.to_datetime(result['start_date'], format='%Y%m%d')
-        result['end_date'] = pd.to_datetime(result['end_date'], format='%Y%m%d')
-        self.create_dataframe.FahrplanDates = result
+        result_copy = result.copy()
+        result_copy['start_date'] = pd.to_datetime(result_copy['start_date'], format='%Y%m%d')
+        result_copy['end_date'] = pd.to_datetime(result_copy['end_date'], format='%Y%m%d')
+        self.create_dataframe.FahrplanDates = result_copy
 
     def weekday_select_weekday_exception_2(self):
         dfDates = self.dfDates
@@ -382,7 +383,7 @@ class UmlaufPlaner(QObject):
         varTestAgency = self.create_dataframe.SelectedAgency
 
         dfRoutes = self.gtfs_data_frame_dto.Routes
-        dfRoutes = pd.merge(left=dfRoutes, right=dfselected_Route_Id, how='inner', on=DfRouteColumnEnum.route_id.value)
+        dfRoutes = pd.merge(left=dfRoutes, right=dfselected_Route_Id, how='inner', on=[DfRouteColumnEnum.route_id.value, DfRouteColumnEnum.route_short_name.value, DfRouteColumnEnum.agency_id.value, DfRouteColumnEnum.route_long_name.value])
         dfRoutes = pd.merge(left=dfRoutes, right=varTestAgency, how='inner', on=DfRouteColumnEnum.agency_id.value)
         dfTrip = self.gtfs_data_frame_dto.Trips
         if "direction_id" in dfTrip.columns:
@@ -431,8 +432,9 @@ class UmlaufPlaner(QObject):
 
     def datesWeekday_select_for_every_date_trips_stops(self):
 
-        fahrplan_calendar_weeks = self.create_dataframe.FahrplanStops
+        fahrplan_calendar_weeks = self.create_dataframe.FahrplanStops.copy()
         fahrplan_calendar_weeks['trip_id'] = fahrplan_calendar_weeks['trip_id'].astype('string')
+
         fahrplan_dates_all_dates = self.create_dataframe.FahrplanDates
         fahrplan_dates_all_dates['trip_id'] = fahrplan_dates_all_dates['trip_id'].astype('string')
 

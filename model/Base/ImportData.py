@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from PySide6.QtCore import Signal
 from PySide6.QtCore import QObject
+import multiprocessing
+from functools import partial
 import pandas as pd
 import zipfile
 import io
@@ -133,12 +135,20 @@ class ImportData(QObject):
 
     """ methods """
 
+    def read_pickle_from_zip(self, zf, file_name):
+        with zf.open(file_name, mode="r") as file:
+            compressed_data = file.read()
+            with io.BytesIO(compressed_data) as byte_stream:
+                return pd.read_pickle(byte_stream)
+
     def read_gtfs_data(self):
 
         """
         reads data from self.input_path. Data needs to be formatted as gtfs data
         :return: dict of raw_gtfs_data and creates a pandas dataframe
         """
+        df_gtfs_data = {}
+
         with zipfile.ZipFile(self.input_path) as zf:
             logging.debug(zf.namelist())
             for file in zf.namelist():
@@ -148,29 +158,25 @@ class ImportData(QObject):
 
             if self._pkl_loaded is True:
                 logging.debug('pickle data detected')
-                df_gtfs_data = {}
-
-                with zf.open("Tmp/dfStops.pkl") as stops:
-                    df_gtfs_data[GtfsDfNames.Stops] = pd.read_pickle(stops)
-                with zf.open("Tmp/dfStopTimes.pkl") as stop_times:
-                    df_gtfs_data[GtfsDfNames.Stoptimes] = pd.read_pickle(stop_times)
-                with zf.open("Tmp/dfTrips.pkl") as trips:
-                    df_gtfs_data[GtfsDfNames.Trips] = pd.read_pickle(trips)
-                with zf.open("Tmp/dfWeek.pkl") as calendar:
-                    df_gtfs_data[GtfsDfNames.Calendarweeks] = pd.read_pickle(calendar)
-                with zf.open("Tmp/dfDates.pkl") as calendar_dates:
-                    df_gtfs_data[GtfsDfNames.Calendardates] = pd.read_pickle(calendar_dates)
-                with zf.open("Tmp/dfRoutes.pkl") as routes:
-                    df_gtfs_data[GtfsDfNames.Routes] = pd.read_pickle(routes)
-                with zf.open("Tmp/dfagency.pkl") as agency:
-                    df_gtfs_data[GtfsDfNames.Agencies] = pd.read_pickle(agency)
-
+                df_gtfs_data[GtfsDfNames.Stops] = self.read_pickle_from_zip(zf, "Tmp/dfStops.pkl")
+                self.progress = 20
+                df_gtfs_data[GtfsDfNames.Stoptimes] = self.read_pickle_from_zip(zf, "Tmp/dfStopTimes.pkl")
+                self.progress = 30
+                df_gtfs_data[GtfsDfNames.Trips] = self.read_pickle_from_zip(zf, "Tmp/dfTrips.pkl")
+                self.progress = 40
+                df_gtfs_data[GtfsDfNames.Calendarweeks] = self.read_pickle_from_zip(zf, "Tmp/dfWeek.pkl")
+                self.progress = 50
+                df_gtfs_data[GtfsDfNames.Calendardates] = self.read_pickle_from_zip(zf, "Tmp/dfDates.pkl")
+                self.progress = 60
+                df_gtfs_data[GtfsDfNames.Routes] = self.read_pickle_from_zip(zf, "Tmp/dfRoutes.pkl")
+                self.progress = 70
+                df_gtfs_data[GtfsDfNames.Agencies] = self.read_pickle_from_zip(zf, "Tmp/dfagency.pkl")
                 self.progress = 80
 
                 try:
                     with zipfile.ZipFile(self.input_path) as zf:
-                        with io.TextIOWrapper(zf.open("Tmp/dffeed_info.pkl")) as feed_info:
-                            df_gtfs_data["dffeed_info"] = pd.read_pickle(feed_info)
+                        with zf.open("Tmp/dffeed_info.pkl", mode="r") as feed_info:
+                            df_gtfs_data["dffeed_info"] = pd.read_pickle(feed_info, compression='zip')
                 except:
                     logging.debug('no feed info header')
                 return df_gtfs_data
@@ -182,19 +188,19 @@ class ImportData(QObject):
 
             try:
                 with zipfile.ZipFile(self.input_path) as zf:
-                    with io.TextIOWrapper(zf.open("stops.txt"), encoding="utf-8") as stops:
+                    with io.TextIOWrapper(zf.open("stops.txt", mode="r"), encoding="utf-8") as stops:
                         raw_data[GtfsColumnNames.stopsList] = [stops.readlines()[0].rstrip()]
-                    with io.TextIOWrapper(zf.open("stop_times.txt"), encoding="utf-8") as stop_times:
+                    with io.TextIOWrapper(zf.open("stop_times.txt", mode="r"), encoding="utf-8") as stop_times:
                         raw_data[GtfsColumnNames.stopTimesList] = [stop_times.readlines()[0].rstrip()]
-                    with io.TextIOWrapper(zf.open("trips.txt"), encoding="utf-8") as trips:
+                    with io.TextIOWrapper(zf.open("trips.txt", mode="r"), encoding="utf-8") as trips:
                         raw_data[GtfsColumnNames.tripsList] = [trips.readlines()[0].rstrip()]
-                    with io.TextIOWrapper(zf.open("calendar.txt"), encoding="utf-8") as calendar:
+                    with io.TextIOWrapper(zf.open("calendar.txt", mode="r"), encoding="utf-8") as calendar:
                         raw_data[GtfsColumnNames.calendarList] = [calendar.readlines()[0].rstrip()]
-                    with io.TextIOWrapper(zf.open("calendar_dates.txt"), encoding="utf-8") as calendar_dates:
+                    with io.TextIOWrapper(zf.open("calendar_dates.txt", mode="r"), encoding="utf-8") as calendar_dates:
                         raw_data[GtfsColumnNames.calendar_datesList] = [calendar_dates.readlines()[0].rstrip()]
-                    with io.TextIOWrapper(zf.open("routes.txt"), encoding="utf-8") as routes:
+                    with io.TextIOWrapper(zf.open("routes.txt", mode="r"), encoding="utf-8") as routes:
                         raw_data[GtfsColumnNames.routesList] = [routes.readlines()[0].rstrip()]
-                    with io.TextIOWrapper(zf.open("agency.txt"), encoding="utf-8") as agency:
+                    with io.TextIOWrapper(zf.open("agency.txt", mode="r"), encoding="utf-8") as agency:
                         raw_data[GtfsColumnNames.agencyList] = [agency.readlines()[0].rstrip()]
             except:
                 logging.debug('Error in Unzipping headers')
@@ -204,19 +210,19 @@ class ImportData(QObject):
 
             try:
                 with zipfile.ZipFile(self.input_path) as zf:
-                    with io.TextIOWrapper(zf.open("stops.txt"), encoding="utf-8") as stops:
+                    with io.TextIOWrapper(zf.open("stops.txt", mode="r"), encoding="utf-8") as stops:
                         raw_data[GtfsColumnNames.stopsList] += stops.readlines()[1:]
-                    with io.TextIOWrapper(zf.open("stop_times.txt"), encoding="utf-8") as stop_times:
+                    with io.TextIOWrapper(zf.open("stop_times.txt", mode="r"), encoding="utf-8") as stop_times:
                         raw_data[GtfsColumnNames.stopTimesList] += stop_times.readlines()[1:]
-                    with io.TextIOWrapper(zf.open("trips.txt"), encoding="utf-8") as trips:
+                    with io.TextIOWrapper(zf.open("trips.txt", mode="r"), encoding="utf-8") as trips:
                         raw_data[GtfsColumnNames.tripsList] += trips.readlines()[1:]
-                    with io.TextIOWrapper(zf.open("calendar.txt"), encoding="utf-8") as calendar:
+                    with io.TextIOWrapper(zf.open("calendar.txt", mode="r"), encoding="utf-8") as calendar:
                         raw_data[GtfsColumnNames.calendarList] += calendar.readlines()[1:]
-                    with io.TextIOWrapper(zf.open("calendar_dates.txt"), encoding="utf-8") as calendar_dates:
+                    with io.TextIOWrapper(zf.open("calendar_dates.txt", mode="r"), encoding="utf-8") as calendar_dates:
                         raw_data[GtfsColumnNames.calendar_datesList] += calendar_dates.readlines()[1:]
-                    with io.TextIOWrapper(zf.open("routes.txt"), encoding="utf-8") as routes:
+                    with io.TextIOWrapper(zf.open("routes.txt", mode="r"), encoding="utf-8") as routes:
                         raw_data[GtfsColumnNames.routesList] += routes.readlines()[1:]
-                    with io.TextIOWrapper(zf.open("agency.txt"), encoding="utf-8") as agency:
+                    with io.TextIOWrapper(zf.open("agency.txt", mode="r"), encoding="utf-8") as agency:
                         raw_data[GtfsColumnNames.agencyList] += agency.readlines()[1:]
 
             except:
@@ -225,14 +231,14 @@ class ImportData(QObject):
 
             try:
                 with zipfile.ZipFile(self.input_path) as zf:
-                    with io.TextIOWrapper(zf.open("feed_info.txt"), encoding="utf-8") as feed_info:
+                    with io.TextIOWrapper(zf.open("feed_info.txt", mode="r"), encoding="utf-8") as feed_info:
                         raw_data[GtfsColumnNames.feed_info] = [feed_info.readlines()[0].rstrip()]
             except:
                 logging.debug('no feed info header')
 
             try:
                 with zipfile.ZipFile(self.input_path) as zf:
-                    with io.TextIOWrapper(zf.open("feed_info.txt"), encoding="utf-8") as feed_info:
+                    with io.TextIOWrapper(zf.open("feed_info.txt", mode="r"), encoding="utf-8") as feed_info:
                         raw_data[GtfsColumnNames.feed_info] += feed_info.readlines()[1:]
             except:
                 logging.debug('no feed info data')
@@ -523,6 +529,7 @@ class ImportData(QObject):
             df_routes['agency_id'] = df_routes['agency_id'].astype('string')
             df_routes['route_type'] = df_routes['route_type'].astype('string')
             df_routes['route_id'] = df_routes['route_id'].astype('string')
+            df_routes = df_routes.sort_values(DfRouteColumnEnum.route_short_name.value)
         except KeyError:
             logging.debug("can not convert df_routes: stop_id into int ")
         except ValueError:
@@ -647,6 +654,7 @@ class ImportData(QObject):
         logging.debug("convert to df: create_df_agency")
         df_agencies = pd.DataFrame.from_dict(raw_data[GtfsDfNames.Agencies])
         df_agencies = self.drop_columns_by_enum(df_agencies, DfAgencyColumnEnum)
+        df_agencies = df_agencies.sort_values(DfAgencyColumnEnum.agency_name.value)
         df_agencies.name = GtfsDfNames.Agencies
 
         return df_agencies
@@ -698,7 +706,7 @@ class ImportData(QObject):
             imported_df_data[GtfsDfNames.Stops].to_pickle(self._pickle_save_path + "dffeed_info.pkl")
 
         # Create a zip file containing all pickled dataframes
-        with zipfile.ZipFile(self.pickle_save_path_filename, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+        with zipfile.ZipFile(self.pickle_save_path_filename, "w", compression=zipfile.ZIP_STORED) as zf:
             zf.write(self._pickle_save_path + "dfStops.pkl")
             zf.write(self._pickle_save_path + "dfStopTimes.pkl")
             zf.write(self._pickle_save_path + "dfTrips.pkl")
