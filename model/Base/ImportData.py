@@ -706,7 +706,7 @@ class ImportData(QObject):
             imported_df_data[GtfsDfNames.Stops].to_pickle(self._pickle_save_path + "dffeed_info.pkl")
 
         # Create a zip file containing all pickled dataframes
-        with zipfile.ZipFile(self.pickle_save_path_filename, "w", compression=zipfile.ZIP_STORED) as zf:
+        with zipfile.ZipFile(self.pickle_save_path_filename, "w", compression=zipfile.ZIP_DEFLATED) as zf:
             zf.write(self._pickle_save_path + "dfStops.pkl")
             zf.write(self._pickle_save_path + "dfStopTimes.pkl")
             zf.write(self._pickle_save_path + "dfTrips.pkl")

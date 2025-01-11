@@ -147,20 +147,20 @@ class SchedulePlaner(QObject):
             return False
 
     def create_umlaufplan(self):
-        try:
-            self.create_plan.create_table()
-            self.initialize_cirle_planer()
-            self.circle_plan.CreateCirclePlan()
-            self.export_plan.export_circle_plan(self.create_settings_for_table_dto, self.circle_plan.plans)
-            self.create_finished.emit(True)
-            return True
+        #try:
+        self.create_plan.create_table()
+        self.initialize_cirle_planer()
+        self.circle_plan.CreateCirclePlan()
+        self.export_plan.export_circle_plan(self.create_settings_for_table_dto, self.circle_plan.plans)
+        self.create_finished.emit(True)
+        return True
 
-        except AttributeError as e:
-            self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
-            return False
-        except ValueError as e:
-            self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
-            return False
+        #except AttributeError as e:
+        #    self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
+        #    return False
+        #except ValueError as e:
+        #    self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
+        #    return False
 
     def create_umlaufplan_continue(self):
         try:
