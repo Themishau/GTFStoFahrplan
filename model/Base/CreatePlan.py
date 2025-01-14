@@ -115,12 +115,11 @@ class CreatePlan(QObject):
 
                 for future in concurrent.futures.as_completed(futures):
                     try:
-                        result = future.result()
-                        # Process the result here
+                        _ = future.result()
                     except Exception as exc:
-                        print(f'Thread generated an exception: {exc}')
+                        logging.debug(f'Thread generated an exception: {exc}')
             except Exception as exc:
-                print(f'An error occurred during execution: {exc}')
+                logging.debug(f'An error occurred during execution: {exc}')
 
 
 
