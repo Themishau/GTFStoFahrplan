@@ -11,6 +11,10 @@ class CreatePlanMode(Enum):
     umlauf_date = 2
     umlauf_weekday = 3
 
+class Direction(Enum):
+    """ Types of direction """
+    direction_1 = 0
+    direction_2 = 1
 
 class GtfsColumnNames(Enum):
     stopsList = 'stopsList'

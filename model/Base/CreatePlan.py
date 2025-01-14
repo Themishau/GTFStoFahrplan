@@ -98,6 +98,7 @@ class CreatePlan(QObject):
         elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_date or self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_weekday:
             self.plans = [UmlaufPlaner(), UmlaufPlaner()]
             self.plans[0].create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
+            self.plans[0].create_settings_for_table_dto.direction = 0
             self.plans[0].gtfs_data_frame_dto = copy.deepcopy(self.gtfs_data_frame_dto)
 
             self.plans[1].create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)

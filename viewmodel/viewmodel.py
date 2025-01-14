@@ -95,9 +95,9 @@ class ViewModel(QObject):
         self.export_plan_time_format.emit(text)
 
     def on_changed_direction_mode(self, text):
-        if text == 'direction 1':
+        if text == Direction.direction_1.value:
             self.model.planer.select_data.selected_direction = 0
-        elif text == 'direction 2':
+        elif text == Direction.direction_2.value:
             self.model.planer.select_data.selected_direction = 1
 
     def on_changed_selected_weekday(self, text):
