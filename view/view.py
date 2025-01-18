@@ -5,7 +5,6 @@ from PySide6.QtCore import Qt, QPoint, QSize
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QMainWindow, QApplication
 from helpFunctions import string_to_qdate
 from model.Enum.GTFSEnums import CreatePlanMode, DfRouteColumnEnum, DfAgencyColumnEnum
-from .Custom.FadingButton import FadingButton
 from .create_table_create import CreateTableCreate
 from .create_table_import import CreateTableImport
 from .create_table_select import CreateTableSelect
@@ -258,35 +257,35 @@ class View(QMainWindow):
 
 
     def initialize_tabs(self):
-        self.ui.stackedWidget.addWidget(self.CreateImport_Tab)
+        self.ui.main_view_stacked_widget.addWidget(self.CreateImport_Tab)
 
-        self.ui.stackedWidget.addWidget(self.CreateSelect_Tab)
-        self.ui.stackedWidget.addWidget(self.CreateCreate_Tab)
-        self.ui.stackedWidget.addWidget(self.DownloadGTFS_Tab)
-        self.ui.stackedWidget.addWidget(self.CreateMainTab)
+        self.ui.main_view_stacked_widget.addWidget(self.CreateSelect_Tab)
+        self.ui.main_view_stacked_widget.addWidget(self.CreateCreate_Tab)
+        self.ui.main_view_stacked_widget.addWidget(self.DownloadGTFS_Tab)
+        self.ui.main_view_stacked_widget.addWidget(self.CreateMainTab)
 
     def show_GTFSDownload_window(self):
         self.set_btn_checked(self.downloadGTFSNavPush_btn)
-        self.ui.stackedWidget.setCurrentWidget(self.DownloadGTFS_Tab)
+        self.ui.main_view_stacked_widget.setCurrentWidget(self.DownloadGTFS_Tab)
 
     def show_home_window(self):
         self.set_btn_checked(self.generalNavPush_btn)
-        self.ui.stackedWidget.setCurrentWidget(self.ui.general_information_page)
+        self.ui.main_view_stacked_widget.setCurrentWidget(self.ui.general_information_page)
 
 
     def show_Create_Import_Window(self):
         self.set_btn_checked(self.createTableImport_btn)
-        self.ui.stackedWidget.setCurrentWidget(self.CreateImport_Tab)
-        self.ui.stackedWidget.resize(1100, 900)
+        self.ui.main_view_stacked_widget.setCurrentWidget(self.ui.create_import_page)
+        #self.ui.main_view_stacked_widget.resize(1100, 900)
 
     def show_Create_Select_Window(self):
         self.set_btn_checked(self.createTableSelect_btn)
-        self.ui.stackedWidget.setCurrentWidget(self.CreateSelect_Tab)
+        self.ui.main_view_stacked_widget.setCurrentWidget(self.CreateSelect_Tab)
 
     def show_Create_Create_Window(self):
         self.set_btn_checked(self.createTableCreate_btn)
-        self.ui.stackedWidget.setCurrentWidget(self.CreateCreate_Tab)
-        self.ui.stackedWidget.resize(500, 500)
+        self.ui.main_view_stacked_widget.setCurrentWidget(self.CreateCreate_Tab)
+        self.ui.main_view_stacked_widget.resize(500, 500)
 
     def set_btn_checked(self, btn):
         for button in self.menu_btns_dict.keys():
