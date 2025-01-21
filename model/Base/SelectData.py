@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
+import logging
+import time
+
 from PySide6.QtCore import Signal, QObject
 
-import time
-import pandas as pd
-import logging
 from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO
 from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
 

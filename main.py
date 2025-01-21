@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 import sys
-
-from view import View
-from viewmodel import ViewModel
 from model import Model
+from viewmodel import ViewModel
 from view import SplashScreen
-
+from view import View
 from PySide6.QtWidgets import *
+
 
 if __name__ == '__main__':
     gtfs_app = QApplication(sys.argv)

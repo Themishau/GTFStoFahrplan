@@ -1,6 +1,7 @@
 from PySide6 import QtCore
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import *
+
 from view.pyui.ui_splash_screen import Ui_SplashScreen
 
 counter = 0

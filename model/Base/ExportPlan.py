@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
+import logging
 from datetime import datetime
 
-from PySide6.QtCore import Signal
 from PySide6.QtCore import QObject
-import logging
+from PySide6.QtCore import Signal
 
 from ..Dto import CreateTableDataframeDto
 from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO

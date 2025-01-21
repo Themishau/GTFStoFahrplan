@@ -1,5 +1,5 @@
-from PySide6.QtCore import Qt, QPropertyAnimation, Property, QEasingCurve
-from PySide6.QtWidgets import QToolBox, QWidget, QGraphicsOpacityEffect
+from PySide6.QtWidgets import QToolBox
+
 
 class AnimatedQToolBox(QToolBox):
     def __init__(self, parent=None):

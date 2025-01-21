@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from PySide6.QtCore import Signal
 from PySide6.QtCore import QObject
+from PySide6.QtCore import Signal
+
+from model.Enum.GTFSEnums import *
 from ..Base.AnalyzeData import AnalyzeData
 from ..Base.CirclePlaner import CirclePlaner
 from ..Base.CreatePlan import CreatePlan
 from ..Base.ExportPlan import ExportPlan
-from model.Enum.GTFSEnums import *
 from ..Base.ImportData import ImportData
 from ..Base.SelectData import SelectData
 from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO

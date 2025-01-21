@@ -147,5 +147,3 @@ class Ui_Form(object):
         self.btnLoadOnlineData.setText(_translate("Form", "Load Online Data"))
         self.btnDownloadSelected.setText(_translate("Form", "Download Selected Data"))
 
-from view.ui.res import resource_boot
-from view.ui.res import resource_rc

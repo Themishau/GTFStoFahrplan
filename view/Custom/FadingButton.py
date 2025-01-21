@@ -1,4 +1,4 @@
-from PySide6.QtCore import QPropertyAnimation, Slot, Property, QEasingCurve, QParallelAnimationGroup, QPoint, QSize, QSequentialAnimationGroup
+from PySide6.QtCore import QPropertyAnimation, QEasingCurve, QParallelAnimationGroup
 from PySide6.QtWidgets import QPushButton, QGraphicsOpacityEffect
 
 class FadingButton(QPushButton):

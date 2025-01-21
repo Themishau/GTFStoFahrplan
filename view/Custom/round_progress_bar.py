@@ -1,7 +1,8 @@
-from PySide6.QtGui import *
-from PySide6.QtCore import *
-from PySide6.QtWidgets import *
 import math
+
+from PySide6.QtCore import *
+from PySide6.QtGui import *
+from PySide6.QtWidgets import *
 
 """
 https://www.youtube.com/watch?v=E7lhFwcDpMI

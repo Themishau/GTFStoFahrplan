@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
-from PySide6.QtCore import Signal
-from PySide6.QtCore import QObject
-import multiprocessing
-from functools import partial
-import pandas as pd
-import zipfile
+import concurrent.futures
 import io
 import logging
 import os
+import zipfile
+
+import pandas as pd
+from PySide6.QtCore import QObject
+from PySide6.QtCore import Signal
+
 from model.Enum.GTFSEnums import *
 from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
-
-import concurrent.futures
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",

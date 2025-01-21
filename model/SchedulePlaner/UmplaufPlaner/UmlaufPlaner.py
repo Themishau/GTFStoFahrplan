@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
-from PySide6.QtCore import Signal, QObject
 import logging
 import re
 from datetime import datetime, timedelta
+
 import pandas as pd
-from model.Enum.GTFSEnums import *
+from PySide6.QtCore import Signal, QObject
+
 from model.Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO
 from model.Dto.CreateTableDataframeDto import CreateTableDataframeDto
 from model.Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
+from model.Enum.GTFSEnums import *
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",

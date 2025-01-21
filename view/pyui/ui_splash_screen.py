@@ -8,11 +8,8 @@
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide6.QtCore import (QCoreApplication, QMetaObject, QObject, QPoint,
-    QRect, QSize, QUrl, Qt)
-from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
-    QFontDatabase, QIcon, QLinearGradient, QPalette, QPainter, QPixmap,
-    QRadialGradient)
+from PySide6.QtCore import (QCoreApplication, QMetaObject, QRect, Qt)
+from PySide6.QtGui import (QFont)
 from PySide6.QtWidgets import *
 
 
@@ -106,5 +103,3 @@ class Ui_SplashScreen(object):
         self.label_credits.setText(QCoreApplication.translate("SplashScreen", u"<strong>Created</strong>: Themishau", None))
     # retranslateUi
 
-from view.ui.res import resource_boot
-from view.ui.res import resource_rc

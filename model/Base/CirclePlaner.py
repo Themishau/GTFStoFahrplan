@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
-from copy import deepcopy
 
-from PySide6.QtCore import Signal, QObject
-import logging
 import copy
+import logging
+
 import pandas as pd
-from model.Enum.GTFSEnums import ErrorMessageRessources
+from PySide6.QtCore import Signal, QObject
+
 from model.Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO
+from model.Enum.GTFSEnums import ErrorMessageRessources
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",

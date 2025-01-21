@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-import logging
+import concurrent.futures
 import copy
+import logging
+
 from PySide6.QtCore import Signal, QObject
 
 from model.Enum.GTFSEnums import CreatePlanMode
 from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO
 from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
 from ..SchedulePlaner.UmplaufPlaner.UmlaufPlaner import UmlaufPlaner
-
-import concurrent.futures
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",

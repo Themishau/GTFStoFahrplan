@@ -11,8 +11,6 @@
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtGui import QFont
 
-from view.Custom.FadingButton import FadingButton
-
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -465,5 +463,3 @@ class Ui_MainWindow(object):
         self.label.setText(_translate("MainWindow", "current Progress: "))
         self.label_16.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Selection</span></p></body></html>"))
 
-from view.ui.res import resource_boot
-from view.ui.res import resource_rc

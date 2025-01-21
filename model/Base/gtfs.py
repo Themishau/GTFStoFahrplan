@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
-from model.observer import Publisher, Subscriber
-import time
-import pandas as pd
-from pandasql import sqldf
-import zipfile
 import io
-from datetime import datetime, timedelta
-import re
 import logging
-import sys
 import os
-from PyQt5.QtCore import QAbstractTableModel
+import re
+import time
+import zipfile
+from datetime import datetime, timedelta
+
+import pandas as pd
+from model.observer import Publisher, Subscriber
+from pandasql import sqldf
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",

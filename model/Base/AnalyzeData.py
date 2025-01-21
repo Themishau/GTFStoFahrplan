@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from PySide6.QtCore import Signal
 from PySide6.QtCore import QObject
+from PySide6.QtCore import Signal
 
 from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
 

@@ -3,17 +3,18 @@ import os
 
 from PySide6.QtCore import Qt, QPoint, QSize
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QMainWindow, QApplication
+
 from helpFunctions import string_to_qdate
 from model.Enum.GTFSEnums import CreatePlanMode, DfRouteColumnEnum, DfAgencyColumnEnum
-from .create_table_create import CreateTableCreate
-from .create_table_import import CreateTableImport
-from .create_table_select import CreateTableSelect
-from .download_gtfs import DownloadGTFS
-from .general_window_information import GeneralInformation
-from .pyui.ui_main_window import Ui_MainWindow
 from view.Custom.round_progress_bar import RoundProgress
 from view.Custom.select_table_view import TableModel
 from view.Custom.sort_table_view import TableModelSort
+from view.create_table_create import CreateTableCreate
+from view.create_table_import import CreateTableImport
+from view.create_table_select import CreateTableSelect
+from view.download_gtfs import DownloadGTFS
+from view.general_window_information import GeneralInformation
+from view.pyui.ui_main_window import Ui_MainWindow
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
@@ -36,8 +37,6 @@ class View(QMainWindow):
         self.messageBox_model = QMessageBox()
 
         self.CreateMainTab = GeneralInformation()
-        self.CreateImport_Tab = CreateTableImport()
-        self.CreateImport_Tab.setMaximumSize(QSize(1682, 759))
         self.CreateSelect_Tab = CreateTableSelect()
         self.CreateCreate_Tab = CreateTableCreate()
         self.DownloadGTFS_Tab = DownloadGTFS()
@@ -71,26 +70,26 @@ class View(QMainWindow):
         self.ui.pushButton_5.clicked.connect(self.show_home_window)
         self.ui.pushButton_6.clicked.connect(self.show_GTFSDownload_window)
 
-        self.CreateImport_Tab.ui.btnImport.clicked.connect(self.viewModel.start_import_gtfs_data)
+        self.ui.btnImport.clicked.connect(self.viewModel.start_import_gtfs_data)
 
         self.viewModel.on_changed_individualsorting_table.connect(self.update_individualsorting_table)
 
-        self.CreateImport_Tab.ui.btnRestart.clicked.connect(self.viewModel.restart)
+        self.ui.btnRestart.clicked.connect(self.viewModel.restart)
 
         # view gets updated if view model changed model successfully
-        self.CreateImport_Tab.ui.btnGetFile.clicked.connect(self.get_file_path)
+        self.ui.btnGetFile.clicked.connect(self.get_file_path)
         self.viewModel.input_file_path.connect(self.update_file_input_path)
 
-        self.CreateImport_Tab.ui.btnGetPickleFile.clicked.connect(self.get_pickle_save_path)
+        self.ui.btnGetPickleFile.clicked.connect(self.get_pickle_save_path)
         self.viewModel.pickle_file_path.connect(self.update_pickle_file_path)
 
-        self.CreateImport_Tab.ui.btnGetOutputDir.clicked.connect(self.get_output_dir_path)
+        self.ui.btnGetOutputDir.clicked.connect(self.get_output_dir_path)
         self.viewModel.output_file_path.connect(self.update_output_file_path)
 
-        self.CreateImport_Tab.ui.checkBox_savepickle.clicked.connect(self.viewModel.on_changed_pickle_export_checked)
+        self.ui.checkBox_savepickle.clicked.connect(self.viewModel.on_changed_pickle_export_checked)
         self.viewModel.update_pickle_export_checked.connect(self.update_pickle_export_checked)
 
-        self.CreateImport_Tab.ui.comboBox_display.activated[int].connect(self.viewModel.on_changed_time_format_mode)
+        #self.ui.comboBox_display.activated[int].connect(self.viewModel.on_changed_time_format_mode)
         self.viewModel.export_plan_time_format.connect(self.update_time_format)
 
         self.viewModel.update_agency_list.connect(self.update_agency_list)
@@ -141,12 +140,12 @@ class View(QMainWindow):
         self.CreateCreate_Tab.ui.dateEdit.setDate(string_to_qdate(data))
 
     def update_importing_start(self):
-        self.CreateImport_Tab.ui.btnImport.setEnabled(False)
-        self.CreateImport_Tab.ui.btnRestart.setEnabled(True)
-        self.CreateImport_Tab.ui.btnGetFile.setEnabled(False)
-        self.CreateImport_Tab.ui.btnGetPickleFile.setEnabled(False)
-        self.CreateImport_Tab.ui.btnGetOutputDir.setEnabled(False)
-        self.CreateImport_Tab.ui.checkBox_savepickle.setEnabled(False)
+        self.ui.create_import_page.ui.btnImport.setEnabled(False)
+        self.ui.create_import_page.ui.btnRestart.setEnabled(True)
+        self.ui.create_import_page.ui.btnGetFile.setEnabled(False)
+        self.ui.create_import_page.ui.btnGetPickleFile.setEnabled(False)
+        self.ui.create_import_page.ui.btnGetOutputDir.setEnabled(False)
+        self.ui.create_import_page.ui.checkBox_savepickle.setEnabled(False)
 
     def get_selected_agency_table_record(self):
         index = self.CreateSelect_Tab.ui.AgenciesTableView.selectedIndexes()[0]
@@ -160,16 +159,16 @@ class View(QMainWindow):
             f"Success. Create table successfully. Saved here: {self.viewModel.model.planer.export_plan.full_output_path}")
 
     def update_file_input_path(self, input_path):
-        self.CreateImport_Tab.ui.lineInputPath.setText(input_path)
+        self.ui.lineInputPath.setText(input_path)
 
     def update_pickle_file_path(self, pickle_path):
-        self.CreateImport_Tab.ui.picklesavename.setText(pickle_path)
+        self.ui.picklesavename.setText(pickle_path)
 
     def update_output_file_path(self, output_path):
-        self.CreateImport_Tab.ui.lineOutputPath.setText(output_path)
+        self.ui.lineOutputPath.setText(output_path)
 
     def update_pickle_export_checked(self, checked):
-        self.CreateImport_Tab.ui.checkBox_savepickle.setChecked(checked)
+        self.ui.checkBox_savepickle.setChecked(checked)
 
     def update_time_format(self, time_format):
         self.ui.line_Selection_format.setText(time_format)
@@ -222,10 +221,10 @@ class View(QMainWindow):
         self.oldPos = self.pos()
 
     def init_signals(self):
-        self.CreateImport_Tab.ui.comboBox_display.activated[int].connect(self.viewModel.export_plan_time_format.emit)
-        self.CreateImport_Tab.ui.lineInputPath.textChanged.connect(self.viewModel.input_file_path.emit)
-        self.CreateImport_Tab.ui.lineOutputPath.textChanged.connect(self.viewModel.output_file_path.emit)
-        self.CreateImport_Tab.ui.picklesavename.textChanged.connect(self.viewModel.pickle_file_path.emit)
+        #self.ui.create_import_page.ui.comboBox_display.activated[int].connect(self.viewModel.export_plan_time_format.emit)
+        self.ui.lineInputPath.textChanged.connect(self.viewModel.input_file_path.emit)
+        self.ui.lineOutputPath.textChanged.connect(self.viewModel.output_file_path.emit)
+        self.ui.picklesavename.textChanged.connect(self.viewModel.pickle_file_path.emit)
 
     def mousePressEvent(self, event):
         self.oldPos = event.globalPos()
@@ -257,7 +256,7 @@ class View(QMainWindow):
 
 
     def initialize_tabs(self):
-        self.ui.main_view_stacked_widget.addWidget(self.CreateImport_Tab)
+        self.ui.main_view_stacked_widget.addWidget(self.ui.create_import_page)
 
         self.ui.main_view_stacked_widget.addWidget(self.CreateSelect_Tab)
         self.ui.main_view_stacked_widget.addWidget(self.CreateCreate_Tab)
@@ -301,7 +300,7 @@ class View(QMainWindow):
 
     def initialize_create_base_option(self):
         self.CreateCreate_Tab.ui.comboBox.setEnabled(True)
-        self.CreateImport_Tab.ui.comboBox_display.setEnabled(True)
+        #self.ui.comboBox_display.setEnabled(True)
         self.CreateCreate_Tab.ui.comboBox_direction.setEnabled(True)
         self.CreateCreate_Tab.ui.btnStart.setEnabled(True)
 
@@ -329,7 +328,7 @@ class View(QMainWindow):
 
     def reset_weekdayDate(self):
         self.CreateCreate_Tab.ui.comboBox.setEnabled(False)
-        self.CreateImport_Tab.ui.comboBox_display.setEnabled(True)
+        #self.ui.comboBox_display.setEnabled(True)
         self.CreateCreate_Tab.ui.comboBox_direction.setEnabled(False)
         self.CreateCreate_Tab.ui.dateEdit.setEnabled(False)
         self.CreateCreate_Tab.ui.listDatesWeekday.clear()
@@ -408,9 +407,9 @@ class View(QMainWindow):
         self.viewModel.on_changed_selected_record_trip(id_us)
 
     def reset_view(self):
-        self.CreateImport_Tab.ui.btnImport.setEnabled(True)
-        self.CreateImport_Tab.ui.btnRestart.setEnabled(False)
-        self.CreateImport_Tab.ui.comboBox_display.setEnabled(True)
+        self.ui.btnImport.setEnabled(True)
+        self.ui.btnRestart.setEnabled(False)
+        #self.ui.comboBox_display.setEnabled(True)
 
         self.CreateSelect_Tab.ui.AgenciesTableView.clear()
         self.CreateSelect_Tab.ui.TripsTableView.clear()
