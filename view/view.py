@@ -3,15 +3,13 @@ import os
 
 from PySide6.QtCore import Qt, QPoint, QSize
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QMainWindow, QApplication
-
+from PySide6.QtWidgets import QWidget, QAbstractItemView, QHeaderView
 from helpFunctions import string_to_qdate
 from model.Enum.GTFSEnums import CreatePlanMode, DfRouteColumnEnum, DfAgencyColumnEnum
 from view.Custom.round_progress_bar import RoundProgress
 from view.Custom.select_table_view import TableModel
 from view.Custom.sort_table_view import TableModelSort
 from view.create_table_create import CreateTableCreate
-from view.create_table_import import CreateTableImport
-from view.create_table_select import CreateTableSelect
 from view.download_gtfs import DownloadGTFS
 from view.general_window_information import GeneralInformation
 from view.pyui.ui_main_window import Ui_MainWindow
@@ -37,7 +35,6 @@ class View(QMainWindow):
         self.messageBox_model = QMessageBox()
 
         self.CreateMainTab = GeneralInformation()
-        self.CreateSelect_Tab = CreateTableSelect()
         self.CreateCreate_Tab = CreateTableCreate()
         self.DownloadGTFS_Tab = DownloadGTFS()
         self.createTableImport_btn = self.ui.pushButton_2
@@ -46,9 +43,7 @@ class View(QMainWindow):
         self.generalNavPush_btn = self.ui.pushButton_5
         self.downloadGTFSNavPush_btn = self.ui.pushButton_6
 
-        self.menu_btns_dict = {self.createTableImport_btn: CreateTableImport,
-                               self.createTableSelect_btn: CreateTableSelect,
-                               self.createTableCreate_btn: CreateTableCreate,
+        self.menu_btns_dict = {self.createTableCreate_btn: CreateTableCreate,
                                self.generalNavPush_btn: GeneralInformation,
                                self.downloadGTFSNavPush_btn: DownloadGTFS}
 
@@ -64,6 +59,12 @@ class View(QMainWindow):
 
     def initialize_buttons_links(self):
 
+        self.ui.AgenciesTableView.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.ui.AgenciesTableView.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.ui.AgenciesTableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.ui.TripsTableView.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.ui.TripsTableView.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.ui.TripsTableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.ui.pushButton_2.clicked.connect(self.show_Create_Import_Window)
         self.ui.pushButton_3.clicked.connect(self.show_Create_Select_Window)
         self.ui.pushButton_4.clicked.connect(self.show_Create_Create_Window)
@@ -95,10 +96,10 @@ class View(QMainWindow):
         self.viewModel.update_agency_list.connect(self.update_agency_list)
         self.viewModel.update_routes_list_signal.connect(self.update_routes_list)
 
-        self.CreateSelect_Tab.ui.AgenciesTableView.clicked.connect(self.get_selected_agency_table_record)
+        self.ui.AgenciesTableView.clicked.connect(self.get_selected_agency_table_record)
         self.viewModel.update_selected_agency.connect(self.update_selected_agency)
 
-        self.CreateSelect_Tab.ui.TripsTableView.clicked.connect(self.get_changed_selected_record_trip)
+        self.ui.TripsTableView.clicked.connect(self.get_changed_selected_record_trip)
         self.viewModel.update_options_state_signal.connect(self.update_create_options_state)
 
         self.CreateCreate_Tab.ui.btnStart.clicked.connect(self.viewModel.start_create_table)
@@ -131,7 +132,7 @@ class View(QMainWindow):
         NotImplemented()
 
     def update_selected_agency(self, row):
-        self.CreateSelect_Tab.ui.AgenciesTableView.selectRow(row)
+        self.ui.AgenciesTableView.selectRow(row)
 
     def update_individualsorting(self, checked):
         self.CreateCreate_Tab.ui.UseIndividualSorting.setChecked(checked)
@@ -148,9 +149,9 @@ class View(QMainWindow):
         self.ui.create_import_page.ui.checkBox_savepickle.setEnabled(False)
 
     def get_selected_agency_table_record(self):
-        index = self.CreateSelect_Tab.ui.AgenciesTableView.selectedIndexes()[0]
+        index = self.ui.AgenciesTableView.selectedIndexes()[0]
         logging.debug(f"index {index}")
-        id_us = self.CreateSelect_Tab.ui.AgenciesTableView.model().wholeData(index)
+        id_us = self.ui.AgenciesTableView.model().wholeData(index)
         logging.debug(f"index {id_us["agency_id"]}")
         self.viewModel.on_changed_selected_record_agency(id_us)
 
@@ -257,8 +258,7 @@ class View(QMainWindow):
 
     def initialize_tabs(self):
         self.ui.main_view_stacked_widget.addWidget(self.ui.create_import_page)
-
-        self.ui.main_view_stacked_widget.addWidget(self.CreateSelect_Tab)
+        self.ui.main_view_stacked_widget.addWidget(self.ui.create_select_page)
         self.ui.main_view_stacked_widget.addWidget(self.CreateCreate_Tab)
         self.ui.main_view_stacked_widget.addWidget(self.DownloadGTFS_Tab)
         self.ui.main_view_stacked_widget.addWidget(self.CreateMainTab)
@@ -279,7 +279,7 @@ class View(QMainWindow):
 
     def show_Create_Select_Window(self):
         self.set_btn_checked(self.createTableSelect_btn)
-        self.ui.main_view_stacked_widget.setCurrentWidget(self.CreateSelect_Tab)
+        self.ui.main_view_stacked_widget.setCurrentWidget(self.ui.create_select_page)
 
     def show_Create_Create_Window(self):
         self.set_btn_checked(self.createTableCreate_btn)
@@ -339,7 +339,7 @@ class View(QMainWindow):
             self.viewModel.model.planer.select_data.week_day_options_list)
 
     def update_routes_list(self):
-        self.CreateSelect_Tab.ui.TripsTableView.setModel(
+        self.ui.TripsTableView.setModel(
             TableModel(self.viewModel.model.planer.select_data.df_selected_routes))
 
     def update_individualsorting_table(self):
@@ -349,7 +349,7 @@ class View(QMainWindow):
         # self.CreateCreate_Tab.ui.tableView_sorting_stops.populate()
 
     def update_agency_list(self):
-        self.CreateSelect_Tab.ui.AgenciesTableView.setModel(
+        self.ui.AgenciesTableView.setModel(
             TableModel(self.viewModel.model.planer.select_data.gtfs_data_frame_dto.Agencies))
         self.CreateCreate_Tab.ui.line_Selection_date_range.setText(self.viewModel.model.planer.analyze_data.date_range)
         self.CreateCreate_Tab.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
@@ -400,9 +400,9 @@ class View(QMainWindow):
             self.viewModel.on_changed_pickle_path(pickle_file_path)
 
     def get_changed_selected_record_trip(self):
-        index = self.CreateSelect_Tab.ui.TripsTableView.selectedIndexes()[2]
+        index = self.ui.TripsTableView.selectedIndexes()[2]
         logging.debug(f"index {index}")
-        id_us = self.CreateSelect_Tab.ui.TripsTableView.model().wholeData(index)
+        id_us = self.ui.TripsTableView.model().wholeData(index)
         logging.debug(f"id {id_us["route_short_name"]}")
         self.viewModel.on_changed_selected_record_trip(id_us)
 
@@ -411,8 +411,8 @@ class View(QMainWindow):
         self.ui.btnRestart.setEnabled(False)
         #self.ui.comboBox_display.setEnabled(True)
 
-        self.CreateSelect_Tab.ui.AgenciesTableView.clear()
-        self.CreateSelect_Tab.ui.TripsTableView.clear()
+        self.ui.AgenciesTableView.clear()
+        self.ui.TripsTableView.clear()
 
         self.CreateCreate_Tab.ui.btnStart.setEnabled(False)
         self.CreateCreate_Tab.ui.btnContinueCreate.setEnabled(False)

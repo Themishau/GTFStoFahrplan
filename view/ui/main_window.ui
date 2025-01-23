@@ -309,7 +309,7 @@ background-color: #ae636f;
               <string notr="true"/>
              </property>
              <property name="currentIndex">
-              <number>2</number>
+              <number>1</number>
              </property>
              <widget class="QWidget" name="page">
               <property name="geometry">
@@ -752,10 +752,26 @@ background-color:#f2ccae;
    border-radius: 10px;
    color:#fde1d6;
 }
+
+QTableView {
+	background-color: #F0FCF7;
+    border-radius: 10px;
+	padding: 5px 5px 5px 5px;
+	text-align: center;
+    color:#41312b;
+}
+
+QLabel {
+   border-radius: 10px;
+	padding: 5px 5px 5px 5px;
+	text-align: center;
+    font-weight: bold;
+    color:#41312b;
+}
 </string>
           </property>
           <property name="currentIndex">
-           <number>1</number>
+           <number>2</number>
           </property>
           <widget class="QWidget" name="general_information_page">
            <property name="maximumSize">
@@ -854,7 +870,7 @@ Ressources:
                 <number>0</number>
                </property>
                <item row="1" column="0">
-                <widget class="QTableView" name="tableView"/>
+                <widget class="Customtableview" name="tableView"/>
                </item>
                <item row="0" column="0">
                 <widget class="QLabel" name="label_2">
@@ -1119,6 +1135,99 @@ Ressources:
              <height>759</height>
             </size>
            </property>
+           <property name="styleSheet">
+            <string notr="true"/>
+           </property>
+           <widget class="QWidget" name="gridLayoutWidget_4">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>1681</width>
+              <height>711</height>
+             </rect>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_10">
+             <item row="0" column="0">
+              <layout class="QGridLayout" name="gridLayout_13">
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_5">
+                 <property name="font">
+                  <font>
+                   <family>Segoe UI</family>
+                   <pointsize>12</pointsize>
+                   <italic>false</italic>
+                   <bold>true</bold>
+                  </font>
+                 </property>
+                 <property name="layoutDirection">
+                  <enum>Qt::LayoutDirection::LeftToRight</enum>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true"/>
+                 </property>
+                 <property name="text">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Agencies&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QTableView" name="TripsTableView"/>
+               </item>
+               <item row="2" column="0">
+                <widget class="QTableView" name="AgenciesTableView"/>
+               </item>
+               <item row="1" column="1">
+                <widget class="QLabel" name="label_8">
+                 <property name="font">
+                  <font>
+                   <pointsize>12</pointsize>
+                   <italic>false</italic>
+                   <bold>true</bold>
+                  </font>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true"/>
+                 </property>
+                 <property name="text">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Trips&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="2">
+                <spacer name="horizontalSpacer_4">
+                 <property name="orientation">
+                  <enum>Qt::Orientation::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+             <item row="2" column="0">
+              <layout class="QGridLayout" name="gridLayout_12">
+               <item row="2" column="0">
+                <spacer name="horizontalSpacer_3">
+                 <property name="orientation">
+                  <enum>Qt::Orientation::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
           </widget>
           <widget class="QWidget" name="create_create_page">
            <property name="maximumSize">
@@ -1329,6 +1438,11 @@ border-radius: 1px;</string>
    <extends>QToolBox</extends>
    <header>view.Custom.AnimatedQToolBox</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>Customtableview</class>
+   <extends>QTableView</extends>
+   <header>view.Custom.custom_table_view</header>
   </customwidget>
  </customwidgets>
  <resources>

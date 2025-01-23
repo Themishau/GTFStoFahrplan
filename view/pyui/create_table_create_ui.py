@@ -10,7 +10,7 @@
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from view.Custom.custom_table_view import customTableView
+from view.Custom.custom_table_view import Customtableview
 
 
 class Ui_Form(object):
@@ -183,7 +183,7 @@ class Ui_Form(object):
         self.btnContinueCreate.setObjectName("btnContinueCreate")
         self.gridLayout_5.addWidget(self.btnContinueCreate, 10, 0, 1, 1)
         #self.tableView_sorting_stops = QtWidgets.QTableView(Form)
-        self.tableView_sorting_stops = customTableView()
+        self.tableView_sorting_stops = Customtableview()
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
