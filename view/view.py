@@ -9,9 +9,7 @@ from model.Enum.GTFSEnums import CreatePlanMode, DfRouteColumnEnum, DfAgencyColu
 from view.Custom.round_progress_bar import RoundProgress
 from view.Custom.select_table_view import TableModel
 from view.Custom.sort_table_view import TableModelSort
-from view.create_table_create import CreateTableCreate
 from view.download_gtfs import DownloadGTFS
-from view.general_window_information import GeneralInformation
 from view.pyui.ui_main_window import Ui_MainWindow
 
 logging.basicConfig(level=logging.DEBUG,
@@ -34,8 +32,6 @@ class View(QMainWindow):
 
         self.messageBox_model = QMessageBox()
 
-        self.CreateMainTab = GeneralInformation()
-        self.CreateCreate_Tab = CreateTableCreate()
         self.DownloadGTFS_Tab = DownloadGTFS()
         self.createTableImport_btn = self.ui.pushButton_2
         self.createTableSelect_btn = self.ui.pushButton_3
@@ -43,8 +39,10 @@ class View(QMainWindow):
         self.generalNavPush_btn = self.ui.pushButton_5
         self.downloadGTFSNavPush_btn = self.ui.pushButton_6
 
-        self.menu_btns_dict = {self.createTableCreate_btn: CreateTableCreate,
-                               self.generalNavPush_btn: GeneralInformation,
+        self.menu_btns_dict = {self.createTableImport_btn: self.ui.create_import_page,
+                               self.createTableSelect_btn: self.ui.create_select_page,
+                               self.createTableCreate_btn: self.ui.create_create_page,
+                               self.generalNavPush_btn: self.ui.general_information_page,
                                self.downloadGTFSNavPush_btn: DownloadGTFS}
 
         self.initialize_window()
@@ -102,25 +100,25 @@ class View(QMainWindow):
         self.ui.TripsTableView.clicked.connect(self.get_changed_selected_record_trip)
         self.viewModel.update_options_state_signal.connect(self.update_create_options_state)
 
-        self.CreateCreate_Tab.ui.btnStart.clicked.connect(self.viewModel.start_create_table)
+        self.ui.btnStart.clicked.connect(self.viewModel.start_create_table)
         self.viewModel.create_table_finshed.connect(self.update_create_table)
 
-        self.CreateCreate_Tab.ui.btnContinueCreate.clicked.connect(self.viewModel.create_table_continue)
+        self.ui.btnContinueCreate.clicked.connect(self.viewModel.create_table_continue)
 
-        self.CreateCreate_Tab.ui.btnStop.clicked.connect(self.viewModel.create_table_stop)
+        self.ui.btnStop.clicked.connect(self.viewModel.create_table_stop)
 
-        self.CreateCreate_Tab.ui.UseIndividualSorting.clicked.connect(self.viewModel.on_changed_individualsorting)
+        self.ui.UseIndividualSorting.clicked.connect(self.viewModel.on_changed_individualsorting)
         self.viewModel.update_individualsorting.connect(self.update_individualsorting)
 
-        self.CreateCreate_Tab.ui.listDatesWeekday.clicked.connect(self.get_selected_weekday)
+        self.ui.listDatesWeekday.clicked.connect(self.get_selected_weekday)
 
-        self.CreateCreate_Tab.ui.dateEdit.editingFinished.connect(self.handle_selected_date)
+        self.ui.dateEdit.editingFinished.connect(self.handle_selected_date)
         self.viewModel.update_select_data.connect(self.update_select_data)
 
-        self.CreateCreate_Tab.ui.comboBox.activated[int].connect(self.viewModel.on_changed_create_plan_mode)
+        self.ui.comboBox.activated[int].connect(self.viewModel.on_changed_create_plan_mode)
         self.viewModel.update_create_plan_mode.connect(self.update_create_plan_mode)
 
-        self.CreateCreate_Tab.ui.comboBox_direction.activated[int].connect(self.viewModel.on_changed_direction_mode)
+        self.ui.comboBox_direction.activated[int].connect(self.viewModel.on_changed_direction_mode)
         self.viewModel.update_direction_mode.connect(self.update_direction_mode)
 
         self.viewModel.set_up_create_tab_signal.connect(self.initialize_create_view_weekdaydate_option)
@@ -135,10 +133,10 @@ class View(QMainWindow):
         self.ui.AgenciesTableView.selectRow(row)
 
     def update_individualsorting(self, checked):
-        self.CreateCreate_Tab.ui.UseIndividualSorting.setChecked(checked)
+        self.ui.UseIndividualSorting.setChecked(checked)
 
     def update_select_data(self, data):
-        self.CreateCreate_Tab.ui.dateEdit.setDate(string_to_qdate(data))
+        self.ui.dateEdit.setDate(string_to_qdate(data))
 
     def update_importing_start(self):
         self.ui.create_import_page.ui.btnImport.setEnabled(False)
@@ -179,34 +177,34 @@ class View(QMainWindow):
             f'time format {self.viewModel.model.planer.create_settings_for_table_dto.timeformat}')
 
     def update_direction_mode(self, mode):
-        self.CreateCreate_Tab.ui.comboBox_direction.setCurrentText(mode)
+        self.ui.comboBox_direction.setCurrentText(mode)
 
     def update_create_plan_mode(self, mode):
-        self.CreateCreate_Tab.ui.comboBox.setCurrentText(mode)
+        self.ui.comboBox.setCurrentText(mode)
         if mode == CreatePlanMode.date.value:
-            self.CreateCreate_Tab.ui.listDatesWeekday.clear()
-            self.CreateCreate_Tab.ui.dateEdit.setDate(
+            self.ui.listDatesWeekday.clear()
+            self.ui.dateEdit.setDate(
                 string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
-            self.CreateCreate_Tab.ui.dateEdit.setEnabled(True)
-            self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(False)
+            self.ui.dateEdit.setEnabled(True)
+            self.ui.listDatesWeekday.setEnabled(False)
         elif mode == CreatePlanMode.weekday.value:
-            self.CreateCreate_Tab.ui.listDatesWeekday.addItems(
+            self.ui.listDatesWeekday.addItems(
                 self.viewModel.model.planer.select_data.week_day_options_list)
-            self.CreateCreate_Tab.ui.dateEdit.setEnabled(False)
-            self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(True)
+            self.ui.dateEdit.setEnabled(False)
+            self.ui.listDatesWeekday.setEnabled(True)
         elif mode == CreatePlanMode.umlauf_date.value:
-            self.CreateCreate_Tab.ui.listDatesWeekday.clear()
-            self.CreateCreate_Tab.ui.dateEdit.setDate(
+            self.ui.listDatesWeekday.clear()
+            self.ui.dateEdit.setDate(
                 string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
-            self.CreateCreate_Tab.ui.dateEdit.setEnabled(True)
-            self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(False)
-            self.CreateCreate_Tab.ui.comboBox_direction.setEnabled(False)
+            self.ui.dateEdit.setEnabled(True)
+            self.ui.listDatesWeekday.setEnabled(False)
+            self.ui.comboBox_direction.setEnabled(False)
         elif mode == CreatePlanMode.umlauf_weekday.value:
-            self.CreateCreate_Tab.ui.listDatesWeekday.addItems(
+            self.ui.listDatesWeekday.addItems(
                 self.viewModel.model.planer.select_data.week_day_options_list)
-            self.CreateCreate_Tab.ui.dateEdit.setEnabled(False)
-            self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(True)
-            self.CreateCreate_Tab.ui.comboBox_direction.setEnabled(False)
+            self.ui.dateEdit.setEnabled(False)
+            self.ui.listDatesWeekday.setEnabled(True)
+            self.ui.comboBox_direction.setEnabled(False)
 
     def update_create_options_state(self):
         self.ui.line_Selection_agency.setText(
@@ -259,9 +257,9 @@ class View(QMainWindow):
     def initialize_tabs(self):
         self.ui.main_view_stacked_widget.addWidget(self.ui.create_import_page)
         self.ui.main_view_stacked_widget.addWidget(self.ui.create_select_page)
-        self.ui.main_view_stacked_widget.addWidget(self.CreateCreate_Tab)
+        self.ui.main_view_stacked_widget.addWidget(self.ui.create_create_page)
         self.ui.main_view_stacked_widget.addWidget(self.DownloadGTFS_Tab)
-        self.ui.main_view_stacked_widget.addWidget(self.CreateMainTab)
+        self.ui.main_view_stacked_widget.addWidget(self.ui.general_information_page)
 
     def show_GTFSDownload_window(self):
         self.set_btn_checked(self.downloadGTFSNavPush_btn)
@@ -283,8 +281,7 @@ class View(QMainWindow):
 
     def show_Create_Create_Window(self):
         self.set_btn_checked(self.createTableCreate_btn)
-        self.ui.main_view_stacked_widget.setCurrentWidget(self.CreateCreate_Tab)
-        self.ui.main_view_stacked_widget.resize(500, 500)
+        self.ui.main_view_stacked_widget.setCurrentWidget(self.ui.create_create_page)
 
     def set_btn_checked(self, btn):
         for button in self.menu_btns_dict.keys():
@@ -299,43 +296,43 @@ class View(QMainWindow):
         self.messageBox_model.exec_()
 
     def initialize_create_base_option(self):
-        self.CreateCreate_Tab.ui.comboBox.setEnabled(True)
+        self.ui.comboBox.setEnabled(True)
         #self.ui.comboBox_display.setEnabled(True)
-        self.CreateCreate_Tab.ui.comboBox_direction.setEnabled(True)
-        self.CreateCreate_Tab.ui.btnStart.setEnabled(True)
+        self.ui.comboBox_direction.setEnabled(True)
+        self.ui.btnStart.setEnabled(True)
 
     def handle_update_weekdate_option_list(self, event):
         self.initialize_create_base_option()
-        self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(True)
+        self.ui.listDatesWeekday.setEnabled(True)
         self.sub_update_weekday_list()
 
     def initialize_create_view_weekdaydate_option(self):
         self.initialize_create_base_option()
-        self.CreateCreate_Tab.ui.listDatesWeekday.clear()
-        self.CreateCreate_Tab.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
-        self.CreateCreate_Tab.ui.dateEdit.setEnabled(True)
-        self.CreateCreate_Tab.ui.listDatesWeekday.setEnabled(False)
-        self.CreateCreate_Tab.ui.listDatesWeekday.addItems(
+        self.ui.listDatesWeekday.clear()
+        self.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
+        self.ui.dateEdit.setEnabled(True)
+        self.ui.listDatesWeekday.setEnabled(False)
+        self.ui.listDatesWeekday.addItems(
             self.viewModel.model.planer.select_data.week_day_options_list)
 
     def get_selected_weekday(self):
         self.viewModel.select_weekday_option(
-            self.CreateCreate_Tab.ui.listDatesWeekday.currentItem().text().split(',')[0])
+            self.ui.listDatesWeekday.currentItem().text().split(',')[0])
 
     def handle_selected_date(self):
-        date = self.CreateCreate_Tab.ui.dateEdit.date()
+        date = self.ui.dateEdit.date()
         self.viewModel.on_changed_selected_dates(date)
 
     def reset_weekdayDate(self):
-        self.CreateCreate_Tab.ui.comboBox.setEnabled(False)
+        self.ui.comboBox.setEnabled(False)
         #self.ui.comboBox_display.setEnabled(True)
-        self.CreateCreate_Tab.ui.comboBox_direction.setEnabled(False)
-        self.CreateCreate_Tab.ui.dateEdit.setEnabled(False)
-        self.CreateCreate_Tab.ui.listDatesWeekday.clear()
+        self.ui.comboBox_direction.setEnabled(False)
+        self.ui.dateEdit.setEnabled(False)
+        self.ui.listDatesWeekday.clear()
 
     def sub_update_weekday_list(self, ):
-        self.CreateCreate_Tab.ui.listDatesWeekday.clear()
-        self.CreateCreate_Tab.ui.listDatesWeekday.addItems(
+        self.ui.listDatesWeekday.clear()
+        self.ui.listDatesWeekday.addItems(
             self.viewModel.model.planer.select_data.week_day_options_list)
 
     def update_routes_list(self):
@@ -343,16 +340,16 @@ class View(QMainWindow):
             TableModel(self.viewModel.model.planer.select_data.df_selected_routes))
 
     def update_individualsorting_table(self):
-        self.CreateCreate_Tab.ui.tableView_sorting_stops.setModel(
+        self.ui.tableView_sorting_stops.setModel(
             TableModelSort(self.viewModel.model.planer.create_plan.plans.create_dataframe.FilteredStopNamesDataframe))
-        self.CreateCreate_Tab.ui.btnContinueCreate.setEnabled(True)
+        self.ui.btnContinueCreate.setEnabled(True)
         # self.CreateCreate_Tab.ui.tableView_sorting_stops.populate()
 
     def update_agency_list(self):
         self.ui.AgenciesTableView.setModel(
             TableModel(self.viewModel.model.planer.select_data.gtfs_data_frame_dto.Agencies))
-        self.CreateCreate_Tab.ui.line_Selection_date_range.setText(self.viewModel.model.planer.analyze_data.date_range)
-        self.CreateCreate_Tab.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
+        self.ui.line_Selection_date_range.setText(self.viewModel.model.planer.analyze_data.date_range)
+        self.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
         self.show_Create_Select_Window()
         # self.model.start_get_date_range()
         logging.debug("done with creating dfs")
@@ -414,12 +411,12 @@ class View(QMainWindow):
         self.ui.AgenciesTableView.clear()
         self.ui.TripsTableView.clear()
 
-        self.CreateCreate_Tab.ui.btnStart.setEnabled(False)
-        self.CreateCreate_Tab.ui.btnContinueCreate.setEnabled(False)
-        self.CreateCreate_Tab.ui.comboBox.setEnabled(False)
-        self.CreateCreate_Tab.ui.comboBox_direction.setEnabled(False)
-        self.CreateCreate_Tab.ui.UseIndividualSorting.setEnabled(False)
+        self.ui.btnStart.setEnabled(False)
+        self.ui.btnContinueCreate.setEnabled(False)
+        self.ui.comboBox.setEnabled(False)
+        self.ui.comboBox_direction.setEnabled(False)
+        self.ui.UseIndividualSorting.setEnabled(False)
 
-        self.CreateCreate_Tab.ui.listDatesWeekday.clear()
-        self.CreateCreate_Tab.ui.tableView_sorting_stops.clear()
+        self.ui.listDatesWeekday.clear()
+        self.ui.tableView_sorting_stops.clear()
         self.viewModel.model.planer.initilize_scheduler()
