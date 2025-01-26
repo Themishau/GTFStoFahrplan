@@ -132,6 +132,12 @@ class ImportData(QObject):
         self.progress = 100
         return gtfsDataFrameDto
 
+    def evaluate_imported_data(self):
+        missing_columns = []
+
+
+        return
+
     """ methods """
 
     def read_pickle_from_zip(self, zf, file_name):

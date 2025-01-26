@@ -158,6 +158,7 @@ class ImportDataFuncitonEnum(Enum):
 class ErrorMessageRessources(Enum):
     import_data_error = 'no data in imported_data.'
     no_import_object_generated = 'There has been an error while importing GTFS data.'
+    missing_import_object_generated = 'There are missing columns in imported data.'
     no_create_object_generated = 'There has been an error while creating file.'
     no_export_object_generated = 'There has been an error while exporting data to file.'
     error_in_SchedulePlaner_class = 'error_in_SchedulePlaner_class'

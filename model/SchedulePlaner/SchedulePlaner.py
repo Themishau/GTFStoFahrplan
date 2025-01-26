@@ -6,7 +6,7 @@ from PySide6.QtCore import Signal
 
 from model.Enum.GTFSEnums import *
 from ..Base.AnalyzeData import AnalyzeData
-from ..Base.CirclePlaner import CirclePlaner
+from model.SchedulePlaner.UmplaufPlaner.CirclePlaner import CirclePlaner
 from ..Base.CreatePlan import CreatePlan
 from ..Base.ExportPlan import ExportPlan
 from ..Base.ImportData import ImportData
@@ -122,16 +122,16 @@ class SchedulePlaner(QObject):
         self.export_plan.output_path = output_path
 
     def create_table(self) -> bool:
-        #try:
+        try:
             self.create_plan.create_table()
             self.export_plan.export_plan(self.create_settings_for_table_dto, self.create_plan.plans.create_dataframe)
             self.create_finished.emit(True)
             return True
-        #except AttributeError as e:
-           # self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
-           # return False
-        #except ValueError as e:
-           # self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
+        except AttributeError as e:
+           self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
+           return False
+        except ValueError as e:
+           self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
 
     def create_table_individual_sorting(self) -> bool:
         self.create_plan.create_table()
@@ -148,20 +148,20 @@ class SchedulePlaner(QObject):
             return False
 
     def create_umlaufplan(self):
-        #try:
-        self.create_plan.create_table()
-        self.initialize_cirle_planer()
-        self.circle_plan.CreateCirclePlan()
-        self.export_plan.export_circle_plan(self.create_settings_for_table_dto, self.circle_plan.plans)
-        self.create_finished.emit(True)
-        return True
+        try:
+            self.create_plan.create_table()
+            self.initialize_cirle_planer()
+            self.circle_plan.CreateCirclePlan()
+            self.export_plan.export_circle_plan(self.create_settings_for_table_dto, self.circle_plan.plans)
+            self.create_finished.emit(True)
+            return True
 
-        #except AttributeError as e:
-        #    self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
-        #    return False
-        #except ValueError as e:
-        #    self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
-        #    return False
+        except AttributeError as e:
+           self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
+           return False
+        except ValueError as e:
+           self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
+           return False
 
     def create_umlaufplan_continue(self):
         try:
@@ -173,17 +173,19 @@ class SchedulePlaner(QObject):
             return False
 
     def import_gtfs_data(self) -> bool:
-        #try:
+        try:
             self.gtfs_data_frame_dto = self.import_Data.import_gtfs()
+            # if self.import_Data.evaluate_imported_data():
+            #     self.error_occured.emit(ErrorMessageRessources.missing_import_object_generated.value)
 
             if self.gtfs_data_frame_dto is None:
                 self.error_occured.emit(ErrorMessageRessources.import_data_error.value)
                 return False
 
             self.import_finished.emit(True)
-        #except AttributeError as e:
-            #self.error_occured.emit(ErrorMessageRessources.no_import_object_generated.value)
-            #return False
+        except AttributeError as e:
+            self.error_occured.emit(ErrorMessageRessources.no_import_object_generated.value)
+            return False
 
     @property
     def progress(self):
