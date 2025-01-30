@@ -3,7 +3,7 @@ import logging
 import time
 
 from PySide6.QtCore import Signal, QObject
-
+import pandas as pd
 from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO
 from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
 
@@ -55,6 +55,10 @@ class SelectData(QObject):
                                  7: [7, 'Saturday'],
                                  8: [8, 'Sunday'],
                                  }
+
+        # Create DataFrame
+        self.weekday_options_df = pd.DataFrame(self.week_day_options)
+
         self.week_day_options_list = ['0,Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday',
                                    '1,Monday, Tuesday, Wednesday, Thursday, Friday',
                                    '2,Monday',
@@ -84,6 +88,7 @@ class SelectData(QObject):
         self.create_settings_for_table_dto.route = value
         self.create_settings_for_table_dto_changed.emit()
         self.data_selected.emit(value is not None)
+
     @property
     def selected_direction(self):
         return self._selected_direction
@@ -134,6 +139,17 @@ class SelectData(QObject):
     def selected_dates(self, value):
         self._selected_dates = value
         self.create_settings_for_table_dto.dates = value
+        self.create_settings_for_table_dto_changed.emit()
+        self.data_selected.emit(value is not None)
+
+    @property
+    def selected_weekday(self):
+        return self._selected_weekday
+
+    @selected_weekday.setter
+    def selected_weekday(self, value):
+        self._selected_weekday = value
+        self.create_settings_for_table_dto.weekday = value
         self.create_settings_for_table_dto_changed.emit()
         self.data_selected.emit(value is not None)
 

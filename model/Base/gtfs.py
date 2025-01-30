@@ -1167,8 +1167,6 @@ class gtfs(Publisher, Subscriber):
                              weekDayOption_sunday_df]
 
         self.weekcond_df = weekDayOptionList[int(self.selected_weekday)]
-        dummy_direction = 0
-
         inputVarService = [{'weekdayOption': int(self.selected_weekday)}]
         self.varTestService = pd.DataFrame(inputVarService).set_index('weekdayOption')
 

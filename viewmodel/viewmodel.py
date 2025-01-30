@@ -148,7 +148,9 @@ class ViewModel(QObject):
 
     def on_changed_selected_record_trip(self, id_us):
         self.model.planer.select_data.selected_route = id_us
-        logging.debug(f"{id_us["route_short_name"]}")
+
+    def on_changed_selected_weekday(self, id_us):
+        self.model.planer.select_data.selected_weekday = id_us
 
     def on_changed_selected_dates(self, selected_dates):
         # gtfs format uses "YYYYMMDD" as date format
@@ -161,12 +163,6 @@ class ViewModel(QObject):
     def create_table_stop(self):
         self.model.model_instance.cancel_async_operation()
 
-    @staticmethod
-    def find(name, path):
-        for root, dirs, files in os.walk(path):
-            if name in files:
-                return True
-
     def start_import_gtfs_data(self):
         if (self.find(self.model.planer.import_Data.input_path.split('/')[-1],
                       self.model.planer.import_Data.input_path.replace(
@@ -174,7 +170,6 @@ class ViewModel(QObject):
         ):
             self.model.start_function_async(ModelTriggerActionsEnum.planer_start_load_data.value)
             self.set_up_create_tab_signal.emit()
-            logging.debug("started import test")
         else:
             self.send_error_message(ErrorMessageRessources.error_load_data)
             return
@@ -192,13 +187,11 @@ class ViewModel(QObject):
     def on_create_plan_finished(self):
         self.create_table_finshed.emit()
 
-
-def get_current_time():
-    """ Helper function to get the current time in seconds. """
-    now = dt.datetime.now()
-    total_time = (now.hour * 3600) + (now.minute * 60) + now.second
-    return total_time
-
+    @staticmethod
+    def find(name, path):
+        for root, dirs, files in os.walk(path):
+            if name in files:
+                return True
 
 if __name__ == '__main__':
     logging.debug('no')

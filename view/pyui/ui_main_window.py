@@ -173,7 +173,7 @@ class Ui_MainWindow(object):
 "}\n"
 "\n"
 "#frame  {\n"
-"    border-right: 1px solid #1e1e1e;\n"
+"\n"
 "    border-style: solid;\n"
 "}\n"
 "\n"
@@ -252,7 +252,7 @@ class Ui_MainWindow(object):
         self.toolBox.setStyleSheet(u"")
         self.page = QWidget()
         self.page.setObjectName(u"page")
-        self.page.setGeometry(QRect(0, 0, 210, 336))
+        self.page.setGeometry(QRect(0, 0, 211, 336))
         sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
         sizePolicy2.setHorizontalStretch(0)
         sizePolicy2.setVerticalStretch(0)
@@ -276,7 +276,7 @@ class Ui_MainWindow(object):
         self.toolBox.addItem(self.page, icon, u"General")
         self.page_2 = QWidget()
         self.page_2.setObjectName(u"page_2")
-        self.page_2.setGeometry(QRect(0, 0, 210, 336))
+        self.page_2.setGeometry(QRect(0, 0, 211, 336))
         sizePolicy2.setHeightForWidth(self.page_2.sizePolicy().hasHeightForWidth())
         self.page_2.setSizePolicy(sizePolicy2)
         self.page_2.setStyleSheet(u"")
@@ -324,7 +324,7 @@ class Ui_MainWindow(object):
         self.toolBox.addItem(self.page_2, icon4, u"Create Table")
         self.page_3 = QWidget()
         self.page_3.setObjectName(u"page_3")
-        self.page_3.setGeometry(QRect(0, 0, 210, 336))
+        self.page_3.setGeometry(QRect(0, 0, 211, 336))
         sizePolicy2.setHeightForWidth(self.page_3.sizePolicy().hasHeightForWidth())
         self.page_3.setSizePolicy(sizePolicy2)
         self.gridLayout_2 = QGridLayout(self.page_3)
@@ -358,6 +358,11 @@ class Ui_MainWindow(object):
         sizePolicy3.setHeightForWidth(self.btnExit.sizePolicy().hasHeightForWidth())
         self.btnExit.setSizePolicy(sizePolicy3)
         self.btnExit.setMinimumSize(QSize(100, 40))
+        font3 = QFont()
+        font3.setPointSize(12)
+        font3.setBold(True)
+        font3.setItalic(False)
+        self.btnExit.setFont(font3)
         self.btnExit.setStyleSheet(u"")
 
         self.verticalLayout.addWidget(self.btnExit)
@@ -532,11 +537,11 @@ class Ui_MainWindow(object):
 
         self.plainTextEdit = QPlainTextEdit(self.gridLayoutWidget)
         self.plainTextEdit.setObjectName(u"plainTextEdit")
-        font3 = QFont()
-        font3.setFamilies([u"MS Reference Sans Serif"])
-        font3.setBold(True)
-        font3.setItalic(False)
-        self.plainTextEdit.setFont(font3)
+        font4 = QFont()
+        font4.setFamilies([u"MS Reference Sans Serif"])
+        font4.setBold(True)
+        font4.setItalic(False)
+        self.plainTextEdit.setFont(font4)
 
         self.gridLayout_7.addWidget(self.plainTextEdit, 0, 0, 1, 1)
 
@@ -571,11 +576,7 @@ class Ui_MainWindow(object):
         self.gridLayout_11.setObjectName(u"gridLayout_11")
         self.lineInputPath = QLineEdit(self.gridLayoutWidget_3)
         self.lineInputPath.setObjectName(u"lineInputPath")
-        font4 = QFont()
-        font4.setPointSize(12)
-        font4.setBold(True)
-        font4.setItalic(False)
-        self.lineInputPath.setFont(font4)
+        self.lineInputPath.setFont(font3)
         self.lineInputPath.setStyleSheet(u"")
         self.lineInputPath.setReadOnly(True)
 
@@ -584,7 +585,7 @@ class Ui_MainWindow(object):
         self.btnGetPickleFile = FadingButton(self.gridLayoutWidget_3)
         self.btnGetPickleFile.setObjectName(u"btnGetPickleFile")
         self.btnGetPickleFile.setEnabled(True)
-        self.btnGetPickleFile.setFont(font4)
+        self.btnGetPickleFile.setFont(font3)
         self.btnGetPickleFile.setStyleSheet(u"")
         self.btnGetPickleFile.setIcon(icon2)
 
@@ -592,7 +593,7 @@ class Ui_MainWindow(object):
 
         self.label_11 = QLabel(self.gridLayoutWidget_3)
         self.label_11.setObjectName(u"label_11")
-        self.label_11.setFont(font3)
+        self.label_11.setFont(font4)
         self.label_11.setStyleSheet(u"")
 
         self.gridLayout_11.addWidget(self.label_11, 0, 0, 1, 1)
@@ -600,7 +601,7 @@ class Ui_MainWindow(object):
         self.btnGetOutputDir = FadingButton(self.gridLayoutWidget_3)
         self.btnGetOutputDir.setObjectName(u"btnGetOutputDir")
         self.btnGetOutputDir.setEnabled(True)
-        self.btnGetOutputDir.setFont(font4)
+        self.btnGetOutputDir.setFont(font3)
         self.btnGetOutputDir.setStyleSheet(u"")
         self.btnGetOutputDir.setIcon(icon2)
 
@@ -608,7 +609,7 @@ class Ui_MainWindow(object):
 
         self.lineOutputPath = QLineEdit(self.gridLayoutWidget_3)
         self.lineOutputPath.setObjectName(u"lineOutputPath")
-        self.lineOutputPath.setFont(font4)
+        self.lineOutputPath.setFont(font3)
         self.lineOutputPath.setStyleSheet(u"")
         self.lineOutputPath.setReadOnly(True)
 
@@ -617,7 +618,7 @@ class Ui_MainWindow(object):
         self.btnGetFile = FadingButton(self.gridLayoutWidget_3)
         self.btnGetFile.setObjectName(u"btnGetFile")
         self.btnGetFile.setEnabled(True)
-        self.btnGetFile.setFont(font4)
+        self.btnGetFile.setFont(font3)
         self.btnGetFile.setStyleSheet(u"")
         self.btnGetFile.setIcon(icon2)
 
@@ -626,14 +627,14 @@ class Ui_MainWindow(object):
         self.btnImport = FadingButton(self.gridLayoutWidget_3)
         self.btnImport.setObjectName(u"btnImport")
         self.btnImport.setEnabled(True)
-        self.btnImport.setFont(font4)
+        self.btnImport.setFont(font3)
         self.btnImport.setStyleSheet(u"")
 
         self.gridLayout_11.addWidget(self.btnImport, 3, 0, 1, 1)
 
         self.picklesavename = QLineEdit(self.gridLayoutWidget_3)
         self.picklesavename.setObjectName(u"picklesavename")
-        self.picklesavename.setFont(font4)
+        self.picklesavename.setFont(font3)
         self.picklesavename.setStyleSheet(u"")
         self.picklesavename.setReadOnly(True)
 
@@ -641,7 +642,7 @@ class Ui_MainWindow(object):
 
         self.label_10 = QLabel(self.gridLayoutWidget_3)
         self.label_10.setObjectName(u"label_10")
-        self.label_10.setFont(font3)
+        self.label_10.setFont(font4)
         self.label_10.setStyleSheet(u"")
 
         self.gridLayout_11.addWidget(self.label_10, 1, 0, 1, 1)
@@ -659,7 +660,7 @@ class Ui_MainWindow(object):
         self.btnRestart = FadingButton(self.gridLayoutWidget_3)
         self.btnRestart.setObjectName(u"btnRestart")
         self.btnRestart.setEnabled(False)
-        self.btnRestart.setFont(font4)
+        self.btnRestart.setFont(font3)
         self.btnRestart.setStyleSheet(u"")
 
         self.gridLayout_11.addWidget(self.btnRestart, 4, 0, 1, 1)
@@ -700,7 +701,7 @@ class Ui_MainWindow(object):
 
         self.label_8 = QLabel(self.gridLayoutWidget_4)
         self.label_8.setObjectName(u"label_8")
-        self.label_8.setFont(font4)
+        self.label_8.setFont(font3)
         self.label_8.setStyleSheet(u"")
 
         self.gridLayout_13.addWidget(self.label_8, 1, 1, 1, 1)
@@ -788,7 +789,7 @@ class Ui_MainWindow(object):
         self.comboBox_direction.addItem("")
         self.comboBox_direction.setObjectName(u"comboBox_direction")
         self.comboBox_direction.setEnabled(False)
-        self.comboBox_direction.setFont(font4)
+        self.comboBox_direction.setFont(font3)
         self.comboBox_direction.setStyleSheet(u"")
 
         self.gridLayout_23.addWidget(self.comboBox_direction, 1, 0, 1, 1)
@@ -803,7 +804,7 @@ class Ui_MainWindow(object):
         self.btnStart = QPushButton(self.gridLayoutWidget_5)
         self.btnStart.setObjectName(u"btnStart")
         self.btnStart.setEnabled(False)
-        self.btnStart.setFont(font4)
+        self.btnStart.setFont(font3)
         self.btnStart.setStyleSheet(u"")
 
         self.gridLayout_23.addWidget(self.btnStart, 12, 0, 1, 1)
@@ -815,7 +816,7 @@ class Ui_MainWindow(object):
         self.comboBox.addItem("")
         self.comboBox.setObjectName(u"comboBox")
         self.comboBox.setEnabled(False)
-        self.comboBox.setFont(font4)
+        self.comboBox.setFont(font3)
         self.comboBox.setStyleSheet(u"")
 
         self.gridLayout_23.addWidget(self.comboBox, 1, 1, 1, 1)
@@ -823,7 +824,7 @@ class Ui_MainWindow(object):
         self.listDatesWeekday = QListWidget(self.gridLayoutWidget_5)
         self.listDatesWeekday.setObjectName(u"listDatesWeekday")
         self.listDatesWeekday.setEnabled(False)
-        self.listDatesWeekday.setFont(font4)
+        self.listDatesWeekday.setFont(font3)
         self.listDatesWeekday.setStyleSheet(u"")
         self.listDatesWeekday.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.listDatesWeekday.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -835,7 +836,7 @@ class Ui_MainWindow(object):
         self.btnStop = QPushButton(self.gridLayoutWidget_5)
         self.btnStop.setObjectName(u"btnStop")
         self.btnStop.setEnabled(False)
-        self.btnStop.setFont(font4)
+        self.btnStop.setFont(font3)
         self.btnStop.setStyleSheet(u"")
 
         self.gridLayout_23.addWidget(self.btnStop, 13, 0, 1, 1)
@@ -870,7 +871,7 @@ class Ui_MainWindow(object):
 
         self.label_12 = QLabel(self.gridLayoutWidget_5)
         self.label_12.setObjectName(u"label_12")
-        self.label_12.setFont(font4)
+        self.label_12.setFont(font3)
         self.label_12.setStyleSheet(u"")
 
         self.gridLayout_17.addWidget(self.label_12, 4, 0, 1, 1)
@@ -884,10 +885,85 @@ class Ui_MainWindow(object):
         self.download_page.setMaximumSize(QSize(1682, 759))
         self.gridLayoutWidget_2 = QWidget(self.download_page)
         self.gridLayoutWidget_2.setObjectName(u"gridLayoutWidget_2")
-        self.gridLayoutWidget_2.setGeometry(QRect(9, 19, 1661, 731))
+        self.gridLayoutWidget_2.setGeometry(QRect(-1, -1, 1681, 721))
         self.gridLayout_8 = QGridLayout(self.gridLayoutWidget_2)
         self.gridLayout_8.setObjectName(u"gridLayout_8")
         self.gridLayout_8.setContentsMargins(0, 0, 0, 0)
+        self.verticalSpacer_9 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.gridLayout_8.addItem(self.verticalSpacer_9, 0, 2, 1, 1)
+
+        self.gridLayout_16 = QGridLayout()
+        self.gridLayout_16.setObjectName(u"gridLayout_16")
+        self.tableView_2 = QTableView(self.gridLayoutWidget_2)
+        self.tableView_2.setObjectName(u"tableView_2")
+
+        self.gridLayout_16.addWidget(self.tableView_2, 0, 0, 1, 1)
+
+
+        self.gridLayout_8.addLayout(self.gridLayout_16, 1, 0, 1, 1)
+
+        self.horizontalSpacer_5 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.gridLayout_8.addItem(self.horizontalSpacer_5, 1, 2, 1, 1)
+
+        self.gridLayout_20 = QGridLayout()
+        self.gridLayout_20.setObjectName(u"gridLayout_20")
+        self.horizontalSpacer_6 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.gridLayout_20.addItem(self.horizontalSpacer_6, 0, 2, 1, 1)
+
+        self.lineInputPath_2 = QLineEdit(self.gridLayoutWidget_2)
+        self.lineInputPath_2.setObjectName(u"lineInputPath_2")
+        self.lineInputPath_2.setFont(font3)
+        self.lineInputPath_2.setStyleSheet(u"")
+
+        self.gridLayout_20.addWidget(self.lineInputPath_2, 1, 0, 1, 1)
+
+        self.verticalSpacer_6 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.gridLayout_20.addItem(self.verticalSpacer_6, 2, 0, 1, 1)
+
+        self.label_14 = QLabel(self.gridLayoutWidget_2)
+        self.label_14.setObjectName(u"label_14")
+        self.label_14.setFont(font4)
+        self.label_14.setStyleSheet(u"")
+
+        self.gridLayout_20.addWidget(self.label_14, 0, 0, 1, 1)
+
+        self.comboBox_display = QComboBox(self.gridLayoutWidget_2)
+        self.comboBox_display.addItem("")
+        self.comboBox_display.addItem("")
+        self.comboBox_display.setObjectName(u"comboBox_display")
+        self.comboBox_display.setEnabled(True)
+        self.comboBox_display.setFont(font3)
+        self.comboBox_display.setStyleSheet(u"")
+
+        self.gridLayout_20.addWidget(self.comboBox_display, 6, 0, 1, 1)
+
+        self.btnLoadOnlineData = QPushButton(self.gridLayoutWidget_2)
+        self.btnLoadOnlineData.setObjectName(u"btnLoadOnlineData")
+        self.btnLoadOnlineData.setEnabled(False)
+        self.btnLoadOnlineData.setFont(font3)
+        self.btnLoadOnlineData.setStyleSheet(u"")
+        icon7 = QIcon()
+        icon7.addFile(u":/newPrefix/icons/bootstrap-icons-1.10.3/cloud-download-fill.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.btnLoadOnlineData.setIcon(icon7)
+        self.btnLoadOnlineData.setIconSize(QSize(24, 24))
+
+        self.gridLayout_20.addWidget(self.btnLoadOnlineData, 6, 2, 1, 1)
+
+
+        self.gridLayout_8.addLayout(self.gridLayout_20, 0, 0, 1, 1)
+
+        self.btnDownloadSelected = QPushButton(self.gridLayoutWidget_2)
+        self.btnDownloadSelected.setObjectName(u"btnDownloadSelected")
+        self.btnDownloadSelected.setFont(font3)
+        self.btnDownloadSelected.setIcon(icon5)
+        self.btnDownloadSelected.setIconSize(QSize(24, 24))
+
+        self.gridLayout_8.addWidget(self.btnDownloadSelected, 1, 1, 1, 1)
+
         self.main_view_stacked_widget.addWidget(self.download_page)
 
         self.gridLayout_4.addWidget(self.main_view_stacked_widget, 1, 0, 1, 1)
@@ -994,13 +1070,13 @@ class Ui_MainWindow(object):
 
         self.progess_log = QGridLayout()
         self.progess_log.setObjectName(u"progess_log")
-        self.listView = QListView(self.bottom_info_widget)
-        self.listView.setObjectName(u"listView")
-        sizePolicy7.setHeightForWidth(self.listView.sizePolicy().hasHeightForWidth())
-        self.listView.setSizePolicy(sizePolicy7)
-        self.listView.setMaximumSize(QSize(500, 100))
+        self.progress_history_list_view = QListView(self.bottom_info_widget)
+        self.progress_history_list_view.setObjectName(u"progress_history_list_view")
+        sizePolicy7.setHeightForWidth(self.progress_history_list_view.sizePolicy().hasHeightForWidth())
+        self.progress_history_list_view.setSizePolicy(sizePolicy7)
+        self.progress_history_list_view.setMaximumSize(QSize(500, 100))
 
-        self.progess_log.addWidget(self.listView, 0, 0, 1, 1)
+        self.progess_log.addWidget(self.progress_history_list_view, 0, 0, 1, 1)
 
 
         self.info_widget.addLayout(self.progess_log, 2, 2, 1, 1)
@@ -1026,7 +1102,7 @@ class Ui_MainWindow(object):
         self.pushButton.toggled.connect(self.menu_widget.setHidden)
 
         self.toolBox.setCurrentIndex(2)
-        self.main_view_stacked_widget.setCurrentIndex(3)
+        self.main_view_stacked_widget.setCurrentIndex(4)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -1101,6 +1177,14 @@ class Ui_MainWindow(object):
         self.btnStop.setText(QCoreApplication.translate("MainWindow", u"Stop", None))
         self.btnContinueCreate.setText(QCoreApplication.translate("MainWindow", u"Continue Creating Table", None))
         self.label_12.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Mode Settings</span></p></body></html>", None))
+        self.lineInputPath_2.setText("")
+        self.lineInputPath_2.setPlaceholderText(QCoreApplication.translate("MainWindow", u"C:/Tmp/", None))
+        self.label_14.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Save Location</span></p></body></html>", None))
+        self.comboBox_display.setItemText(0, QCoreApplication.translate("MainWindow", u"opendata.ruhr", None))
+        self.comboBox_display.setItemText(1, QCoreApplication.translate("MainWindow", u"opendata.vbb", None))
+
+        self.btnLoadOnlineData.setText(QCoreApplication.translate("MainWindow", u"Load Online Data", None))
+        self.btnDownloadSelected.setText(QCoreApplication.translate("MainWindow", u"Download Selected Data", None))
         self.label_progress.setText(QCoreApplication.translate("MainWindow", u"Progress", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"current Progress: ", None))

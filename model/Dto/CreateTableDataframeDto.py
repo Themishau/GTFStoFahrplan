@@ -3,6 +3,7 @@ class CreateTableDataframeDto:
         self.Header = None
         self.Direction = None
         self.RequestedDates = None
+        self.RequestedWeekdays = None
         self.SelectedRoute = None
         self.SelectedAgency = None
         self.FahrplanDates = None

@@ -167,3 +167,23 @@ class ErrorMessageRessources(Enum):
 
 class InfoMessageRessources(Enum):
     export_complete = 'export completed.'
+
+class Weekday(Enum):
+    MONDAY = "Monday"
+    TUESDAY = "Tuesday"
+    WEDNESDAY = "Wednesday"
+    THURSDAY = "Thursday"
+    FRIDAY = "Friday"
+    SATURDAY = "Saturday"
+    SUNDAY = "Sunday"
+
+    # WEEKEND category
+    WEEKEND = SATURDAY | SUNDAY
+
+    @classmethod
+    def is_weekday(cls, day):
+        return isinstance(day, Weekday) and day not in cls.WEEKEND
+
+    @classmethod
+    def is_weekend(cls, day):
+        return isinstance(day, Weekday) and day in cls.WEEKEND

@@ -9,7 +9,6 @@ from model.Enum.GTFSEnums import CreatePlanMode, DfRouteColumnEnum, DfAgencyColu
 from view.Custom.round_progress_bar import RoundProgress
 from view.Custom.select_table_view import TableModel
 from view.Custom.sort_table_view import TableModelSort
-from view.download_gtfs import DownloadGTFS
 from view.pyui.ui_main_window import Ui_MainWindow
 
 logging.basicConfig(level=logging.DEBUG,
@@ -32,7 +31,6 @@ class View(QMainWindow):
 
         self.messageBox_model = QMessageBox()
 
-        self.DownloadGTFS_Tab = DownloadGTFS()
         self.createTableImport_btn = self.ui.pushButton_2
         self.createTableSelect_btn = self.ui.pushButton_3
         self.createTableCreate_btn = self.ui.pushButton_4
@@ -43,7 +41,7 @@ class View(QMainWindow):
                                self.createTableSelect_btn: self.ui.create_select_page,
                                self.createTableCreate_btn: self.ui.create_create_page,
                                self.generalNavPush_btn: self.ui.general_information_page,
-                               self.downloadGTFSNavPush_btn: DownloadGTFS}
+                               self.downloadGTFSNavPush_btn: self.ui.download_page}
 
         self.initialize_window()
         self.initialize_modified_progress_bar()
@@ -95,9 +93,9 @@ class View(QMainWindow):
         self.viewModel.update_routes_list_signal.connect(self.update_routes_list)
 
         self.ui.AgenciesTableView.clicked.connect(self.get_selected_agency_table_record)
+        self.ui.TripsTableView.clicked.connect(self.get_changed_selected_record_trip)
         self.viewModel.update_selected_agency.connect(self.update_selected_agency)
 
-        self.ui.TripsTableView.clicked.connect(self.get_changed_selected_record_trip)
         self.viewModel.update_options_state_signal.connect(self.update_create_options_state)
 
         self.ui.btnStart.clicked.connect(self.viewModel.start_create_table)
@@ -110,7 +108,7 @@ class View(QMainWindow):
         self.ui.UseIndividualSorting.clicked.connect(self.viewModel.on_changed_individualsorting)
         self.viewModel.update_individualsorting.connect(self.update_individualsorting)
 
-        self.ui.listDatesWeekday.clicked.connect(self.get_selected_weekday)
+        self.ui.listDatesWeekday.clicked.connect(self.get_changed_selected_weekday)
 
         self.ui.dateEdit.editingFinished.connect(self.handle_selected_date)
         self.viewModel.update_select_data.connect(self.update_select_data)
@@ -258,12 +256,12 @@ class View(QMainWindow):
         self.ui.main_view_stacked_widget.addWidget(self.ui.create_import_page)
         self.ui.main_view_stacked_widget.addWidget(self.ui.create_select_page)
         self.ui.main_view_stacked_widget.addWidget(self.ui.create_create_page)
-        self.ui.main_view_stacked_widget.addWidget(self.DownloadGTFS_Tab)
+        self.ui.main_view_stacked_widget.addWidget(self.ui.download_page)
         self.ui.main_view_stacked_widget.addWidget(self.ui.general_information_page)
 
     def show_GTFSDownload_window(self):
         self.set_btn_checked(self.downloadGTFSNavPush_btn)
-        self.ui.main_view_stacked_widget.setCurrentWidget(self.DownloadGTFS_Tab)
+        self.ui.main_view_stacked_widget.setCurrentWidget(self.ui.download_page)
 
     def show_home_window(self):
         self.set_btn_checked(self.generalNavPush_btn)
@@ -314,10 +312,6 @@ class View(QMainWindow):
         self.ui.listDatesWeekday.setEnabled(False)
         self.ui.listDatesWeekday.addItems(
             self.viewModel.model.planer.select_data.week_day_options_list)
-
-    def get_selected_weekday(self):
-        self.viewModel.select_weekday_option(
-            self.ui.listDatesWeekday.currentItem().text().split(',')[0])
 
     def handle_selected_date(self):
         date = self.ui.dateEdit.date()
@@ -402,6 +396,13 @@ class View(QMainWindow):
         id_us = self.ui.TripsTableView.model().wholeData(index)
         logging.debug(f"id {id_us["route_short_name"]}")
         self.viewModel.on_changed_selected_record_trip(id_us)
+
+    def get_changed_selected_weekday(self):
+        index = self.ui.listDatesWeekday.selectedIndexes()[2]
+        logging.debug(f"index {index}")
+        id_us = self.ui.listDatesWeekday.model().wholeData(index)
+        logging.debug(f"id {id_us["route_short_name"]}")
+        self.viewModel.on_changed_selected_weekday(id_us)
 
     def reset_view(self):
         self.ui.btnImport.setEnabled(True)
