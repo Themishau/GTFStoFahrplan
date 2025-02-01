@@ -247,8 +247,9 @@ class View(QMainWindow):
         # add the modified progress ui element
         self.ui.progressBar = RoundProgress()
         self.ui.progressBar.value = 0
+        self.ui.progressBar.setMinimumSize(self.ui.progressBar.width, self.ui.progressBar.height)
         #self.ui.progress_widget.addWidget(self.ui.label_progress, 0, 1, 1, 1, Qt.AlignHCenter | Qt.AlignVCenter)
-        #self.ui.progress_widget.addWidget(self.progressRound, 1, 1, 1, 1, Qt.AlignHCenter | Qt.AlignVCenter)
+        self.ui.progress_widget.addWidget(self.ui.progressBar, 1, 1, 1, 1, Qt.AlignHCenter | Qt.AlignVCenter)
 
 
     def initialize_tabs(self):

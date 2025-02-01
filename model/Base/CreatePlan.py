@@ -32,11 +32,24 @@ class CreatePlan(QObject):
         """ visual internal property """
         self.progress = progress
 
-        self.weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-        self.weekdays_df = pd.DataFrame({
+        self.weekend = ['Saturday', 'Sunday']
+        self.weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+        self.days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+
+        # Create DataFrames with category information
+        self.df_all = pd.DataFrame(self.days, columns=['day']).assign(category='All Days')
+        self.df_weekend = pd.DataFrame(self.weekend, columns=['day']).assign(category='Weekend')
+        self.df_weekdays = pd.DataFrame(self.weekdays, columns=['day']).assign(category='Weekdays')
+        self.df_weekdays_only = pd.DataFrame({
             'day': self.weekdays,
             'category': [f'{day} only' for day in self.weekdays]  # Create unique category for each day
         })
+        self.weekdays_df = pd.concat([
+            self.df_all,
+            self.df_weekend,
+            self.df_weekdays,
+            self.df_weekdays_only
+        ])
 
         self.weekDayOptionsList = ['0,Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday',
                                    '1,Monday, Tuesday, Wednesday, Thursday, Friday',
