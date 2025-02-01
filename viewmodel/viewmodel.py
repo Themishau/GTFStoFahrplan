@@ -20,7 +20,7 @@ class ViewModel(QObject):
     output_file_path = Signal(str)
     export_plan_time_format = Signal(str)
     reset_view = Signal()
-    update_create_plan_mode = Signal(str)
+    update_create_plan_mode = Signal(int)
     update_direction_mode = Signal(str)
     update_pickle_export_checked = Signal(bool)
     update_agency_list = Signal()

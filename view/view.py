@@ -58,9 +58,15 @@ class View(QMainWindow):
         self.ui.AgenciesTableView.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.ui.AgenciesTableView.setSelectionMode(QAbstractItemView.SingleSelection)
         self.ui.AgenciesTableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
         self.ui.TripsTableView.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.ui.TripsTableView.setSelectionMode(QAbstractItemView.SingleSelection)
         self.ui.TripsTableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
+        self.ui.listDatesWeekday.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.ui.listDatesWeekday.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.ui.listDatesWeekday.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
         self.ui.pushButton_2.clicked.connect(self.show_Create_Import_Window)
         self.ui.pushButton_3.clicked.connect(self.show_Create_Select_Window)
         self.ui.pushButton_4.clicked.connect(self.show_Create_Create_Window)
@@ -178,28 +184,22 @@ class View(QMainWindow):
         self.ui.comboBox_direction.setCurrentText(mode)
 
     def update_create_plan_mode(self, mode):
-        self.ui.comboBox.setCurrentText(mode)
+        #self.ui.comboBox.setCurrentText(mode)
         if mode == CreatePlanMode.date.value:
-            self.ui.listDatesWeekday.clear()
             self.ui.dateEdit.setDate(
                 string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
             self.ui.dateEdit.setEnabled(True)
             self.ui.listDatesWeekday.setEnabled(False)
         elif mode == CreatePlanMode.weekday.value:
-            self.ui.listDatesWeekday.addItems(
-                self.viewModel.model.planer.select_data.week_day_options_list)
             self.ui.dateEdit.setEnabled(False)
             self.ui.listDatesWeekday.setEnabled(True)
         elif mode == CreatePlanMode.umlauf_date.value:
-            self.ui.listDatesWeekday.clear()
             self.ui.dateEdit.setDate(
                 string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
             self.ui.dateEdit.setEnabled(True)
             self.ui.listDatesWeekday.setEnabled(False)
             self.ui.comboBox_direction.setEnabled(False)
         elif mode == CreatePlanMode.umlauf_weekday.value:
-            self.ui.listDatesWeekday.addItems(
-                self.viewModel.model.planer.select_data.week_day_options_list)
             self.ui.dateEdit.setEnabled(False)
             self.ui.listDatesWeekday.setEnabled(True)
             self.ui.comboBox_direction.setEnabled(False)
@@ -240,16 +240,15 @@ class View(QMainWindow):
         self.move(qr.topLeft())
 
     def update_progress_bar(self, value):
-        self.progressRound.set_value(value)
+        self.ui.progressBar.set_value(value)
         return True
 
     def initialize_modified_progress_bar(self):
         # add the modified progress ui element
-        self.progressRound = RoundProgress()
-        self.progressRound.value = 0
-        self.progressRound.setMinimumSize(self.progressRound.width, self.progressRound.height)
-        self.ui.progress_widget.addWidget(self.ui.label_progress, 0, 1, 1, 1, Qt.AlignHCenter | Qt.AlignVCenter)
-        self.ui.progress_widget.addWidget(self.progressRound, 1, 1, 1, 1, Qt.AlignHCenter | Qt.AlignVCenter)
+        self.ui.progressBar = RoundProgress()
+        self.ui.progressBar.value = 0
+        #self.ui.progress_widget.addWidget(self.ui.label_progress, 0, 1, 1, 1, Qt.AlignHCenter | Qt.AlignVCenter)
+        #self.ui.progress_widget.addWidget(self.progressRound, 1, 1, 1, 1, Qt.AlignHCenter | Qt.AlignVCenter)
 
 
     def initialize_tabs(self):
@@ -301,17 +300,13 @@ class View(QMainWindow):
 
     def handle_update_weekdate_option_list(self, event):
         self.initialize_create_base_option()
-        self.ui.listDatesWeekday.setEnabled(True)
-        self.sub_update_weekday_list()
+        self.update_weekday_option_table()
 
     def initialize_create_view_weekdaydate_option(self):
         self.initialize_create_base_option()
-        self.ui.listDatesWeekday.clear()
         self.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
         self.ui.dateEdit.setEnabled(True)
-        self.ui.listDatesWeekday.setEnabled(False)
-        self.ui.listDatesWeekday.addItems(
-            self.viewModel.model.planer.select_data.week_day_options_list)
+        self.update_weekday_option_table()
 
     def handle_selected_date(self):
         date = self.ui.dateEdit.date()
@@ -322,12 +317,9 @@ class View(QMainWindow):
         #self.ui.comboBox_display.setEnabled(True)
         self.ui.comboBox_direction.setEnabled(False)
         self.ui.dateEdit.setEnabled(False)
-        self.ui.listDatesWeekday.clear()
 
-    def sub_update_weekday_list(self, ):
-        self.ui.listDatesWeekday.clear()
-        self.ui.listDatesWeekday.addItems(
-            self.viewModel.model.planer.select_data.week_day_options_list)
+    def update_weekday_option_table(self, ):
+        self.ui.listDatesWeekday.setModel(TableModel(self.viewModel.model.planer.create_plan.weekdays_df))
 
     def update_routes_list(self):
         self.ui.TripsTableView.setModel(
@@ -398,19 +390,16 @@ class View(QMainWindow):
         self.viewModel.on_changed_selected_record_trip(id_us)
 
     def get_changed_selected_weekday(self):
-        index = self.ui.listDatesWeekday.selectedIndexes()[2]
+        index = self.ui.listDatesWeekday.selectedIndexes()[0]
         logging.debug(f"index {index}")
         id_us = self.ui.listDatesWeekday.model().wholeData(index)
-        logging.debug(f"id {id_us["route_short_name"]}")
+        logging.debug(f"id {id_us["day"]}")
         self.viewModel.on_changed_selected_weekday(id_us)
 
     def reset_view(self):
         self.ui.btnImport.setEnabled(True)
         self.ui.btnRestart.setEnabled(False)
         #self.ui.comboBox_display.setEnabled(True)
-
-        self.ui.AgenciesTableView.clear()
-        self.ui.TripsTableView.clear()
 
         self.ui.btnStart.setEnabled(False)
         self.ui.btnContinueCreate.setEnabled(False)

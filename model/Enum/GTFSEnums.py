@@ -178,7 +178,7 @@ class Weekday(Enum):
     SUNDAY = "Sunday"
 
     # WEEKEND category
-    WEEKEND = SATURDAY | SUNDAY
+    WEEKEND = SATURDAY or SUNDAY
 
     @classmethod
     def is_weekday(cls, day):

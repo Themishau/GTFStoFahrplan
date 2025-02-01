@@ -18,10 +18,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboBox,
     QDateEdit, QFrame, QGridLayout, QHBoxLayout,
     QHeaderView, QLabel, QLayout, QLineEdit,
-    QListView, QListWidget, QListWidgetItem, QMainWindow,
-    QPlainTextEdit, QPushButton, QSizePolicy, QSpacerItem,
-    QSplitter, QStackedWidget, QTabWidget, QTableView,
-    QVBoxLayout, QWidget)
+    QListView, QMainWindow, QPlainTextEdit, QPushButton,
+    QSizePolicy, QSpacerItem, QSplitter, QStackedWidget,
+    QTabWidget, QTableView, QVBoxLayout, QWidget)
 
 from view.Custom.AnimatedQToolBox import AnimatedQToolBox
 from view.Custom.FadingButton import FadingButton
@@ -821,7 +820,15 @@ class Ui_MainWindow(object):
 
         self.gridLayout_23.addWidget(self.comboBox, 1, 1, 1, 1)
 
-        self.listDatesWeekday = QListWidget(self.gridLayoutWidget_5)
+        self.btnStop = QPushButton(self.gridLayoutWidget_5)
+        self.btnStop.setObjectName(u"btnStop")
+        self.btnStop.setEnabled(False)
+        self.btnStop.setFont(font3)
+        self.btnStop.setStyleSheet(u"")
+
+        self.gridLayout_23.addWidget(self.btnStop, 13, 0, 1, 1)
+
+        self.listDatesWeekday = QTableView(self.gridLayoutWidget_5)
         self.listDatesWeekday.setObjectName(u"listDatesWeekday")
         self.listDatesWeekday.setEnabled(False)
         self.listDatesWeekday.setFont(font3)
@@ -832,14 +839,6 @@ class Ui_MainWindow(object):
         self.listDatesWeekday.setHorizontalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
 
         self.gridLayout_23.addWidget(self.listDatesWeekday, 11, 1, 1, 1)
-
-        self.btnStop = QPushButton(self.gridLayoutWidget_5)
-        self.btnStop.setObjectName(u"btnStop")
-        self.btnStop.setEnabled(False)
-        self.btnStop.setFont(font3)
-        self.btnStop.setStyleSheet(u"")
-
-        self.gridLayout_23.addWidget(self.btnStop, 13, 0, 1, 1)
 
 
         self.gridLayout_17.addLayout(self.gridLayout_23, 5, 0, 1, 1)
@@ -941,7 +940,7 @@ class Ui_MainWindow(object):
 
         self.gridLayout_20.addWidget(self.comboBox_display, 6, 0, 1, 1)
 
-        self.btnLoadOnlineData = QPushButton(self.gridLayoutWidget_2)
+        self.btnLoadOnlineData = FadingButton(self.gridLayoutWidget_2)
         self.btnLoadOnlineData.setObjectName(u"btnLoadOnlineData")
         self.btnLoadOnlineData.setEnabled(False)
         self.btnLoadOnlineData.setFont(font3)
@@ -956,7 +955,7 @@ class Ui_MainWindow(object):
 
         self.gridLayout_8.addLayout(self.gridLayout_20, 0, 0, 1, 1)
 
-        self.btnDownloadSelected = QPushButton(self.gridLayoutWidget_2)
+        self.btnDownloadSelected = FadingButton(self.gridLayoutWidget_2)
         self.btnDownloadSelected.setObjectName(u"btnDownloadSelected")
         self.btnDownloadSelected.setFont(font3)
         self.btnDownloadSelected.setIcon(icon5)
@@ -998,7 +997,7 @@ class Ui_MainWindow(object):
 
         self.progress_widget.addWidget(self.label, 1, 0, 1, 1)
 
-        self.progressBar = RoundProgress(self.progress_box)
+        self.progressBar = RoundProgress()
         self.progressBar.setObjectName(u"progressBar")
 
         self.progress_widget.addWidget(self.progressBar, 1, 1, 1, 1)

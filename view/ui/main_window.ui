@@ -1488,8 +1488,28 @@ Ressources:
                    </item>
                   </widget>
                  </item>
+                 <item row="13" column="0">
+                  <widget class="QPushButton" name="btnStop">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <pointsize>12</pointsize>
+                     <italic>false</italic>
+                     <bold>true</bold>
+                    </font>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true"/>
+                   </property>
+                   <property name="text">
+                    <string>Stop</string>
+                   </property>
+                  </widget>
+                 </item>
                  <item row="11" column="1">
-                  <widget class="QListWidget" name="listDatesWeekday">
+                  <widget class="QTableView" name="listDatesWeekday">
                    <property name="enabled">
                     <bool>false</bool>
                    </property>
@@ -1514,26 +1534,6 @@ Ressources:
                    </property>
                    <property name="horizontalScrollMode">
                     <enum>QAbstractItemView::ScrollMode::ScrollPerPixel</enum>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="13" column="0">
-                  <widget class="QPushButton" name="btnStop">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="font">
-                    <font>
-                     <pointsize>12</pointsize>
-                     <italic>false</italic>
-                     <bold>true</bold>
-                    </font>
-                   </property>
-                   <property name="styleSheet">
-                    <string notr="true"/>
-                   </property>
-                   <property name="text">
-                    <string>Stop</string>
                    </property>
                   </widget>
                  </item>
@@ -1741,7 +1741,7 @@ Ressources:
                 </widget>
                </item>
                <item row="6" column="2">
-                <widget class="QPushButton" name="btnLoadOnlineData">
+                <widget class="FadingButton" name="btnLoadOnlineData">
                  <property name="enabled">
                   <bool>false</bool>
                  </property>
@@ -1773,7 +1773,7 @@ Ressources:
               </layout>
              </item>
              <item row="1" column="1">
-              <widget class="QPushButton" name="btnDownloadSelected">
+              <widget class="FadingButton" name="btnDownloadSelected">
                <property name="font">
                 <font>
                  <pointsize>12</pointsize>

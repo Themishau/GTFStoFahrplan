@@ -4,7 +4,7 @@ import copy
 import logging
 
 from PySide6.QtCore import Signal, QObject
-
+import pandas as pd
 from model.Enum.GTFSEnums import CreatePlanMode
 from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO
 from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
@@ -31,6 +31,12 @@ class CreatePlan(QObject):
 
         """ visual internal property """
         self.progress = progress
+
+        self.weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+        self.weekdays_df = pd.DataFrame({
+            'day': self.weekdays,
+            'category': [f'{day} only' for day in self.weekdays]  # Create unique category for each day
+        })
 
         self.weekDayOptionsList = ['0,Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday',
                                    '1,Monday, Tuesday, Wednesday, Thursday, Friday',

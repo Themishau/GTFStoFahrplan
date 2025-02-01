@@ -26,15 +26,16 @@ class UmlaufPlaner(QObject):
         self.gtfs_data_frame_dto = None
         self.df_filtered_stop_names = None
 
-        self.weekDayOptionsList = ['0,Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday',
-                                   '1,Monday, Tuesday, Wednesday, Thursday, Friday',
-                                   '2,Monday',
-                                   '3,Tuesday',
-                                   '4,Wednesday',
-                                   '5,Thursday',
-                                   '6,Friday',
-                                   '7,Saturday',
-                                   '8,Sunday']
+
+        self.weekDayOptionsList = ['Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday',
+                                   'Monday, Tuesday, Wednesday, Thursday, Friday',
+                                   'Monday',
+                                   'Tuesday',
+                                   'Wednesday',
+                                   'Thursday',
+                                   'Friday',
+                                   'Saturday',
+                                   'Sunday']
 
     @property
     def progress(self):
