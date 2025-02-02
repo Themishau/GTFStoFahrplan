@@ -31,12 +31,24 @@ class GtfsDfNames(Enum):
     Routes = 'Routes'
     Trips = 'Trips'
     Stoptimes = 'Stoptimes'
-    Stops = 'Stops ='
+    Stops = 'Stops'
     Calendarweeks = 'Calendarweeks'
     Calendardates = 'Calendardates'
     Agencies = 'Agencies'
     Feedinfos = 'Feedinfos'
 
+class GtfsProcessingStep(Enum):
+    Stops = (20, "Tmp/dfStops.pkl")
+    Stoptimes = (30, "Tmp/dfStopTimes.pkl")
+    Trips = (40, "Tmp/dfTrips.pkl")
+    Calendarweeks = (50, "Tmp/dfWeek.pkl")
+    Calendardates = (60, "Tmp/dfDates.pkl")
+    Routes = (70, "Tmp/dfRoutes.pkl")
+    Agencies = (80, "Tmp/dfagency.pkl")
+
+    def __init__(self, progress_value, file_path):
+        self.progress_value = progress_value
+        self.file_path = file_path
 
 class DfStopColumnEnum(Enum):
     stop_id = 'stop_id'

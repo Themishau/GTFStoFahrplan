@@ -39,6 +39,10 @@ class ImportData(QObject):
         """ visual internal property """
         self.progress = progress
         self.current_process_string = ""
+        self.missing_columns_in_gtfs_file = pd.DataFrame({
+            'table': [],
+            'column': []
+        })
 
     @property
     def reset_import(self):
@@ -117,11 +121,21 @@ class ImportData(QObject):
             self.reset_data_cause_of_error()
             return None
 
+name or not name that is the question
         imported_data = self.read_gtfs_data()
-        if imported_data.get(GtfsDfNames.Feedinfos) is not None:
-            gtfsDataFrameDto = GtfsDataFrameDto(imported_data[GtfsDfNames.Routes], imported_data[GtfsDfNames.Trips], imported_data[GtfsDfNames.Stoptimes], imported_data[GtfsDfNames.Stops], imported_data[GtfsDfNames.Calendarweeks], imported_data[GtfsDfNames.Calendardates], imported_data[GtfsDfNames.Agencies], imported_data[GtfsDfNames.Feedinfos])
+        if imported_data.get(GtfsDfNames.Feedinfos.name) is not None:
+            gtfsDataFrameDto = GtfsDataFrameDto(imported_data[GtfsDfNames.Routes], imported_data[GtfsDfNames.Trips],
+                                                imported_data[GtfsDfNames.Stoptimes], imported_data[GtfsDfNames.Stops],
+                                                imported_data[GtfsDfNames.Calendarweeks],
+                                                imported_data[GtfsDfNames.Calendardates],
+                                                imported_data[GtfsDfNames.Agencies],
+                                                imported_data[GtfsDfNames.Feedinfos])
         else:
-            gtfsDataFrameDto = GtfsDataFrameDto(imported_data[GtfsDfNames.Routes], imported_data[GtfsDfNames.Trips], imported_data[GtfsDfNames.Stoptimes], imported_data[GtfsDfNames.Stops], imported_data[GtfsDfNames.Calendarweeks], imported_data[GtfsDfNames.Calendardates], imported_data[GtfsDfNames.Agencies], None)
+            gtfsDataFrameDto = GtfsDataFrameDto(imported_data[GtfsDfNames.Routes], imported_data[GtfsDfNames.Trips],
+                                                imported_data[GtfsDfNames.Stoptimes], imported_data[GtfsDfNames.Stops],
+                                                imported_data[GtfsDfNames.Calendarweeks],
+                                                imported_data[GtfsDfNames.Calendardates],
+                                                imported_data[GtfsDfNames.Agencies], None)
 
         if imported_data is None:
             self.reset_data_cause_of_error()
@@ -134,7 +148,6 @@ class ImportData(QObject):
 
     def evaluate_imported_data(self):
         missing_columns = []
-
 
         return
 
@@ -163,20 +176,9 @@ class ImportData(QObject):
 
             if self._pkl_loaded is True:
                 logging.debug('pickle data detected')
-                df_gtfs_data[GtfsDfNames.Stops] = self.read_pickle_from_zip(zf, "Tmp/dfStops.pkl")
-                self.progress = 20
-                df_gtfs_data[GtfsDfNames.Stoptimes] = self.read_pickle_from_zip(zf, "Tmp/dfStopTimes.pkl")
-                self.progress = 30
-                df_gtfs_data[GtfsDfNames.Trips] = self.read_pickle_from_zip(zf, "Tmp/dfTrips.pkl")
-                self.progress = 40
-                df_gtfs_data[GtfsDfNames.Calendarweeks] = self.read_pickle_from_zip(zf, "Tmp/dfWeek.pkl")
-                self.progress = 50
-                df_gtfs_data[GtfsDfNames.Calendardates] = self.read_pickle_from_zip(zf, "Tmp/dfDates.pkl")
-                self.progress = 60
-                df_gtfs_data[GtfsDfNames.Routes] = self.read_pickle_from_zip(zf, "Tmp/dfRoutes.pkl")
-                self.progress = 70
-                df_gtfs_data[GtfsDfNames.Agencies] = self.read_pickle_from_zip(zf, "Tmp/dfagency.pkl")
-                self.progress = 80
+                for step in GtfsProcessingStep:
+                    df_gtfs_data[step.name] = self.read_pickle_from_zip(zf, step.file_path)
+                    self.progress = step.progress_value
 
                 try:
                     with zipfile.ZipFile(self.input_path) as zf:
@@ -541,6 +543,7 @@ class ImportData(QObject):
             logging.debug("can not convert df_routes")
         except AttributeError:
             logging.debug("can not convert df_routes Attribute")
+        self.missing_columns_in_df(df_routes, DfRouteColumnEnum)
         logging.debug("convert to df: df_routes finished")
 
         return df_routes
@@ -575,7 +578,7 @@ class ImportData(QObject):
             logging.debug("can not convert direction_id in  dfTrips")
         except ValueError:
             logging.debug("can not convert direction_id in  dfTrips")
-
+        self.missing_columns_in_df(df_trips, DfTripColumnEnum)
         logging.debug("convert to df: create_df_trips finished")
 
         return df_trips
@@ -600,7 +603,7 @@ class ImportData(QObject):
             logging.debug("can not convert df_stoptimes")
         except AttributeError:
             logging.debug("can not convert df_stoptimes Attribute")
-
+        self.missing_columns_in_df(df_stoptimes, DfStopTimesColumnEnum)
         logging.debug("convert to df: create_df_stop_times finished")
 
         return df_stoptimes
@@ -621,8 +624,8 @@ class ImportData(QObject):
             logging.debug("can not convert df_Stops")
         except AttributeError:
             logging.debug("can not convert df_Stops Attribute")
+        self.missing_columns_in_df(df_stops, DfStopColumnEnum)
         logging.debug("convert to df: create_df_stops finished")
-
         return df_stops
 
     def create_df_week(self, raw_data):
@@ -636,6 +639,7 @@ class ImportData(QObject):
         except KeyError:
             logging.debug("can not convert df_week")
 
+        self.missing_columns_in_df(df_week, DfCalendarweekColumnEnum)
         logging.debug("convert to df: df_week finished")
 
         return df_week
@@ -653,6 +657,7 @@ class ImportData(QObject):
             logging.debug("can not convert df_dateS")
         logging.debug("convert to df: create_df_dates finished")
         df_dates = self.drop_columns_by_enum(df_dates, DfCalendardateColumnEnum)
+        self.missing_columns_in_df(df_dates, DfCalendardateColumnEnum)
         return df_dates
 
     def create_df_agency(self, raw_data):
@@ -661,6 +666,7 @@ class ImportData(QObject):
         df_agencies = self.drop_columns_by_enum(df_agencies, DfAgencyColumnEnum)
         df_agencies = df_agencies.sort_values(DfAgencyColumnEnum.agency_name.value)
         df_agencies.name = GtfsDfNames.Agencies
+        self.missing_columns_in_df(df_agencies, DfAgencyColumnEnum)
 
         return df_agencies
 
@@ -670,6 +676,7 @@ class ImportData(QObject):
             df_feedinfo = pd.DataFrame.from_dict(raw_data[GtfsDfNames.Feedinfos])
             df_feedinfo.name = GtfsDfNames.Feedinfos
             self.drop_columns_by_enum(df_feedinfo, DfFeedinfoColumnEnum)
+            self.missing_columns_in_df(df_feedinfo, DfFeedinfoColumnEnum)
             return df_feedinfo
         return None
 
@@ -680,6 +687,16 @@ class ImportData(QObject):
         if len(columns_to_drop) > 0:
             return df.drop(columns=columns_to_drop)
         return df
+
+    def missing_columns_in_df(self, df, enum_class):
+        missing_columns = [col for col in enum_class if col not in df.columns]
+        # Add each missing column to the tracking DataFrame
+        for column in missing_columns:
+            self.missing_columns_in_gtfs_file.loc[len(self.missing_columns_in_gtfs_file)] = [
+                df.name,
+                column
+            ]
+
 
     # region end
 

@@ -51,16 +51,6 @@ class CreatePlan(QObject):
             self.df_weekdays_only
         ])
 
-        self.weekDayOptionsList = ['0,Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday',
-                                   '1,Monday, Tuesday, Wednesday, Thursday, Friday',
-                                   '2,Monday',
-                                   '3,Tuesday',
-                                   '4,Wednesday',
-                                   '5,Thursday',
-                                   '6,Friday',
-                                   '7,Saturday',
-                                   '8,Sunday']
-
     @property
     def progress(self):
         return self._progress
