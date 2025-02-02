@@ -23,6 +23,7 @@ from PySide6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComb
     QTabWidget, QTableView, QVBoxLayout, QWidget)
 
 from view.Custom.AnimatedQToolBox import AnimatedQToolBox
+from view.Custom.AnimatedTableView import AnimatedTableView
 from view.Custom.FadingButton import FadingButton
 from view.Custom.custom_table_view import Customtableview
 from view.Custom.round_progress_bar import RoundProgress
@@ -251,7 +252,7 @@ class Ui_MainWindow(object):
         self.toolBox.setStyleSheet(u"")
         self.page = QWidget()
         self.page.setObjectName(u"page")
-        self.page.setGeometry(QRect(0, 0, 211, 336))
+        self.page.setGeometry(QRect(0, 0, 152, 130))
         sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
         sizePolicy2.setHorizontalStretch(0)
         sizePolicy2.setVerticalStretch(0)
@@ -275,7 +276,7 @@ class Ui_MainWindow(object):
         self.toolBox.addItem(self.page, icon, u"General")
         self.page_2 = QWidget()
         self.page_2.setObjectName(u"page_2")
-        self.page_2.setGeometry(QRect(0, 0, 211, 336))
+        self.page_2.setGeometry(QRect(0, 0, 97, 154))
         sizePolicy2.setHeightForWidth(self.page_2.sizePolicy().hasHeightForWidth())
         self.page_2.setSizePolicy(sizePolicy2)
         self.page_2.setStyleSheet(u"")
@@ -688,12 +689,12 @@ class Ui_MainWindow(object):
 
         self.gridLayout_13.addWidget(self.label_5, 1, 0, 1, 1)
 
-        self.TripsTableView = QTableView(self.gridLayoutWidget_4)
+        self.TripsTableView = AnimatedTableView(self.gridLayoutWidget_4)
         self.TripsTableView.setObjectName(u"TripsTableView")
 
         self.gridLayout_13.addWidget(self.TripsTableView, 2, 1, 1, 1)
 
-        self.AgenciesTableView = QTableView(self.gridLayoutWidget_4)
+        self.AgenciesTableView = AnimatedTableView(self.gridLayoutWidget_4)
         self.AgenciesTableView.setObjectName(u"AgenciesTableView")
 
         self.gridLayout_13.addWidget(self.AgenciesTableView, 2, 0, 1, 1)
@@ -894,7 +895,7 @@ class Ui_MainWindow(object):
 
         self.gridLayout_16 = QGridLayout()
         self.gridLayout_16.setObjectName(u"gridLayout_16")
-        self.tableView_2 = QTableView(self.gridLayoutWidget_2)
+        self.tableView_2 = AnimatedTableView(self.gridLayoutWidget_2)
         self.tableView_2.setObjectName(u"tableView_2")
 
         self.gridLayout_16.addWidget(self.tableView_2, 0, 0, 1, 1)
@@ -997,7 +998,7 @@ class Ui_MainWindow(object):
 
         self.progress_widget.addWidget(self.label, 1, 0, 1, 1)
 
-        self.progressBar = RoundProgress()
+        self.progressBar = RoundProgress(self.progress_box)
         self.progressBar.setObjectName(u"progressBar")
 
         self.progress_widget.addWidget(self.progressBar, 1, 1, 1, 1)
@@ -1101,7 +1102,7 @@ class Ui_MainWindow(object):
         self.pushButton.toggled.connect(self.menu_widget.setHidden)
 
         self.toolBox.setCurrentIndex(2)
-        self.main_view_stacked_widget.setCurrentIndex(4)
+        self.main_view_stacked_widget.setCurrentIndex(2)
 
 
         QMetaObject.connectSlotsByName(MainWindow)

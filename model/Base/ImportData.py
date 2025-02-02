@@ -121,7 +121,6 @@ class ImportData(QObject):
             self.reset_data_cause_of_error()
             return None
 
-name or not name that is the question
         imported_data = self.read_gtfs_data()
         if imported_data.get(GtfsDfNames.Feedinfos.name) is not None:
             gtfsDataFrameDto = GtfsDataFrameDto(imported_data[GtfsDfNames.Routes], imported_data[GtfsDfNames.Trips],
@@ -177,7 +176,7 @@ name or not name that is the question
             if self._pkl_loaded is True:
                 logging.debug('pickle data detected')
                 for step in GtfsProcessingStep:
-                    df_gtfs_data[step.name] = self.read_pickle_from_zip(zf, step.file_path)
+                    df_gtfs_data[step.df_name] = self.read_pickle_from_zip(zf, step.file_path)
                     self.progress = step.progress_value
 
                 try:
@@ -191,49 +190,30 @@ name or not name that is the question
         if self._pkl_loaded is False:
             raw_data = {}
 
-            self.progress = 30
-
             try:
                 with zipfile.ZipFile(self.input_path) as zf:
-                    with io.TextIOWrapper(zf.open("stops.txt", mode="r"), encoding="utf-8") as stops:
-                        raw_data[GtfsColumnNames.stopsList] = [stops.readlines()[0].rstrip()]
-                    with io.TextIOWrapper(zf.open("stop_times.txt", mode="r"), encoding="utf-8") as stop_times:
-                        raw_data[GtfsColumnNames.stopTimesList] = [stop_times.readlines()[0].rstrip()]
-                    with io.TextIOWrapper(zf.open("trips.txt", mode="r"), encoding="utf-8") as trips:
-                        raw_data[GtfsColumnNames.tripsList] = [trips.readlines()[0].rstrip()]
-                    with io.TextIOWrapper(zf.open("calendar.txt", mode="r"), encoding="utf-8") as calendar:
-                        raw_data[GtfsColumnNames.calendarList] = [calendar.readlines()[0].rstrip()]
-                    with io.TextIOWrapper(zf.open("calendar_dates.txt", mode="r"), encoding="utf-8") as calendar_dates:
-                        raw_data[GtfsColumnNames.calendar_datesList] = [calendar_dates.readlines()[0].rstrip()]
-                    with io.TextIOWrapper(zf.open("routes.txt", mode="r"), encoding="utf-8") as routes:
-                        raw_data[GtfsColumnNames.routesList] = [routes.readlines()[0].rstrip()]
-                    with io.TextIOWrapper(zf.open("agency.txt", mode="r"), encoding="utf-8") as agency:
-                        raw_data[GtfsColumnNames.agencyList] = [agency.readlines()[0].rstrip()]
-            except:
-                logging.debug('Error in Unzipping headers')
-                return None
+                    files_to_process = [
+                        ("stops.txt", GtfsColumnNames.stopsList),
+                        ("stop_times.txt", GtfsColumnNames.stopTimesList),
+                        ("trips.txt", GtfsColumnNames.tripsList),
+                        ("calendar.txt", GtfsColumnNames.calendarList),
+                        ("calendar_dates.txt", GtfsColumnNames.calendar_datesList),
+                        ("routes.txt", GtfsColumnNames.routesList),
+                        ("agency.txt", GtfsColumnNames.agencyList)
+                    ]
 
-            self.progress = 40
+                    for filename, column_name in files_to_process:
+                        header = self.read_file_from_zip(zf, filename, start_line=0)
+                        if header:
+                            raw_data[column_name] = [header[0].rstrip()]
 
-            try:
-                with zipfile.ZipFile(self.input_path) as zf:
-                    with io.TextIOWrapper(zf.open("stops.txt", mode="r"), encoding="utf-8") as stops:
-                        raw_data[GtfsColumnNames.stopsList] += stops.readlines()[1:]
-                    with io.TextIOWrapper(zf.open("stop_times.txt", mode="r"), encoding="utf-8") as stop_times:
-                        raw_data[GtfsColumnNames.stopTimesList] += stop_times.readlines()[1:]
-                    with io.TextIOWrapper(zf.open("trips.txt", mode="r"), encoding="utf-8") as trips:
-                        raw_data[GtfsColumnNames.tripsList] += trips.readlines()[1:]
-                    with io.TextIOWrapper(zf.open("calendar.txt", mode="r"), encoding="utf-8") as calendar:
-                        raw_data[GtfsColumnNames.calendarList] += calendar.readlines()[1:]
-                    with io.TextIOWrapper(zf.open("calendar_dates.txt", mode="r"), encoding="utf-8") as calendar_dates:
-                        raw_data[GtfsColumnNames.calendar_datesList] += calendar_dates.readlines()[1:]
-                    with io.TextIOWrapper(zf.open("routes.txt", mode="r"), encoding="utf-8") as routes:
-                        raw_data[GtfsColumnNames.routesList] += routes.readlines()[1:]
-                    with io.TextIOWrapper(zf.open("agency.txt", mode="r"), encoding="utf-8") as agency:
-                        raw_data[GtfsColumnNames.agencyList] += agency.readlines()[1:]
+                    for filename, column_name in files_to_process:
+                        data = self.read_file_from_zip(zf, filename, start_line=1)
+                        if data:
+                            raw_data[column_name].extend(data)
 
-            except:
-                logging.debug('Error in Unzipping data ')
+            except Exception as e:
+                logging.debug(f'Error processing GTFS files: {str(e)}')
                 return None
 
             try:
@@ -254,6 +234,19 @@ name or not name that is the question
 
             return self.create_dfs(raw_data)
 
+    def read_file_from_zip(self, zip_file, filename, start_line=0):
+        """Helper function to read a file from zip with error handling"""
+        try:
+            with io.TextIOWrapper(
+                    zip_file.open(filename, mode="r"),
+                    encoding="utf-8"
+            ) as file:
+                lines = file.readlines()
+                return lines[start_line:] if lines else []
+        except Exception as e:
+            logging.debug(f'Error reading {filename}: {str(e)}')
+            return []
+
     def print_all_headers(self, stopsHeader, stop_timesHeader, tripsHeader, calendarHeader, calendar_datesHeader,
                           routesHeader, agencyHeader, feed_infoHeader):
         logging.debug('stopsHeader          = {} \n'
@@ -270,69 +263,77 @@ name or not name that is the question
     """ reset methods """
 
     def create_dfs(self, raw_data):
-
         """
-        loads dicts and creates dicts.
-        It also set indices, if possible -> to speed up search
+        Creates DataFrames from raw GTFS data using parallel processing.
 
-        :param raw_data:
-        dictonary with these keys
-            stopsList
-            stopTimesList
-            tripsList
-            calendarList
-            calendar_datesList
-            routesList
-            agencyList
-            feed_info (optional)
-        :return: dict (df)
+        Args:
+            raw_data (dict): Dictionary containing GTFS data with keys:
+                stopsList, stopTimesList, tripsList, calendarList,
+                calendar_datesList, routesList, agencyList, feed_info (optional)
+
+        Returns:
+            dict: Dictionary of created DataFrames or None on error
         """
-        self.progress = 50
         if raw_data is None:
             return None
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
-            processes = [executor.submit(self.get_gtfs_routes, raw_data),
-                         executor.submit(self.get_gtfs_trips, raw_data),
-                         executor.submit(self.get_gtfs_stop_times, raw_data),
-                         executor.submit(self.get_gtfs_stops, raw_data),
-                         executor.submit(self.get_gtfs_week, raw_data),
-                         executor.submit(self.get_gtfs_dates, raw_data),
-                         executor.submit(self.get_gtfs_agency, raw_data)]
-            if raw_data.get(GtfsColumnNames.feed_info) is not None:
-                processes.append(executor.submit(self.get_gtfs_feed_info, raw_data))
+        # Define processing steps
+        dict_creation_steps = [
+            ("routes", self.get_gtfs_routes),
+            ("trips", self.get_gtfs_trips),
+            ("stop_times", self.get_gtfs_stop_times),
+            ("stops", self.get_gtfs_stops),
+            ("week", self.get_gtfs_week),
+            ("dates", self.get_gtfs_dates),
+            ("agency", self.get_gtfs_agency)
+        ]
 
-            results = concurrent.futures.as_completed(processes)
+        if raw_data.get(GtfsColumnNames.feed_info) is not None:
+            dict_creation_steps.append(("feed_info", self.get_gtfs_feed_info))
+
+        # Create dictionaries in parallel
+        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+            processes = [executor.submit(func, raw_data)
+                         for _, func in dict_creation_steps]
+
             raw_dict_data = {}
-            for result in results:
-                temp_result = result.result()
-                raw_dict_data[temp_result[0]] = temp_result[1]
-        logging.debug(f"raw_dict_data creation: {raw_dict_data.keys()}")
-
-        self.progress = 60
-
-        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
-            processes = [executor.submit(self.create_df_routes, raw_dict_data),
-                         executor.submit(self.create_df_trips, raw_dict_data),
-                         executor.submit(self.create_df_stop_times, raw_dict_data),
-                         executor.submit(self.create_df_stops, raw_dict_data),
-                         executor.submit(self.create_df_week, raw_dict_data),
-                         executor.submit(self.create_df_dates, raw_dict_data),
-                         executor.submit(self.create_df_agency, raw_dict_data)]
-            if raw_dict_data.get(GtfsColumnNames.feed_info) is not None:
-                processes.append(executor.submit(self.create_df_feed, raw_dict_data))
-
-            results = concurrent.futures.as_completed(processes)
-            df_collection = {}
-            for result in results:
+            for result in concurrent.futures.as_completed(processes):
                 try:
-                    temp_result = result.result()
-                    df_collection[temp_result.name] = temp_result
+                    name, data = result.result()
+                    raw_dict_data[name] = data
                 except Exception as e:
-                    logging.debug(f"An error occurred for: {str(e)}:")
+                    logging.debug(f"Error in dict creation for {name}: {str(e)}")
                     return None
 
-        self.progress = 90
+        logging.debug(f"raw_dict_data creation: {raw_dict_data.keys()}")
+
+        # Define DataFrame creation steps
+        df_creation_steps = [
+            ("routes", self.create_df_routes),
+            ("trips", self.create_df_trips),
+            ("stop_times", self.create_df_stop_times),
+            ("stops", self.create_df_stops),
+            ("week", self.create_df_week),
+            ("dates", self.create_df_dates),
+            ("agency", self.create_df_agency)
+        ]
+
+        if raw_dict_data.get(GtfsColumnNames.feed_info) is not None:
+            df_creation_steps.append(("feed_info", self.create_df_feed))
+
+        # Create DataFrames in parallel
+        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+            processes = [executor.submit(func, raw_dict_data)
+                         for _, func in df_creation_steps]
+
+            df_collection = {}
+            for result in concurrent.futures.as_completed(processes):
+                try:
+                    df = result.result()
+                    df_collection[df.name] = df
+                except Exception as e:
+                    logging.debug(f"Error in DataFrame creation: {str(e)}")
+                    return None
 
         logging.debug(f"df_collection creation: {df_collection.keys()}")
         return df_collection

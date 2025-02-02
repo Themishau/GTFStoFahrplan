@@ -351,8 +351,8 @@ background-color: #ae636f;
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>211</width>
-                <height>336</height>
+                <width>152</width>
+                <height>130</height>
                </rect>
               </property>
               <property name="sizePolicy">
@@ -405,8 +405,8 @@ background-color: #ae636f;
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>211</width>
-                <height>336</height>
+                <width>97</width>
+                <height>154</height>
                </rect>
               </property>
               <property name="sizePolicy">
@@ -824,7 +824,7 @@ QComboBox::drop-down {
 </string>
           </property>
           <property name="currentIndex">
-           <number>4</number>
+           <number>2</number>
           </property>
           <widget class="QWidget" name="general_information_page">
            <property name="maximumSize">
@@ -1225,10 +1225,10 @@ Ressources:
                 </widget>
                </item>
                <item row="2" column="1">
-                <widget class="QTableView" name="TripsTableView"/>
+                <widget class="AnimatedTableView" name="TripsTableView"/>
                </item>
                <item row="2" column="0">
-                <widget class="QTableView" name="AgenciesTableView"/>
+                <widget class="AnimatedTableView" name="AgenciesTableView"/>
                </item>
                <item row="1" column="1">
                 <widget class="QLabel" name="label_8">
@@ -1631,7 +1631,7 @@ Ressources:
              <item row="1" column="0">
               <layout class="QGridLayout" name="gridLayout_16">
                <item row="0" column="0">
-                <widget class="QTableView" name="tableView_2"/>
+                <widget class="AnimatedTableView" name="tableView_2"/>
                </item>
               </layout>
              </item>
@@ -1986,6 +1986,11 @@ border-radius: 1px;</string>
    <class>Customtableview</class>
    <extends>QTableView</extends>
    <header>view.Custom.custom_table_view</header>
+  </customwidget>
+  <customwidget>
+   <class>AnimatedTableView</class>
+   <extends>QTableView</extends>
+   <header>view.Custom.AnimatedTableView</header>
   </customwidget>
  </customwidgets>
  <resources>

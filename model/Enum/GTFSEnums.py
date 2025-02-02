@@ -50,6 +50,10 @@ class GtfsProcessingStep(Enum):
         self.progress_value = progress_value
         self.file_path = file_path
 
+    @property
+    def df_name(self):
+        return GtfsDfNames[self.name]
+
 class DfStopColumnEnum(Enum):
     stop_id = 'stop_id'
     stop_name = 'stop_name'
