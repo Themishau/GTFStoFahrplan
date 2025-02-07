@@ -54,6 +54,16 @@ class GtfsProcessingStep(Enum):
     def df_name(self):
         return GtfsDfNames[self.name]
 
+class DateProcessingStep(Enum):
+    INIT = (10, "Initialize date processing")
+    PREPARE_DATA = (20, "Prepare data")
+    SELECT_DATES = (30, "Select dates for date range")
+    HANDLE_EXCEPTIONS = (40, "Handle date exceptions")
+    SELECT_STOPS = (50, "Select stops for trips")
+    PROCESS_DATES = (70, "Process dates and trips")
+    CREATE_SORT = (80, "Create and sort stop names")
+    CREATE_PLAN = (90, "Create final plan")
+
 class DfStopColumnEnum(Enum):
     stop_id = 'stop_id'
     stop_name = 'stop_name'

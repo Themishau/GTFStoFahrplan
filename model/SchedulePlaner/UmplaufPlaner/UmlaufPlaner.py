@@ -159,8 +159,7 @@ class UmlaufPlaner(QObject):
         self.create_dataframe = CreateTableDataframeDto()
         self.create_dataframe.Header = df_header_for_export_data
         self.create_dataframe.Direction = pd.DataFrame({'direction_id': [self.create_settings_for_table_dto.direction]})
-        self.create_dataframe.RequestedWeekdays = pd.DataFrame(
-            {'weekday': self.create_settings_for_table_dto.weekday})
+        self.create_dataframe.RequestedWeekdays = self.create_settings_for_table_dto.weekday
         self.create_dataframe.SelectedRoute = self.create_settings_for_table_dto.route
         self.create_dataframe.SelectedAgency = self.create_settings_for_table_dto.agency
 
@@ -222,7 +221,6 @@ class UmlaufPlaner(QObject):
     def weekday_select_weekday_exception_2(self):
 
         dfDates = self.gtfs_data_frame_dto.Calendardates
-        requested_weekday_df = pd.DataFrame([self.create_settings_for_table_dto.weekday])
         fahrplan_dates = self.create_dataframe.FahrplanDates
 
         fahrplan_dates = pd.concat(

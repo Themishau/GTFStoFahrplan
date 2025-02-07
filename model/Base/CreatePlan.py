@@ -40,16 +40,30 @@ class CreatePlan(QObject):
         self.df_all = pd.DataFrame(self.days, columns=['day']).assign(category='All Days')
         self.df_weekend = pd.DataFrame(self.weekend, columns=['day']).assign(category='Weekend')
         self.df_weekdays = pd.DataFrame(self.weekdays, columns=['day']).assign(category='Weekdays')
-        self.df_weekdays_only = pd.DataFrame({
-            'day': self.weekdays,
-            'category': [f'{day} only' for day in self.weekdays]  # Create unique category for each day
+        self.df_days_only = pd.DataFrame({
+            'day': self.days,
+            'category': [f'{day} only' for day in self.days]
         })
+
         self.weekdays_df = pd.concat([
             self.df_all,
             self.df_weekend,
             self.df_weekdays,
-            self.df_weekdays_only
+            self.df_days_only
         ])
+
+        for day in self.days:
+            weekend_days = ['Saturday', 'Sunday']
+            weekday_days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+
+            self.weekdays_df[day] = (
+                    (self.weekdays_df['day'] == day.capitalize()) |
+                    ((self.weekdays_df['category'] == 'Weekend') &
+                     (day.capitalize() in weekend_days)) |
+                    ((self.weekdays_df['category'] == 'Weekdays') &
+                     (day.capitalize() in weekday_days)) |
+                    (self.weekdays_df['category'] == 'All Days')
+            ).map({True: day.capitalize(), False: '-'})
 
     @property
     def progress(self):
@@ -97,7 +111,7 @@ class CreatePlan(QObject):
             self.create_sorting.emit()
 
         elif (self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date
-               and self.create_settings_for_table_dto.individual_sorting):
+              and self.create_settings_for_table_dto.individual_sorting):
             self.plans = UmlaufPlaner()
             self.plans.create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
             self.plans.gtfs_data_frame_dto = copy.deepcopy(self.gtfs_data_frame_dto)
@@ -129,9 +143,6 @@ class CreatePlan(QObject):
                         logging.debug(f'Thread generated an exception: {exc}')
             except Exception as exc:
                 logging.debug(f'An error occurred during execution: {exc}')
-
-
-
 
         elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date:
             self.plans = UmlaufPlaner()
@@ -228,5 +239,3 @@ class CreatePlan(QObject):
     def create_table_continue(self):
         self.plans.datesWeekday_create_fahrplan_continue()
         self.progress = 80
-
-
