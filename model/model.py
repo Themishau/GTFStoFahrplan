@@ -43,14 +43,8 @@ class Model(QObject):
         NotImplemented
 
     def start_function_async(self, function_name):
-        #
-
         # Create a thread
         self.thread = QThread()
-        # self.moveToThread(self.thread)
-        # # Ensure the correct function is passed
-        # self.thread.started.connect(getattr(self, function_name))
-        # self.thread.start()
 
         worker_function = getattr(self, function_name)
         # Create Worker and move it to the thread
@@ -93,7 +87,9 @@ class Model(QObject):
     #     self.thread.start()
 
     def handle_worker_error(self, error):
-        logging.error(f"Worker encountered an error: {error}")
+        logging.error(f"Worker encountered an error: {error}. {type(error).__name__}")
+        self.send_message_box(
+            f"Failed. Create table failed. Error: {error}  {type(error).__name__}")
 
     def cancel_async_operation(self):
         if self.thread.isRunning():
