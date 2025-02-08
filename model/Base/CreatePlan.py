@@ -32,14 +32,14 @@ class CreatePlan(QObject):
         """ visual internal property """
         self.progress = progress
 
-        self.weekend = ['Saturday', 'Sunday']
-        self.weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+        #self.weekend = ['Saturday', 'Sunday']
+        #self.weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
         self.days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
         # Create DataFrames with category information
-        self.df_all = pd.DataFrame(self.days, columns=['day']).assign(category='All Days')
-        self.df_weekend = pd.DataFrame(self.weekend, columns=['day']).assign(category='Weekend')
-        self.df_weekdays = pd.DataFrame(self.weekdays, columns=['day']).assign(category='Weekdays')
+        self.df_all = pd.DataFrame(['All Days'], columns=['day']).assign(category='All Days')
+        self.df_weekend = pd.DataFrame(['Weekend'], columns=['day']).assign(category='Weekend')
+        self.df_weekdays = pd.DataFrame(['Weekdays'], columns=['day']).assign(category='Weekdays')
         self.df_days_only = pd.DataFrame({
             'day': self.days,
             'category': [f'{day} only' for day in self.days]
@@ -197,8 +197,10 @@ class CreatePlan(QObject):
             self.progress = 50
             self.plans.datesWeekday_select_for_every_date_trips_stops()
             self.progress = 70
-            self.plans.datesWeekday_create_fahrplan()
+            self.plans.datesWeekday_create_sort_stopnames()
             self.progress = 80
+            self.plans.datesWeekday_create_fahrplan()
+            self.progress = 90
 
         elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_weekday and self.create_settings_for_table_dto.individual_sorting:
             self.plans = UmlaufPlaner()
@@ -233,8 +235,10 @@ class CreatePlan(QObject):
             self.progress = 50
             self.plans.datesWeekday_select_for_every_date_trips_stops()
             self.progress = 70
-            self.plans.datesWeekday_create_fahrplan()
+            self.plans.datesWeekday_create_sort_stopnames()
             self.progress = 80
+            self.plans.datesWeekday_create_fahrplan()
+            self.progress = 90
 
     def create_table_continue(self):
         self.plans.datesWeekday_create_fahrplan_continue()

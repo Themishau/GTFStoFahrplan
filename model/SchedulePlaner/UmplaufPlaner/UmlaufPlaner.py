@@ -222,6 +222,7 @@ class UmlaufPlaner(QObject):
 
         dfDates = self.gtfs_data_frame_dto.Calendardates
         fahrplan_dates = self.create_dataframe.FahrplanDates
+        weekdays = self.create_dataframe.RequestedWeekdays
 
         fahrplan_dates = pd.concat(
             [pd.DataFrame
@@ -272,7 +273,15 @@ class UmlaufPlaner(QObject):
         days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
         #fahrplan_dates_df_date = fahrplan_dates_df[(fahrplan_dates_df['date'].isin(requested_datesdf['date']))]
-        #fahrplan_dates_df_date = fahrplan_dates_df[fahrplan_dates_df['day'].isin(weekdays)]
+        fahrplan_dates_df_date = fahrplan_dates_df[(
+                fahrplan_dates_df['day'].isin(weekdays['Monday']) |
+                fahrplan_dates_df['day'].isin(weekdays['Tuesday']) |
+                fahrplan_dates_df['day'].isin(weekdays['Wednesday']) |
+                fahrplan_dates_df['day'].isin(weekdays['Thursday']) |
+                fahrplan_dates_df['day'].isin(weekdays['Friday']) |
+                fahrplan_dates_df['day'].isin(weekdays['Saturday']) |
+                fahrplan_dates_df['day'].isin(weekdays['Sunday'])
+        )]
 
         #fahrplan_dates_df_date = fahrplan_dates_df_date[(fahrplan_dates_df_date['service_id'].isin(exception_type_1_dates['service_id']))]
         for _, row in exception_type_1_dates.iterrows():
@@ -370,9 +379,6 @@ class UmlaufPlaner(QObject):
 
     def datesWeekday_select_stops_for_trips(self):
 
-        requested_datesdf = pd.DataFrame([self.create_settings_for_table_dto.dates], columns=['date'])
-        requested_datesdf['date'] = pd.to_datetime(requested_datesdf['date'], format='%Y%m%d')
-
         dfselected_Route_Id = self.create_dataframe.SelectedRoute
         requested_directiondf = self.create_dataframe.Direction.astype('string')
         varTestAgency = self.create_dataframe.SelectedAgency
@@ -421,7 +427,7 @@ class UmlaufPlaner(QObject):
 
         fahrplan_calendar_weeks = self.create_dataframe.FahrplanStops.copy()
         fahrplan_calendar_weeks['trip_id'] = fahrplan_calendar_weeks['trip_id'].astype('string')
-        fahrplan_dates_all_dates = self.create_dataframe.FahrplanDates
+        fahrplan_dates_all_dates = self.create_dataframe.FahrplanDates.copy()
         fahrplan_dates_all_dates['trip_id'] = fahrplan_dates_all_dates['trip_id'].astype('string')
 
         joined_df = pd.merge(fahrplan_dates_all_dates, fahrplan_calendar_weeks, left_on=['trip_id', 'service_id'],
