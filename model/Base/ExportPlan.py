@@ -15,6 +15,7 @@ logging.basicConfig(level=logging.DEBUG,
 
 class ExportPlan(QObject):
     progress_Update = Signal(int)
+    progress_information_Update = Signal(str)
     create_settings_for_table_dto_changed = Signal()
 
     def __init__(self, app, progress: int):

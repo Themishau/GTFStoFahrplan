@@ -5,6 +5,7 @@ import os
 from PySide6.QtCore import Signal, QObject
 
 from helpFunctions import qdate_to_string
+from model.Base.Progress import ProgressSignal
 from model.Enum.GTFSEnums import *
 
 logging.basicConfig(level=logging.DEBUG,
@@ -30,7 +31,7 @@ class ViewModel(QObject):
     update_select_data = Signal(str)
     update_weekdate_option = Signal(str)
     update_individualsorting = Signal(bool)
-    update_progress_value = Signal(int)
+    update_progress_value = Signal(ProgressSignal)
     update_options_state_signal = Signal(bool)
     error_message = Signal(str)
     create_table_finshed = Signal()
@@ -103,8 +104,8 @@ class ViewModel(QObject):
     def on_changed_selected_weekday(self, text):
         self.model.planer.select_data.selected_weekday = text
 
-    def on_changed_progress_value(self, value):
-        self.update_progress_value.emit(value)
+    def on_changed_progress_value(self, progress_data: ProgressSignal):
+        self.update_progress_value.emit(ProgressSignal)
 
     def initilize_schedule_planer(self):
         # init model with publisher

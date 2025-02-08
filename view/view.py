@@ -240,7 +240,8 @@ class View(QMainWindow):
         self.move(qr.topLeft())
 
     def update_progress_bar(self, value):
-        self.ui.progressBar.set_value(value)
+
+        #self.ui.progressBar.set_value(value)
         return True
 
     def initialize_modified_progress_bar(self):

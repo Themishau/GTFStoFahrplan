@@ -14,6 +14,7 @@ logging.basicConfig(level=logging.DEBUG,
 
 class SelectData(QObject):
     progress_update = Signal(int)
+    progress_information_Update = Signal(str)
     select_agency_signal = Signal()
     update_routes_list_signal = Signal()
     error_occured = Signal(str)

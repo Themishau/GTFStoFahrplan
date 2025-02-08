@@ -13,6 +13,7 @@ logging.basicConfig(level=logging.DEBUG,
 
 class AnalyzeData(QObject):
     progress_Update = Signal(int)
+    progress_information_Update = Signal(str)
     error_occured = Signal(str)
 
     def __init__(self, app, progress: int):
@@ -20,6 +21,7 @@ class AnalyzeData(QObject):
         self.app = app
         self.gtfs_data_frame_dto = None
         self.progress = progress
+        self.progress_information = ""
         self.date_range = None
         self.sample_date = None
         self.date_range_df_format = None
@@ -27,42 +29,28 @@ class AnalyzeData(QObject):
 
     @property
     def progress(self):
-        """
-        Getter method for the progress value.
-
-        Returns:
-            int: The current progress value.
-        """
         return self._progress
 
     @progress.setter
     def progress(self, value):
-        """
-        Setter method for the progress attribute.
-
-        Args:
-            value (int): The value to set for the progress attribute.
-        """
         self._progress = value
         self.progress_Update.emit(self._progress)
 
     @property
+    def progress_information(self):
+        return self._progress
+
+    @progress_information.setter
+    def progress_information(self, value):
+        self._progress_information = value
+        self.progress_information_Update.emit(self._progress_information)
+
+    @property
     def gtfs_data_frame_dto(self):
-        """
-        Getter method for the GTFS data frame Dto.
-        Returns:
-            GtfsDataFrameDto: The GTFS data frame Dto.
-        """
         return self._gtfs_data_frame_dto
 
     @gtfs_data_frame_dto.setter
     def gtfs_data_frame_dto(self, value: GtfsDataFrameDto):
-        """
-        Setter method for the GTFS data frame Dto.
-
-        Args:
-            value (GtfsDataFrameDto): The value to set for the GTFS data frame Dto.
-        """
         self._gtfs_data_frame_dto = value
         if value is not None:
             self.get_date_range()

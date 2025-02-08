@@ -10,6 +10,7 @@ from PySide6.QtCore import QObject
 from PySide6.QtCore import Signal
 
 from model.Enum.GTFSEnums import *
+from .Progress import ProgressClass
 from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
 
 logging.basicConfig(level=logging.DEBUG,
@@ -19,6 +20,7 @@ logging.basicConfig(level=logging.DEBUG,
 
 class ImportData(QObject):
     progress_Update = Signal(int)
+    progress_information_Update = Signal(str)
     error_occured = Signal(str)
 
     def __init__(self, app, progress: int):
@@ -37,7 +39,15 @@ class ImportData(QObject):
         self.df_date_range_in_gtfs_data = pd.DataFrame()
 
         """ visual internal property """
-        self.progress = progress
+        self.progress = ProgressClass()
+        # Connect progress signals
+        self.progress.progressChanged.connect(
+            self.progress_Update
+        )
+        self.progress.progressInfoChanged.connect(
+            self.progress_information_Update
+        )
+
         self.current_process_string = ""
         self.missing_columns_in_gtfs_file = pd.DataFrame({
             'table': [],
@@ -73,14 +83,10 @@ class ImportData(QObject):
         else:
             self.error_occured("Folder not found. Please check!")
 
-    @property
-    def progress(self):
-        return self._progress
-
-    @progress.setter
-    def progress(self, value):
-        self._progress = value
-        self.progress_Update.emit(self._progress)
+    def update_progress(self, value: int, info: str):
+        """Update progress through ProgressClass"""
+        self.progress.set_progress(value)
+        self.progress.set_progress_info(info)
 
     @property
     def pickle_export_checked(self):
