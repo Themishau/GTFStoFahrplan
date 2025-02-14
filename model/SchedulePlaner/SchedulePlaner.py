@@ -13,6 +13,7 @@ from ..Base.ImportData import ImportData
 from ..Base.SelectData import SelectData
 from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO
 from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
+from typing import Optional
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
@@ -44,6 +45,14 @@ class SchedulePlaner(QObject):
         self.create_settings_for_table_dto = CreateSettingsForTableDTO()
 
     """ methods """
+
+    def update_progress(self, value: int, message: Optional[str] = None):
+        """Handle progress updates from ImportData"""
+        # Update your view here
+        if message:
+            print(f"Progress: {value}% - {message}")
+        else:
+            print(f"Progress: {value}%")
 
     def send_error(self, e):
         self.error_occured.emit(e)
@@ -77,7 +86,7 @@ class SchedulePlaner(QObject):
         self.initialize_create_plan()
 
     def initialize_import_data(self):
-        self.import_Data = ImportData(self.app, progress=self.progress)
+        self.import_Data = ImportData(self.app, schedule_planer=self)
         self.import_Data.progress_Update.connect(self.update_progress_bar)
         self.import_Data.error_occured.connect(self.send_error)
 

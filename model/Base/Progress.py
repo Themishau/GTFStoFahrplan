@@ -1,7 +1,7 @@
 from PySide6.QtCore import QObject, Signal
 from dataclasses import dataclass
 from typing import Optional
-
+import time as Time
 
 @dataclass
 class ProgressSignal:
@@ -25,6 +25,6 @@ class ProgressClass(QObject):
         progress_data = ProgressSignal(
             value=value,
             message=message,
-            timestamp=Optional[float](time.time()) if message else None
+            timestamp=Optional[float](Time.time()) if message else None
         )
         self.progressChanged.emit(progress_data)

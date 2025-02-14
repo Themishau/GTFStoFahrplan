@@ -6,11 +6,11 @@ import os
 import zipfile
 
 import pandas as pd
-from PySide6.QtCore import QObject
+from PySide6.QtCore import QObject, Slot
 from PySide6.QtCore import Signal
 
 from model.Enum.GTFSEnums import *
-from .Progress import ProgressClass
+from .Progress import ProgressClass, ProgressSignal
 from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
 
 logging.basicConfig(level=logging.DEBUG,
@@ -19,16 +19,17 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class ImportData(QObject):
-    progress_Update = Signal(int)
-    progress_information_Update = Signal(str)
+    progress_Update = Signal(ProgressSignal)
     error_occured = Signal(str)
 
-    def __init__(self, app, progress: int):
+    def __init__(self, app, schedule_planer):
         super().__init__()
         self.app = app
         self._pkl_loaded = False
         self._pickle_save_path = ""
         self.reset_import = False
+        self.schedule_planer = schedule_planer
+
         """ property """
         self.input_path = ""
         self.pickle_save_path_filename = ""
@@ -41,18 +42,25 @@ class ImportData(QObject):
         """ visual internal property """
         self.progress = ProgressClass()
         # Connect progress signals
-        self.progress.progressChanged.connect(
-            self.progress_Update
-        )
-        self.progress.progressInfoChanged.connect(
-            self.progress_information_Update
-        )
+        self.progress.progressChanged.connect(self.on_progress_changed)
+
 
         self.current_process_string = ""
         self.missing_columns_in_gtfs_file = pd.DataFrame({
             'table': [],
             'column': []
         })
+
+        # Connect the signal to a slot method
+        self.progress.progressChanged.connect(self.on_progress_changed)
+
+
+    @Slot(ProgressSignal)
+    def on_progress_changed(self, progress: ProgressSignal):
+        """Forward progress updates to the SchedulePlaner"""
+        if self.schedule_planer:
+            self.schedule_planer.update_progress(progress.value, progress.message)
+
 
     @property
     def reset_import(self):
@@ -82,11 +90,6 @@ class ImportData(QObject):
             logging.debug(value)
         else:
             self.error_occured("Folder not found. Please check!")
-
-    def update_progress(self, value: int, info: str):
-        """Update progress through ProgressClass"""
-        self.progress.set_progress(value)
-        self.progress.set_progress_info(info)
 
     @property
     def pickle_export_checked(self):
