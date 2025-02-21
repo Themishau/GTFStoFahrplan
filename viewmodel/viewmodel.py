@@ -105,7 +105,7 @@ class ViewModel(QObject):
         self.model.planer.select_data.selected_weekday = text
 
     def on_changed_progress_value(self, progress_data: ProgressSignal):
-        self.update_progress_value.emit(ProgressSignal)
+        self.update_progress_value.emit(progress_data)
 
     def initilize_schedule_planer(self):
         # init model with publisher

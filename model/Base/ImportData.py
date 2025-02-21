@@ -10,7 +10,7 @@ from PySide6.QtCore import QObject, Slot
 from PySide6.QtCore import Signal
 
 from model.Enum.GTFSEnums import *
-from .Progress import ProgressClass, ProgressSignal
+from .Progress import ProgressSignal
 from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
 
 logging.basicConfig(level=logging.DEBUG,
@@ -22,13 +22,12 @@ class ImportData(QObject):
     progress_Update = Signal(ProgressSignal)
     error_occured = Signal(str)
 
-    def __init__(self, app, schedule_planer):
+    def __init__(self, app):
         super().__init__()
         self.app = app
         self._pkl_loaded = False
         self._pickle_save_path = ""
         self.reset_import = False
-        self.schedule_planer = schedule_planer
 
         """ property """
         self.input_path = ""
@@ -40,26 +39,14 @@ class ImportData(QObject):
         self.df_date_range_in_gtfs_data = pd.DataFrame()
 
         """ visual internal property """
-        self.progress = ProgressClass()
+        self.progress = ProgressSignal()
         # Connect progress signals
-        self.progress.progressChanged.connect(self.on_progress_changed)
-
 
         self.current_process_string = ""
         self.missing_columns_in_gtfs_file = pd.DataFrame({
             'table': [],
             'column': []
         })
-
-        # Connect the signal to a slot method
-        self.progress.progressChanged.connect(self.on_progress_changed)
-
-
-    @Slot(ProgressSignal)
-    def on_progress_changed(self, progress: ProgressSignal):
-        """Forward progress updates to the SchedulePlaner"""
-        if self.schedule_planer:
-            self.schedule_planer.update_progress(progress.value, progress.message)
 
 
     @property
@@ -124,9 +111,10 @@ class ImportData(QObject):
         return self.input_path is not None
 
     def import_gtfs(self):
-        self.progress = 0
+        self.progress.set_progress(0, "test")
+        self.progress_Update.emit(self.progress)
         if not self.pre_checks():
-            self.progress = 20
+            self.progress_Update.emit(self.progress.set_progress(0, "test"))
             self.reset_data_cause_of_error()
             return None
 
@@ -151,7 +139,7 @@ class ImportData(QObject):
 
         if self.pickle_export_checked is True and self.pickle_save_path_filename is not None:
             self.save_pickle(imported_data)
-        self.progress = 100
+        self.progress_Update.emit(self.progress.set_progress(100, "test"))
         return gtfsDataFrameDto
 
     def evaluate_imported_data(self):
@@ -186,7 +174,7 @@ class ImportData(QObject):
                 logging.debug('pickle data detected')
                 for step in GtfsProcessingStep:
                     df_gtfs_data[step.df_name] = self.read_pickle_from_zip(zf, step.file_path)
-                    self.progress = step.progress_value
+                    self.progress_Update.emit(self.progress.set_progress(step.progress_value, "test"))
 
                 try:
                     with zipfile.ZipFile(self.input_path) as zf:

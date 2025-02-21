@@ -405,7 +405,7 @@ background-color: #ae636f;
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>97</width>
+                <width>93</width>
                 <height>154</height>
                </rect>
               </property>
@@ -1935,7 +1935,7 @@ border-radius: 1px;</string>
            <item row="2" column="2">
             <layout class="QGridLayout" name="progess_log">
              <item row="0" column="0">
-              <widget class="QListView" name="progress_history_list_view">
+              <widget class="ProgressHistoryListView" name="progress_history_list_view">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
                  <horstretch>0</horstretch>
@@ -1991,6 +1991,11 @@ border-radius: 1px;</string>
    <class>AnimatedTableView</class>
    <extends>QTableView</extends>
    <header>view.Custom.AnimatedTableView</header>
+  </customwidget>
+  <customwidget>
+   <class>ProgressHistoryListView</class>
+   <extends>QListView</extends>
+   <header>view.Custom.ProgressHistoryListView</header>
   </customwidget>
  </customwidgets>
  <resources>

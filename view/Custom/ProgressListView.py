@@ -1,12 +1,13 @@
 from PySide6.QtCore import QObject, QThread, Signal, Qt, QAbstractTableModel, QModelIndex, QSize
 from PySide6.QtGui import QPainter, QColor
 from PySide6.QtWidgets import QListView, QWidget, QVBoxLayout, QLabel, QStyledItemDelegate
+from model.Base.Progress import ProgressSignal
 
 class ProgressHistoryItem(QWidget):
     """Widget representing a single progress item"""
-    def __init__(self, title="", progress=0):
+    def __init__(self, progress: ProgressSignal = ProgressSignal()):
         super().__init__()
-        self.title = title
+        self.title = progress.message
         self.progress = progress
 
     def paintEvent(self, event):
@@ -20,7 +21,7 @@ class ProgressHistoryItem(QWidget):
         painter.drawRect(10, 10, width, height)
 
         # Draw progress
-        progress_width = int(width * (self.progress / 100))
+        progress_width = int(width * (self.progress.value / 100))
         painter.setBrush(QColor(52, 152, 219))  # Blue color
         painter.drawRect(10, 10, progress_width, height)
 
@@ -56,19 +57,19 @@ class ProgressHistoryModel(QAbstractTableModel):
         elif role == Qt.UserRole:
             return item.progress
 
-    def addItem(self, title, progress):
+    def addItem(self, title, progress: ProgressSignal):
         """Add a new progress item"""
         self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
-        self.items.append(ProgressHistoryItem(title, progress))
+        self.items.append(ProgressHistoryItem(progress))
         self.endInsertRows()
 
-    def updateProgress(self, index, progress):
+    def updateProgress(self, index, progress: ProgressSignal):
         """Update progress for an existing item"""
         if 0 <= index < len(self.items):
             self.items[index].progress = progress
             self.dataChanged.emit(index, index)
 
-class ProgressHistoryView(QListView):
+class ProgressHistoryListView(QListView):
     """Main view for displaying progress history"""
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -77,10 +78,10 @@ class ProgressHistoryView(QListView):
         self.setUniformItemSizes(True)
         self.setItemDelegate(ProgressBarDelegate())
 
-    def addTask(self, title, initial_progress=0):
+    def addTask(self, title, progress: ProgressSignal):
         """Add a new task to the history"""
         model = self.model()
-        model.addItem(title, initial_progress)
+        model.addItem(title, progress)
 
     def updateProgress(self, index, progress):
         """Update progress for a specific task"""

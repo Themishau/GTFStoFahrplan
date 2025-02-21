@@ -5,6 +5,7 @@ from PySide6.QtCore import QObject
 from PySide6.QtCore import Signal
 
 from model.Enum.GTFSEnums import *
+from ..Base.Progress import ProgressSignal
 from ..Base.AnalyzeData import AnalyzeData
 from model.SchedulePlaner.UmplaufPlaner.CirclePlaner import CirclePlaner
 from ..Base.CreatePlan import CreatePlan
@@ -21,7 +22,7 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class SchedulePlaner(QObject):
-    progress_Update = Signal(int)
+    progress_Update = Signal(ProgressSignal)
     error_occured = Signal(str)
     import_finished = Signal(bool)
     create_finished = Signal(bool)
@@ -46,20 +47,11 @@ class SchedulePlaner(QObject):
 
     """ methods """
 
-    def update_progress(self, value: int, message: Optional[str] = None):
-        """Handle progress updates from ImportData"""
-        # Update your view here
-        if message:
-            print(f"Progress: {value}% - {message}")
-        else:
-            print(f"Progress: {value}%")
-
     def send_error(self, e):
         self.error_occured.emit(e)
 
-    def update_progress_bar(self, value):
-        self.progress = int(value)
-        self.progress_Update.emit(self.progress)
+    def update_progres(self, value):
+        self.progress_Update.emit(value)
 
     def update_routes_list(self):
         self.update_routes_list_signal.emit()
@@ -86,13 +78,13 @@ class SchedulePlaner(QObject):
         self.initialize_create_plan()
 
     def initialize_import_data(self):
-        self.import_Data = ImportData(self.app, schedule_planer=self)
-        self.import_Data.progress_Update.connect(self.update_progress_bar)
+        self.import_Data = ImportData(self.app)
+        self.import_Data.progress_Update.connect(self.update_progres)
         self.import_Data.error_occured.connect(self.send_error)
 
     def initialize_cirle_planer(self):
         self.circle_plan = CirclePlaner(plans=self.create_plan.plans, app=self.app, progress=self.progress)
-        self.circle_plan.progress_Update.connect(self.update_progress_bar)
+        self.circle_plan.progress_Update.connect(self.update_progres)
         self.circle_plan.error_occured.connect(self.send_error)
 
     def initialize_select_data(self):
@@ -107,11 +99,11 @@ class SchedulePlaner(QObject):
     def initialize_export_plan(self):
         self.export_plan = ExportPlan(self.app, progress=self.progress)
         self.export_plan.create_settings_for_table_dto_changed.connect(self.update_create_settings_output)
-        self.export_plan.progress_Update.connect(self.update_progress_bar)
+        self.export_plan.progress_Update.connect(self.update_progres)
 
     def initialize_create_plan(self):
         self.create_plan = CreatePlan(self.app, progress=self.progress)
-        self.create_plan.progress_Update.connect(self.update_progress_bar)
+        self.create_plan.progress_Update.connect(self.update_progres)
         self.create_plan.create_sorting.connect(self.create_sorting_start)
         self.create_plan.gtfs_data_frame_dto = self.gtfs_data_frame_dto
 

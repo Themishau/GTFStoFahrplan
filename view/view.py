@@ -5,6 +5,7 @@ from PySide6.QtCore import Qt, QPoint, QSize
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QMainWindow, QApplication
 from PySide6.QtWidgets import QWidget, QAbstractItemView, QHeaderView
 from helpFunctions import string_to_qdate
+from model.Base.Progress import ProgressSignal
 from model.Enum.GTFSEnums import CreatePlanMode, DfRouteColumnEnum, DfAgencyColumnEnum
 from view.Custom.round_progress_bar import RoundProgress
 from view.Custom.select_table_view import TableModel
@@ -127,7 +128,7 @@ class View(QMainWindow):
 
         self.viewModel.set_up_create_tab_signal.connect(self.initialize_create_view_weekdaydate_option)
 
-        self.viewModel.update_progress_value.connect(self.update_progress_bar)
+        self.viewModel.update_progress_value.connect(self.update_progress)
         self.viewModel.error_message.connect(self.send_message_box)
 
     def initialize_busy_inficator(self):
@@ -239,9 +240,15 @@ class View(QMainWindow):
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
-    def update_progress_bar(self, value):
+    def update_progress(self, progress_data: ProgressSignal):
+        self.update_progress_bar(progress_data.value)
+        return True
 
-        #self.ui.progressBar.set_value(value)
+    def update_progress_list(self, progress_data: ProgressSignal):
+        NotImplemented
+
+    def update_progress_bar(self, value: int):
+        self.ui.progressBar.set_value(value)
         return True
 
     def initialize_modified_progress_bar(self):

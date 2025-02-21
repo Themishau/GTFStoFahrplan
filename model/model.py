@@ -88,8 +88,7 @@ class Model(QObject):
 
     def handle_worker_error(self, error):
         logging.error(f"Worker encountered an error: {error}. {type(error).__name__}")
-        self.send_message_box(
-            f"Failed. Create table failed. Error: {error}  {type(error).__name__}")
+        #self.error.emit(f"Failed. Create table failed. Error: {error}  {type(error).__name__}")
 
     def cancel_async_operation(self):
         if self.thread.isRunning():
