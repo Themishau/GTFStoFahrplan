@@ -5,7 +5,7 @@ from model.Base.Progress import ProgressSignal
 
 class ProgressHistoryItem(QWidget):
     """Widget representing a single progress item"""
-    def __init__(self, progress: ProgressSignal = ProgressSignal()):
+    def __init__(self, progress: ProgressSignal):
         super().__init__()
         self.title = progress.message
         self.progress = progress
@@ -47,6 +47,9 @@ class ProgressHistoryModel(QAbstractTableModel):
     def rowCount(self, parent=None):
         return len(self.items)
 
+    def columnCount(self, parent=None):
+        return 1  # Assuming there is only one column for the progress items
+
     def data(self, index, role):
         if not index.isValid():
             return None
@@ -57,7 +60,7 @@ class ProgressHistoryModel(QAbstractTableModel):
         elif role == Qt.UserRole:
             return item.progress
 
-    def addItem(self, title, progress: ProgressSignal):
+    def addItem(self, progress: ProgressSignal):
         """Add a new progress item"""
         self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
         self.items.append(ProgressHistoryItem(progress))
@@ -78,10 +81,10 @@ class ProgressHistoryListView(QListView):
         self.setUniformItemSizes(True)
         self.setItemDelegate(ProgressBarDelegate())
 
-    def addTask(self, title, progress: ProgressSignal):
+    def addTask(self, progress: ProgressSignal):
         """Add a new task to the history"""
         model = self.model()
-        model.addItem(title, progress)
+        model.addItem(progress)
 
     def updateProgress(self, index, progress):
         """Update progress for a specific task"""

@@ -15,4 +15,5 @@ class ProgressSignal:
         self.value= value
         self.message= message
         self.timestamp= Time.time()
+        return self
 

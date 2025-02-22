@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'main_window.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.8.1
+## Created by: Qt User Interface Compiler version 6.8.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -25,6 +25,7 @@ from PySide6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComb
 from view.Custom.AnimatedQToolBox import AnimatedQToolBox
 from view.Custom.AnimatedTableView import AnimatedTableView
 from view.Custom.FadingButton import FadingButton
+from view.Custom.ProgressListView import ProgressHistoryListView
 from view.Custom.custom_table_view import Customtableview
 from view.Custom.round_progress_bar import RoundProgress
 from view.ui.res import resource_boot
@@ -276,7 +277,7 @@ class Ui_MainWindow(object):
         self.toolBox.addItem(self.page, icon, u"General")
         self.page_2 = QWidget()
         self.page_2.setObjectName(u"page_2")
-        self.page_2.setGeometry(QRect(0, 0, 97, 154))
+        self.page_2.setGeometry(QRect(0, 0, 93, 154))
         sizePolicy2.setHeightForWidth(self.page_2.sizePolicy().hasHeightForWidth())
         self.page_2.setSizePolicy(sizePolicy2)
         self.page_2.setStyleSheet(u"")
@@ -1070,7 +1071,7 @@ class Ui_MainWindow(object):
 
         self.progess_log = QGridLayout()
         self.progess_log.setObjectName(u"progess_log")
-        self.progress_history_list_view = QListView(self.bottom_info_widget)
+        self.progress_history_list_view = ProgressHistoryListView(self.bottom_info_widget)
         self.progress_history_list_view.setObjectName(u"progress_history_list_view")
         sizePolicy7.setHeightForWidth(self.progress_history_list_view.sizePolicy().hasHeightForWidth())
         self.progress_history_list_view.setSizePolicy(sizePolicy7)

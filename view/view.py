@@ -242,10 +242,11 @@ class View(QMainWindow):
 
     def update_progress(self, progress_data: ProgressSignal):
         self.update_progress_bar(progress_data.value)
+        self.update_progress_list(progress_data)
         return True
 
     def update_progress_list(self, progress_data: ProgressSignal):
-        NotImplemented
+        self.ui.progress_history_list_view.addTask(progress_data)
 
     def update_progress_bar(self, value: int):
         self.ui.progressBar.set_value(value)
