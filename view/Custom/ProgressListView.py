@@ -28,10 +28,17 @@ class ProgressHistoryModel(QAbstractTableModel):
 
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
-            return None
+            if self.items:
+                if role == Qt.DisplayRole:
+                    return self.items[-1].title
+                elif role == Qt.UserRole:
+                    return self.items[-1].progress
 
         item = self.items[index.row()]
-        return item.progress
+        if role == Qt.DisplayRole:
+            return item.title
+        elif role == Qt.UserRole:
+            return item.progress
 
     def addItem(self, progress: ProgressSignal):
         """Add a new progress item"""
@@ -44,7 +51,7 @@ class ProgressHistoryModel(QAbstractTableModel):
         for index, item in enumerate(self.items):
             if item.title == progress.message:
                 self.items[index].progress = progress
-                self.dataChanged.emit(self.index(index), self.index(index))
+                self.dataChanged.emit(self.index(row=index,column=1))
                 return
         self.addItem(progress)
 

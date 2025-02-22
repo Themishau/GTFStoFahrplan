@@ -139,7 +139,7 @@ class ImportData(QObject):
 
         if self.pickle_export_checked is True and self.pickle_save_path_filename is not None:
             self.save_pickle(imported_data)
-        #self.progress_Update.emit(self.progress.set_progress(66, "import_gtfs done"))
+        self.progress_Update.emit(self.progress.set_progress(100, "import_gtfs done"))
         return gtfsDataFrameDto
 
     def evaluate_imported_data(self):
