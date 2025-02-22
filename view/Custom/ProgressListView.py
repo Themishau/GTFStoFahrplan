@@ -1,6 +1,7 @@
 from PySide6.QtCore import QObject, QThread, Signal, Qt, QAbstractTableModel, QModelIndex, QSize
 from PySide6.QtGui import QPainter, QColor
-from PySide6.QtWidgets import QListView, QWidget, QVBoxLayout, QLabel, QStyledItemDelegate
+from PySide6.QtWidgets import QListView, QWidget, QVBoxLayout, QLabel, QStyledItemDelegate, QStyleOptionProgressBar, \
+    QApplication, QStyle
 from model.Base.Progress import ProgressSignal
 
 class ProgressHistoryItem(QWidget):
@@ -9,31 +10,6 @@ class ProgressHistoryItem(QWidget):
         super().__init__()
         self.title = progress.message
         self.progress = progress
-
-    def paintEvent(self, event):
-        """Custom painting for progress bar"""
-        painter = QPainter(self)
-        width = self.width() - 20  # Leave padding
-        height = self.height() - 20
-
-        # Draw background
-        painter.setBrush(QColor(240, 240, 240))
-        painter.drawRect(10, 10, width, height)
-
-        # Draw progress
-        progress_width = int(width * (self.progress.value / 100))
-        painter.setBrush(QColor(52, 152, 219))  # Blue color
-        painter.drawRect(10, 10, progress_width, height)
-
-        # Draw text
-        painter.setPen(QColor(0, 0, 0))
-        font_metrics = painter.fontMetrics()
-        elided_text = font_metrics.elidedText(
-            self.title,
-            Qt.ElideRight,
-            width
-        )
-        painter.drawText(10, height + 25, elided_text)
 
     def sizeHint(self):
         return QSize(300, 60)
@@ -50,15 +26,12 @@ class ProgressHistoryModel(QAbstractTableModel):
     def columnCount(self, parent=None):
         return 1  # Assuming there is only one column for the progress items
 
-    def data(self, index, role):
+    def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
             return None
 
         item = self.items[index.row()]
-        if role == Qt.DisplayRole:
-            return item.title
-        elif role == Qt.UserRole:
-            return item.progress
+        return item.progress
 
     def addItem(self, progress: ProgressSignal):
         """Add a new progress item"""
@@ -66,11 +39,14 @@ class ProgressHistoryModel(QAbstractTableModel):
         self.items.append(ProgressHistoryItem(progress))
         self.endInsertRows()
 
-    def updateProgress(self, index, progress: ProgressSignal):
+    def updateProgress(self, progress: ProgressSignal):
         """Update progress for an existing item"""
-        if 0 <= index < len(self.items):
-            self.items[index].progress = progress
-            self.dataChanged.emit(index, index)
+        for index, item in enumerate(self.items):
+            if item.title == progress.message:
+                self.items[index].progress = progress
+                self.dataChanged.emit(self.index(index), self.index(index))
+                return
+        self.addItem(progress)
 
 class ProgressHistoryListView(QListView):
     """Main view for displaying progress history"""
@@ -86,15 +62,22 @@ class ProgressHistoryListView(QListView):
         model = self.model()
         model.addItem(progress)
 
-    def updateProgress(self, index, progress):
+    def updateProgress(self, progress):
         """Update progress for a specific task"""
         model = self.model()
-        model.updateProgress(index, progress)
+        model.updateProgress(progress)
 
 class ProgressBarDelegate(QStyledItemDelegate):
     """Delegate for custom drawing of progress items"""
     def paint(self, painter, option, index):
-        item = index.data(Qt.UserRole)
-        if isinstance(item, ProgressHistoryItem):
-            item.size = option.rect.size()
-            item.paint(painter, option.rect, option.palette)
+        progress = index.data(Qt.UserRole)
+        if isinstance(progress, ProgressSignal):
+            progress_bar_option = QStyleOptionProgressBar()
+            progress_bar_option.rect = option.rect
+            progress_bar_option.minimum = 0
+            progress_bar_option.maximum = 100
+            progress_bar_option.progress = progress.value
+            progress_bar_option.text = f"{progress.message} {progress.value}%"
+            progress_bar_option.textVisible = True
+            progress_bar_option.textAlignment = Qt.AlignCenter
+            QApplication.style().drawControl(QStyle.CE_ProgressBar, progress_bar_option, painter)
