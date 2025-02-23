@@ -1,12 +1,13 @@
 import logging
 import os
-
+import copy
 from PySide6.QtCore import Qt, QPoint, QSize
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QMainWindow, QApplication
 from PySide6.QtWidgets import QWidget, QAbstractItemView, QHeaderView
 from helpFunctions import string_to_qdate
 from model.Base.Progress import ProgressSignal
 from model.Enum.GTFSEnums import CreatePlanMode, DfRouteColumnEnum, DfAgencyColumnEnum
+from view.Custom.ProgressListView import ProgressHistoryModel, ProgressBarDelegate
 from view.Custom.round_progress_bar import RoundProgress
 from view.Custom.select_table_view import TableModel
 from view.Custom.sort_table_view import TableModelSort
@@ -59,6 +60,12 @@ class View(QMainWindow):
         self.ui.AgenciesTableView.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.ui.AgenciesTableView.setSelectionMode(QAbstractItemView.SingleSelection)
         self.ui.AgenciesTableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
+        self.ui.progress_history_list_view.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.ui.progress_history_list_view.setSelectionMode(QAbstractItemView.SingleSelection)
+
+        self.ui.progress_history_list_view.setModel(ProgressHistoryModel())
+        self.ui.progress_history_list_view.setItemDelegate(ProgressBarDelegate())
 
         self.ui.TripsTableView.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.ui.TripsTableView.setSelectionMode(QAbstractItemView.SingleSelection)

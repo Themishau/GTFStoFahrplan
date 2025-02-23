@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-
+import copy
 from PySide6.QtCore import QObject
 from PySide6.QtCore import Signal
 
@@ -51,7 +51,7 @@ class SchedulePlaner(QObject):
         self.error_occured.emit(e)
 
     def update_progres(self, value):
-        self.progress_Update.emit(value)
+        self.progress_Update.emit(copy.deepcopy(value))
 
     def update_routes_list(self):
         self.update_routes_list_signal.emit()
