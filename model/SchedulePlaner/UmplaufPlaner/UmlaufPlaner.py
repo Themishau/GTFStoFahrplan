@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 from PySide6.QtCore import Signal, QObject
 
+from model.Base.Progress import ProgressSignal
 from model.Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO
 from model.Dto.CreateTableDataframeDto import CreateTableDataframeDto
 from model.Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
@@ -17,7 +18,8 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class UmlaufPlaner(QObject):
-    progress_Update = Signal(int)
+    progress_Update = Signal(ProgressSignal)
+    error_occured = Signal(str)
 
     def __init__(self):
         super().__init__()
@@ -26,14 +28,8 @@ class UmlaufPlaner(QObject):
         self.gtfs_data_frame_dto = None
         self.df_filtered_stop_names = None
 
-    @property
-    def progress(self):
-        return self._progress
+        self.progress = ProgressSignal()
 
-    @progress.setter
-    def progress(self, value):
-        self._progress = value
-        self.progress_Update.emit(self._progress)
 
     @property
     def gtfs_data_frame_dto(self):
@@ -51,68 +47,66 @@ class UmlaufPlaner(QObject):
 
 
     def create_table(self):
+        process = 10
         if ((self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date or self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_date)
               and self.create_settings_for_table_dto.individual_sorting):
-            self.progress = 10
+            self.progress_Update.emit(self.progress.set_progress(process + 10, "create_table"))
             self.dates_prepare_data_fahrplan()
-            self.progress = 20
+            self.progress_Update.emit(self.progress.set_progress(process + 10, "create_table"))
             self.datesWeekday_select_dates_for_date_range()
-            self.progress = 30
+            self.progress_Update.emit(self.progress.set_progress(process + 10, "create_table"))
             self.dates_select_dates_delete_exception_2()
-            self.progress = 40
+            self.progress_Update.emit(self.progress.set_progress(process + 10, "create_table"))
             self.datesWeekday_select_stops_for_trips()
-            self.progress = 50
+            self.progress_Update.emit(self.progress.set_progress(process + 10, "create_table"))
             self.datesWeekday_select_for_every_date_trips_stops()
-            self.progress = 70
+            self.progress_Update.emit(self.progress.set_progress(process + 10, "create_table"))
             self.datesWeekday_create_sort_stopnames()
 
         elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date or self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_date:
-            self.progress = 10
+            self.progress_Update.emit(self.progress.set_progress(process + 10, "create_table"))
             self.dates_prepare_data_fahrplan()
-            self.progress = 20
+            self.progress_Update.emit(self.progress.set_progress(process + 10, "create_table"))
             self.datesWeekday_select_dates_for_date_range()
-            self.progress = 30
+            self.progress_Update.emit(self.progress.set_progress(process + 10, "create_table"))
             self.dates_select_dates_delete_exception_2()
-            self.progress = 40
+            self.progress_Update.emit(self.progress.set_progress(process + 10, "create_table"))
             self.datesWeekday_select_stops_for_trips()
-            self.progress = 50
+            self.progress_Update.emit(self.progress.set_progress(process + 10, "create_table"))
             self.datesWeekday_select_for_every_date_trips_stops()
-            self.progress = 70
+            self.progress_Update.emit(self.progress.set_progress(process + 10, "create_table"))
             self.datesWeekday_create_sort_stopnames()
-            self.progress = 80
+            self.progress_Update.emit(self.progress.set_progress(process + 10, "create_table"))
             self.datesWeekday_create_fahrplan()
-            self.progress = 90
+            self.progress_Update.emit(self.progress.set_progress(process + 10, "create_table"))
 
         elif ((self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.weekday or self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_weekday)
               and self.create_settings_for_table_dto.individual_sorting):
-            self.progress = 10
+            self.progress_Update.emit(self.progress.set_progress(process + 10, "create_table"))
             self.weekday_prepare_data_fahrplan()
-            self.progress = 20
+            self.progress_Update.emit(self.progress.set_progress(process + 10, "create_table"))
             self.datesWeekday_select_dates_for_date_range()
-            self.progress = 30
+            self.progress_Update.emit(self.progress.set_progress(process + 10, "create_table"))
             self.weekday_select_weekday_exception_2()
-            self.progress = 40
+            self.progress_Update.emit(self.progress.set_progress(process + 10, "create_table"))
             self.datesWeekday_select_stops_for_trips()
-            self.progress = 50
+            self.progress_Update.emit(self.progress.set_progress(process + 10, "create_table"))
             self.datesWeekday_select_for_every_date_trips_stops()
-            self.progress = 70
+            self.progress_Update.emit(self.progress.set_progress(process + 10, "create_table"))
             self.datesWeekday_create_sort_stopnames()
-            self.create_sorting.emit()
 
         elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.weekday or self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_weekday:
-            self.progress = 10
             self.weekday_prepare_data_fahrplan()
-            self.progress = 20
+            self.progress_Update.emit(self.progress.set_progress(process + 10, "create_table"))
             self.datesWeekday_select_dates_for_date_range()
-            self.progress = 30
+            self.progress_Update.emit(self.progress.set_progress(process + 10, "create_table"))
             self.weekday_select_weekday_exception_2()
-            self.progress = 40
+            self.progress_Update.emit(self.progress.set_progress(process + 10, "create_table"))
             self.datesWeekday_select_stops_for_trips()
-            self.progress = 50
+            self.progress_Update.emit(self.progress.set_progress(process + 10, "create_table"))
             self.datesWeekday_select_for_every_date_trips_stops()
-            self.progress = 70
+            self.progress_Update.emit(self.progress.set_progress(process + 10, "create_table"))
             self.datesWeekday_create_fahrplan()
-            self.progress = 80
 
 
     def dates_prepare_data_fahrplan(self):

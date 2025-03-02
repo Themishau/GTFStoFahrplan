@@ -40,7 +40,6 @@ class ImportData(QObject):
 
         """ visual internal property """
         self.progress = ProgressSignal()
-        # Connect progress signals
 
         self.current_process_string = ""
         self.missing_columns_in_gtfs_file = pd.DataFrame({
