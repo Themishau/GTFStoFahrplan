@@ -84,26 +84,26 @@ class SchedulePlaner(QObject):
         self.import_Data.error_occured.connect(self.send_error)
 
     def initialize_cirle_planer(self):
-        self.circle_plan = CirclePlaner(plans=self.create_plan.plans, app=self.app, progress=self.progress)
+        self.circle_plan = CirclePlaner(plans=self.create_plan.plans, app=self.app)
         self.circle_plan.progress_Update.connect(self.update_progres)
         self.circle_plan.error_occured.connect(self.send_error)
 
     def initialize_select_data(self):
-        self.select_data = SelectData(self.app, progress=self.progress)
+        self.select_data = SelectData(self.app)
         self.select_data.update_routes_list_signal.connect(self.update_routes_list)
         self.select_data.data_selected.connect(self.update_options_state)
         self.select_data.create_settings_for_table_dto_changed.connect(self.update_create_settings_selected_data)
 
     def initialize_analyze_data(self):
-        self.analyze_data = AnalyzeData(self.app, progress=self.progress)
+        self.analyze_data = AnalyzeData(self.app)
 
     def initialize_export_plan(self):
-        self.export_plan = ExportPlan(self.app, progress=self.progress)
+        self.export_plan = ExportPlan(self.app)
         self.export_plan.create_settings_for_table_dto_changed.connect(self.update_create_settings_output)
         self.export_plan.progress_Update.connect(self.update_progres)
 
     def initialize_create_plan(self):
-        self.create_plan = CreatePlan(self.app, progress=self.progress)
+        self.create_plan = CreatePlan(self.app)
         self.create_plan.progress_Update.connect(self.update_progres)
         self.create_plan.create_sorting.connect(self.create_sorting_start)
         self.create_plan.gtfs_data_frame_dto = self.gtfs_data_frame_dto

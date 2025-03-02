@@ -4,6 +4,7 @@ import logging
 from PySide6.QtCore import QObject
 from PySide6.QtCore import Signal
 
+from .Progress import ProgressSignal
 from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
 
 logging.basicConfig(level=logging.DEBUG,
@@ -12,38 +13,22 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class AnalyzeData(QObject):
-    progress_Update = Signal(int)
-    progress_information_Update = Signal(str)
+    progress_Update = Signal(ProgressSignal)
     error_occured = Signal(str)
 
-    def __init__(self, app, progress: int):
+    def __init__(self, app):
         super().__init__()
         self.app = app
         self.gtfs_data_frame_dto = None
-        self.progress = progress
         self.progress_information = ""
         self.date_range = None
         self.sample_date = None
         self.date_range_df_format = None
         self.notify_functions = {}
 
-    @property
-    def progress(self):
-        return self._progress
+        """ visual internal property """
+        self.progress = ProgressSignal()
 
-    @progress.setter
-    def progress(self, value):
-        self._progress = value
-        self.progress_Update.emit(self._progress)
-
-    @property
-    def progress_information(self):
-        return self._progress
-
-    @progress_information.setter
-    def progress_information(self, value):
-        self._progress_information = value
-        self.progress_information_Update.emit(self._progress_information)
 
     @property
     def gtfs_data_frame_dto(self):

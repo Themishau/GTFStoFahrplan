@@ -5,6 +5,7 @@ from datetime import datetime
 from PySide6.QtCore import QObject
 from PySide6.QtCore import Signal
 
+from .Progress import ProgressSignal
 from ..Dto import CreateTableDataframeDto
 from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO
 
@@ -14,11 +15,11 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class ExportPlan(QObject):
-    progress_Update = Signal(int)
-    progress_information_Update = Signal(str)
+    progress_Update = Signal(ProgressSignal)
+    error_occured = Signal(str)
     create_settings_for_table_dto_changed = Signal()
 
-    def __init__(self, app, progress: int):
+    def __init__(self, app):
         super().__init__()
         self.app = app
         self.reset_create = False
@@ -26,7 +27,8 @@ class ExportPlan(QObject):
         self.create_plan_mode = None
         self.output_path = ""
         self.full_output_path = ""
-        self.progress = progress
+        """ visual internal property """
+        self.progress = ProgressSignal()
 
     @property
     def progress(self):

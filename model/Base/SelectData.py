@@ -4,6 +4,8 @@ import time
 
 from PySide6.QtCore import Signal, QObject
 import pandas as pd
+
+from .Progress import ProgressSignal
 from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO
 from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
 
@@ -13,15 +15,14 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class SelectData(QObject):
-    progress_update = Signal(int)
-    progress_information_Update = Signal(str)
+    progress_Update = Signal(ProgressSignal)
+    error_occured = Signal(str)
     select_agency_signal = Signal()
     update_routes_list_signal = Signal()
-    error_occured = Signal(str)
     data_selected = Signal(bool)
     create_settings_for_table_dto_changed = Signal()
 
-    def __init__(self, app, progress: int):
+    def __init__(self, app):
         super().__init__()
         self.app = app
         self.gtfs_data_frame_dto = None
@@ -43,7 +44,8 @@ class SelectData(QObject):
 
         self.reset_select_data = False
         self.create_plan_mode = None
-        self.progress = progress
+        """ visual internal property """
+        self.progress = ProgressSignal()
 
         self.options_dates_weekday = ['Dates', 'Weekday']
         self.week_day_options = {0: [0, 'Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday'],
@@ -70,14 +72,6 @@ class SelectData(QObject):
                                    '7,Saturday',
                                    '8,Sunday']
 
-    @property
-    def progress(self):
-        return self._progress
-
-    @progress.setter
-    def progress(self, value):
-        self._progress = value
-        self.progress_update.emit(self.progress)
 
     @property
     def selected_route(self):

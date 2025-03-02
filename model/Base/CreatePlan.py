@@ -2,12 +2,17 @@
 import concurrent.futures
 import copy
 import logging
+import re
 
 from PySide6.QtCore import Signal, QObject
 import pandas as pd
 from model.Enum.GTFSEnums import CreatePlanMode
+from .Progress import ProgressSignal
 from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO
 from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
+from ..SchedulePlaner.CreationStrategy.ParallelTableCreationStrategy import ParallelTableCreationStrategy
+from ..SchedulePlaner.CreationStrategy.SequentialTableCreationStrategy import SequentialTableCreationStrategy
+from ..SchedulePlaner.CreationStrategy.TableCreationContext import TableCreationContext
 from ..SchedulePlaner.UmplaufPlaner.UmlaufPlaner import UmlaufPlaner
 
 logging.basicConfig(level=logging.DEBUG,
@@ -16,11 +21,11 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class CreatePlan(QObject):
-    progress_Update = Signal(int)
+    progress_Update = Signal(ProgressSignal)
     error_occured = Signal(str)
     create_sorting = Signal()
 
-    def __init__(self, app, progress: int):
+    def __init__(self, app):
         super().__init__()
         self.app = app
         self.reset_create = False
@@ -30,7 +35,7 @@ class CreatePlan(QObject):
         self.plans = None
 
         """ visual internal property """
-        self.progress = progress
+        self.progress = ProgressSignal()
 
         #self.weekend = ['Saturday', 'Sunday']
         #self.weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
@@ -92,60 +97,35 @@ class CreatePlan(QObject):
         self.progress_Update.emit(copy.deepcopy(value))
 
     def create_table(self):
-        if self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_date and self.create_settings_for_table_dto.individual_sorting:
-            self.plans = [UmlaufPlaner(), UmlaufPlaner()]
-            self.plans[0].create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
-            self.plans[0].gtfs_data_frame_dto = copy.deepcopy(self.gtfs_data_frame_dto)
+        if (self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_date and
+                self.create_settings_for_table_dto.individual_sorting):
+            strategy = ParallelTableCreationStrategy(
+                self.create_settings_for_table_dto,
+                self.gtfs_data_frame_dto
+            )
+        elif (self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date or
+              self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.weekday):
+            strategy = SequentialTableCreationStrategy(
+                self.create_settings_for_table_dto,
+                self.gtfs_data_frame_dto
+            )
+        # Add other strategy selection logic as needed
 
-            self.plans[1].create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
-            self.plans[1].create_settings_for_table_dto.direction = 1
-            self.plans[1].gtfs_data_frame_dto = copy.deepcopy(self.gtfs_data_frame_dto)
+        # Create context with selected strategy
+        context = TableCreationContext(strategy)
+        context.create_table()
 
-            logging.debug(f"plans: {self.plans[0].create_settings_for_table_dto.direction}\n"
-                          f"       {self.plans[1].create_settings_for_table_dto.direction}")
-
-            with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-                processes = [executor.submit(self.plans[0].create_table),
-                             executor.submit(self.plans[1].create_table)]
-
-                test = concurrent.futures.as_completed(processes)
+        if self.create_settings_for_table_dto.individual_sorting:
             self.create_sorting.emit()
-
-        elif (self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date or self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.weekday):
-            self.plans = UmlaufPlaner()
-            self.plans.progress_Update.connect(self.update_progres)
-            self.plans.create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
-            self.plans.gtfs_data_frame_dto = copy.deepcopy(self.gtfs_data_frame_dto)
-            self.plans.create_table()
-            if self.create_settings_for_table_dto.individual_sorting:
-                self.create_sorting.emit()
-
-        elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_date or self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_weekday:
-            self.plans = [UmlaufPlaner(), UmlaufPlaner()]
-            self.plans[0].create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
-            self.plans[0].create_settings_for_table_dto.direction = 0
-            self.plans[0].gtfs_data_frame_dto = copy.deepcopy(self.gtfs_data_frame_dto)
-
-            self.plans[1].create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
-            self.plans[1].create_settings_for_table_dto.direction = 1
-            self.plans[1].gtfs_data_frame_dto = copy.deepcopy(self.gtfs_data_frame_dto)
-
-            logging.debug(f"plans: Direction {self.plans[0].create_settings_for_table_dto.direction}\n"
-                          f"       Direction {self.plans[1].create_settings_for_table_dto.direction}")
-
-            try:
-                with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-                    futures = [executor.submit(self.plans[0].create_table),
-                               executor.submit(self.plans[1].create_table)]
-
-                for future in concurrent.futures.as_completed(futures):
-                    try:
-                        _ = future.result()
-                    except Exception as exc:
-                        logging.debug(f'Thread generated an exception: {exc}')
-            except Exception as exc:
-                logging.debug(f'An error occurred during execution: {exc}')
 
 
     def create_table_continue(self):
         self.plans.datesWeekday_create_fahrplan_continue()
+
+        # checks if date string
+    def check_dates_input(self, dates):
+        pattern1 = re.findall(r'^\d{8}(?:\d{8})*(?:,\d{8})*$', dates)
+        if pattern1:
+            return True
+        else:
+            return False

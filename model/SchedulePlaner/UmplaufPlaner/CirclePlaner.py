@@ -6,6 +6,7 @@ import logging
 import pandas as pd
 from PySide6.QtCore import Signal, QObject
 
+from model.Base.Progress import ProgressSignal
 from model.Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO
 from model.Enum.GTFSEnums import ErrorMessageRessources
 
@@ -15,15 +16,16 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class CirclePlaner(QObject):
-    progress_Update = Signal(int)
+    progress_Update = Signal(ProgressSignal)
     error_occured = Signal(str)
 
-    def __init__(self, plans, app, progress: int):
+    def __init__(self, plans, app):
         super().__init__()
         self.app = app
         self.create_settings_for_table_dto = CreateSettingsForTableDTO()
         self.plans = plans
-        self.progress = progress
+        """ visual internal property """
+        self.progress = ProgressSignal()
 
         self.weekDayOptionsList = ['0,Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday',
                                    '1,Monday, Tuesday, Wednesday, Thursday, Friday',
