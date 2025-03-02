@@ -34,8 +34,9 @@ class SchedulePlaner(QObject):
         super().__init__()
         self.gtfs_data_frame_dto = None
         self.app = app
-
         self.progress = 0
+
+        """ Model classes for the schedule planer """
         self.circle_plan = None
         self.create_plan = None
         self.export_plan = None
@@ -133,6 +134,7 @@ class SchedulePlaner(QObject):
            return False
         except ValueError as e:
            self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
+           return False
 
     def create_table_individual_sorting(self) -> bool:
         self.create_plan.create_table()
@@ -184,6 +186,8 @@ class SchedulePlaner(QObject):
                 return False
 
             self.import_finished.emit(True)
+            return True
+
         except AttributeError as e:
             self.error_occured.emit(ErrorMessageRessources.no_import_object_generated.value)
             return False
