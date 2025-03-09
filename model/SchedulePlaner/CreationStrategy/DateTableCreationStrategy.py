@@ -1,14 +1,17 @@
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, QObject
 import copy
 from model.Base.Progress import ProgressSignal
+from model.SchedulePlaner.CreationStrategy.CommonMeta import CommonMeta
 from model.SchedulePlaner.CreationStrategy.TableCreationStrategy import TableCreationStrategy
 from model.SchedulePlaner.UmplaufPlaner.UmlaufPlaner import UmlaufPlaner
 
-class DateTableCreationStrategy(TableCreationStrategy):
+class DateTableCreationStrategy(QObject, TableCreationStrategy):
     progress_Update = Signal(ProgressSignal)
     error_occured = Signal(str)
-    def __init__(self, UmlaufPlaner: UmlaufPlaner):
+    def __init__(self, app, UmlaufPlaner: UmlaufPlaner, metaclass=CommonMeta):
+        super().__init__()
         """ visual internal property """
+        self.app = app
         self.progress = ProgressSignal()
         self.process = 10
         self.plan = UmlaufPlaner

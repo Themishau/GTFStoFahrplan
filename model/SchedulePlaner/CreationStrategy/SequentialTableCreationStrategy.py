@@ -3,6 +3,7 @@ import copy
 from PySide6.QtCore import QObject, Signal
 from model.Base.Progress import ProgressSignal
 from model.Enum.GTFSEnums import CreatePlanMode
+from model.SchedulePlaner.CreationStrategy.CommonMeta import CommonMeta
 from model.SchedulePlaner.CreationStrategy.DateTableCreationStrategy import DateTableCreationStrategy
 from model.SchedulePlaner.CreationStrategy.IndividualDateTableCreationStrategy import IndividualDateTableCreationStrategy
 from model.SchedulePlaner.CreationStrategy.IndividualWeekdayTableCreationStrategy import IndividualWeekdayTableCreationStrategy
@@ -11,7 +12,7 @@ from model.SchedulePlaner.CreationStrategy.TableCreationStrategy import TableCre
 from model.SchedulePlaner.CreationStrategy.WeekdayTableCreationStrategy import WeekdayTableCreationStrategy
 from model.SchedulePlaner.UmplaufPlaner.UmlaufPlaner import UmlaufPlaner
 
-class SequentialTableCreationStrategy(QObject, TableCreationStrategy):
+class SequentialTableCreationStrategy(QObject, TableCreationStrategy, metaclass=CommonMeta):
     progress_Update = Signal(ProgressSignal)
     create_sorting = Signal()
     error_occured = Signal(str)
@@ -35,7 +36,7 @@ class SequentialTableCreationStrategy(QObject, TableCreationStrategy):
             strategy = IndividualWeekdayTableCreationStrategy(self.plans)
             strategy.create_sorting.connect(self.update_progress)
         elif (self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date):
-            strategy = DateTableCreationStrategy(self.plans)
+            strategy = DateTableCreationStrategy(self.app, self.plans)
         elif (self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.weekday):
             strategy = WeekdayTableCreationStrategy(self.plans)
 
