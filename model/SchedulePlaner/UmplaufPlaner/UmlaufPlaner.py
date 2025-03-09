@@ -17,9 +17,7 @@ logging.basicConfig(level=logging.DEBUG,
                     datefmt="%Y-%m-%d %H:%M:%S")
 
 
-class UmlaufPlaner(QObject):
-    progress_Update = Signal(ProgressSignal)
-    error_occured = Signal(str)
+class UmlaufPlaner():
 
     def __init__(self):
         super().__init__()

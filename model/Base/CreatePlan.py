@@ -93,24 +93,25 @@ class CreatePlan(QObject):
 
         return True
 
-    def update_progres(self, value):
+    def update_progress(self, value):
         self.progress_Update.emit(copy.deepcopy(value))
 
     def create_table(self):
-        if (self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_date and
-                self.create_settings_for_table_dto.individual_sorting):
+        strategy = None
+        if (self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_date or
+                self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_weekday):
             strategy = ParallelTableCreationStrategy(
                 self.create_settings_for_table_dto,
                 self.gtfs_data_frame_dto
             )
         elif (self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date or
               self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.weekday):
-            strategy = SequentialTableCreationStrategy(
+            strategy = SequentialTableCreationStrategy(self.app,
                 self.create_settings_for_table_dto,
                 self.gtfs_data_frame_dto
             )
         # Add other strategy selection logic as needed
-
+        strategy.progress_Update.connect(self.update_progress)
         # Create context with selected strategy
         context = TableCreationContext(strategy)
         context.create_table()
