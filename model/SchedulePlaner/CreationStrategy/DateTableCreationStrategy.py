@@ -1,6 +1,5 @@
-from typing import List, Optional
-import copy
 from PySide6.QtCore import Signal
+import copy
 from model.Base.Progress import ProgressSignal
 from model.SchedulePlaner.CreationStrategy.TableCreationStrategy import TableCreationStrategy
 from model.SchedulePlaner.UmplaufPlaner.UmlaufPlaner import UmlaufPlaner
@@ -26,9 +25,12 @@ class DateTableCreationStrategy(TableCreationStrategy):
             (self.plan.datesWeekday_create_fahrplan, "datesWeekday_create_fahrplan")
         ]
 
+        sorting fehlt :(
+
+
         for step, description in steps:
             self.progress_Update.emit(self.progress.set_progress(self.process + 10, description))
             step()
 
-    def update_progress(self, progress: int) -> None:
-        self.progress = progress
+    def update_progres(self, value):
+        self.progress_Update.emit(copy.deepcopy(value))
