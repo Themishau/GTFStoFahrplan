@@ -1,17 +1,21 @@
 from typing import List, Optional
 import copy
-from PySide6.QtCore import Signal
+
+from PySide6.QtCore import Signal, QObject
+from model.SchedulePlaner.CreationStrategy.CommonMeta import CommonMeta
 from model.Base.Progress import ProgressSignal
 from model.SchedulePlaner.CreationStrategy.TableCreationStrategy import TableCreationStrategy
 from model.SchedulePlaner.UmplaufPlaner.UmlaufPlaner import UmlaufPlaner
 
-class IndividualWeekdayTableCreationStrategy(TableCreationStrategy):
+class IndividualWeekdayTableCreationStrategy(QObject, TableCreationStrategy, metaclass=CommonMeta):
     progress_Update = Signal(ProgressSignal)
     error_occured = Signal(str)
     create_sorting = Signal()
 
-    def __init__(self,  UmlaufPlaner: UmlaufPlaner):
+    def __init__(self,  app, UmlaufPlaner: UmlaufPlaner):
+        super().__init__()
         """ visual internal property """
+        self.app = app
         self.progress = ProgressSignal()
         self.process = 10
         self.plan = UmlaufPlaner

@@ -5,10 +5,10 @@ from model.SchedulePlaner.CreationStrategy.CommonMeta import CommonMeta
 from model.SchedulePlaner.CreationStrategy.TableCreationStrategy import TableCreationStrategy
 from model.SchedulePlaner.UmplaufPlaner.UmlaufPlaner import UmlaufPlaner
 
-class DateTableCreationStrategy(QObject, TableCreationStrategy):
+class DateTableCreationStrategy(QObject, TableCreationStrategy, metaclass=CommonMeta):
     progress_Update = Signal(ProgressSignal)
     error_occured = Signal(str)
-    def __init__(self, app, UmlaufPlaner: UmlaufPlaner, metaclass=CommonMeta):
+    def __init__(self, app, UmlaufPlaner: UmlaufPlaner):
         super().__init__()
         """ visual internal property """
         self.app = app

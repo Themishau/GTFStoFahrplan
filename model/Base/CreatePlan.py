@@ -100,7 +100,7 @@ class CreatePlan(QObject):
         strategy = None
         if (self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_date or
                 self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_weekday):
-            strategy = ParallelTableCreationStrategy(
+            strategy = ParallelTableCreationStrategy(self.app,
                 self.create_settings_for_table_dto,
                 self.gtfs_data_frame_dto
             )

@@ -30,15 +30,15 @@ class SequentialTableCreationStrategy(QObject, TableCreationStrategy, metaclass=
         self.plans.gtfs_data_frame_dto = copy.deepcopy(self.gtfs_data_frame_dto)
         strategy = None
         if (self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date and self.create_settings_for_table_dto.individual_sorting):
-            strategy = IndividualDateTableCreationStrategy(self.plans)
+            strategy = IndividualDateTableCreationStrategy(self.app, self.plans)
             strategy.create_sorting.connect(self.update_progress)
         elif (self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.weekday and self.create_settings_for_table_dto.individual_sorting):
-            strategy = IndividualWeekdayTableCreationStrategy(self.plans)
+            strategy = IndividualWeekdayTableCreationStrategy(self.app, self.plans)
             strategy.create_sorting.connect(self.update_progress)
         elif (self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date):
             strategy = DateTableCreationStrategy(self.app, self.plans)
         elif (self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.weekday):
-            strategy = WeekdayTableCreationStrategy(self.plans)
+            strategy = WeekdayTableCreationStrategy(self.app, self.plans)
 
         strategy.progress_Update.connect(self.update_progress)
 

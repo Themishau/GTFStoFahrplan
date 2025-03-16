@@ -5,9 +5,10 @@ import copy
 
 import logging
 from model.Base.Progress import ProgressSignal
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, QObject
 
 from model.Enum.GTFSEnums import CreatePlanMode
+from model.SchedulePlaner.CreationStrategy.CommonMeta import CommonMeta
 from model.SchedulePlaner.CreationStrategy.DateTableCreationStrategy import DateTableCreationStrategy
 from model.SchedulePlaner.CreationStrategy.IndividualWeekdayTableCreationStrategy import \
     IndividualWeekdayTableCreationStrategy
@@ -17,10 +18,13 @@ from model.SchedulePlaner.CreationStrategy.WeekdayTableCreationStrategy import W
 from model.SchedulePlaner.UmplaufPlaner.UmlaufPlaner import UmlaufPlaner
 
 
-class ParallelTableCreationStrategy(TableCreationStrategy):
+class ParallelTableCreationStrategy(QObject, TableCreationStrategy, metaclass=CommonMeta):
     progress_Update = Signal(ProgressSignal)
     error_occured = Signal(str)
-    def __init__(self, create_settings_for_table_dto, gtfs_data_frame_dto):
+    def __init__(self, app, create_settings_for_table_dto, gtfs_data_frame_dto):
+        super().__init__()
+        """ visual internal property """
+        self.app = app
         self.create_settings_for_table_dto = create_settings_for_table_dto
         self.gtfs_data_frame_dto = gtfs_data_frame_dto
         self.plans: List[UmlaufPlaner] = []
@@ -38,17 +42,17 @@ class ParallelTableCreationStrategy(TableCreationStrategy):
         self.plans[1].gtfs_data_frame_dto = copy.deepcopy(self.gtfs_data_frame_dto)
 
         if (self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_date and self.create_settings_for_table_dto.individual_sorting):
-            strategy_direction_1 = IndividualWeekdayTableCreationStrategy(self.plans[0])
-            strategy_direction_2 = IndividualWeekdayTableCreationStrategy(self.plans[1])
+            strategy_direction_1 = IndividualWeekdayTableCreationStrategy(self.app, self.plans[0])
+            strategy_direction_2 = IndividualWeekdayTableCreationStrategy(self.app, self.plans[1])
         elif (self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_weekday and self.create_settings_for_table_dto.individual_sorting):
-            strategy_direction_1 = IndividualWeekdayTableCreationStrategy(self.plans[0])
-            strategy_direction_2 = IndividualWeekdayTableCreationStrategy(self.plans[1])
+            strategy_direction_1 = IndividualWeekdayTableCreationStrategy(self.app, self.plans[0])
+            strategy_direction_2 = IndividualWeekdayTableCreationStrategy(self.app, self.plans[1])
         elif (self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_date):
-            strategy_direction_1 = DateTableCreationStrategy(self.plans[0])
-            strategy_direction_2 = DateTableCreationStrategy(self.plans[1])
+            strategy_direction_1 = DateTableCreationStrategy(self.app, self.plans[0])
+            strategy_direction_2 = DateTableCreationStrategy(self.app, self.plans[1])
         elif (self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_weekday):
-            strategy_direction_1 = WeekdayTableCreationStrategy(self.plans[0])
-            strategy_direction_2 = WeekdayTableCreationStrategy(self.plans[1])
+            strategy_direction_1 = WeekdayTableCreationStrategy(self.app, self.plans[0])
+            strategy_direction_2 = WeekdayTableCreationStrategy(self.app, self.plans[1])
 
         strategy_direction_1.progress_Update.connect(self.update_progress)
         strategy_direction_2.progress_Update.connect(self.update_progress)
