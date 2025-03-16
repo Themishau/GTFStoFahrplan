@@ -76,7 +76,8 @@ class ParallelTableCreationStrategy(QObject, TableCreationStrategy, metaclass=Co
             logging.debug(f'An error occurred during execution: {exc}')
 
     def create_table_continue(self):
-        self.plans.datesWeekday_create_fahrplan_continue()
+        self.plans[0].datesWeekday_create_fahrplan_continue()
+        self.plans[1].datesWeekday_create_fahrplan_continue()
 
     def update_progress(self, value):
         self.progress_Update.emit(copy.deepcopy(value))

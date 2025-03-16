@@ -120,7 +120,7 @@ class CreatePlan(QObject):
 
 
     def create_table_continue(self):
-        self.strategy.datesWeekday_create_fahrplan_continue()
+        self.strategy.create_table_continue()
 
         # checks if date string
     def check_dates_input(self, dates):

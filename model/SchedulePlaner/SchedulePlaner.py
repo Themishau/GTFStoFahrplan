@@ -126,7 +126,7 @@ class SchedulePlaner(QObject):
     def create_table(self) -> bool:
         try:
             self.create_plan.create_table()
-            self.export_plan.export_plan(self.create_settings_for_table_dto, self.create_plan.plans.create_dataframe)
+            self.export_plan.export_plan(self.create_settings_for_table_dto, self.create_plan.strategy.plans.create_dataframe)
             self.create_finished.emit(True)
             return True
         except AttributeError as e:
