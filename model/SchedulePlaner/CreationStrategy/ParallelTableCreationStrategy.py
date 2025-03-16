@@ -41,16 +41,16 @@ class ParallelTableCreationStrategy(QObject, TableCreationStrategy, metaclass=Co
         self.plans[1].create_settings_for_table_dto.direction = 1
         self.plans[1].gtfs_data_frame_dto = copy.deepcopy(self.gtfs_data_frame_dto)
 
-        if (self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_date and self.create_settings_for_table_dto.individual_sorting):
+        if self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_date and self.create_settings_for_table_dto.individual_sorting:
             strategy_direction_1 = IndividualWeekdayTableCreationStrategy(self.app, self.plans[0])
             strategy_direction_2 = IndividualWeekdayTableCreationStrategy(self.app, self.plans[1])
-        elif (self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_weekday and self.create_settings_for_table_dto.individual_sorting):
+        elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_weekday and self.create_settings_for_table_dto.individual_sorting:
             strategy_direction_1 = IndividualWeekdayTableCreationStrategy(self.app, self.plans[0])
             strategy_direction_2 = IndividualWeekdayTableCreationStrategy(self.app, self.plans[1])
-        elif (self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_date):
+        elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_date:
             strategy_direction_1 = DateTableCreationStrategy(self.app, self.plans[0])
             strategy_direction_2 = DateTableCreationStrategy(self.app, self.plans[1])
-        elif (self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_weekday):
+        elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_weekday:
             strategy_direction_1 = WeekdayTableCreationStrategy(self.app, self.plans[0])
             strategy_direction_2 = WeekdayTableCreationStrategy(self.app, self.plans[1])
 
@@ -74,6 +74,9 @@ class ParallelTableCreationStrategy(QObject, TableCreationStrategy, metaclass=Co
                         logging.debug(f'Thread generated an exception: {exc}')
         except Exception as exc:
             logging.debug(f'An error occurred during execution: {exc}')
+
+    def create_table_continue(self):
+        self.plans.datesWeekday_create_fahrplan_continue()
 
     def update_progress(self, value):
         self.progress_Update.emit(copy.deepcopy(value))

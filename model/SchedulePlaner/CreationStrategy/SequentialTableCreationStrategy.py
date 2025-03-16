@@ -29,15 +29,15 @@ class SequentialTableCreationStrategy(QObject, TableCreationStrategy, metaclass=
         self.plans.create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
         self.plans.gtfs_data_frame_dto = copy.deepcopy(self.gtfs_data_frame_dto)
         strategy = None
-        if (self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date and self.create_settings_for_table_dto.individual_sorting):
+        if self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date and self.create_settings_for_table_dto.individual_sorting:
             strategy = IndividualDateTableCreationStrategy(self.app, self.plans)
             strategy.create_sorting.connect(self.update_progress)
-        elif (self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.weekday and self.create_settings_for_table_dto.individual_sorting):
+        elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.weekday and self.create_settings_for_table_dto.individual_sorting:
             strategy = IndividualWeekdayTableCreationStrategy(self.app, self.plans)
             strategy.create_sorting.connect(self.update_progress)
-        elif (self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date):
+        elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date:
             strategy = DateTableCreationStrategy(self.app, self.plans)
-        elif (self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.weekday):
+        elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.weekday:
             strategy = WeekdayTableCreationStrategy(self.app, self.plans)
 
         strategy.progress_Update.connect(self.update_progress)
@@ -45,6 +45,9 @@ class SequentialTableCreationStrategy(QObject, TableCreationStrategy, metaclass=
         # Create context with selected strategy
         context = TableCreationContext(strategy)
         context.create_table()
+
+    def create_table_continue(self):
+        self.plans.datesWeekday_create_fahrplan_continue()
 
     def update_progress(self, value):
         self.progress_Update.emit(copy.deepcopy(value))

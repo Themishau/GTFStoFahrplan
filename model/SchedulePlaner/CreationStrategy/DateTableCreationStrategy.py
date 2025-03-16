@@ -8,13 +8,13 @@ from model.SchedulePlaner.UmplaufPlaner.UmlaufPlaner import UmlaufPlaner
 class DateTableCreationStrategy(QObject, TableCreationStrategy, metaclass=CommonMeta):
     progress_Update = Signal(ProgressSignal)
     error_occured = Signal(str)
-    def __init__(self, app, UmlaufPlaner: UmlaufPlaner):
+    def __init__(self, app, umlaufPlaner: UmlaufPlaner):
         super().__init__()
         """ visual internal property """
         self.app = app
         self.progress = ProgressSignal()
         self.process = 10
-        self.plan = UmlaufPlaner
+        self.plan = umlaufPlaner
 
 
     def create_table(self) -> None:
@@ -29,7 +29,8 @@ class DateTableCreationStrategy(QObject, TableCreationStrategy, metaclass=Common
         ]
 
         for step, description in steps:
-            self.progress_Update.emit(self.progress.set_progress(self.process + 10, description))
+            self.process = self.process + 10
+            self.progress_Update.emit(self.progress.set_progress(self.process, description))
             step()
 
     def update_progress(self, value):

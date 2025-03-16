@@ -34,5 +34,6 @@ class IndividualDateTableCreationStrategy(QObject, TableCreationStrategy, metacl
 
         self.create_sorting.emit()
 
+
     def update_progress(self, value):
         self.progress_Update.emit(copy.deepcopy(value))

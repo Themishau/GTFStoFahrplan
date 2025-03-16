@@ -32,7 +32,7 @@ class CreatePlan(QObject):
         self.create_plan_mode = None
         self.gtfs_data_frame_dto = None
         self.create_settings_for_table_dto = CreateSettingsForTableDTO()
-        self.plans = None
+        self.strategy = None
 
         """ visual internal property """
         self.progress = ProgressSignal()
@@ -97,23 +97,22 @@ class CreatePlan(QObject):
         self.progress_Update.emit(copy.deepcopy(value))
 
     def create_table(self):
-        strategy = None
         if (self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_date or
                 self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_weekday):
-            strategy = ParallelTableCreationStrategy(self.app,
+            self.strategy = ParallelTableCreationStrategy(self.app,
                 self.create_settings_for_table_dto,
                 self.gtfs_data_frame_dto
             )
         elif (self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date or
               self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.weekday):
-            strategy = SequentialTableCreationStrategy(self.app,
+            self.strategy = SequentialTableCreationStrategy(self.app,
                 self.create_settings_for_table_dto,
                 self.gtfs_data_frame_dto
             )
         # Add other strategy selection logic as needed
-        strategy.progress_Update.connect(self.update_progress)
+        self.strategy.progress_Update.connect(self.update_progress)
         # Create context with selected strategy
-        context = TableCreationContext(strategy)
+        context = TableCreationContext(self.strategy)
         context.create_table()
 
         if self.create_settings_for_table_dto.individual_sorting:
@@ -121,7 +120,7 @@ class CreatePlan(QObject):
 
 
     def create_table_continue(self):
-        self.plans.datesWeekday_create_fahrplan_continue()
+        self.strategy.datesWeekday_create_fahrplan_continue()
 
         # checks if date string
     def check_dates_input(self, dates):

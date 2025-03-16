@@ -28,7 +28,8 @@ class WeekdayTableCreationStrategy(QObject, TableCreationStrategy, metaclass=Com
         ]
 
         for step, description in steps:
-            self.progress_Update.emit(self.progress.set_progress(self.process + 10, description))
+            self.process = self.process + 10
+            self.progress_Update.emit(self.progress.set_progress(self.process, description))
             step()
 
     def update_progress(self, progress: int) -> None:
