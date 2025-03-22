@@ -154,7 +154,7 @@ class SchedulePlaner(QObject):
             self.create_plan.create_table()
             self.initialize_cirle_planer()
             self.circle_plan.CreateCirclePlan()
-            self.export_plan.export_circle_plan(self.create_settings_for_table_dto, self.circle_plan.strategy.plans)
+            self.export_plan.export_circle_plan(self.create_settings_for_table_dto, self.circle_plan.plans)
             self.create_finished.emit(True)
             return True
 
