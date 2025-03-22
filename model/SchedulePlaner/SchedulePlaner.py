@@ -144,7 +144,7 @@ class SchedulePlaner(QObject):
     def create_table_continue(self):
         try:
             self.create_plan.create_table_continue()
-            self.export_plan.export_plan(self.create_settings_for_table_dto, self.create_plan.plans.create_dataframe)
+            self.export_plan.export_plan(self.create_settings_for_table_dto, self.create_plan.strategy.plans.create_dataframe)
             self.create_finished.emit(True)
         except AttributeError as e:
             self.error_occured.emit(ErrorMessageRessources.no_import_object_generated.value)

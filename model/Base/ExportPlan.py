@@ -31,15 +31,6 @@ class ExportPlan(QObject):
         self.progress = ProgressSignal()
 
     @property
-    def progress(self):
-        return self._progress
-
-    @progress.setter
-    def progress(self, value):
-        self._progress = value
-        self.progress_Update.emit(self.progress)
-
-    @property
     def output_path(self):
         return self._output_path
 
@@ -52,11 +43,11 @@ class ExportPlan(QObject):
 
     def export_plan(self, exportSettings, createTableDto: CreateTableDataframeDto):
         self.datesWeekday_create_output_fahrplan(createTableDto)
-        self.progress = 100
+        self.progress_Update.emit(self.progress.set_progress(100, "export_plan done"))
 
     def export_circle_plan(self, exportSettings, createTableDto: list[CreateTableDataframeDto]):
         self.datesWeekday_create_output_circleplan(createTableDto)
-        self.progress = 100
+        self.progress_Update.emit(self.progress.set_progress(100, "export_plan done"))
 
     def datesWeekday_create_output_fahrplan(self, createTableDto: CreateTableDataframeDto):
         # save as csv
