@@ -37,15 +37,6 @@ class CirclePlaner(QObject):
                                    '7,Saturday',
                                    '8,Sunday']
 
-    @property
-    def progress(self):
-        return self._progress
-
-    @progress.setter
-    def progress(self, value):
-        self._progress = value
-        self.progress_Update.emit(self._progress)
-
     def ReadCreatedSchedulePlans(self):
         NotImplementedError()
 

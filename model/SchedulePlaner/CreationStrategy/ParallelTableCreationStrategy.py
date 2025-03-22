@@ -28,6 +28,7 @@ class ParallelTableCreationStrategy(QObject, TableCreationStrategy, metaclass=Co
         self.create_settings_for_table_dto = create_settings_for_table_dto
         self.gtfs_data_frame_dto = gtfs_data_frame_dto
         self.plans: List[UmlaufPlaner] = []
+        self.progress = ProgressSignal()
 
 
     def create_table(self) -> None:
@@ -40,7 +41,8 @@ class ParallelTableCreationStrategy(QObject, TableCreationStrategy, metaclass=Co
         self.plans[1].create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
         self.plans[1].create_settings_for_table_dto.direction = 1
         self.plans[1].gtfs_data_frame_dto = copy.deepcopy(self.gtfs_data_frame_dto)
-
+        strategy_direction_1 = None
+        strategy_direction_2 = None
         if self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_date and self.create_settings_for_table_dto.individual_sorting:
             strategy_direction_1 = IndividualWeekdayTableCreationStrategy(self.app, self.plans[0])
             strategy_direction_2 = IndividualWeekdayTableCreationStrategy(self.app, self.plans[1])
@@ -63,8 +65,8 @@ class ParallelTableCreationStrategy(QObject, TableCreationStrategy, metaclass=Co
         try:
             with ThreadPoolExecutor(max_workers=2) as executor:
                 futures = [
-                    executor.submit(context_1.create_table()),
-                    executor.submit(context_2.create_table())
+                    executor.submit(context_1.create_table),
+                    executor.submit(context_2.create_table)
                 ]
 
                 for future in concurrent.futures.as_completed(futures):

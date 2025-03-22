@@ -14,7 +14,6 @@ from ..Base.ImportData import ImportData
 from ..Base.SelectData import SelectData
 from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO
 from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
-from typing import Optional
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
@@ -84,7 +83,7 @@ class SchedulePlaner(QObject):
         self.import_Data.error_occured.connect(self.send_error)
 
     def initialize_cirle_planer(self):
-        self.circle_plan = CirclePlaner(plans=self.create_plan.plans, app=self.app)
+        self.circle_plan = CirclePlaner(plans=self.create_plan.strategy.plans, app=self.app)
         self.circle_plan.progress_Update.connect(self.update_progress)
         self.circle_plan.error_occured.connect(self.send_error)
 
@@ -155,7 +154,7 @@ class SchedulePlaner(QObject):
             self.create_plan.create_table()
             self.initialize_cirle_planer()
             self.circle_plan.CreateCirclePlan()
-            self.export_plan.export_circle_plan(self.create_settings_for_table_dto, self.circle_plan.plans)
+            self.export_plan.export_circle_plan(self.create_settings_for_table_dto, self.circle_plan.strategy.plans)
             self.create_finished.emit(True)
             return True
 
