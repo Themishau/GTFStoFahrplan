@@ -89,9 +89,9 @@ class ViewModel(QObject):
 
     def on_changed_time_format_mode(self, text):
         logging.debug(f'time format {text}')
-        if text == 'time format 1':
+        if text == 0:
             self.model.planer.select_data.selected_timeformat = 1
-        elif text == 'time format 2':
+        elif text == 1:
             self.model.planer.select_data.selected_timeformat = 2
         self.export_plan_time_format.emit(text)
 

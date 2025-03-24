@@ -24,7 +24,7 @@ class GtfsColumnNames(Enum):
     calendar_datesList = 'calendar_datesList'
     routesList = 'routesList'
     agencyList = 'agencyList'
-    feed_info = 'feed_info'
+    feed_info = 'feedList'
 
 
 class GtfsDfNames(Enum):

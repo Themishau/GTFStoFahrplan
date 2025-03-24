@@ -195,7 +195,8 @@ class ImportData(QObject):
                         ("calendar.txt", GtfsColumnNames.calendarList),
                         ("calendar_dates.txt", GtfsColumnNames.calendar_datesList),
                         ("routes.txt", GtfsColumnNames.routesList),
-                        ("agency.txt", GtfsColumnNames.agencyList)
+                        ("agency.txt", GtfsColumnNames.agencyList),
+                        ("feed_info.txt", GtfsColumnNames.feed_info)
                     ]
 
                     for filename, column_name in files_to_process:
@@ -211,18 +212,6 @@ class ImportData(QObject):
             except Exception as e:
                 logging.debug(f'Error processing GTFS files: {str(e)}')
                 return None
-
-            try:
-                with zipfile.ZipFile(self.input_path) as zf:
-                    with io.TextIOWrapper(zf.open("feed_info.txt", mode="r"), encoding="utf-8") as feed_info:
-                        raw_data[GtfsColumnNames.feed_info] = [feed_info.readlines()[0].rstrip()]
-            except:
-                logging.debug('no feed info header')
-
-            try:
-                with zipfile.ZipFile(self.input_path) as zf:
-                    with io.TextIOWrapper(zf.open("feed_info.txt", mode="r"), encoding="utf-8") as feed_info:
-                        raw_data[GtfsColumnNames.feed_info] += feed_info.readlines()[1:]
             except:
                 logging.debug('no feed info data')
 

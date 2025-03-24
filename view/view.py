@@ -100,7 +100,7 @@ class View(QMainWindow):
         self.ui.checkBox_savepickle.clicked.connect(self.viewModel.on_changed_pickle_export_checked)
         self.viewModel.update_pickle_export_checked.connect(self.update_pickle_export_checked)
 
-        #self.ui.comboBox_display.activated[int].connect(self.viewModel.on_changed_time_format_mode)
+        self.ui.comboBox_time_format.activated[int].connect(self.viewModel.on_changed_time_format_mode)
         self.viewModel.export_plan_time_format.connect(self.update_time_format)
 
         self.viewModel.update_agency_list.connect(self.update_agency_list)
@@ -311,7 +311,7 @@ class View(QMainWindow):
 
     def initialize_create_base_option(self):
         self.ui.comboBox.setEnabled(True)
-        #self.ui.comboBox_display.setEnabled(True)
+        self.ui.comboBox_time_format.setEnabled(True)
         self.ui.comboBox_direction.setEnabled(True)
         self.ui.btnStart.setEnabled(True)
 
