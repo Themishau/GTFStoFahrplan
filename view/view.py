@@ -7,7 +7,7 @@ from view.Custom.round_progress_bar import RoundProgress
 from view.Custom.select_table_view import TableModel
 from view.Custom.sort_table_view import TableModelSort
 from view.pyui.ui_main_window import Ui_MainWindow
-from view.view_helpers import get_file_path, get_output_dir_path, get_pickle_save_path, string_to_qdate
+from view.view_helpers import get_file_path, get_output_dir_path, get_pickle_save_path, string_to_qdate, qdate_to_string
 from view.view_signals import ViewSignals
 
 logging.basicConfig(level=logging.DEBUG,
@@ -137,8 +137,6 @@ class View(QMainWindow):
         self.center()
         self.oldPos = self.pos()
 
-
-
     def mousePressEvent(self, event):
         self.oldPos = event.globalPos()
 
@@ -173,7 +171,6 @@ class View(QMainWindow):
         self.ui.progressBar.setMinimumSize(self.ui.progressBar.width, self.ui.progressBar.height)
         self.ui.progress_widget.addWidget(self.ui.progressBar, 1, 1, 1, 1, Qt.AlignHCenter | Qt.AlignVCenter)
 
-
     def initialize_tabs(self):
         self.ui.main_view_stacked_widget.addWidget(self.ui.create_import_page)
         self.ui.main_view_stacked_widget.addWidget(self.ui.create_select_page)
@@ -188,7 +185,6 @@ class View(QMainWindow):
     def show_home_window(self):
         self.set_btn_checked(self.generalNavPush_btn)
         self.ui.main_view_stacked_widget.setCurrentWidget(self.ui.general_information_page)
-
 
     def show_Create_Import_Window(self):
         self.set_btn_checked(self.createTableImport_btn)
@@ -228,13 +224,17 @@ class View(QMainWindow):
     def initialize_create_view_weekdaydate_option(self):
         self.initialize_create_base_option()
         self.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
-        self.handle_selected_date()
+        #self.initialize_selected_date()
         self.ui.dateEdit.setEnabled(True)
         self.update_weekday_option_table()
 
     def handle_selected_date(self):
         date = self.ui.dateEdit.date()
         self.viewModel.on_changed_selected_dates(date)
+
+    def initialize_selected_date(self):
+        date = self.ui.dateEdit.date()
+        self.viewModel.model.planer.select_data.selected_dates = qdate_to_string(date)
 
     def reset_weekdayDate(self):
         self.ui.comboBox.setEnabled(False)
@@ -258,7 +258,6 @@ class View(QMainWindow):
             TableModel(self.viewModel.model.planer.select_data.gtfs_data_frame_dto.Agencies))
         self.ui.line_Selection_date_range.setText(self.viewModel.model.planer.analyze_data.date_range)
         self.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
-        self.handle_selected_date()
         self.show_Create_Select_Window()
         logging.debug("done with creating dfs")
 
