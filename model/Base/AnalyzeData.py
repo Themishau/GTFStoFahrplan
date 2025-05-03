@@ -41,12 +41,6 @@ class AnalyzeData(QObject):
             self.get_date_range()
 
     def get_date_range(self):
-        """
-        Gets the date range based on the GTFS data frame.
-
-        If Feedinfos is None, analyzes the date range in the GTFS data.
-        Otherwise, constructs the date range string from feed_start_date and feed_end_date.
-        """
         if self.gtfs_data_frame_dto.Feedinfos is None:
             self.date_range = self.analyze_date_range_in_gtfs_data()
         else:
@@ -54,15 +48,10 @@ class AnalyzeData(QObject):
                 self.gtfs_data_frame_dto.Feedinfos.feed_end_date)
 
     def analyze_date_range_in_gtfs_data(self):
-        """
-         Analyzes the date range in the GTFS data.
-
-         Returns:
-         str: A string representing the start and end date of the date range.
-         """
         if self.gtfs_data_frame_dto.Calendarweeks is not None:
             self.date_range_df_format = self.gtfs_data_frame_dto.Calendarweeks.groupby(
                 ['start_date', 'end_date']).size().reset_index()
             self.sample_date = str(self.date_range_df_format.iloc[0].start_date)
             return str(self.date_range_df_format.iloc[0].start_date) + '-' + str(
                 self.date_range_df_format.iloc[0].end_date)
+        return None

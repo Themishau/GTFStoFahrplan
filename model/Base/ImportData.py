@@ -317,7 +317,7 @@ class ImportData(QObject):
                     df = result.result()
                     df_collection[df.name] = df
                 except Exception as e:
-                    logging.debug(f"Error in DataFrame creation: {str(e)}")
+                    logging.debug(f"Error in DataFrame creation: {str(e)} {df.name}")
                     return None
 
         logging.debug(f"df_collection creation: {df_collection.keys()}")

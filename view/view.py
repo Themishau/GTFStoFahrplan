@@ -1,17 +1,14 @@
 import logging
-import os
-import copy
 from PySide6.QtCore import Qt, QPoint, QSize
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QMainWindow, QApplication
-from PySide6.QtWidgets import QWidget, QAbstractItemView, QHeaderView
-from helpFunctions import string_to_qdate
 from model.Base.Progress import ProgressSignal
 from model.Enum.GTFSEnums import CreatePlanMode, DfRouteColumnEnum, DfAgencyColumnEnum
-from view.Custom.ProgressListView import ProgressHistoryModel, ProgressBarDelegate
 from view.Custom.round_progress_bar import RoundProgress
 from view.Custom.select_table_view import TableModel
 from view.Custom.sort_table_view import TableModelSort
 from view.pyui.ui_main_window import Ui_MainWindow
+from view.view_helpers import get_file_path, get_output_dir_path, get_pickle_save_path, string_to_qdate
+from view.view_signals import ViewSignals
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
@@ -45,98 +42,14 @@ class View(QMainWindow):
                                self.generalNavPush_btn: self.ui.general_information_page,
                                self.downloadGTFSNavPush_btn: self.ui.download_page}
 
+        self.signals = ViewSignals(self, self.viewModel)
+        self.signals.connect_signals()
+        self.signals.init_signals()
+
         self.initialize_window()
         self.initialize_modified_progress_bar()
         self.initialize_tabs()
-        self.initialize_buttons_links()
-        self.init_signals()
-        self.ui.toolBox.setCurrentIndex(0)
-
         self.show_home_window()
-
-
-    def initialize_buttons_links(self):
-
-        self.ui.AgenciesTableView.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.ui.AgenciesTableView.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.ui.AgenciesTableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-
-        self.ui.progress_history_list_view.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.ui.progress_history_list_view.setSelectionMode(QAbstractItemView.SingleSelection)
-
-        self.ui.progress_history_list_view.setModel(ProgressHistoryModel())
-        self.ui.progress_history_list_view.setItemDelegate(ProgressBarDelegate())
-
-        self.ui.TripsTableView.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.ui.TripsTableView.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.ui.TripsTableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-
-        self.ui.listDatesWeekday.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.ui.listDatesWeekday.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.ui.listDatesWeekday.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-
-        self.ui.pushButton_2.clicked.connect(self.show_Create_Import_Window)
-        self.ui.pushButton_3.clicked.connect(self.show_Create_Select_Window)
-        self.ui.pushButton_4.clicked.connect(self.show_Create_Create_Window)
-        self.ui.pushButton_5.clicked.connect(self.show_home_window)
-        self.ui.pushButton_6.clicked.connect(self.show_GTFSDownload_window)
-
-        self.ui.btnImport.clicked.connect(self.viewModel.start_import_gtfs_data)
-
-        self.viewModel.on_changed_individualsorting_table.connect(self.update_individualsorting_table)
-
-        self.ui.btnRestart.clicked.connect(self.viewModel.restart)
-
-        # view gets updated if view model changed model successfully
-        self.ui.btnGetFile.clicked.connect(self.get_file_path)
-        self.viewModel.input_file_path.connect(self.update_file_input_path)
-
-        self.ui.btnGetPickleFile.clicked.connect(self.get_pickle_save_path)
-        self.viewModel.pickle_file_path.connect(self.update_pickle_file_path)
-
-        self.ui.btnGetOutputDir.clicked.connect(self.get_output_dir_path)
-        self.viewModel.output_file_path.connect(self.update_output_file_path)
-
-        self.ui.checkBox_savepickle.clicked.connect(self.viewModel.on_changed_pickle_export_checked)
-        self.viewModel.update_pickle_export_checked.connect(self.update_pickle_export_checked)
-
-        self.ui.comboBox_time_format.activated[int].connect(self.viewModel.on_changed_time_format_mode)
-        self.viewModel.export_plan_time_format.connect(self.update_time_format)
-
-        self.viewModel.update_agency_list.connect(self.update_agency_list)
-        self.viewModel.update_routes_list_signal.connect(self.update_routes_list)
-
-        self.ui.AgenciesTableView.clicked.connect(self.get_selected_agency_table_record)
-        self.ui.TripsTableView.clicked.connect(self.get_changed_selected_record_trip)
-        self.viewModel.update_selected_agency.connect(self.update_selected_agency)
-
-        self.viewModel.update_options_state_signal.connect(self.update_create_options_state)
-
-        self.ui.btnStart.clicked.connect(self.viewModel.start_create_table)
-        self.viewModel.create_table_finshed.connect(self.update_create_table)
-
-        self.ui.btnContinueCreate.clicked.connect(self.viewModel.create_table_continue)
-
-        self.ui.btnStop.clicked.connect(self.viewModel.create_table_stop)
-
-        self.ui.UseIndividualSorting.clicked.connect(self.viewModel.on_changed_individualsorting)
-        self.viewModel.update_individualsorting.connect(self.update_individualsorting)
-
-        self.ui.listDatesWeekday.clicked.connect(self.get_changed_selected_weekday)
-
-        self.ui.dateEdit.editingFinished.connect(self.handle_selected_date)
-        self.viewModel.update_select_data.connect(self.update_select_data)
-
-        self.ui.comboBox.activated[int].connect(self.viewModel.on_changed_create_plan_mode)
-        self.viewModel.update_create_plan_mode.connect(self.update_create_plan_mode)
-
-        self.ui.comboBox_direction.activated[int].connect(self.viewModel.on_changed_direction_mode)
-        self.viewModel.update_direction_mode.connect(self.update_direction_mode)
-
-        self.viewModel.set_up_create_tab_signal.connect(self.initialize_create_view_weekdaydate_option)
-
-        self.viewModel.update_progress_value.connect(self.update_progress)
-        self.viewModel.error_message.connect(self.send_message_box)
 
     def initialize_busy_inficator(self):
         NotImplemented()
@@ -192,7 +105,6 @@ class View(QMainWindow):
         self.ui.comboBox_direction.setCurrentText(mode)
 
     def update_create_plan_mode(self, mode):
-        #self.ui.comboBox.setCurrentText(mode)
         if mode == CreatePlanMode.date.value:
             self.ui.dateEdit.setDate(
                 string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
@@ -225,11 +137,7 @@ class View(QMainWindow):
         self.center()
         self.oldPos = self.pos()
 
-    def init_signals(self):
-        #self.ui.create_import_page.ui.comboBox_display.activated[int].connect(self.viewModel.export_plan_time_format.emit)
-        self.ui.lineInputPath.textChanged.connect(self.viewModel.input_file_path.emit)
-        self.ui.lineOutputPath.textChanged.connect(self.viewModel.output_file_path.emit)
-        self.ui.picklesavename.textChanged.connect(self.viewModel.pickle_file_path.emit)
+
 
     def mousePressEvent(self, event):
         self.oldPos = event.globalPos()
@@ -241,9 +149,9 @@ class View(QMainWindow):
 
     def center(self):
         qr = self.frameGeometry()
-        screen = QApplication.primaryScreen()  # Get the primary screen
-        screen_geometry = screen.availableGeometry()  # Retrieve available screen geometry
-        cp = screen_geometry.center()  # Get the center point of the screen
+        screen = QApplication.primaryScreen()
+        screen_geometry = screen.availableGeometry()
+        cp = screen_geometry.center()
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
@@ -260,11 +168,9 @@ class View(QMainWindow):
         return True
 
     def initialize_modified_progress_bar(self):
-        # add the modified progress ui element
         self.ui.progressBar = RoundProgress()
         self.ui.progressBar.value = 0
         self.ui.progressBar.setMinimumSize(self.ui.progressBar.width, self.ui.progressBar.height)
-        #self.ui.progress_widget.addWidget(self.ui.label_progress, 0, 1, 1, 1, Qt.AlignHCenter | Qt.AlignVCenter)
         self.ui.progress_widget.addWidget(self.ui.progressBar, 1, 1, 1, 1, Qt.AlignHCenter | Qt.AlignVCenter)
 
 
@@ -322,6 +228,7 @@ class View(QMainWindow):
     def initialize_create_view_weekdaydate_option(self):
         self.initialize_create_base_option()
         self.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
+        self.handle_selected_date()
         self.ui.dateEdit.setEnabled(True)
         self.update_weekday_option_table()
 
@@ -331,7 +238,6 @@ class View(QMainWindow):
 
     def reset_weekdayDate(self):
         self.ui.comboBox.setEnabled(False)
-        #self.ui.comboBox_display.setEnabled(True)
         self.ui.comboBox_direction.setEnabled(False)
         self.ui.dateEdit.setEnabled(False)
 
@@ -346,58 +252,24 @@ class View(QMainWindow):
         self.ui.tableView_sorting_stops.setModel(
             TableModelSort(self.viewModel.model.planer.create_plan.strategy.plans.create_dataframe.FilteredStopNamesDataframe))
         self.ui.btnContinueCreate.setEnabled(True)
-        # self.CreateCreate_Tab.ui.tableView_sorting_stops.populate()
 
     def update_agency_list(self):
         self.ui.AgenciesTableView.setModel(
             TableModel(self.viewModel.model.planer.select_data.gtfs_data_frame_dto.Agencies))
         self.ui.line_Selection_date_range.setText(self.viewModel.model.planer.analyze_data.date_range)
         self.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
+        self.handle_selected_date()
         self.show_Create_Select_Window()
-        # self.model.start_get_date_range()
         logging.debug("done with creating dfs")
-        # self.model.gtfs.save_h5(h5_filename="C:/Tmp/test.h5", data=self.model.gtfs.dfTrips, labels="trips")
 
     def get_file_path(self):
-        try:
-            input_file_path = QFileDialog.getOpenFileName(parent=self,
-                                                          caption='Select GTFS Zip File',
-                                                          dir='C:/Tmp',
-                                                          filter='Zip File (*.zip)',
-                                                          selectedFilter='Zip File (*.zip)')
-
-        except:
-            input_file_path = QFileDialog.getOpenFileName(parent=self,
-                                                          caption='Select GTFS Zip File',
-                                                          dir=os.getcwd(),
-                                                          filter='Zip File (*.zip)',
-                                                          selectedFilter='Zip File (*.zip)')
-        if input_file_path[0] > '':
-            self.viewModel.on_change_input_file_path(input_file_path)
+        self.viewModel.on_change_input_file_path(get_file_path(self))
 
     def get_output_dir_path(self):
-        output_file_path = QFileDialog.getExistingDirectory(self,
-                                                            caption='Select GTFS Zip File',
-                                                            dir='C:/Tmp')
-        if output_file_path > '':
-            self.viewModel.on_change_output_file_path(output_file_path)
+        self.viewModel.on_change_output_file_path(get_output_dir_path(self))
 
     def get_pickle_save_path(self):
-        try:
-            pickle_file_path = QFileDialog.getSaveFileName(parent=self,
-                                                           caption='Select GTFS Zip File',
-                                                           dir='C:/Tmp',
-                                                           filter='Zip File (*.zip)',
-                                                           selectedFilter='Zip File (*.zip)')
-
-        except:
-            pickle_file_path = QFileDialog.getSaveFileName(parent=self,
-                                                           caption='Select GTFS Zip File',
-                                                           dir=os.getcwd(),
-                                                           filter='Zip File (*.zip)',
-                                                           selectedFilter='Zip File (*.zip)')
-        if pickle_file_path[0] > '':
-            self.viewModel.on_changed_pickle_path(pickle_file_path)
+        self.viewModel.on_changed_pickle_path(get_pickle_save_path(self))
 
     def get_changed_selected_record_trip(self):
         index = self.ui.TripsTableView.selectedIndexes()[2]
@@ -416,7 +288,6 @@ class View(QMainWindow):
     def reset_view(self):
         self.ui.btnImport.setEnabled(True)
         self.ui.btnRestart.setEnabled(False)
-        #self.ui.comboBox_display.setEnabled(True)
 
         self.ui.btnStart.setEnabled(False)
         self.ui.btnContinueCreate.setEnabled(False)

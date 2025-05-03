@@ -4,7 +4,7 @@ import os
 
 from PySide6.QtCore import Signal, QObject
 
-from helpFunctions import qdate_to_string
+from view.view_helpers import qdate_to_string
 from model.Base.Progress import ProgressSignal
 from model.Enum.GTFSEnums import *
 
