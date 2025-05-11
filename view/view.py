@@ -105,24 +105,15 @@ class View(QMainWindow):
         self.ui.comboBox_direction.setCurrentText(mode)
 
     def update_create_plan_mode(self, mode):
-        if mode == CreatePlanMode.date.value:
-            self.ui.dateEdit.setDate(
-                string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
-            self.ui.dateEdit.setEnabled(True)
-            self.ui.listDatesWeekday.setEnabled(False)
-        elif mode == CreatePlanMode.weekday.value:
-            self.ui.dateEdit.setEnabled(False)
-            self.ui.listDatesWeekday.setEnabled(True)
-        elif mode == CreatePlanMode.umlauf_date.value:
-            self.ui.dateEdit.setDate(
-                string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
-            self.ui.dateEdit.setEnabled(True)
-            self.ui.listDatesWeekday.setEnabled(False)
+        # self.ui.comboBox_direction.setCurrentText(mode)
+        if mode == CreatePlanMode.umlauf_date.value or mode == CreatePlanMode.umlauf_weekday.value:
+            self.ui.comboBox_direction.setEnabled(True)
+            self.ui.comboBox.setEnabled(False)
+        else:
+            self.ui.comboBox.setEnabled(True)
             self.ui.comboBox_direction.setEnabled(False)
-        elif mode == CreatePlanMode.umlauf_weekday.value:
-            self.ui.dateEdit.setEnabled(False)
-            self.ui.listDatesWeekday.setEnabled(True)
-            self.ui.comboBox_direction.setEnabled(False)
+
+        self.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
 
     def update_create_options_state(self):
         self.ui.line_Selection_agency.setText(
@@ -232,14 +223,10 @@ class View(QMainWindow):
         date = self.ui.dateEdit.date()
         self.viewModel.on_changed_selected_dates(date)
 
+    # todo einbauen!!
     def initialize_selected_date(self):
         date = self.ui.dateEdit.date()
         self.viewModel.model.planer.select_data.selected_dates = qdate_to_string(date)
-
-    def reset_weekdayDate(self):
-        self.ui.comboBox.setEnabled(False)
-        self.ui.comboBox_direction.setEnabled(False)
-        self.ui.dateEdit.setEnabled(False)
 
     def update_weekday_option_table(self, ):
         self.ui.listDatesWeekday.setModel(TableModel(self.viewModel.model.planer.create_plan.weekdays_df))
