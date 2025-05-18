@@ -25,6 +25,7 @@ class SchedulePlaner(QObject):
     error_occured = Signal(str)
     import_finished = Signal(bool)
     create_finished = Signal(bool)
+    settings_changed = Signal()
     update_routes_list_signal = Signal()
     update_options_state_signal = Signal(bool)
     create_sorting_signal = Signal()
@@ -63,12 +64,15 @@ class SchedulePlaner(QObject):
         self.create_settings_for_table_dto.output_path = self.export_plan.output_path
 
     def update_create_settings_selected_data(self):
-        self.create_settings_for_table_dto.agency = self.select_data.agency
-        self.create_settings_for_table_dto.route = self.select_data.route
+        self.create_settings_for_table_dto.agency = self.select_data.selected_agency
+        self.create_settings_for_table_dto.route = self.select_data.sleroute
         self.create_settings_for_table_dto.weekday = self.select_data.weekday
         self.create_settings_for_table_dto.dates = self.select_data.dates
         self.create_settings_for_table_dto.direction = self.select_data.direction
         self.create_settings_for_table_dto.create_plan_mode = self.select_data.create_plan_mode
+
+    def initialize_signals_settings_dto(self):
+        self.create_settings_for_table_dto.settingsChanged.connect(self.settings_changed.emit)
 
     def initilize_scheduler(self):
         self.initialize_import_data()
@@ -90,8 +94,8 @@ class SchedulePlaner(QObject):
     def initialize_select_data(self):
         self.select_data = SelectData(self.app)
         self.select_data.update_routes_list_signal.connect(self.update_routes_list)
+        self.select_data.data_selected.connect(self.update_create_settings_selected_data)
         self.select_data.data_selected.connect(self.update_options_state)
-        self.select_data.create_settings_for_table_dto_changed.connect(self.update_create_settings_selected_data)
 
     def initialize_analyze_data(self):
         self.analyze_data = AnalyzeData(self.app)
