@@ -7,6 +7,7 @@ from PySide6.QtCore import Signal, QObject
 from view.view_helpers import qdate_to_string
 from model.Base.Progress import ProgressSignal
 from model.Enum.GTFSEnums import *
+from viewmodel.view_model_signals import ViewModelSignals
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
@@ -43,6 +44,8 @@ class ViewModel(QObject):
         self.app = app
         self.model = model
         self.initilize_schedule_planer()
+        self.signals = ViewModelSignals(self, self.model)
+        self.signals.connect_signals()
 
     def on_changed_pickle_export_checked(self, checked):
         self.model.planer.import_Data.pickle_export_checked = checked

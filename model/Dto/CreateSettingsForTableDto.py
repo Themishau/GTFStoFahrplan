@@ -22,10 +22,6 @@ class CreateSettingsForTableDTO(QObject):
         self._create_plan_mode = CreatePlanMode.date
         self._output_path = ""
 
-        # nested DTO
-        self.create_settings_for_table_dto = CreateSettingsForTableDTO()
-        self.create_settings_for_table_dto.settingsChanged.connect(
-            self.on_nested_settings_change)
 
 
     @property
@@ -52,7 +48,7 @@ class CreateSettingsForTableDTO(QObject):
     def weekday(self) -> Optional[str]:
         return self._agency
 
-    @agency.setter
+    @weekday.setter
     def weekday(self, value: Optional[str]):
         if self._agency != value:
             self._agency = value
@@ -62,17 +58,17 @@ class CreateSettingsForTableDTO(QObject):
     def dates(self) -> Optional[str]:
         return self._route
 
-    @route.setter
+    @dates.setter
     def dates(self, value: Optional[str]):
         if self._route != value:
             self._route = value
             self.settingsChanged.emit()
     @property
-    def direction(self) -> Optional[str]:
+    def direction(self) -> Optional[int]:
         return self._agency
 
-    @agency.setter
-    def direction(self, value: Optional[str]):
+    @direction.setter
+    def direction(self, value: Optional[int]):
         if self._agency != value:
             self._agency = value
             self.settingsChanged.emit()
@@ -81,7 +77,7 @@ class CreateSettingsForTableDTO(QObject):
     def individual_sorting(self) -> Optional[str]:
         return self._route
 
-    @route.setter
+    @individual_sorting.setter
     def individual_sorting(self, value: Optional[str]):
         if self._route != value:
             self._route = value
@@ -91,18 +87,18 @@ class CreateSettingsForTableDTO(QObject):
     def create_plan_mode(self) -> Optional[str]:
         return self._route
 
-    @route.setter
+    @create_plan_mode.setter
     def create_plan_mode(self, value: Optional[str]):
         if self._route != value:
             self._route = value
             self.settingsChanged.emit()
 
     @property
-    def timeformat(self) -> Optional[str]:
+    def timeformat(self) -> Optional[int]:
         return self._route
 
-    @route.setter
-    def timeformat(self, value: Optional[str]):
+    @timeformat.setter
+    def timeformat(self, value: Optional[int]):
         if self._route != value:
             self._route = value
             self.settingsChanged.emit()
@@ -111,7 +107,7 @@ class CreateSettingsForTableDTO(QObject):
     def output_path(self) -> Optional[str]:
         return self._route
 
-    @route.setter
+    @output_path.setter
     def output_path(self, value: Optional[str]):
         if self._route != value:
             self._route = value

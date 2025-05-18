@@ -20,27 +20,26 @@ class SelectData(QObject):
     select_agency_signal = Signal()
     update_routes_list_signal = Signal()
     data_selected = Signal(bool)
-    create_settings_for_table_dto_changed = Signal()
 
     def __init__(self, app):
         super().__init__()
         self.app = app
         self.gtfs_data_frame_dto = None
         self.create_settings_for_table_dto = CreateSettingsForTableDTO()
-        self.agencies_list = None
-        self.df_selected_routes = None
+        self._agencies_list = None
+        self._df_selected_routes = None
 
-        self.selected_agency = None
-        self.selected_route = None
-        self.selected_weekday = None
-        self.selected_dates = None
-        self.selected_timeformat = 1
-        self.use_individual_sorting = False
+        self._selected_agency = None
+        self._selected_route = None
+        self._selected_weekday = None
+        self._selected_dates = None
+        self._selected_timeformat = 1
+        self._selected_direction = None
+        self._use_individual_sorting = False
 
         self.header_for_export_data = None
         self.df_header_for_export_data = None
         self.last_time = time.time()
-        self.selected_direction = None
 
         self.reset_select_data = False
         self.create_plan_mode = None
@@ -79,10 +78,9 @@ class SelectData(QObject):
 
     @selected_route.setter
     def selected_route(self, value):
-        self._selected_route = value
-        self.create_settings_for_table_dto.route = value
-        self.create_settings_for_table_dto_changed.emit()
-        self.data_selected.emit(value is not None)
+        if self._selected_route != value:
+            self._selected_route = value
+            self.data_selected.emit(value is not None)
 
     @property
     def selected_direction(self):
@@ -90,10 +88,9 @@ class SelectData(QObject):
 
     @selected_direction.setter
     def selected_direction(self, value):
-        self._selected_direction = value
-        self.create_settings_for_table_dto.direction = value
-        self.create_settings_for_table_dto_changed.emit()
-        self.data_selected.emit(value is not None)
+        if self._selected_direction != value:
+            self._selected_direction = value
+            self.data_selected.emit(value is not None)
 
     @property
     def selected_agency(self):
@@ -101,10 +98,9 @@ class SelectData(QObject):
 
     @selected_agency.setter
     def selected_agency(self, value):
-        self._selected_agency = value
-        self.create_settings_for_table_dto.agency = value
-        self.create_settings_for_table_dto_changed.emit()
-        self.get_routes_of_agency()
+        if self._selected_agency != value:
+            self._selected_agency = value
+            self.get_routes_of_agency()
 
     @property
     def df_selected_routes(self):
@@ -122,8 +118,6 @@ class SelectData(QObject):
     @use_individual_sorting.setter
     def use_individual_sorting(self, value):
         self._use_individual_sorting = value
-        self.create_settings_for_table_dto.individual_sorting = value
-        self.create_settings_for_table_dto_changed.emit()
 
 
     @property
@@ -132,10 +126,9 @@ class SelectData(QObject):
 
     @selected_dates.setter
     def selected_dates(self, value):
-        self._selected_dates = value
-        self.create_settings_for_table_dto.dates = value
-        self.create_settings_for_table_dto_changed.emit()
-        self.data_selected.emit(value is not None)
+        if self._selected_dates != value:
+            self._selected_dates = value
+            self.data_selected.emit(value is not None)
 
     @property
     def selected_weekday(self):
@@ -143,10 +136,9 @@ class SelectData(QObject):
 
     @selected_weekday.setter
     def selected_weekday(self, value):
-        self._selected_weekday = value
-        self.create_settings_for_table_dto.weekday = value
-        self.create_settings_for_table_dto_changed.emit()
-        self.data_selected.emit(value is not None)
+        if self._selected_weekday != value:
+            self._selected_weekday = value
+            self.data_selected.emit(value is not None)
 
     @property
     def agencies_list(self):
@@ -154,9 +146,10 @@ class SelectData(QObject):
 
     @agencies_list.setter
     def agencies_list(self, value):
-        self._agencies_list = value
-        if value is not None:
-            self.select_agency_signal.emit()
+        if self._agencies_list != value:
+            self._agencies_list = value
+            if value is not None:
+                self.select_agency_signal.emit()
 
     @property
     def selected_timeformat(self):
@@ -165,8 +158,6 @@ class SelectData(QObject):
     @selected_timeformat.setter
     def selected_timeformat(self, value):
         self._selected_timeformat = value
-        self.create_settings_for_table_dto.timeformat = value
-        self.create_settings_for_table_dto_changed.emit()
         self.data_selected.emit(value is not None)
         logging.debug(value)
 
