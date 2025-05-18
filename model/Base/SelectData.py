@@ -25,7 +25,6 @@ class SelectData(QObject):
         super().__init__()
         self.app = app
         self.gtfs_data_frame_dto = None
-        self.create_settings_for_table_dto = CreateSettingsForTableDTO()
         self._agencies_list = None
         self._df_selected_routes = None
 
@@ -171,7 +170,14 @@ class SelectData(QObject):
         if value is not None:
             self.read_gtfs_agencies()
 
-    def initialize_select_data(self):
+    def initialize_select_data(self, create_settings_for_table_dto: CreateSettingsForTableDTO):
+        self.selected_agency = None
+        self.selected_route = None
+        self.selected_weekday = None
+        self.selected_dates = None
+        self.selected_timeformat = 1
+        self.selected_direction = None
+        self.use_individual_sorting = False
         self.selected_timeformat = 1
 
     def get_routes_of_agency(self) -> None:

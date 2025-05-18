@@ -60,15 +60,15 @@ class SchedulePlaner(QObject):
         self.update_options_state_signal.emit(value)
 
     def update_create_settings_output(self):
-        self.create_settings_for_table_dto.output_path = self.export_plan.create_settings_for_table_dto.output_path
+        self.create_settings_for_table_dto.output_path = self.export_plan.output_path
 
     def update_create_settings_selected_data(self):
-        self.create_settings_for_table_dto.agency = self.select_data.create_settings_for_table_dto.agency
-        self.create_settings_for_table_dto.route = self.select_data.create_settings_for_table_dto.route
-        self.create_settings_for_table_dto.weekday = self.select_data.create_settings_for_table_dto.weekday
-        self.create_settings_for_table_dto.dates = self.select_data.create_settings_for_table_dto.dates
-        self.create_settings_for_table_dto.direction = self.select_data.create_settings_for_table_dto.direction
-        self.create_settings_for_table_dto.create_plan_mode = self.select_data.create_settings_for_table_dto.create_plan_mode
+        self.create_settings_for_table_dto.agency = self.select_data.agency
+        self.create_settings_for_table_dto.route = self.select_data.route
+        self.create_settings_for_table_dto.weekday = self.select_data.weekday
+        self.create_settings_for_table_dto.dates = self.select_data.dates
+        self.create_settings_for_table_dto.direction = self.select_data.direction
+        self.create_settings_for_table_dto.create_plan_mode = self.select_data.create_plan_mode
 
     def initilize_scheduler(self):
         self.initialize_import_data()
@@ -98,21 +98,23 @@ class SchedulePlaner(QObject):
 
     def initialize_export_plan(self):
         self.export_plan = ExportPlan(self.app)
-        self.export_plan.create_settings_for_table_dto_changed.connect(self.update_create_settings_output)
+        self.export_plan.output_path_changed.connect(self.update_create_settings_output)
         self.export_plan.progress_Update.connect(self.update_progress)
 
     def initialize_create_plan(self):
         self.create_plan = CreatePlan(self.app)
         self.create_plan.progress_Update.connect(self.update_progress)
         self.create_plan.create_sorting.connect(self.create_sorting_start)
+
+        self.create_plan.create_settings_for_table_dto = self.create_settings_for_table_dto
         self.create_plan.gtfs_data_frame_dto = self.gtfs_data_frame_dto
 
     def initialize_setting_dto(self):
+        self.select_data.initialize_select_data(self.create_settings_for_table_dto)
         self.select_data.create_settings_for_table_dto = self.create_settings_for_table_dto
 
     def update_settings_for_create_table(self):
         self.initialize_create_plan()
-        self.create_plan.create_settings_for_table_dto = self.create_settings_for_table_dto
 
     def create_sorting_start(self):
         self.create_sorting_signal.emit()
