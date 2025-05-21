@@ -65,11 +65,10 @@ class SchedulePlaner(QObject):
 
     def update_create_settings_selected_data(self):
         self.create_settings_for_table_dto.agency = self.select_data.selected_agency
-        self.create_settings_for_table_dto.route = self.select_data.sleroute
-        self.create_settings_for_table_dto.weekday = self.select_data.weekday
-        self.create_settings_for_table_dto.dates = self.select_data.dates
-        self.create_settings_for_table_dto.direction = self.select_data.direction
-        self.create_settings_for_table_dto.create_plan_mode = self.select_data.create_plan_mode
+        self.create_settings_for_table_dto.route = self.select_data.selected_route
+        self.create_settings_for_table_dto.weekday = self.select_data.selected_weekday
+        self.create_settings_for_table_dto.dates = self.select_data.selected_dates
+        self.create_settings_for_table_dto.direction = self.select_data.selected_direction
 
     def initialize_signals_settings_dto(self):
         self.create_settings_for_table_dto.settingsChanged.connect(self.settings_changed.emit)
@@ -114,8 +113,7 @@ class SchedulePlaner(QObject):
         self.create_plan.gtfs_data_frame_dto = self.gtfs_data_frame_dto
 
     def initialize_setting_dto(self):
-        self.select_data.initialize_select_data(self.create_settings_for_table_dto)
-        self.select_data.create_settings_for_table_dto = self.create_settings_for_table_dto
+        self.select_data.initialize_select_data()
 
     def update_settings_for_create_table(self):
         self.initialize_create_plan()

@@ -11,19 +11,19 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class Worker(QObject):
-    finished = Signal()  # Signal to indicate when the function is done
-    error = Signal(Exception)  # Signal to communicate errors (optional)
+    finished = Signal()
+    error = Signal(Exception)
 
     def __init__(self, function):
         super().__init__()
         self.function = function
 
     def run(self):
-        try:
-            self.function()  # Execute the function passed to the worker
-            self.finished.emit()
-        except Exception as e:
-            self.error.emit(e)
+        # try:
+        self.function()
+        self.finished.emit()
+        # except Exception as e:
+        #     self.error.emit(e)
 
 # noinspection PyUnresolvedReferences
 class Model(QObject):
@@ -32,7 +32,6 @@ class Model(QObject):
         self.worker = None
         self.event_loop = event_loop
         self.planer = None
-        # we use this thread, to start processes not in the main gui thread
         self.thread = None
 
     def set_up_schedule_planer(self):

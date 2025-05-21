@@ -1,4 +1,3 @@
-import datetime as dt
 import logging
 import os
 
@@ -139,6 +138,7 @@ class ViewModel(QObject):
         if self.model.planer.select_data.week_day_options_list is None:
             return False
         self.model.planer.select_data.selected_weekday = selected_weekday
+        return None
 
     def on_loaded_agency_list(self):
         self.update_agency_list.emit()
@@ -196,6 +196,9 @@ class ViewModel(QObject):
         for root, dirs, files in os.walk(path):
             if name in files:
                 return True
+            return None
+        return None
+
 
 if __name__ == '__main__':
     logging.debug('no')
