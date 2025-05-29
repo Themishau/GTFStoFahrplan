@@ -30,7 +30,6 @@ class CreateSettingsForTableDTO(QObject):
 
     @agency.setter
     def agency(self, value: Optional[str]):
-        if self._agency != value:
             self._agency = value
             self.settingsChanged.emit()
 
@@ -40,7 +39,6 @@ class CreateSettingsForTableDTO(QObject):
 
     @route.setter
     def route(self, value: Optional[str]):
-        if self._route != value:
             self._route = value
             self.settingsChanged.emit()
 
@@ -50,7 +48,6 @@ class CreateSettingsForTableDTO(QObject):
 
     @weekday.setter
     def weekday(self, value: Optional[str]):
-        if self._agency != value:
             self._agency = value
             self.settingsChanged.emit()
 
@@ -60,7 +57,6 @@ class CreateSettingsForTableDTO(QObject):
 
     @dates.setter
     def dates(self, value: Optional[str]):
-        if self._route != value:
             self._route = value
             self.settingsChanged.emit()
     @property
@@ -69,7 +65,6 @@ class CreateSettingsForTableDTO(QObject):
 
     @direction.setter
     def direction(self, value: Optional[int]):
-        if self._agency != value:
             self._agency = value
             self.settingsChanged.emit()
 
@@ -79,7 +74,6 @@ class CreateSettingsForTableDTO(QObject):
 
     @individual_sorting.setter
     def individual_sorting(self, value: Optional[str]):
-        if self._route != value:
             self._route = value
             self.settingsChanged.emit()
 
@@ -89,7 +83,6 @@ class CreateSettingsForTableDTO(QObject):
 
     @create_plan_mode.setter
     def create_plan_mode(self, value: Optional[str]):
-        if self._route != value:
             self._route = value
             self.settingsChanged.emit()
 
@@ -99,7 +92,6 @@ class CreateSettingsForTableDTO(QObject):
 
     @timeformat.setter
     def timeformat(self, value: Optional[int]):
-        if self._route != value:
             self._route = value
             self.settingsChanged.emit()
 
@@ -109,7 +101,6 @@ class CreateSettingsForTableDTO(QObject):
 
     @output_path.setter
     def output_path(self, value: Optional[str]):
-        if self._route != value:
             self._route = value
             self.settingsChanged.emit()
 

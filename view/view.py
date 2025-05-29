@@ -116,11 +116,12 @@ class View(QMainWindow):
         self.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
 
     def update_create_options_state(self):
-        self.ui.line_Selection_agency.setText(
-            f"selected agency: {self.viewModel.model.planer.create_settings_for_table_dto.agency[DfAgencyColumnEnum.agency_name.value].iloc[0]}")
-        self.ui.line_Selection_trips.setText(
-            f"selected Trip: {self.viewModel.model.planer.create_settings_for_table_dto.route[DfRouteColumnEnum.route_short_name.value].iloc[0]}")
-        self.update_time_format_based_on_dto()
+        # self.ui.line_Selection_agency.setText(
+        #     f"selected agency: {self.viewModel.model.planer.create_settings_for_table_dto.agency[DfAgencyColumnEnum.agency_name.value].iloc[0]}")
+        # self.ui.line_Selection_trips.setText(
+        #     f"selected Trip: {self.viewModel.model.planer.create_settings_for_table_dto.route[DfRouteColumnEnum.route_short_name.value].iloc[0]}")
+        # self.update_time_format_based_on_dto()
+        return
 
     def initialize_window(self):
         self.setFixedSize(1920, 1080)

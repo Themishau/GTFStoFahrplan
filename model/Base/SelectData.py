@@ -77,9 +77,8 @@ class SelectData(QObject):
 
     @selected_route.setter
     def selected_route(self, value):
-        if self._selected_route != value:
-            self._selected_route = value
-            self.data_selected.emit(value is not None)
+        self._selected_route = value
+        self.data_selected.emit(value is not None)
 
     @property
     def selected_direction(self):
@@ -87,9 +86,8 @@ class SelectData(QObject):
 
     @selected_direction.setter
     def selected_direction(self, value):
-        if self._selected_direction != value:
-            self._selected_direction = value
-            self.data_selected.emit(value is not None)
+        self._selected_direction = value
+        self.data_selected.emit(value is not None)
 
     @property
     def selected_agency(self):
@@ -97,9 +95,8 @@ class SelectData(QObject):
 
     @selected_agency.setter
     def selected_agency(self, value):
-        if self._selected_agency != value:
-            self._selected_agency = value
-            self.get_routes_of_agency()
+        self._selected_agency = value
+        self.get_routes_of_agency()
 
     @property
     def df_selected_routes(self):
@@ -125,9 +122,8 @@ class SelectData(QObject):
 
     @selected_dates.setter
     def selected_dates(self, value):
-        if self._selected_dates != value:
-            self._selected_dates = value
-            self.data_selected.emit(value is not None)
+        self._selected_dates = value
+        self.data_selected.emit(value is not None)
 
     @property
     def selected_weekday(self):
@@ -135,9 +131,8 @@ class SelectData(QObject):
 
     @selected_weekday.setter
     def selected_weekday(self, value):
-        if self._selected_weekday != value:
-            self._selected_weekday = value
-            self.data_selected.emit(value is not None)
+        self._selected_weekday = value
+        self.data_selected.emit(value is not None)
 
     @property
     def agencies_list(self):
@@ -145,10 +140,8 @@ class SelectData(QObject):
 
     @agencies_list.setter
     def agencies_list(self, value):
-        if self._agencies_list != value:
-            self._agencies_list = value
-            if value is not None:
-                self.select_agency_signal.emit()
+        self._agencies_list = value
+        self.select_agency_signal.emit()
 
     @property
     def selected_timeformat(self):
