@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'main_window.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.8.2
+## Created by: Qt User Interface Compiler version 6.9.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -18,9 +18,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboBox,
     QDateEdit, QFrame, QGridLayout, QHBoxLayout,
     QHeaderView, QLabel, QLayout, QLineEdit,
-    QListView, QMainWindow, QPlainTextEdit, QPushButton,
-    QSizePolicy, QSpacerItem, QSplitter, QStackedWidget,
-    QTabWidget, QTableView, QVBoxLayout, QWidget)
+    QMainWindow, QPlainTextEdit, QPushButton, QSizePolicy,
+    QSpacerItem, QSplitter, QStackedWidget, QTabWidget,
+    QTableView, QVBoxLayout, QWidget)
 
 from view.Custom.AnimatedQToolBox import AnimatedQToolBox
 from view.Custom.AnimatedTableView import AnimatedTableView
@@ -37,7 +37,7 @@ class Ui_MainWindow(object):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
         MainWindow.setEnabled(True)
-        MainWindow.resize(1800, 900)
+        MainWindow.resize(1920, 954)
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -515,6 +515,10 @@ class Ui_MainWindow(object):
 "    width: 40px;\n"
 "    border-left: 1px solid #ccc;\n"
 "}\n"
+"QTableView::item:selected {\n"
+"     background-color: #0078d4;\n"
+"     color: white;\n"
+"}\n"
 "")
         self.general_information_page = QWidget()
         self.general_information_page.setObjectName(u"general_information_page")
@@ -690,12 +694,12 @@ class Ui_MainWindow(object):
 
         self.gridLayout_13.addWidget(self.label_5, 1, 0, 1, 1)
 
-        self.TripsTableView = AnimatedTableView(self.gridLayoutWidget_4)
+        self.TripsTableView = QTableView(self.gridLayoutWidget_4)
         self.TripsTableView.setObjectName(u"TripsTableView")
 
         self.gridLayout_13.addWidget(self.TripsTableView, 2, 1, 1, 1)
 
-        self.AgenciesTableView = AnimatedTableView(self.gridLayoutWidget_4)
+        self.AgenciesTableView = QTableView(self.gridLayoutWidget_4)
         self.AgenciesTableView.setObjectName(u"AgenciesTableView")
 
         self.gridLayout_13.addWidget(self.AgenciesTableView, 2, 0, 1, 1)

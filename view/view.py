@@ -54,9 +54,6 @@ class View(QMainWindow):
     def initialize_busy_inficator(self):
         NotImplemented()
 
-    def update_selected_agency(self, row):
-        self.ui.AgenciesTableView.selectRow(row)
-
     def update_individualsorting(self, checked):
         self.ui.UseIndividualSorting.setChecked(checked)
 
@@ -116,11 +113,13 @@ class View(QMainWindow):
         self.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
 
     def update_create_options_state(self):
-        # self.ui.line_Selection_agency.setText(
-        #     f"selected agency: {self.viewModel.model.planer.create_settings_for_table_dto.agency[DfAgencyColumnEnum.agency_name.value].iloc[0]}")
-        # self.ui.line_Selection_trips.setText(
-        #     f"selected Trip: {self.viewModel.model.planer.create_settings_for_table_dto.route[DfRouteColumnEnum.route_short_name.value].iloc[0]}")
-        # self.update_time_format_based_on_dto()
+        if self.viewModel.model.planer.select_data.selected_agency is not None:
+            self.ui.line_Selection_agency.setText(
+                f"selected agency: {self.viewModel.model.planer.select_data.selected_agency[DfAgencyColumnEnum.agency_name.value].iloc[0]}")
+        if self.viewModel.model.planer.select_data.selected_route is not None:
+            self.ui.line_Selection_trips.setText(
+                f"selected Trip: {self.viewModel.model.planer.select_data.selected_route[DfRouteColumnEnum.route_short_name.value].iloc[0]}")
+        self.update_time_format_based_on_dto()
         return
 
     def initialize_window(self):

@@ -821,10 +821,14 @@ QComboBox::drop-down {
     width: 40px;
     border-left: 1px solid #ccc;
 }
+QTableView::item:selected {
+     background-color: #0078d4;
+     color: white;
+}
 </string>
           </property>
           <property name="currentIndex">
-           <number>3</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="general_information_page">
            <property name="maximumSize">
@@ -1228,7 +1232,7 @@ Ressources:
                 <widget class="AnimatedTableView" name="TripsTableView"/>
                </item>
                <item row="2" column="0">
-                <widget class="AnimatedTableView" name="AgenciesTableView"/>
+                <widget class="QTableView" name="AgenciesTableView"/>
                </item>
                <item row="1" column="1">
                 <widget class="QLabel" name="label_8">

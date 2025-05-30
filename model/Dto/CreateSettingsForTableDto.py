@@ -1,6 +1,7 @@
 from model.Enum.GTFSEnums import CreatePlanMode
 from PySide6.QtCore import QObject
 from PySide6.QtCore import Signal, Slot
+import pandas as pd
 from typing import Optional
 
 class CreateSettingsForTableDTO(QObject):
@@ -25,82 +26,83 @@ class CreateSettingsForTableDTO(QObject):
 
 
     @property
-    def agency(self) -> Optional[str]:
+    def agency(self) :
         return self._agency
 
     @agency.setter
-    def agency(self, value: Optional[str]):
+    def agency(self, value):
             self._agency = value
             self.settingsChanged.emit()
 
     @property
-    def route(self) -> Optional[str]:
+    def route(self) :
         return self._route
 
     @route.setter
-    def route(self, value: Optional[str]):
+    def route(self, value):
             self._route = value
             self.settingsChanged.emit()
 
     @property
-    def weekday(self) -> Optional[str]:
+    def weekday(self) :
         return self._agency
 
     @weekday.setter
-    def weekday(self, value: Optional[str]):
+    def weekday(self, value):
             self._agency = value
             self.settingsChanged.emit()
 
     @property
-    def dates(self) -> Optional[str]:
+    def dates(self):
         return self._route
 
     @dates.setter
-    def dates(self, value: Optional[str]):
+    def dates(self, value):
             self._route = value
             self.settingsChanged.emit()
+        
     @property
-    def direction(self) -> Optional[int]:
+    def direction(self):
         return self._agency
 
     @direction.setter
-    def direction(self, value: Optional[int]):
+    def direction(self, value):
             self._agency = value
             self.settingsChanged.emit()
 
     @property
-    def individual_sorting(self) -> Optional[str]:
+    def individual_sorting(self) :
         return self._route
 
     @individual_sorting.setter
-    def individual_sorting(self, value: Optional[str]):
+    def individual_sorting(self, value):
             self._route = value
             self.settingsChanged.emit()
 
     @property
-    def create_plan_mode(self) -> Optional[str]:
+    def create_plan_mode(self) :
         return self._route
 
     @create_plan_mode.setter
-    def create_plan_mode(self, value: Optional[str]):
+    def create_plan_mode(self, value):
             self._route = value
             self.settingsChanged.emit()
 
     @property
-    def timeformat(self) -> Optional[int]:
+    def timeformat(self):
         return self._route
 
     @timeformat.setter
-    def timeformat(self, value: Optional[int]):
+    def timeformat(self, value):
             self._route = value
             self.settingsChanged.emit()
 
     @property
-    def output_path(self) -> Optional[str]:
+    def output_path(self) :
         return self._route
 
     @output_path.setter
-    def output_path(self, value: Optional[str]):
+    def output_path(self, value):
             self._route = value
             self.settingsChanged.emit()
 

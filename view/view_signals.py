@@ -1,5 +1,4 @@
 from PySide6.QtCore import QObject
-from PySide6.QtWidgets import QAbstractItemView, QHeaderView
 from view.Custom.ProgressListView import ProgressHistoryModel, ProgressBarDelegate
 from PySide6.QtWidgets import QWidget, QAbstractItemView, QHeaderView
 import logging
@@ -64,7 +63,6 @@ class ViewSignals(QObject):
 
         self.viewModel.update_agency_list.connect(self.view.update_agency_list)
         self.viewModel.update_routes_list_signal.connect(self.view.update_routes_list)
-        self.viewModel.update_selected_agency.connect(self.view.update_selected_agency)
         self.viewModel.update_options_state_signal.connect(self.view.update_create_options_state)
         self.viewModel.update_select_data.connect(self.view.update_select_data)
         self.viewModel.set_up_create_tab_signal.connect(self.view.initialize_create_view_weekdaydate_option)

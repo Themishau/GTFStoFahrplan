@@ -26,7 +26,6 @@ class ViewModel(QObject):
     update_pickle_export_checked = Signal(bool)
     update_agency_list = Signal()
     update_routes_list_signal = Signal()
-    update_selected_agency = Signal(int)
     update_create_plan_continue = Signal()
     update_select_data = Signal(str)
     update_weekdate_option = Signal(str)
@@ -67,8 +66,9 @@ class ViewModel(QObject):
             case _:
                 logging.error(f"Unexpected text value: {text}")
                 mode = None
+
         if mode is not None:
-            self.model.planer.select_data.create_settings_for_table_dto.create_plan_mode = mode
+            self.model.planer.create_settings_for_table_dto.create_plan_mode = mode
             self.update_create_plan_mode.emit(text)
         else:
             self.send_error_message("Invalid create plan mode selected. Please select a valid mode.")
@@ -148,7 +148,6 @@ class ViewModel(QObject):
 
     def on_changed_selected_record_agency(self, index):
         self.model.planer.select_data.selected_agency = index
-        #self.update_selected_agency.emit(index)
 
     def on_changed_selected_record_trip(self, id_us):
         self.model.planer.select_data.selected_route = id_us
