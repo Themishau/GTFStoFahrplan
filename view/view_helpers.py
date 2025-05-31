@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QFileDialog
+from PySide6.QtWidgets import QFileDialog, QHeaderView
 from PySide6.QtCore import QDate
 import os
 
@@ -55,3 +55,9 @@ def string_to_qdate(date_string):
 def qdate_to_string(qdate):
     format_str = 'yyyyMMdd'
     return qdate.toString(format_str)
+
+def update_table_sizes(qViewTable):
+    qViewTable.horizontalHeader().setSectionResizeMode(
+        qViewTable.horizontalHeader().logicalIndex(0), QHeaderView.Interactive)
+    qViewTable.horizontalHeader().setSectionResizeMode(
+        qViewTable.horizontalHeader().logicalIndex(1), QHeaderView.Stretch)

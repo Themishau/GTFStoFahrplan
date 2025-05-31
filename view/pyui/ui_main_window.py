@@ -694,13 +694,14 @@ class Ui_MainWindow(object):
 
         self.gridLayout_13.addWidget(self.label_5, 1, 0, 1, 1)
 
-        self.TripsTableView = QTableView(self.gridLayoutWidget_4)
+        self.TripsTableView = AnimatedTableView(self.gridLayoutWidget_4)
         self.TripsTableView.setObjectName(u"TripsTableView")
 
         self.gridLayout_13.addWidget(self.TripsTableView, 2, 1, 1, 1)
 
-        self.AgenciesTableView = QTableView(self.gridLayoutWidget_4)
+        self.AgenciesTableView = AnimatedTableView(self.gridLayoutWidget_4)
         self.AgenciesTableView.setObjectName(u"AgenciesTableView")
+        self.AgenciesTableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
         self.gridLayout_13.addWidget(self.AgenciesTableView, 2, 0, 1, 1)
 
@@ -799,7 +800,7 @@ class Ui_MainWindow(object):
 
         self.gridLayout_23.addWidget(self.comboBox_direction, 1, 0, 1, 1)
 
-        self.listDatesWeekday = QTableView(self.gridLayoutWidget_5)
+        self.listDatesWeekday = AnimatedTableView(self.gridLayoutWidget_5)
         self.listDatesWeekday.setObjectName(u"listDatesWeekday")
         self.listDatesWeekday.setEnabled(False)
         self.listDatesWeekday.setFont(font3)

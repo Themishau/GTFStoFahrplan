@@ -12,7 +12,6 @@ class ViewSignals(QObject):
     def connect_signals(self):
         self.view.ui.AgenciesTableView.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.view.ui.AgenciesTableView.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.view.ui.AgenciesTableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
         self.view.ui.progress_history_list_view.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.view.ui.progress_history_list_view.setSelectionMode(QAbstractItemView.SingleSelection)
@@ -21,11 +20,9 @@ class ViewSignals(QObject):
 
         self.view.ui.TripsTableView.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.view.ui.TripsTableView.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.view.ui.TripsTableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
         self.view.ui.listDatesWeekday.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.view.ui.listDatesWeekday.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.view.ui.listDatesWeekday.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
         self.view.ui.pushButton_2.clicked.connect(self.view.show_Create_Import_Window)
         self.view.ui.pushButton_3.clicked.connect(self.view.show_Create_Select_Window)

@@ -1,13 +1,13 @@
 import logging
 from PySide6.QtCore import Qt, QPoint, QSize
-from PySide6.QtWidgets import QFileDialog, QMessageBox, QMainWindow, QApplication
+from PySide6.QtWidgets import QFileDialog, QMessageBox, QMainWindow, QApplication, QHeaderView
 from model.Base.Progress import ProgressSignal
 from model.Enum.GTFSEnums import CreatePlanMode, DfRouteColumnEnum, DfAgencyColumnEnum
 from view.Custom.round_progress_bar import RoundProgress
 from view.Custom.select_table_view import TableModel
 from view.Custom.sort_table_view import TableModelSort
 from view.pyui.ui_main_window import Ui_MainWindow
-from view.view_helpers import get_file_path, get_output_dir_path, get_pickle_save_path, string_to_qdate, qdate_to_string
+from view.view_helpers import get_file_path, get_output_dir_path, get_pickle_save_path, string_to_qdate, qdate_to_string, update_table_sizes
 from view.view_signals import ViewSignals
 
 logging.basicConfig(level=logging.DEBUG,
@@ -223,21 +223,23 @@ class View(QMainWindow):
         date = self.ui.dateEdit.date()
         self.viewModel.on_changed_selected_dates(date)
 
-    # todo einbauen!!
     def initialize_selected_date(self):
         date = self.ui.dateEdit.date()
         self.viewModel.model.planer.select_data.selected_dates = qdate_to_string(date)
 
     def update_weekday_option_table(self, ):
         self.ui.listDatesWeekday.setModel(TableModel(self.viewModel.model.planer.create_plan.weekdays_df))
+        update_table_sizes(self.ui.listDatesWeekday)
 
     def update_routes_list(self):
         self.ui.TripsTableView.setModel(
             TableModel(self.viewModel.model.planer.select_data.df_selected_routes))
+        update_table_sizes(self.ui.TripsTableView)
 
     def update_individualsorting_table(self):
         self.ui.tableView_sorting_stops.setModel(
             TableModelSort(self.viewModel.model.planer.create_plan.strategy.plans.create_dataframe.FilteredStopNamesDataframe))
+        update_table_sizes(self.ui.listDatesWeekday)
         self.ui.btnContinueCreate.setEnabled(True)
 
     def update_agency_list(self):
@@ -246,7 +248,9 @@ class View(QMainWindow):
         self.ui.line_Selection_date_range.setText(self.viewModel.model.planer.analyze_data.date_range)
         self.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
         self.show_Create_Select_Window()
+        update_table_sizes(self.ui.AgenciesTableView)
         logging.debug("done with creating dfs")
+
 
     def get_file_path(self):
         self.viewModel.on_change_input_file_path(get_file_path(self))
@@ -270,6 +274,8 @@ class View(QMainWindow):
         id_us = self.ui.listDatesWeekday.model().wholeData(index)
         logging.debug(f"id {id_us["day"]}")
         self.viewModel.on_changed_selected_weekday(id_us)
+
+
 
     def reset_view(self):
         self.ui.btnImport.setEnabled(True)
