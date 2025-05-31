@@ -108,9 +108,11 @@ class CreatePlan(QObject):
                 self.create_settings_for_table_dto,
                 self.gtfs_data_frame_dto
             )
-        # Add other strategy selection logic as needed
+
+        if self.create_settings_for_table_dto.individual_sorting:
+            self.data_selected.emit()
+
         self.strategy.progress_Update.connect(self.update_progress)
-        # Create context with selected strategy
         context = TableCreationContext(self.strategy)
         context.create_table()
 

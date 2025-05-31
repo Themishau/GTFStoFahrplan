@@ -60,6 +60,9 @@ class SchedulePlaner(QObject):
     def update_options_state(self, value):
         self.update_options_state_signal.emit(value)
 
+    def update_create_settings_analyze_data(self):
+        self.create_settings_for_table_dto.dates = self.analyze_data.sample_date
+
     def update_create_settings_create_plan(self):
         self.create_settings_for_table_dto.create_plan_mode = self.create_plan.create_plan_mode
 
@@ -105,6 +108,7 @@ class SchedulePlaner(QObject):
 
     def initialize_analyze_data(self):
         self.analyze_data = AnalyzeData(self.app)
+        self.analyze_data.data_selected.connect(self.update_create_settings_analyze_data)
 
     def initialize_export_plan(self):
         self.export_plan = ExportPlan(self.app)
@@ -134,17 +138,17 @@ class SchedulePlaner(QObject):
         self.export_plan.output_path = output_path
 
     def create_table(self) -> bool:
-        try:
+        #try:
             self.create_plan.create_table()
             self.export_plan.export_plan(self.create_settings_for_table_dto, self.create_plan.strategy.plans.create_dataframe)
             self.create_finished.emit(True)
             return True
-        except AttributeError as e:
-           self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
-           return False
-        except ValueError as e:
-           self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
-           return False
+        # except AttributeError as e:
+        #    self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
+        #    return False
+        # except ValueError as e:
+        #    self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
+        #    return False
 
     def create_table_individual_sorting(self) -> bool:
         self.create_plan.create_table()

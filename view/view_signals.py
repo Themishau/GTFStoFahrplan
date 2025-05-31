@@ -1,4 +1,5 @@
 from PySide6.QtCore import QObject
+from PySide6 import QtCore as lol
 from view.Custom.ProgressListView import ProgressHistoryModel, ProgressBarDelegate
 from PySide6.QtWidgets import QWidget, QAbstractItemView, QHeaderView
 import logging
@@ -31,7 +32,6 @@ class ViewSignals(QObject):
         self.view.ui.pushButton_6.clicked.connect(self.view.show_GTFSDownload_window)
 
         self.view.ui.btnImport.clicked.connect(self.viewModel.start_import_gtfs_data)
-        self.view.ui.btnRestart.clicked.connect(self.viewModel.restart)
 
         self.view.ui.btnGetFile.clicked.connect(self.view.get_file_path)
         self.viewModel.input_file_path.connect(self.view.update_file_input_path)
@@ -58,7 +58,7 @@ class ViewSignals(QObject):
         self.view.ui.TripsTableView.clicked.connect(self.view.get_changed_selected_record_trip)
         self.view.ui.listDatesWeekday.clicked.connect(self.view.get_changed_selected_weekday)
 
-        self.viewModel.update_agency_list.connect(self.view.update_agency_list)
+        self.viewModel.update_agency_list_signal.connect(self.view.update_agency_list, lol.Qt.ConnectionType.UniqueConnection)
         self.viewModel.update_routes_list_signal.connect(self.view.update_routes_list)
         self.viewModel.update_options_state_signal.connect(self.view.update_create_options_state)
         self.viewModel.update_select_data.connect(self.view.update_select_data)

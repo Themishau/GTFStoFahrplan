@@ -7,22 +7,17 @@ from typing import Optional
 class CreateSettingsForTableDTO(QObject):
     settingsChanged = Signal()
 
-    def __init__(self):
+    def __init__(self, other=None):
         super().__init__()
-        self._initialize_all_properties()
-
-    def _initialize_all_properties(self):
-        # Initialize all properties with default values
-        self._agency = None
-        self._route = None
-        self._weekday = None
-        self._dates = None
-        self._direction = 0
-        self._individual_sorting = False
-        self._timeformat = 1
-        self._create_plan_mode = CreatePlanMode.date
-        self._output_path = ""
-
+        self._agency = other._agency.copy() if other else None
+        self._route = other._route.copy() if other else None
+        self._weekday = other._weekday.copy() if other else None
+        self._dates = other._dates.copy() if other else pd.DataFrame(columns=['date'])
+        self._direction = other._direction.copy() if other else None
+        self._individual_sorting = other._individual_sorting if other else False
+        self._timeformat = other._timeformat if other else 1
+        self._create_plan_mode = other._create_plan_mode if other else CreatePlanMode.date
+        self._output_path = other._output_path.copy() if other else ''
 
 
     @property

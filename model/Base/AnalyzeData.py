@@ -15,6 +15,7 @@ logging.basicConfig(level=logging.DEBUG,
 class AnalyzeData(QObject):
     progress_Update = Signal(ProgressSignal)
     error_occured = Signal(str)
+    data_selected = Signal(bool)
 
     def __init__(self, app):
         super().__init__()
@@ -22,12 +23,21 @@ class AnalyzeData(QObject):
         self.gtfs_data_frame_dto = None
         self.progress_information = ""
         self.date_range = None
-        self.sample_date = None
+        self._sample_date = None
         self.date_range_df_format = None
         self.notify_functions = {}
 
         """ visual internal property """
         self.progress = ProgressSignal()
+
+    @property
+    def sample_date(self):
+        return self._sample_date
+
+    @sample_date.setter
+    def sample_date(self, value):
+        self._sample_date = value
+        self.data_selected.emit(value is not None)
 
 
     @property

@@ -26,7 +26,7 @@ class SequentialTableCreationStrategy(QObject, TableCreationStrategy, metaclass=
 
     def create_table(self) -> None:
         self.plans = UmlaufPlaner()
-        self.plans.create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
+        self.plans.create_settings_for_table_dto = self.create_settings_for_table_dto
         self.plans.gtfs_data_frame_dto = copy.deepcopy(self.gtfs_data_frame_dto)
         strategy = None
         if self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date and self.create_settings_for_table_dto.individual_sorting:

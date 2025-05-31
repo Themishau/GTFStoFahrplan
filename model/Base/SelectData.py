@@ -80,7 +80,7 @@ class SelectData(QObject):
     @selected_route.setter
     def selected_route(self, value):
         self._selected_route = value
-        self.data_selected.emit(value is not None)
+        #self.data_selected.emit(value is not None)
 
     @property
     def selected_direction(self):
@@ -151,8 +151,9 @@ class SelectData(QObject):
 
     @agencies_list.setter
     def agencies_list(self, value):
-        self._agencies_list = value
-        self.select_agency_signal.emit()
+        if self._agencies_list is not value:
+            self._agencies_list = value
+            self.select_agency_signal.emit()
 
     @property
     def selected_timeformat(self):
@@ -182,7 +183,7 @@ class SelectData(QObject):
         self.selected_timeformat = 1
         self.selected_direction = 0
         self.use_individual_sorting = False
-        self.create_plan_mode = CreatePlanMode.date
+        self.selected_create_plan_mode = CreatePlanMode.date
 
     def get_routes_of_agency(self) -> None:
         if self.selected_agency is not None:

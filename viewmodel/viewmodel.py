@@ -24,7 +24,7 @@ class ViewModel(QObject):
     update_create_plan_mode = Signal(int)
     update_direction_mode = Signal(str)
     update_pickle_export_checked = Signal(bool)
-    update_agency_list = Signal()
+    update_agency_list_signal = Signal()
     update_routes_list_signal = Signal()
     update_create_plan_continue = Signal()
     update_select_data = Signal(str)
@@ -130,10 +130,6 @@ class ViewModel(QObject):
         self.model.planer.select_data.use_individual_sorting = value
         self.update_individualsorting.emit(value)
 
-    def restart(self):
-        self.reset_view()
-        self.model.reset_model()
-
     def select_weekday_option(self, selected_weekday):
         if self.model.planer.select_data.week_day_options_list is None:
             return False
@@ -141,7 +137,7 @@ class ViewModel(QObject):
         return None
 
     def on_loaded_agency_list(self):
-        self.update_agency_list.emit()
+        self.update_agency_list_signal.emit()
 
     def on_loaded_trip_list(self):
         self.update_routes_list_signal.emit()
