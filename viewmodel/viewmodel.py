@@ -112,7 +112,7 @@ class ViewModel(QObject):
     def initilize_schedule_planer(self):
         # init model with publisher
         self.model.set_up_schedule_planer()
-        self.set_up_signals()
+        #self.set_up_signals()
 
     def set_up_signals(self):
         self.model.planer.progress_Update.connect(self.on_changed_progress_value)
