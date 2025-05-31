@@ -8,6 +8,7 @@ import pandas as pd
 from .Progress import ProgressSignal
 from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO
 from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
+from ..Enum.GTFSEnums import CreatePlanMode
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
@@ -34,6 +35,7 @@ class SelectData(QObject):
         self._selected_dates = None
         self._selected_timeformat = 1
         self._selected_direction = None
+        self._selected_create_plan_mode = None
         self._use_individual_sorting = False
 
         self.header_for_export_data = None
@@ -126,6 +128,15 @@ class SelectData(QObject):
         self.data_selected.emit(value is not None)
 
     @property
+    def selected_create_plan_mode(self):
+        return self._selected_create_plan_mode
+
+    @selected_create_plan_mode.setter
+    def selected_create_plan_mode(self, value):
+        self._selected_create_plan_mode = value
+        self.data_selected.emit(value is not None)
+
+    @property
     def selected_weekday(self):
         return self._selected_weekday
 
@@ -169,8 +180,9 @@ class SelectData(QObject):
         self.selected_weekday = None
         self.selected_dates = None
         self.selected_timeformat = 1
-        self.selected_direction = None
+        self.selected_direction = 0
         self.use_individual_sorting = False
+        self.create_plan_mode = CreatePlanMode.date
 
     def get_routes_of_agency(self) -> None:
         if self.selected_agency is not None:

@@ -68,7 +68,7 @@ class ViewModel(QObject):
                 mode = None
 
         if mode is not None:
-            self.model.planer.create_settings_for_table_dto.create_plan_mode = mode
+            self.model.planer.select_data.create_plan_mode = mode
             self.update_create_plan_mode.emit(text)
         else:
             self.send_error_message("Invalid create plan mode selected. Please select a valid mode.")

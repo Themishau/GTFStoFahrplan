@@ -60,7 +60,10 @@ class SchedulePlaner(QObject):
     def update_options_state(self, value):
         self.update_options_state_signal.emit(value)
 
-    def update_create_settings_output(self):
+    def update_create_settings_create_plan(self):
+        self.create_settings_for_table_dto.create_plan_mode = self.create_plan.create_plan_mode
+
+    def update_create_settings_export_plan(self):
         self.create_settings_for_table_dto.output_path = self.export_plan.output_path
 
     def update_create_settings_selected_data(self):
@@ -69,6 +72,10 @@ class SchedulePlaner(QObject):
         self.create_settings_for_table_dto.weekday = self.select_data.selected_weekday
         self.create_settings_for_table_dto.dates = self.select_data.selected_dates
         self.create_settings_for_table_dto.direction = self.select_data.selected_direction
+        self.create_settings_for_table_dto.individual_sorting = self.select_data.use_individual_sorting
+        self.create_settings_for_table_dto.timeformat = self.select_data.selected_timeformat
+        self.create_settings_for_table_dto.create_plan_mode = self.select_data.selected_create_plan_mode
+
 
     def initialize_signals_settings_dto(self):
         self.create_settings_for_table_dto.settingsChanged.connect(self.settings_changed.emit)
@@ -101,13 +108,13 @@ class SchedulePlaner(QObject):
 
     def initialize_export_plan(self):
         self.export_plan = ExportPlan(self.app)
-        self.export_plan.output_path_changed.connect(self.update_create_settings_output)
+        self.export_plan.data_selected.connect(self.update_create_settings_export_plan)
         self.export_plan.progress_Update.connect(self.update_progress)
 
     def initialize_create_plan(self):
         self.create_plan = CreatePlan(self.app)
         self.create_plan.progress_Update.connect(self.update_progress)
-        self.create_plan.create_sorting.connect(self.create_sorting_start)
+        self.create_plan.data_selected.connect(self.update_create_settings_create_plan)
 
         self.create_plan.create_settings_for_table_dto = self.create_settings_for_table_dto
         self.create_plan.gtfs_data_frame_dto = self.gtfs_data_frame_dto

@@ -23,13 +23,12 @@ logging.basicConfig(level=logging.DEBUG,
 class CreatePlan(QObject):
     progress_Update = Signal(ProgressSignal)
     error_occured = Signal(str)
-    create_sorting = Signal()
+    data_selected = Signal()
 
     def __init__(self, app):
         super().__init__()
         self.app = app
         self.reset_create = False
-        self.create_plan_mode = None
         self.gtfs_data_frame_dto = None
         self.create_settings_for_table_dto = CreateSettingsForTableDTO()
         self.strategy = None
@@ -114,10 +113,6 @@ class CreatePlan(QObject):
         # Create context with selected strategy
         context = TableCreationContext(self.strategy)
         context.create_table()
-
-        if self.create_settings_for_table_dto.individual_sorting:
-            self.create_sorting.emit()
-
 
     def create_table_continue(self):
         self.strategy.create_table_continue()

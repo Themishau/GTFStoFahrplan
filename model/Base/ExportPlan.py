@@ -17,13 +17,12 @@ logging.basicConfig(level=logging.DEBUG,
 class ExportPlan(QObject):
     progress_Update = Signal(ProgressSignal)
     error_occured = Signal(str)
-    output_path_changed = Signal()
+    data_selected = Signal(bool)
 
     def __init__(self, app):
         super().__init__()
         self.app = app
         self.reset_create = False
-        self.create_plan_mode = None
         self._output_path = ""
         self.full_output_path = ""
         """ visual internal property """
@@ -36,7 +35,7 @@ class ExportPlan(QObject):
     @output_path.setter
     def output_path(self, value):
         self._output_path = value
-        self.output_path_changed.emit()
+        self.data_selected.emit(value is not None)
         logging.debug(value)
 
     def export_plan(self, exportSettings, createTableDto: CreateTableDataframeDto):

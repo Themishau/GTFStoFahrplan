@@ -45,68 +45,66 @@ class CreateSettingsForTableDTO(QObject):
 
     @property
     def weekday(self) :
-        return self._agency
+        return self._weekday
 
     @weekday.setter
     def weekday(self, value):
-            self._agency = value
+            self._weekday = value
             self.settingsChanged.emit()
 
     @property
     def dates(self):
-        return self._route
+        return self._dates
 
     @dates.setter
     def dates(self, value):
-            self._route = value
+            self._dates = value
             self.settingsChanged.emit()
         
     @property
     def direction(self):
-        return self._agency
+        return self._direction
 
     @direction.setter
     def direction(self, value):
-            self._agency = value
+            self._direction = value
             self.settingsChanged.emit()
 
     @property
     def individual_sorting(self) :
-        return self._route
+        return self._individual_sorting
 
     @individual_sorting.setter
     def individual_sorting(self, value):
-            self._route = value
+            self._individual_sorting = value
             self.settingsChanged.emit()
 
     @property
     def create_plan_mode(self) :
-        return self._route
+        return self._create_plan_mode
 
     @create_plan_mode.setter
     def create_plan_mode(self, value):
-            self._route = value
+            self._create_plan_mode = value
             self.settingsChanged.emit()
 
     @property
     def timeformat(self):
-        return self._route
+        return self._timeformat
 
     @timeformat.setter
     def timeformat(self, value):
-            self._route = value
+            self._timeformat = value
             self.settingsChanged.emit()
 
     @property
     def output_path(self) :
-        return self._route
+        return self._output_path
 
     @output_path.setter
     def output_path(self, value):
-            self._route = value
+            self._output_path = value
             self.settingsChanged.emit()
-
-
 
     @Slot()
     def on_nested_settings_change(self):
