@@ -41,34 +41,9 @@ class Model(QObject):
     def set_up_umlauf_planer(self):
         NotImplemented
 
-    # def start_function_async(self, function_name):
-    #     # Create a thread
-    #     self.thread = QThread()
-    #
-    #     worker_function = getattr(self, function_name)
-    #     # Create Worker and move it to the thread
-    #     self.worker = Worker(worker_function)
-    #     self.worker.moveToThread(self.thread)
-    #
-    #     # Connect signals and slots
-    #     self.thread.started.connect(self.worker.run)  # Start worker when the thread starts
-    #     self.worker.finished.connect(self.thread.quit)
-    #     self.worker.finished.connect(self.worker.deleteLater)
-    #     self.thread.finished.connect(self.thread.deleteLater)
-    #     self.worker.error.connect(self.handle_worker_error)
-    #
-    #     # Start the thread
-    #     self.thread.start()
-
     def start_function_async(self, function_name):
-        # this is fine!
-
         # Create a thread
         self.thread = QThread()
-        # self.moveToThread(self.thread)
-        # # Ensure the correct function is passed
-        # self.thread.started.connect(getattr(self, function_name))
-        # self.thread.start()
 
         worker_function = getattr(self, function_name)
         # Create Worker and move it to the thread
@@ -84,6 +59,31 @@ class Model(QObject):
 
         # Start the thread
         self.thread.start()
+
+    # def start_function_async(self, function_name):
+    #     # this is fine!
+    #
+    #     # Create a thread
+    #     self.thread = QThread()
+    #     # self.moveToThread(self.thread)
+    #     # # Ensure the correct function is passed
+    #     # self.thread.started.connect(getattr(self, function_name))
+    #     # self.thread.start()
+    #
+    #     worker_function = getattr(self, function_name)
+    #     # Create Worker and move it to the thread
+    #     self.worker = Worker(worker_function)
+    #     self.worker.moveToThread(self.thread)
+    #
+    #     # Connect signals and slots
+    #     self.thread.started.connect(self.worker.run)  # Start worker when the thread starts
+    #     self.worker.finished.connect(self.thread.quit)
+    #     self.worker.finished.connect(self.worker.deleteLater)
+    #     self.thread.finished.connect(self.thread.deleteLater)
+    #     self.worker.error.connect(self.handle_worker_error)
+    #
+    #     # Start the thread
+    #     self.thread.start()
 
     def handle_worker_error(self, error):
         logging.error(f"Worker encountered an error: {error}. {type(error).__name__}")

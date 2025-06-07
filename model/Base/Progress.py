@@ -5,14 +5,14 @@ import time as Time
 
 @dataclass
 class ProgressSignal:
-    """Custom signal type for progress updates"""
     value: Optional[int] = 0
+    process_name: Optional[str] = None
     message: Optional[str] = None
     timestamp: Optional[float] = None
 
-    def set_progress(self, value: int, message: Optional[str] = None):
-        """Set progress and emit signal with custom type"""
+    def set_progress(self, value: int, process_name: Optional[str] = None, message: Optional[str] = None):
         self.value= value
+        self.process_name = process_name
         self.message= message
         self.timestamp= Time.time()
         return self

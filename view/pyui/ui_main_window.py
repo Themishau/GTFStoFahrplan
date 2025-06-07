@@ -1095,10 +1095,7 @@ class Ui_MainWindow(object):
         self.progess_log.setObjectName(u"progess_log")
         self.progress_history_list_view = ProgressHistoryListView(self.bottom_info_widget)
         self.progress_history_list_view.setObjectName(u"progress_history_list_view")
-        sizePolicy7.setHeightForWidth(self.progress_history_list_view.sizePolicy().hasHeightForWidth())
-        self.progress_history_list_view.setSizePolicy(sizePolicy7)
-        self.progress_history_list_view.setMaximumSize(QSize(500, 100))
-
+        #sizePolicy7.setHeightForWidth(self.progress_history_list_view.sizePolicy().hasHeightForWidth())
         self.progess_log.addWidget(self.progress_history_list_view, 0, 0, 1, 1)
 
 

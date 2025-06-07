@@ -38,12 +38,6 @@ class SelectData(QObject):
         self._selected_create_plan_mode = None
         self._use_individual_sorting = False
 
-        self.header_for_export_data = None
-        self.df_header_for_export_data = None
-        self.last_time = time.time()
-
-        self.reset_select_data = False
-
         """ visual internal property """
         self.progress = ProgressSignal()
 
@@ -80,7 +74,7 @@ class SelectData(QObject):
     @selected_route.setter
     def selected_route(self, value):
         self._selected_route = value
-        #self.data_selected.emit(value is not None)
+        self.data_selected.emit(value is not None)
 
     @property
     def selected_direction(self):
@@ -116,7 +110,6 @@ class SelectData(QObject):
     @use_individual_sorting.setter
     def use_individual_sorting(self, value):
         self._use_individual_sorting = value
-
 
     @property
     def selected_dates(self):
