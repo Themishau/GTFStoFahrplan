@@ -30,7 +30,7 @@ class DateTableCreationStrategy(QObject, TableCreationStrategy, metaclass=Common
 
         for step, description in steps:
             self.process = self.process + 10
-            self.progress_Update.emit(self.progress.set_progress(self.process, description))
+            self.progress_Update.emit(self.progress.set_progress(self.process, 'create_plan', description))
             step()
 
     def update_progress(self, value):

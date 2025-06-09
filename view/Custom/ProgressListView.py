@@ -12,7 +12,7 @@ class ProgressHistoryItem(QWidget):
         super().__init__()
         self.title = progress.message
         self.progress = progress
-        self.setMinimumSize(0, 40)
+        self.setMinimumSize(QSize(300, 80))
 
     @override
     def sizeHint(self):
@@ -67,6 +67,8 @@ class ProgressHistoryListView(QListView):
         self.setViewMode(QListView.ListMode)
         self.setMinimumSize(300, 200)
         self.setItemDelegate(ProgressBarDelegate())
+        self.setUniformItemSizes(True)
+        self.setSpacing(10)
 
     def updateProgress(self, progress):
         model = self.model()
@@ -79,15 +81,22 @@ class ProgressBarDelegate(QStyledItemDelegate):
     def paint(self, painter, option, index):
         progress = index.model().data(index, Qt.DisplayRole)
 
+        # Ensure proper sizing
         opt = QStyleOptionProgressBar()
-        opt.rect = option.rect
+        opt.rect = option.rect.adjusted(0, -20, 0, 20)  # Add padding
+        # Configure progress bar properties
         opt.minimum = 0
         opt.maximum = 100
         opt.progress = progress.value
         opt.textVisible = True
-        opt.text = f"{progress.process_name} {progress.message} {progress.value}%"
+        opt.text = f"{progress.process_name}: {progress.value}%"
         opt.textAlignment = Qt.AlignCenter
 
+        # Save painter state
         painter.save()
+
+        # Draw the progress bar
         QApplication.style().drawControl(QStyle.CE_ProgressBar, opt, painter)
+
+        # Restore painter state
         painter.restore()

@@ -31,7 +31,7 @@ class IndividualWeekdayTableCreationStrategy(QObject, TableCreationStrategy, met
 
         for step, description in steps:
             self.process = self.process + 10
-            self.progress_Update.emit(self.progress.set_progress(self.process, description))
+            self.progress_Update.emit(self.progress.set_progress(self.process, 'create_plan', description))
             step()
 
         self.create_sorting.emit()
