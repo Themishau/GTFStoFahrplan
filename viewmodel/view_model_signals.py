@@ -1,8 +1,4 @@
 from PySide6.QtCore import QObject
-from PySide6.QtWidgets import QAbstractItemView, QHeaderView
-from view.Custom.ProgressListView import ProgressHistoryModel, ProgressBarDelegate
-from PySide6.QtWidgets import QWidget, QAbstractItemView, QHeaderView
-import logging
 
 class ViewModelSignals(QObject):
     def __init__(self, viewModel, model):

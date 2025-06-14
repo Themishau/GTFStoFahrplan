@@ -36,7 +36,6 @@ class SchedulePlaner(QObject):
         self.app = app
         self.progress = 0
 
-        """ Model classes for the schedule planer """
         self.circle_plan = None
         self.create_plan = None
         self.export_plan = None
@@ -45,8 +44,6 @@ class SchedulePlaner(QObject):
         self.import_Data = None
 
         self.create_settings_for_table_dto = CreateSettingsForTableDTO()
-
-    """ methods """
 
     def send_error(self, e):
         self.error_occured.emit(e)

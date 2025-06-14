@@ -10,9 +10,6 @@ https://mountcreo.com/article/pyqtpyside-drag-and-drop-qtableview-reordering-row
 class Customtableview(QTableView):
     class DropmarkerStyle(QProxyStyle):
         def drawPrimitive(self, element, option, painter, widget=None):
-            """Draw a line across the entire row rather than just the column we're hovering over.
-            This may not always work depending on global style - for instance I think it won't
-            work on OSX."""
             if element == QStyle.PE_IndicatorItemViewItemDrop and not option.rect.isNull():
                 option_new = QStyleOption(option)
                 option_new.rect.setLeft(0)

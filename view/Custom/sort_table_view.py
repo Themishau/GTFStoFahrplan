@@ -30,9 +30,6 @@ class TableModelSort(QtCore.QAbstractTableModel):
         return None
 
     def mimeData(self, indices):
-        """
-        Move all data, including hidden/disabled columns
-        """
         index = indices[0]
         new_data = []
 
@@ -48,9 +45,6 @@ class TableModelSort(QtCore.QAbstractTableModel):
         return super().mimeData(new_data)
 
     def dropMimeData(self, data, action, row, col, parent):
-        """
-        Always move the entire row, and don't allow column "shifting"
-        """
         print("dropMimeData(data: %r, action: %r, row: %r, col: %r, parent: %r)" % (
             data.formats(), action, row, col, self._index2str(parent)))
         assert action == QtCore.Qt.MoveAction
@@ -74,7 +68,6 @@ class TableModelSort(QtCore.QAbstractTableModel):
         self._data.at[row_source, 'stop_sequence'] = int(sequence_b)
         self._data.at[row_target, 'stop_sequence'] = int(sequence_a)
         self.beginMoveRows(QtCore.QModelIndex(), row_a, row_a, QtCore.QModelIndex(), row_b)
-        # also change column stop_sequence
         logging.debug(f'sequence_a: {sequence_a}')
         logging.debug(f'sequence_b: {sequence_b}')
         logging.debug(f"self._data.loc[row_source][stop_sequence]: {self._data.loc[row_source]['stop_sequence']}")
