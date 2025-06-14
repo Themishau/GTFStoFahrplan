@@ -12,7 +12,6 @@ class WeekdayTableCreationStrategy(QObject, TableCreationStrategy, metaclass=Com
     error_occured = Signal(str)
     def __init__(self, app, umlauf_planer: UmlaufPlaner):
         super().__init__()
-        """ visual internal property """
         self.app = app
         self.progress = ProgressSignal()
         self.process = 10

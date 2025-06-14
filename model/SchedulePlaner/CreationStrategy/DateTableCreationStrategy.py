@@ -9,13 +9,12 @@ from model.SchedulePlaner.UmplaufPlaner.UmlaufPlaner import UmlaufPlaner
 class DateTableCreationStrategy(QObject, TableCreationStrategy, metaclass=CommonMeta):
     progress_Update = Signal(ProgressSignal)
     error_occured = Signal(str)
-    def __init__(self, app, umlaufPlaner: UmlaufPlaner):
+    def __init__(self, app, umlauf_planer: UmlaufPlaner):
         super().__init__()
-        """ visual internal property """
         self.app = app
         self.progress = ProgressSignal()
         self.process = 10
-        self.plan = umlaufPlaner
+        self.plan = umlauf_planer
 
 
     def create_table(self) -> None:
