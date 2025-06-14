@@ -110,6 +110,7 @@ class SelectData(QObject):
     @use_individual_sorting.setter
     def use_individual_sorting(self, value):
         self._use_individual_sorting = value
+        self.data_selected.emit(value is not None)
 
     @property
     def selected_dates(self):
