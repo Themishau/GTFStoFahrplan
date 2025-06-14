@@ -4,6 +4,34 @@ from enum import Enum
 This file contains all used types and names
 '''
 
+class ProcessType(Enum):
+    """ Types of process """
+    import_data = "import_data"
+    create_table = "create_table"
+    create_plan = "create_plan"
+    export_plan = "export_plan"
+
+class ProcessTypeImport(Enum):
+    """ Types of import process """
+    import_gtfs = "import_gtfs"
+    import_gtfs_continue = "import_gtfs_continue"
+    import_gtfs_finished = "import_gtfs_finished"
+    import_gtfs_error = "import_gtfs_error"
+
+class ProcessTypeCreateTable(Enum):
+    """ Types of create table process """
+    create_table = "create_table"
+    create_table_continue = "create_table_continue"
+    create_table_finished = "create_table_finished"
+    create_table_error = "create_table_error"
+
+class ProceessTypeExport(Enum):
+    """ Types of export process """
+    export_plan = "export_plan"
+    export_plan_continue = "export_plan_continue"
+    export_plan_finished = "export_plan_finished"
+    export_plan_error = "export_plan_error"
+
 class CreatePlanMode(Enum):
     """ Types of methods """
     date = 0

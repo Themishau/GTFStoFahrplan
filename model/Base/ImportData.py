@@ -110,10 +110,10 @@ class ImportData(QObject):
         return self.input_path is not None
 
     def import_gtfs(self):
-        self.progress.set_progress(0, "import_gtfs", "Import GTFS data started")
+        self.progress.set_progress(0, ProcessType.import_data, "Import GTFS data started")
         self.progress_Update.emit(self.progress)
         if not self.pre_checks():
-            self.progress_Update.emit(self.progress.set_progress(0, "import_gtfs", "pre checks"))
+            self.progress_Update.emit(self.progress.set_progress(0, ProcessType.import_data, "pre checks"))
             self.reset_data_cause_of_error()
             return None
 
@@ -138,7 +138,7 @@ class ImportData(QObject):
 
         if self.pickle_export_checked is True and self.pickle_save_path_filename is not None:
             self.save_pickle(imported_data)
-        self.progress_Update.emit(self.progress.set_progress(100, "import_gtfs", "import_gtfs done"))
+        self.progress_Update.emit(self.progress.set_progress(100, ProcessType.import_data, "import_gtfs done"))
         return gtfsDataFrameDto
 
     def evaluate_imported_data(self):
@@ -173,7 +173,7 @@ class ImportData(QObject):
                 logging.debug('pickle data detected')
                 for step in GtfsProcessingStep:
                     df_gtfs_data[step.df_name] = self.read_pickle_from_zip(zf, step.file_path)
-                    self.progress_Update.emit(self.progress.set_progress(step.progress_value, "import_gtfs", step.name))
+                    self.progress_Update.emit(self.progress.set_progress(step.progress_value, ProcessType.import_data, step.name))
 
                 try:
                     with zipfile.ZipFile(self.input_path) as zf:

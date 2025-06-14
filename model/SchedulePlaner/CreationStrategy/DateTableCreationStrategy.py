@@ -1,6 +1,7 @@
 from PySide6.QtCore import Signal, QObject
 import copy
 from model.Base.Progress import ProgressSignal
+from model.Enum.GTFSEnums import ProcessType
 from model.SchedulePlaner.CreationStrategy.CommonMeta import CommonMeta
 from model.SchedulePlaner.CreationStrategy.TableCreationStrategy import TableCreationStrategy
 from model.SchedulePlaner.UmplaufPlaner.UmlaufPlaner import UmlaufPlaner
@@ -30,7 +31,7 @@ class DateTableCreationStrategy(QObject, TableCreationStrategy, metaclass=Common
 
         for step, description in steps:
             self.process = self.process + 10
-            self.progress_Update.emit(self.progress.set_progress(self.process, 'create_plan', description))
+            self.progress_Update.emit(self.progress.set_progress(self.process, ProcessType.create_plan, description))
             step()
 
     def update_progress(self, value):

@@ -2,6 +2,7 @@ from typing import List, Optional
 import copy
 from PySide6.QtCore import Signal, QObject
 from model.Base.Progress import ProgressSignal
+from model.Enum.GTFSEnums import ProcessType
 from model.SchedulePlaner.CreationStrategy.CommonMeta import CommonMeta
 from model.SchedulePlaner.CreationStrategy.TableCreationStrategy import TableCreationStrategy
 from model.SchedulePlaner.UmplaufPlaner.UmlaufPlaner import UmlaufPlaner
@@ -29,7 +30,7 @@ class WeekdayTableCreationStrategy(QObject, TableCreationStrategy, metaclass=Com
 
         for step, description in steps:
             self.process = self.process + 10
-            self.progress_Update.emit(self.progress.set_progress(self.process, 'create_plan', description))
+            self.progress_Update.emit(self.progress.set_progress(self.process, ProcessType.create_plan, description))
             step()
 
     def update_progress(self, progress: int) -> None:

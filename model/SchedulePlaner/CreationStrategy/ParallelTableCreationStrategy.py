@@ -23,7 +23,6 @@ class ParallelTableCreationStrategy(QObject, TableCreationStrategy, metaclass=Co
     error_occured = Signal(str)
     def __init__(self, app, create_settings_for_table_dto, gtfs_data_frame_dto):
         super().__init__()
-        """ visual internal property """
         self.app = app
         self.create_settings_for_table_dto = create_settings_for_table_dto
         self.gtfs_data_frame_dto = gtfs_data_frame_dto
@@ -35,14 +34,16 @@ class ParallelTableCreationStrategy(QObject, TableCreationStrategy, metaclass=Co
         self.plans = [UmlaufPlaner(), UmlaufPlaner()]
 
         # Configure plans
-        self.plans[0].create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
+        self.plans[0].create_settings_for_table_dto = self.create_settings_for_table_dto
         self.plans[0].gtfs_data_frame_dto = copy.deepcopy(self.gtfs_data_frame_dto)
 
-        self.plans[1].create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
+        self.plans[1].create_settings_for_table_dto = self.create_settings_for_table_dto
         self.plans[1].create_settings_for_table_dto.direction = 1
         self.plans[1].gtfs_data_frame_dto = copy.deepcopy(self.gtfs_data_frame_dto)
+
         strategy_direction_1 = None
         strategy_direction_2 = None
+
         if self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_date and self.create_settings_for_table_dto.individual_sorting:
             strategy_direction_1 = IndividualWeekdayTableCreationStrategy(self.app, self.plans[0])
             strategy_direction_2 = IndividualWeekdayTableCreationStrategy(self.app, self.plans[1])
@@ -58,7 +59,7 @@ class ParallelTableCreationStrategy(QObject, TableCreationStrategy, metaclass=Co
 
         strategy_direction_1.progress_Update.connect(self.update_progress)
         strategy_direction_2.progress_Update.connect(self.update_progress)
-        # Create context with selected strategy
+
         context_1 = TableCreationContext(strategy_direction_1)
         context_2 = TableCreationContext(strategy_direction_2)
 

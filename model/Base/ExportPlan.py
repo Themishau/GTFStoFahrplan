@@ -8,6 +8,7 @@ from PySide6.QtCore import Signal
 from .Progress import ProgressSignal
 from ..Dto import CreateTableDataframeDto
 from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO
+from ..Enum.GTFSEnums import ProcessType
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
@@ -40,11 +41,11 @@ class ExportPlan(QObject):
 
     def export_plan(self, exportSettings, createTableDto: CreateTableDataframeDto):
         self.datesWeekday_create_output_fahrplan(createTableDto)
-        self.progress_Update.emit(self.progress.set_progress(100,  'export_plan',"export_plan done"))
+        self.progress_Update.emit(self.progress.set_progress(100,  ProcessType.create_plan,"export_plan done"))
 
     def export_circle_plan(self, exportSettings, createTableDto: list[CreateTableDataframeDto]):
         self.datesWeekday_create_output_circleplan(createTableDto)
-        self.progress_Update.emit(self.progress.set_progress(100,  'export_plan',"export_plan done"))
+        self.progress_Update.emit(self.progress.set_progress(100,  ProcessType.create_plan,"export_plan done"))
 
     def datesWeekday_create_output_fahrplan(self, createTableDto: CreateTableDataframeDto):
         # save as csv
