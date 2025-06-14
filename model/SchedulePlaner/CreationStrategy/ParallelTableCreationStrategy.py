@@ -34,10 +34,10 @@ class ParallelTableCreationStrategy(QObject, TableCreationStrategy, metaclass=Co
         self.plans = [UmlaufPlaner(), UmlaufPlaner()]
 
         # Configure plans
-        self.plans[0].create_settings_for_table_dto = self.create_settings_for_table_dto
+        self.plans[0].create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
         self.plans[0].gtfs_data_frame_dto = copy.deepcopy(self.gtfs_data_frame_dto)
 
-        self.plans[1].create_settings_for_table_dto = self.create_settings_for_table_dto
+        self.plans[1].create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
         self.plans[1].create_settings_for_table_dto.direction = 1
         self.plans[1].gtfs_data_frame_dto = copy.deepcopy(self.gtfs_data_frame_dto)
 

@@ -120,7 +120,7 @@ class SchedulePlaner(QObject):
         self.create_plan.progress_Update.connect(self.update_progress)
         self.create_plan.data_selected.connect(self.update_create_settings_create_plan)
 
-        self.create_plan.create_settings_for_table_dto = self.create_settings_for_table_dto
+        self.create_plan.create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
         self.create_plan.gtfs_data_frame_dto = self.gtfs_data_frame_dto
 
     def initialize_setting_dto(self):

@@ -276,8 +276,6 @@ class View(QMainWindow):
         logging.debug(f"id {id_us["day"]}")
         self.viewModel.on_changed_selected_weekday(id_us)
 
-
-
     def reset_view(self):
         self.ui.btnImport.setEnabled(True)
         self.ui.btnRestart.setEnabled(False)
