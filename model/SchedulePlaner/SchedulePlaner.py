@@ -61,7 +61,7 @@ class SchedulePlaner(QObject):
         self.create_settings_for_table_dto.dates = self.analyze_data.sample_date
 
     def update_create_settings_create_plan(self):
-        self.create_settings_for_table_dto.create_plan_mode = self.create_plan.create_plan_mode
+        self.create_settings_for_table_dto.create_plan_mode = self.create_plan.create_settings_for_table_dto.create_plan_mode
 
     def update_create_settings_export_plan(self):
         self.create_settings_for_table_dto.output_path = self.export_plan.output_path

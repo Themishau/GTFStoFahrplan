@@ -14,8 +14,6 @@ logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
                     datefmt="%Y-%m-%d %H:%M:%S")
 
-# todo: add custom progressUpdated = pyqtSignal(int, str, ProgressBar)
-# display it in a list to track all processes (also in parallel)
 
 class View(QMainWindow):
     def __init__(self, viewModel):
@@ -122,6 +120,9 @@ class View(QMainWindow):
         self.update_time_format_based_on_dto()
         return
 
+    def central_ui_updater(self):
+        NotImplemented
+
     def initialize_window(self):
         self.setFixedSize(1920, 1080)
         self.setWindowFlags(Qt.FramelessWindowHint)
@@ -180,7 +181,6 @@ class View(QMainWindow):
     def show_Create_Import_Window(self):
         self.set_btn_checked(self.createTableImport_btn)
         self.ui.main_view_stacked_widget.setCurrentWidget(self.ui.create_import_page)
-        #self.ui.main_view_stacked_widget.resize(1100, 900)
 
     def show_Create_Select_Window(self):
         self.set_btn_checked(self.createTableSelect_btn)
@@ -239,7 +239,7 @@ class View(QMainWindow):
     def update_individualsorting_table(self):
         self.ui.tableView_sorting_stops.setModel(
             TableModelSort(self.viewModel.model.planer.create_plan.strategy.plans.create_dataframe.FilteredStopNamesDataframe))
-        update_table_sizes(self.ui.listDatesWeekday)
+        update_table_sizes(self.ui.tableView_sorting_stops)
         self.ui.btnContinueCreate.setEnabled(True)
 
     def update_agency_list(self):
