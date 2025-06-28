@@ -100,15 +100,29 @@ class View(QMainWindow):
         self.ui.comboBox_direction.setCurrentText(mode)
 
     def update_create_plan_mode(self, mode):
-        # self.ui.comboBox_direction.setCurrentText(mode)
-        if mode == CreatePlanMode.umlauf_date.value or mode == CreatePlanMode.umlauf_weekday.value:
-            self.ui.comboBox_direction.setEnabled(True)
-            self.ui.comboBox.setEnabled(False)
-        else:
-            self.ui.comboBox.setEnabled(True)
-            self.ui.comboBox_direction.setEnabled(False)
+        self.update_ccreate_table_settings_ui(mode)
 
-        self.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
+    def update_ccreate_table_settings_ui(self, mode):
+        self.ui.comboBox.setEnabled(True)
+        match mode:
+            case CreatePlanMode.umlauf_date.value:
+                self.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
+                self.ui.comboBox_direction.setEnabled(False)
+                self.ui.comboBox_direction.setVisible(False)
+            case CreatePlanMode.umlauf_weekday.value:
+                self.ui.comboBox_direction.setEnabled(False)
+                self.ui.comboBox_direction.setVisible(False)
+                self.ui.listDatesWeekday.setEnabled(True)
+                self.ui.listDatesWeekday.setVisible(True)
+            case CreatePlanMode.date.value:
+                self.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
+                self.ui.comboBox_direction.setEnabled(True)
+                self.ui.comboBox_direction.setVisible(True)
+            case CreatePlanMode.weekday.value:
+                self.ui.comboBox_direction.setEnabled(True)
+                self.ui.comboBox_direction.setVisible(True)
+                self.ui.listDatesWeekday.setEnabled(True)
+                self.ui.listDatesWeekday.setVisible(True)
 
     def update_create_options_state(self):
         if self.viewModel.model.planer.select_data.selected_agency is not None:
@@ -119,9 +133,6 @@ class View(QMainWindow):
                 f"selected Trip: {self.viewModel.model.planer.select_data.selected_route[DfRouteColumnEnum.route_short_name.value].iloc[0]}")
         self.update_time_format_based_on_dto()
         return
-
-    def central_ui_updater(self):
-        NotImplemented
 
     def initialize_window(self):
         self.setFixedSize(1920, 1080)

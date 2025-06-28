@@ -44,6 +44,7 @@ class CirclePlaner(QObject):
         if self.CheckintegrityPlans() is False:
             return False
         self.MergePlans()
+        return True
 
     def CheckintegrityPlans(self) -> False:
         if len(self.plans) != 2:
