@@ -76,7 +76,6 @@ class SchedulePlaner(QObject):
         self.create_settings_for_table_dto.timeformat = self.select_data.selected_timeformat
         self.create_settings_for_table_dto.create_plan_mode = self.select_data.selected_create_plan_mode
 
-
     def initialize_signals_settings_dto(self):
         self.create_settings_for_table_dto.settingsChanged.connect(self.settings_changed.emit)
 
@@ -132,17 +131,25 @@ class SchedulePlaner(QObject):
         self.create_sorting_signal.emit()
 
     def create_table(self) -> bool:
-        #try:
+        try:
             self.create_plan.create_table()
-            self.export_plan.export_plan(self.create_settings_for_table_dto, self.create_plan.strategy.plans.create_dataframe)
+            self.export_plan.export_plan(self.create_settings_for_table_dto,
+                                         self.create_plan.strategy.plans.create_dataframe)
             self.create_finished.emit(True)
             return True
-        # except AttributeError as e:
-        #    self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
-        #    return False
-        # except ValueError as e:
-        #    self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
-        #    return False
+
+        except AttributeError as e:
+            logging.error(f'create_table: {e}')
+            self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
+            return False
+        except ValueError as e:
+            logging.error(f"create_table: {e}")
+            self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
+            return False
+        except Exception as e:
+            logging.error(f"create_table: {e}")
+            self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
+            return False
 
     def create_table_individual_sorting(self) -> bool:
         self.create_plan.create_table()
@@ -152,9 +159,11 @@ class SchedulePlaner(QObject):
     def create_table_continue(self):
         try:
             self.create_plan.create_table_continue()
-            self.export_plan.export_plan(self.create_settings_for_table_dto, self.create_plan.strategy.plans.create_dataframe)
+            self.export_plan.export_plan(self.create_settings_for_table_dto,
+                                         self.create_plan.strategy.plans.create_dataframe)
             self.create_finished.emit(True)
         except AttributeError as e:
+            logging.error(f"create_table_continue: {e}")
             self.error_occured.emit(ErrorMessageRessources.no_import_object_generated.value)
             return False
 
@@ -168,11 +177,16 @@ class SchedulePlaner(QObject):
             return True
 
         except AttributeError as e:
-           self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
-           return False
+            logging.error(f"create_umlaufplan: {e}")
+            self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
+            return False
         except ValueError as e:
-           self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
-           return False
+            logging.error(f"create_umlaufplan: {e}")
+            self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
+            return False
+        except Exception as e:
+            logging.error(f"create_umlaufplan: {e}")
+            self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
 
     def create_umlaufplan_continue(self):
         try:
@@ -180,6 +194,7 @@ class SchedulePlaner(QObject):
             self.export_plan.export_plan(self.create_settings_for_table_dto, self.create_plan.plans.create_dataframe)
             self.create_finished.emit(True)
         except AttributeError as e:
+            logging.error(f"create_umlaufplan_continue: {e}")
             self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
             return False
 
@@ -197,6 +212,7 @@ class SchedulePlaner(QObject):
             return True
 
         except AttributeError as e:
+            logging.error(f"import_gtfs_data: {e}")
             self.error_occured.emit(ErrorMessageRessources.no_import_object_generated.value)
             return False
 
