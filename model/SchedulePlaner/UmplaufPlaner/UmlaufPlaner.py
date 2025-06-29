@@ -18,6 +18,7 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class UmlaufPlaner():
+    error_occured = Signal(str)
 
     def __init__(self):
         super().__init__()
@@ -416,6 +417,13 @@ class UmlaufPlaner():
         sortedDataframe = self.create_dataframe.SortedDataframe
         sortedDataframe.rename(columns=lambda x: f'sorted_{x}', inplace=True)
         df_filtered_stop_names = self.create_dataframe.FilteredStopNamesDataframe
+        if sortedDataframe.empty:
+            self.error_occured.emit(f'{ErrorMessageRessources.no_create_object_generated.value} {ErrorMessageRessources.no_trips_found.value}')
+            raise Exception('')
+        if df_filtered_stop_names.empty:
+            self.error_occured.emit(f'{ErrorMessageRessources.no_create_object_generated.value} {ErrorMessageRessources.no_trips_found.value}')
+            raise Exception('')
+
         joined_df = pd.merge(sortedDataframe, df_filtered_stop_names, left_on='sorted_stop_id', right_on='stop_id',
                              how='left')
         grouped_df = joined_df.groupby(

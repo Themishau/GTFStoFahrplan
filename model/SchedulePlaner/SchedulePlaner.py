@@ -111,11 +111,13 @@ class SchedulePlaner(QObject):
         self.export_plan = ExportPlan(self.app)
         self.export_plan.data_selected.connect(self.update_create_settings_export_plan)
         self.export_plan.progress_Update.connect(self.update_progress)
+        self.export_plan.error_occured.connect(self.send_error)
 
     def initialize_create_plan(self):
         self.create_plan = CreatePlan(self.app)
         self.create_plan.progress_Update.connect(self.update_progress)
         self.create_plan.data_selected.connect(self.update_create_settings_create_plan)
+        self.create_plan.error_occured.connect(self.send_error)
 
         self.create_plan.create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
         self.create_plan.gtfs_data_frame_dto = self.gtfs_data_frame_dto
@@ -128,11 +130,6 @@ class SchedulePlaner(QObject):
 
     def create_sorting_start(self):
         self.create_sorting_signal.emit()
-
-    def set_paths(self, input_path, output_path, picklesavepath=""):
-        self.import_Data.input_path = input_path
-        self.import_Data.pickle_save_path_filename = picklesavepath
-        self.export_plan.output_path = output_path
 
     def create_table(self) -> bool:
         #try:
