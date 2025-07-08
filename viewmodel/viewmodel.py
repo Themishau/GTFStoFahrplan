@@ -82,6 +82,8 @@ class ViewModel(QObject):
         self.update_weekdate_option.emit(text)
 
     def on_changed_pickle_path(self, path):
+        if len(path) == 0:
+            return
         self.model.planer.import_Data.pickle_save_path_filename = path[0]
         self.pickle_file_path.emit(path[0])
 

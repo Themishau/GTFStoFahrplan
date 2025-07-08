@@ -4,12 +4,14 @@ from enum import Enum
 This file contains all used types and names
 '''
 
+
 class ProcessType(Enum):
     """ Types of process """
     import_data = "import_data"
     create_table = "create_table"
     create_plan = "create_plan"
     export_plan = "export_plan"
+
 
 class ProcessTypeImport(Enum):
     """ Types of import process """
@@ -18,12 +20,14 @@ class ProcessTypeImport(Enum):
     import_gtfs_finished = "import_gtfs_finished"
     import_gtfs_error = "import_gtfs_error"
 
+
 class ProcessTypeCreateTable(Enum):
     """ Types of create table process """
     create_table = "create_table"
     create_table_continue = "create_table_continue"
     create_table_finished = "create_table_finished"
     create_table_error = "create_table_error"
+
 
 class ProceessTypeExport(Enum):
     """ Types of export process """
@@ -32,6 +36,7 @@ class ProceessTypeExport(Enum):
     export_plan_finished = "export_plan_finished"
     export_plan_error = "export_plan_error"
 
+
 class CreatePlanMode(Enum):
     """ Types of methods """
     date = 0
@@ -39,10 +44,12 @@ class CreatePlanMode(Enum):
     umlauf_date = 2
     umlauf_weekday = 3
 
+
 class Direction(Enum):
     """ Types of direction """
     direction_1 = 0
     direction_2 = 1
+
 
 class GtfsColumnNames(Enum):
     stopsList = 'stopsList'
@@ -65,6 +72,7 @@ class GtfsDfNames(Enum):
     Agencies = 'Agencies'
     Feedinfos = 'Feedinfos'
 
+
 class GtfsProcessingStep(Enum):
     Stops = (20, "Tmp/dfStops.pkl")
     Stoptimes = (30, "Tmp/dfStopTimes.pkl")
@@ -82,6 +90,7 @@ class GtfsProcessingStep(Enum):
     def df_name(self):
         return GtfsDfNames[self.name]
 
+
 class DateProcessingStep(Enum):
     INIT = (10, "Initialize date processing")
     PREPARE_DATA = (20, "Prepare data")
@@ -92,9 +101,11 @@ class DateProcessingStep(Enum):
     CREATE_SORT = (80, "Create and sort stop names")
     CREATE_PLAN = (90, "Create final plan")
 
+
 class DfStopColumnEnum(Enum):
     stop_id = 'stop_id'
     stop_name = 'stop_name'
+
 
 class DfTripColumnEnum(Enum):
     trip_id = 'trip_id'
@@ -102,21 +113,25 @@ class DfTripColumnEnum(Enum):
     service_id = 'service_id'
     direction_id = 'direction_id'
 
+
 class DfRouteColumnEnum(Enum):
     route_id = 'route_id'
     route_short_name = 'route_short_name'
     route_long_name = 'route_long_name'
     agency_id = 'agency_id'
 
+
 class DfAgencyColumnEnum(Enum):
     agency_id = 'agency_id'
     agency_name = 'agency_name'
+
 
 class DfFeedinfoColumnEnum(Enum):
     feed_publisher_name = 'feed_publisher_name'
     feed_publisher_url = 'feed_publisher_url'
     feed_start_date = 'feed_start_date'
     feed_end_date = 'feed_end_date'
+
 
 class DfCalendarweekColumnEnum(Enum):
     service_id = 'service_id'
@@ -130,12 +145,14 @@ class DfCalendarweekColumnEnum(Enum):
     saturday = 'saturday'
     sunday = 'sunday'
 
+
 class DfCalendardateColumnEnum(Enum):
     date_day_format = 'date_day_format'
     service_id = 'service_id'
     date = 'date'
     day = 'day'
     exception_type = 'exception_type'
+
 
 class DfStopTimesColumnEnum(Enum):
     trip_id = 'trip_id'
@@ -150,10 +167,6 @@ class SubscriberTypes(Enum):
     update_gui = 'update_gui'
     trigger_action = 'trigger_action'
 
-
-'''
-Enums to show all available Subscriber and Observer methods
-'''
 
 class SchedulePlanerFunctionEnum(Enum):
     nothing = 'nothing'
@@ -222,6 +235,7 @@ class ErrorMessageRessources(Enum):
 
 class InfoMessageRessources(Enum):
     export_complete = 'export completed.'
+
 
 class Weekday(Enum):
     MONDAY = "Monday"

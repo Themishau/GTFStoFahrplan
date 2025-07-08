@@ -11,7 +11,6 @@ class GtfsListDto:
         self.agencyList = agencyList
         self.feed_info = feed_info
 
-
 # Dto for GTFS DataFrame Names
 class GtfsDataFrameDto:
     def __init__(self, Routes, Trips, Stoptimes, Stops, Calendarweeks, Calendardates, Agencies, Feedinfos):
@@ -24,8 +23,3 @@ class GtfsDataFrameDto:
         self.Agencies = Agencies
         self.Feedinfos = Feedinfos
 
-
-
-class lol:
-    def __init__(self, dataframes):
-        self.dataframes = dataframes

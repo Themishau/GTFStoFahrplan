@@ -23,6 +23,8 @@ def get_output_dir_path(parent):
     output_file_path = QFileDialog.getExistingDirectory(parent,
                                                         caption='Select GTFS Zip File',
                                                         dir='C:/Tmp')
+    if len(output_file_path) == 0:
+        return None
 
     return output_file_path if output_file_path[0] else None
 

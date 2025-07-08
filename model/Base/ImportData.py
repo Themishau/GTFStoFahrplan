@@ -118,6 +118,9 @@ class ImportData(QObject):
             return None
 
         imported_data = self.read_gtfs_data()
+        if imported_data is None:
+            self.error_occured.emit("Error while reading data!")
+
         if imported_data.get(GtfsDfNames.Feedinfos.name) is not None:
             gtfsDataFrameDto = GtfsDataFrameDto(imported_data[GtfsDfNames.Routes], imported_data[GtfsDfNames.Trips],
                                                 imported_data[GtfsDfNames.Stoptimes], imported_data[GtfsDfNames.Stops],
@@ -195,8 +198,7 @@ class ImportData(QObject):
                         ("calendar.txt", GtfsColumnNames.calendarList),
                         ("calendar_dates.txt", GtfsColumnNames.calendar_datesList),
                         ("routes.txt", GtfsColumnNames.routesList),
-                        ("agency.txt", GtfsColumnNames.agencyList),
-                        ("feed_info.txt", GtfsColumnNames.feed_info)
+                        ("agency.txt", GtfsColumnNames.agencyList)
                     ]
 
                     for filename, column_name in files_to_process:
@@ -220,14 +222,17 @@ class ImportData(QObject):
             return self.create_dfs(raw_data)
 
     def read_file_from_zip(self, zip_file, filename, start_line=0):
-        """Helper function to read a file from zip with error handling"""
+        encodings = ["utf-8", "utf-8-sig"]
         try:
-            with io.TextIOWrapper(
-                    zip_file.open(filename, mode="r"),
-                    encoding="utf-8"
-            ) as file:
-                lines = file.readlines()
-                return lines[start_line:] if lines else []
+            for encoding in encodings:
+                with io.TextIOWrapper(
+                        zip_file.open(filename, mode="r"),
+                        encoding=encoding
+                ) as file:
+                    lines = file.readlines()
+                    if lines and not lines[0].startswith('\ufeff'):
+                        return lines[start_line:] if lines else []
+
         except Exception as e:
             logging.debug(f'Error reading {filename}: {str(e)}')
             return []
@@ -277,7 +282,7 @@ class ImportData(QObject):
             dict_creation_steps.append(("feed_info", self.get_gtfs_feed_info))
 
         # Create dictionaries in parallel
-        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
             processes = [executor.submit(func, raw_data)
                          for _, func in dict_creation_steps]
 
@@ -307,7 +312,7 @@ class ImportData(QObject):
             df_creation_steps.append(("feed_info", self.create_df_feed))
 
         # Create DataFrames in parallel
-        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
             processes = [executor.submit(func, raw_dict_data)
                          for _, func in df_creation_steps]
 
@@ -317,7 +322,7 @@ class ImportData(QObject):
                     df = result.result()
                     df_collection[df.name] = df
                 except Exception as e:
-                    logging.debug(f"Error in DataFrame creation: {str(e)} {df.name}")
+                    logging.debug(f"Error in DataFrame creation: {str(e)} {df.name.value if df is not None else 'unknown df'}")
                     return None
 
         logging.debug(f"df_collection creation: {df_collection.keys()}")
@@ -602,7 +607,6 @@ class ImportData(QObject):
         df_stops.name = GtfsDfNames.Stops
         try:
             df_stops['stop_id'] = df_stops['stop_id'].astype('string')
-            df_stops['parent_station'] = df_stops['parent_station'].astype('string')
             df_stops['stop_name'] = df_stops['stop_name'].astype('string')
         except KeyError:
             logging.debug("can not convert df_Stops: stop_id into int ")
