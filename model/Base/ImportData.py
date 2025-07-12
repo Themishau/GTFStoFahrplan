@@ -9,13 +9,20 @@ import pandas as pd
 from PySide6.QtCore import QObject, Slot
 from PySide6.QtCore import Signal
 
+from model.Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
 from model.Enum.GTFSEnums import *
 from .Progress import ProgressSignal
 from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
+from ..Dto.ImportSettingsDto import ImportSettingsDto
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
                     datefmt="%Y-%m-%d %H:%M:%S")
+
+
+def _check_paths():
+    os.path.isfile()
+    os.path.exists()
 
 
 class ImportData(QObject):
@@ -26,17 +33,7 @@ class ImportData(QObject):
         super().__init__()
         self.app = app
         self._pkl_loaded = False
-        self._pickle_save_path = ""
         self.reset_import = False
-
-        """ property """
-        self.input_path = ""
-        self.pickle_save_path_filename = ""
-        self.pickle_export_checked = False
-        self.time_format = 1
-
-        """ df property """
-        self.df_date_range_in_gtfs_data = pd.DataFrame()
 
         """ visual internal property """
         self.progress = ProgressSignal()
@@ -47,7 +44,6 @@ class ImportData(QObject):
             'column': []
         })
 
-
     @property
     def reset_import(self):
         return self._reset_import
@@ -56,68 +52,23 @@ class ImportData(QObject):
     def reset_import(self, value):
         self._reset_import = value
 
-    @property
-    def input_path(self):
-        return self._input_path
-
-    @input_path.setter
-    def input_path(self, value):
-        self._input_path = value
-
-    @property
-    def pickle_save_path_filename(self):
-        return self._pickleSavePath
-
-    @pickle_save_path_filename.setter
-    def pickle_save_path_filename(self, value):
-        if value is not None:
-            self._pickleSavePath = value
-            self._pickle_save_path = value.replace(value.split('/')[-1], '')
-            logging.debug(value)
-        else:
-            self.error_occured("Folder not found. Please check!")
-
-    @property
-    def pickle_export_checked(self):
-        return self._pickle_export_checked
-
-    @pickle_export_checked.setter
-    def pickle_export_checked(self, value):
-        self._pickle_export_checked = value
-
-    @property
-    def df_date_range_in_gtfs_data(self):
-        return self._df_date_range_in_GTFS_data
-
-    @df_date_range_in_gtfs_data.setter
-    def df_date_range_in_gtfs_data(self, value):
-        self._df_date_range_in_GTFS_data = value
-
-    """ checks """
-
-    def _check_input_fields_based_on_settings(self):
-        if self._check_paths() is False:
-            self.error_occured(f"could not read data from path: {self.input_path}")
+    def _check_input_fields_based_on_settings(self, import_settings_dto: ImportSettingsDto) -> bool:
+        if not _check_paths():
+            self.error_occured.emit(f"could not read data from path: {import_settings_dto.input_path}")
             return False
+        return None
+    def pre_checks(self,  import_settings_dto: ImportSettingsDto):
+        return import_settings_dto.input_path is not None
 
-    def _check_paths(self):
-        os.path.isfile()
-        os.path.exists()
-
-    """ main import methods """
-
-    def pre_checks(self):
-        return self.input_path is not None
-
-    def import_gtfs(self):
+    def import_gtfs(self, import_settings_dto: ImportSettingsDto) -> GtfsDataFrameDto | None:
         self.progress.set_progress(0, ProcessType.import_data, "Import GTFS data started")
         self.progress_Update.emit(self.progress)
-        if not self.pre_checks():
+        if not self.pre_checks(import_settings_dto):
             self.progress_Update.emit(self.progress.set_progress(0, ProcessType.import_data, "pre checks"))
             self.reset_data_cause_of_error()
             return None
 
-        imported_data = self.read_gtfs_data()
+        imported_data = self.read_gtfs_data(import_settings_dto)
         if imported_data is None:
             self.error_occured.emit("Error while reading data!")
 
@@ -139,17 +90,11 @@ class ImportData(QObject):
             self.reset_data_cause_of_error()
             return None
 
-        if self.pickle_export_checked is True and self.pickle_save_path_filename is not None:
+        if import_settings_dto.pickle_export_checked is True and import_settings_dto.pickle_save_path_filename is not None:
             self.save_pickle(imported_data)
         self.progress_Update.emit(self.progress.set_progress(100, ProcessType.import_data, "import_gtfs done"))
         return gtfsDataFrameDto
 
-    def evaluate_imported_data(self):
-        missing_columns = []
-
-        return
-
-    """ methods """
 
     def read_pickle_from_zip(self, zf, file_name):
         with zf.open(file_name, mode="r") as file:
@@ -157,15 +102,10 @@ class ImportData(QObject):
             with io.BytesIO(compressed_data) as byte_stream:
                 return pd.read_pickle(byte_stream)
 
-    def read_gtfs_data(self):
-
-        """
-        reads data from self.input_path. Data needs to be formatted as gtfs data
-        :return: dict of raw_gtfs_data and creates a pandas dataframe
-        """
+    def read_gtfs_data(self, import_settings_dto: ImportSettingsDto):
         df_gtfs_data = {}
 
-        with zipfile.ZipFile(self.input_path) as zf:
+        with zipfile.ZipFile(import_settings_dto.input_path) as zf:
             logging.debug(zf.namelist())
             for file in zf.namelist():
                 if file.endswith('pkl'):
@@ -179,7 +119,7 @@ class ImportData(QObject):
                     self.progress_Update.emit(self.progress.set_progress(step.progress_value, ProcessType.import_data, step.name))
 
                 try:
-                    with zipfile.ZipFile(self.input_path) as zf:
+                    with zipfile.ZipFile(import_settings_dto.input_path) as zf:
                         with zf.open("Tmp/dffeed_info.pkl", mode="r") as feed_info:
                             df_gtfs_data["dffeed_info"] = pd.read_pickle(feed_info, compression='zip')
                 except:
@@ -190,7 +130,7 @@ class ImportData(QObject):
             raw_data = {}
 
             try:
-                with zipfile.ZipFile(self.input_path) as zf:
+                with zipfile.ZipFile(import_settings_dto.input_path) as zf:
                     files_to_process = [
                         ("stops.txt", GtfsColumnNames.stopsList),
                         ("stop_times.txt", GtfsColumnNames.stopTimesList),
@@ -253,17 +193,6 @@ class ImportData(QObject):
     """ reset methods """
 
     def create_dfs(self, raw_data):
-        """
-        Creates DataFrames from raw GTFS data using parallel processing.
-
-        Args:
-            raw_data (dict): Dictionary containing GTFS data with keys:
-                stopsList, stopTimesList, tripsList, calendarList,
-                calendar_datesList, routesList, agencyList, feed_info (optional)
-
-        Returns:
-            dict: Dictionary of created DataFrames or None on error
-        """
         if raw_data is None:
             return None
 
@@ -697,44 +626,34 @@ class ImportData(QObject):
         self.progress = 0
         """Todo: add the other values here """
 
-    def save_pickle(self, imported_df_data):
-        """
-        Save the imported dataframes as pickle files and create a zip file containing all pickled dataframes.
-        :param imported_df_data: Dictionary containing dataframes to be saved
-        :return: None
-        """
+    def save_pickle(self, imported_df_data, import_settings_dto : ImportSettingsDto):
+        imported_df_data[GtfsDfNames.Stops].to_pickle(import_settings_dto.pickle_save_path + "dfStops.pkl")
+        imported_df_data[GtfsDfNames.Stoptimes].to_pickle(import_settings_dto.pickle_save_path + "dfStopTimes.pkl")
+        imported_df_data[GtfsDfNames.Trips].to_pickle(import_settings_dto.pickle_save_path + "dfTrips.pkl")
+        imported_df_data[GtfsDfNames.Calendarweeks].to_pickle(import_settings_dto.pickle_save_path + "dfWeek.pkl")
+        imported_df_data[GtfsDfNames.Calendardates].to_pickle(import_settings_dto.pickle_save_path + "dfDates.pkl")
+        imported_df_data[GtfsDfNames.Routes].to_pickle(import_settings_dto.pickle_save_path + "dfRoutes.pkl")
+        imported_df_data[GtfsDfNames.Agencies].to_pickle(import_settings_dto.pickle_save_path + "dfagency.pkl")
 
-        # Save individual dataframes as pickle files
-        imported_df_data[GtfsDfNames.Stops].to_pickle(self._pickle_save_path + "dfStops.pkl")
-        imported_df_data[GtfsDfNames.Stoptimes].to_pickle(self._pickle_save_path + "dfStopTimes.pkl")
-        imported_df_data[GtfsDfNames.Trips].to_pickle(self._pickle_save_path + "dfTrips.pkl")
-        imported_df_data[GtfsDfNames.Calendarweeks].to_pickle(self._pickle_save_path + "dfWeek.pkl")
-        imported_df_data[GtfsDfNames.Calendardates].to_pickle(self._pickle_save_path + "dfDates.pkl")
-        imported_df_data[GtfsDfNames.Routes].to_pickle(self._pickle_save_path + "dfRoutes.pkl")
-        imported_df_data[GtfsDfNames.Agencies].to_pickle(self._pickle_save_path + "dfagency.pkl")
-
-        # Save feed info dataframe if available
         if GtfsDfNames.Feedinfos in imported_df_data:
-            imported_df_data[GtfsDfNames.Stops].to_pickle(self._pickle_save_path + "dffeed_info.pkl")
+            imported_df_data[GtfsDfNames.Stops].to_pickle(import_settings_dto.pickle_save_path + "dffeed_info.pkl")
 
-        # Create a zip file containing all pickled dataframes
-        with zipfile.ZipFile(self.pickle_save_path_filename, "w", compression=zipfile.ZIP_DEFLATED) as zf:
-            zf.write(self._pickle_save_path + "dfStops.pkl")
-            zf.write(self._pickle_save_path + "dfStopTimes.pkl")
-            zf.write(self._pickle_save_path + "dfTrips.pkl")
-            zf.write(self._pickle_save_path + "dfWeek.pkl")
-            zf.write(self._pickle_save_path + "dfDates.pkl")
-            zf.write(self._pickle_save_path + "dfRoutes.pkl")
-            zf.write(self._pickle_save_path + "dfagency.pkl")
+        with zipfile.ZipFile(import_settings_dto.pickle_save_path_filename, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+            zf.write(import_settings_dto.pickle_save_path + "dfStops.pkl")
+            zf.write(import_settings_dto.pickle_save_path + "dfStopTimes.pkl")
+            zf.write(import_settings_dto.pickle_save_path + "dfTrips.pkl")
+            zf.write(import_settings_dto.pickle_save_path + "dfWeek.pkl")
+            zf.write(import_settings_dto.pickle_save_path + "dfDates.pkl")
+            zf.write(import_settings_dto.pickle_save_path + "dfRoutes.pkl")
+            zf.write(import_settings_dto.pickle_save_path + "dfagency.pkl")
 
-        # Remove individual pickle files after zipping
-        os.remove(self._pickle_save_path + "dfStops.pkl")
-        os.remove(self._pickle_save_path + "dfStopTimes.pkl")
-        os.remove(self._pickle_save_path + "dfTrips.pkl")
-        os.remove(self._pickle_save_path + "dfWeek.pkl")
-        os.remove(self._pickle_save_path + "dfDates.pkl")
-        os.remove(self._pickle_save_path + "dfRoutes.pkl")
-        os.remove(self._pickle_save_path + "dfagency.pkl")
-        # Remove feed info pickle file if available
+        os.remove(import_settings_dto.pickle_save_path + "dfStops.pkl")
+        os.remove(import_settings_dto.pickle_save_path + "dfStopTimes.pkl")
+        os.remove(import_settings_dto.pickle_save_path + "dfTrips.pkl")
+        os.remove(import_settings_dto.pickle_save_path + "dfWeek.pkl")
+        os.remove(import_settings_dto.pickle_save_path + "dfDates.pkl")
+        os.remove(import_settings_dto.pickle_save_path + "dfRoutes.pkl")
+        os.remove(import_settings_dto.pickle_save_path + "dfagency.pkl")
+
         if GtfsDfNames.Feedinfos in imported_df_data:
-            os.remove(self._pickle_save_path + "dffeed_info.pkl")
+            os.remove(import_settings_dto.pickle_save_path + "dffeed_info.pkl")

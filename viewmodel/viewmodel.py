@@ -46,7 +46,7 @@ class ViewModel(QObject):
         self.signals.connect_signals()
 
     def on_changed_pickle_export_checked(self, checked):
-        self.model.planer.import_Data.pickle_export_checked = checked
+        self.model.planer.import_settings_dto.pickle_export_checked = checked
         self.update_pickle_export_checked.emit(checked)
 
     def on_changed_create_plan_mode(self, text):
@@ -74,7 +74,7 @@ class ViewModel(QObject):
             self.send_error_message("Invalid create plan mode selected. Please select a valid mode.")
 
     def on_change_input_file_path(self, path):
-        self.model.planer.import_Data.input_path = path[0]
+        self.model.planer.import_settings_dto.input_path = path[0]
         self.input_file_path.emit(path[0])
 
     def on_changed_weekdate_option(self, text):
@@ -84,7 +84,7 @@ class ViewModel(QObject):
     def on_changed_pickle_path(self, path):
         if len(path) == 0:
             return
-        self.model.planer.import_Data.pickle_save_path_filename = path[0]
+        self.model.planer.import_settings_dto.pickle_save_path_filename = path[0]
         self.pickle_file_path.emit(path[0])
 
     def on_change_output_file_path(self, path):
@@ -165,9 +165,9 @@ class ViewModel(QObject):
         self.model.model_instance.cancel_async_operation()
 
     def start_import_gtfs_data(self):
-        if (self.find(self.model.planer.import_Data.input_path.split('/')[-1],
-                      self.model.planer.import_Data.input_path.replace(
-                          self.model.planer.import_Data.input_path.split('/')[-1], ''))
+        if (self.find(self.model.planer.import_settings_dto.input_path.split('/')[-1],
+                      self.model.planer.import_settings_dto.input_path.replace(
+                          self.model.planer.import_settings_dto.input_path.split('/')[-1], ''))
         ):
             self.model.start_function_async(ModelTriggerActionsEnum.planer_start_load_data.value)
             self.set_up_create_tab_signal.emit()

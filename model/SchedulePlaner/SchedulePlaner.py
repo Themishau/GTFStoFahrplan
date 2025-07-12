@@ -14,6 +14,7 @@ from ..Base.ImportData import ImportData
 from ..Base.SelectData import SelectData
 from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO
 from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
+from ..Dto.ImportSettingsDto import ImportSettingsDto
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
@@ -32,7 +33,6 @@ class SchedulePlaner(QObject):
 
     def __init__(self, app):
         super().__init__()
-        self.gtfs_data_frame_dto = None
         self.app = app
         self.progress = 0
 
@@ -43,6 +43,8 @@ class SchedulePlaner(QObject):
         self.select_data = None
         self.import_Data = None
 
+        self.gtfs_data_frame_dto = None
+        self.import_settings_dto = ImportSettingsDto()
         self.create_settings_for_table_dto = CreateSettingsForTableDTO()
 
     def send_error(self, e):
@@ -200,9 +202,7 @@ class SchedulePlaner(QObject):
 
     def import_gtfs_data(self) -> bool:
         try:
-            self.gtfs_data_frame_dto = self.import_Data.import_gtfs()
-            # if self.import_Data.evaluate_imported_data():
-            #     self.error_occured.emit(ErrorMessageRessources.missing_import_object_generated.value)
+            self.gtfs_data_frame_dto = self.import_Data.import_gtfs(self.import_settings_dto)
 
             if self.gtfs_data_frame_dto is None:
                 self.error_occured.emit(ErrorMessageRessources.import_data_error.value)
