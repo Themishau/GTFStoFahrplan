@@ -183,8 +183,8 @@ class SelectData(QObject):
         if self.selected_agency is not None:
             self.find_routes_from_agency()
 
-    def find_routes_from_agency(self):
-        self.df_selected_routes = self.gtfs_data_frame_dto.Routes[self.gtfs_data_frame_dto.Routes['agency_id'].isin(self.selected_agency['agency_id'])]
+    def find_routes_from_agency(self, gtfs_data_frame_dto, selected_agency):
+        return df_selected_routes = gtfs_data_frame_dto.Routes[gtfs_data_frame_dto.Routes['agency_id'].isin(selected_agency['agency_id'])]
         return True
 
     def read_gtfs_agencies(self):
