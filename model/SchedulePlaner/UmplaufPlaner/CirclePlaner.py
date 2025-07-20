@@ -7,7 +7,7 @@ import pandas as pd
 from PySide6.QtCore import Signal, QObject
 
 from model.Base.Progress import ProgressSignal
-from model.Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO
+from model.Dto.CreateSettingsForTableDto import CreateSettingsForTableDto
 from model.Enum.GTFSEnums import ErrorMessageRessources
 
 logging.basicConfig(level=logging.DEBUG,
@@ -22,7 +22,7 @@ class CirclePlaner(QObject):
     def __init__(self, plans, app):
         super().__init__()
         self.app = app
-        self.create_settings_for_table_dto = CreateSettingsForTableDTO()
+        self.create_settings_for_table_dto = CreateSettingsForTableDto()
         self.plans = plans
         """ visual internal property """
         self.progress = ProgressSignal()

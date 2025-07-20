@@ -12,7 +12,7 @@ from ..Base.CreatePlan import CreatePlan
 from ..Base.ExportPlan import ExportPlan
 from ..Base.ImportData import ImportData
 from ..Base.SelectData import SelectData
-from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO
+from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDto
 from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
 from ..Dto.ImportSettingsDto import ImportSettingsDto
 
@@ -45,7 +45,7 @@ class SchedulePlaner(QObject):
 
         self.gtfs_data_frame_dto = None
         self.import_settings_dto = ImportSettingsDto()
-        self.create_settings_for_table_dto = CreateSettingsForTableDTO()
+        self.create_settings_for_table_dto = CreateSettingsForTableDto()
 
     def send_error(self, e):
         self.error_occured.emit(e)
@@ -122,9 +122,6 @@ class SchedulePlaner(QObject):
 
         self.create_plan.create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
         self.create_plan.gtfs_data_frame_dto = self.gtfs_data_frame_dto
-
-    def initialize_setting_dto(self):
-        self.select_data.initialize_select_data()
 
     def update_settings_for_create_table(self):
         self.initialize_create_plan()
@@ -263,7 +260,3 @@ class SchedulePlaner(QObject):
     @gtfs_data_frame_dto.setter
     def gtfs_data_frame_dto(self, value: GtfsDataFrameDto):
         self._gtfs_data_frame_dto = value
-        if value is not None:
-            self.analyze_data.gtfs_data_frame_dto = value
-            self.initialize_setting_dto()
-            self.select_data.gtfs_data_frame_dto = value

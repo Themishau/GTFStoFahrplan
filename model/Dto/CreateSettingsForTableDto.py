@@ -5,7 +5,7 @@ from PySide6.QtCore import Signal, Slot
 import pandas as pd
 from typing import Optional
 
-class CreateSettingsForTableDTO(QObject):
+class CreateSettingsForTableDto(QObject):
     settingsChanged = Signal()
 
     def __init__(self, other=None):
@@ -19,9 +19,12 @@ class CreateSettingsForTableDTO(QObject):
         self._timeformat =  1
         self._create_plan_mode = CreatePlanMode.date
         self._output_path =  ''
+        self._date_range = None
+        self._sample_date = None
+        self._date_range_df_format = None
 
     def __deepcopy__(self, memo):
-        copied = CreateSettingsForTableDTO()
+        copied = CreateSettingsForTableDto()
         copied._agency = copy.deepcopy(self._agency, memo)
         copied._route = copy.deepcopy(self._route, memo)
         copied._weekday = copy.deepcopy(self._weekday, memo)
@@ -113,6 +116,33 @@ class CreateSettingsForTableDTO(QObject):
     @output_path.setter
     def output_path(self, value):
             self._output_path = value
+            self.settingsChanged.emit()
+
+    @property
+    def date_range(self):
+        return self._date_range
+
+    @date_range.setter
+    def date_range(self, value):
+            self._date_range = value
+            self.settingsChanged.emit()
+
+    @property
+    def sample_date(self):
+        return self._sample_date
+
+    @sample_date.setter
+    def sample_date(self, value):
+            self._sample_date = value
+            self.settingsChanged.emit()
+
+    @property
+    def date_range_df_format(self):
+        return self._date_range_df_format
+
+    @date_range_df_format.setter
+    def date_range_df_format(self, value):
+            self._date_range_df_format = value
             self.settingsChanged.emit()
 
     @Slot()

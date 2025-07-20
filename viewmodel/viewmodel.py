@@ -149,6 +149,9 @@ class ViewModel(QObject):
 
     def on_changed_selected_record_trip(self, id_us):
         self.model.planer.select_data.selected_route = id_us
+        if self.model.planer.select_data.selected_route is not None:
+            self.create_settings_for_table_dto.dates = self.analyze_data.get_date_range(self._gtfs_data_frame_dto)
+            self.create_settings_for_table_dto.sample_date =self.select_data.read_gtfs_agencies(self._gtfs_data_frame_dto)
 
     def on_changed_selected_weekday(self, id_us):
         self.model.planer.select_data.selected_weekday = id_us

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import concurrent.futures
 import copy
 import logging
 import re
@@ -8,12 +7,11 @@ from PySide6.QtCore import Signal, QObject
 import pandas as pd
 from model.Enum.GTFSEnums import CreatePlanMode
 from .Progress import ProgressSignal
-from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO
+from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDto
 from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
 from ..SchedulePlaner.CreationStrategy.ParallelTableCreationStrategy import ParallelTableCreationStrategy
 from ..SchedulePlaner.CreationStrategy.SequentialTableCreationStrategy import SequentialTableCreationStrategy
 from ..SchedulePlaner.CreationStrategy.TableCreationContext import TableCreationContext
-from ..SchedulePlaner.UmplaufPlaner.UmlaufPlaner import UmlaufPlaner
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
@@ -30,14 +28,12 @@ class CreatePlan(QObject):
         self.app = app
         self.reset_create = False
         self.gtfs_data_frame_dto = None
-        self.create_settings_for_table_dto = CreateSettingsForTableDTO()
+        self.create_settings_for_table_dto = CreateSettingsForTableDto()
         self.strategy = None
 
         """ visual internal property """
         self.progress = ProgressSignal()
 
-        #self.weekend = ['Saturday', 'Sunday']
-        #self.weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
         self.days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
         # Create DataFrames with category information

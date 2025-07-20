@@ -6,7 +6,7 @@ from PySide6.QtCore import Signal, QObject
 import pandas as pd
 
 from .Progress import ProgressSignal
-from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO
+from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDto
 from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
 from ..Enum.GTFSEnums import CreatePlanMode
 
@@ -25,7 +25,6 @@ class SelectData(QObject):
     def __init__(self, app):
         super().__init__()
         self.app = app
-        self.gtfs_data_frame_dto = None
         self._agencies_list = None
         self._df_selected_routes = None
 
@@ -65,6 +64,8 @@ class SelectData(QObject):
                                    '6,Friday',
                                    '7,Saturday',
                                    '8,Sunday']
+
+        self.initialize_select_data()
 
 
     @property
@@ -159,16 +160,6 @@ class SelectData(QObject):
         self.data_selected.emit(value is not None)
         logging.debug(value)
 
-    @property
-    def gtfs_data_frame_dto(self):
-        return self._gtfs_data_frame_dto
-
-    @gtfs_data_frame_dto.setter
-    def gtfs_data_frame_dto(self, value: GtfsDataFrameDto):
-        self._gtfs_data_frame_dto = value
-        if value is not None:
-            self.read_gtfs_agencies()
-
     def initialize_select_data(self):
         self.selected_agency = None
         self.selected_route = None
@@ -179,18 +170,17 @@ class SelectData(QObject):
         self.use_individual_sorting = False
         self.selected_create_plan_mode = CreatePlanMode.date
 
-    def get_routes_of_agency(self) -> None:
+    def get_routes_of_agency(self, gtfs_data_frame_dto, selected_agency):
         if self.selected_agency is not None:
-            self.find_routes_from_agency()
+            return self.find_routes_from_agency(gtfs_data_frame_dto, selected_agency)
+        return None
 
     def find_routes_from_agency(self, gtfs_data_frame_dto, selected_agency):
-        return df_selected_routes = gtfs_data_frame_dto.Routes[gtfs_data_frame_dto.Routes['agency_id'].isin(selected_agency['agency_id'])]
-        return True
+        return gtfs_data_frame_dto.Routes[gtfs_data_frame_dto.Routes['agency_id'].isin(selected_agency['agency_id'])]
 
-    def read_gtfs_agencies(self):
-        df_agency = self.gtfs_data_frame_dto.Agencies
+    def read_gtfs_agencies(self, gtfs_data_frame_dto : GtfsDataFrameDto):
+        df_agency = gtfs_data_frame_dto.Agencies
         df_agency_ordered = df_agency.sort_values(by='agency_id')
         agency_list = df_agency_ordered.values.tolist()
         agency_str_list = [f'{row[0]},{row[1]}' for row in agency_list]
-        self.agencies_list = agency_str_list
-        return True
+        return agency_str_list

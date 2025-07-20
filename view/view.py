@@ -225,7 +225,7 @@ class View(QMainWindow):
 
     def initialize_create_view_weekdaydate_option(self):
         self.initialize_create_base_option()
-        self.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
+        self.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.create_settings_for_table_dto.sample_date))
         self.initialize_selected_date()
         self.ui.dateEdit.setEnabled(True)
         self.update_weekday_option_table()

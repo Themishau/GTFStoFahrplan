@@ -7,7 +7,7 @@ import pandas as pd
 from PySide6.QtCore import Signal, QObject
 
 from model.Base.Progress import ProgressSignal
-from model.Dto.CreateSettingsForTableDto import CreateSettingsForTableDTO
+from model.Dto.CreateSettingsForTableDto import CreateSettingsForTableDto
 from model.Dto.CreateTableDataframeDto import CreateTableDataframeDto
 from model.Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
 from model.Enum.GTFSEnums import *
@@ -20,7 +20,7 @@ logging.basicConfig(level=logging.DEBUG,
 class UmlaufPlaner():
     def __init__(self):
         super().__init__()
-        self.create_settings_for_table_dto = CreateSettingsForTableDTO()
+        self.create_settings_for_table_dto = CreateSettingsForTableDto()
         self.create_dataframe = CreateTableDataframeDto()
         self.gtfs_data_frame_dto = None
         self.df_filtered_stop_names = None
