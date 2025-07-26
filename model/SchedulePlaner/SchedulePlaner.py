@@ -11,7 +11,6 @@ from model.SchedulePlaner.UmplaufPlaner.CirclePlaner import CirclePlaner
 from ..Base.CreatePlan import CreatePlan
 from ..Base.ExportPlan import ExportPlan
 from ..Base.ImportData import ImportData
-from ..Base.SelectData import SelectData
 from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDto
 from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
 from ..Dto.ImportSettingsDto import ImportSettingsDto
@@ -59,32 +58,12 @@ class SchedulePlaner(QObject):
     def update_options_state(self, value):
         self.update_options_state_signal.emit(value)
 
-    def update_create_settings_analyze_data(self):
-        self.create_settings_for_table_dto.dates = self.analyze_data.sample_date
-
-    def update_create_settings_create_plan(self):
-        self.create_settings_for_table_dto.create_plan_mode = self.create_plan.create_settings_for_table_dto.create_plan_mode
-
-    def update_create_settings_export_plan(self):
-        self.create_settings_for_table_dto.output_path = self.export_plan.output_path
-
-    def update_create_settings_selected_data(self):
-        self.create_settings_for_table_dto.agency = self.select_data.selected_agency
-        self.create_settings_for_table_dto.route = self.select_data.selected_route
-        self.create_settings_for_table_dto.weekday = self.select_data.selected_weekday
-        self.create_settings_for_table_dto.dates = self.select_data.selected_dates
-        self.create_settings_for_table_dto.direction = self.select_data.selected_direction
-        self.create_settings_for_table_dto.individual_sorting = self.select_data.use_individual_sorting
-        self.create_settings_for_table_dto.timeformat = self.select_data.selected_timeformat
-        self.create_settings_for_table_dto.create_plan_mode = self.select_data.selected_create_plan_mode
-
     def initialize_signals_settings_dto(self):
         self.create_settings_for_table_dto.settingsChanged.connect(self.settings_changed.emit)
 
     def initilize_scheduler(self):
         self.initialize_import_data()
         self.initialize_analyze_data()
-        self.initialize_select_data()
         self.initialize_export_plan()
         self.initialize_create_plan()
 
@@ -98,26 +77,17 @@ class SchedulePlaner(QObject):
         self.circle_plan.progress_Update.connect(self.update_progress)
         self.circle_plan.error_occured.connect(self.send_error)
 
-    def initialize_select_data(self):
-        self.select_data = SelectData(self.app)
-        self.select_data.update_routes_list_signal.connect(self.update_routes_list)
-        self.select_data.data_selected.connect(self.update_create_settings_selected_data)
-        self.select_data.data_selected.connect(self.update_options_state)
-
     def initialize_analyze_data(self):
         self.analyze_data = AnalyzeData(self.app)
-        self.analyze_data.data_selected.connect(self.update_create_settings_analyze_data)
 
     def initialize_export_plan(self):
         self.export_plan = ExportPlan(self.app)
-        self.export_plan.data_selected.connect(self.update_create_settings_export_plan)
         self.export_plan.progress_Update.connect(self.update_progress)
         self.export_plan.error_occured.connect(self.send_error)
 
     def initialize_create_plan(self):
         self.create_plan = CreatePlan(self.app)
         self.create_plan.progress_Update.connect(self.update_progress)
-        self.create_plan.data_selected.connect(self.update_create_settings_create_plan)
         self.create_plan.error_occured.connect(self.send_error)
 
         self.create_plan.create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
@@ -197,16 +167,14 @@ class SchedulePlaner(QObject):
             self.error_occured.emit(ErrorMessageRessources.no_create_object_generated.value)
             return False
 
-    def import_gtfs_data(self) -> bool:
+    def import_gtfs_data(self):
         try:
             self.gtfs_data_frame_dto = self.import_Data.import_gtfs(self.import_settings_dto)
 
             if self.gtfs_data_frame_dto is None:
                 self.error_occured.emit(ErrorMessageRessources.import_data_error.value)
                 return False
-
-            self.import_finished.emit(True)
-            return True
+            return self.import_finished.emit(True)
 
         except AttributeError as e:
             logging.error(f"import_gtfs_data: {e}")

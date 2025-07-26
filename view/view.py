@@ -226,17 +226,12 @@ class View(QMainWindow):
     def initialize_create_view_weekdaydate_option(self):
         self.initialize_create_base_option()
         self.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.create_settings_for_table_dto.sample_date))
-        self.initialize_selected_date()
         self.ui.dateEdit.setEnabled(True)
         self.update_weekday_option_table()
 
     def handle_selected_date(self):
         date = self.ui.dateEdit.date()
         self.viewModel.on_changed_selected_dates(date)
-
-    def initialize_selected_date(self):
-        date = self.ui.dateEdit.date()
-        self.viewModel.model.planer.select_data.selected_dates = qdate_to_string(date)
 
     def update_weekday_option_table(self, ):
         self.ui.listDatesWeekday.setModel(TableModel(self.viewModel.model.planer.create_plan.weekdays_df))
@@ -255,14 +250,16 @@ class View(QMainWindow):
 
     def update_agency_list(self):
         self.ui.AgenciesTableView.setModel(
-            TableModel(self.viewModel.model.planer.select_data.gtfs_data_frame_dto.Agencies))
-        self.ui.line_Selection_date_range.setText(self.viewModel.model.planer.analyze_data.date_range)
-        self.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
-        self.initialize_selected_date()
+            TableModel(self.viewModel.model.planer.gtfs_data_frame_dto.Agencies))
         self.show_Create_Select_Window()
         update_table_sizes(self.ui.AgenciesTableView)
-        logging.debug("done with creating dfs")
+        logging.debug("loaded agency list")
 
+    def update_date_range_based_on_selected_route(self, date_range):
+        self.ui.line_Selection_date_range.setText(date_range)
+
+    def update_date_field_to_first_date_of_selected_route(self, sample_date):
+        self.ui.dateEdit.setDate(string_to_qdate(sample_date))
 
     def get_file_path(self):
         self.viewModel.on_change_input_file_path(get_file_path(self))

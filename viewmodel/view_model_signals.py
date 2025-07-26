@@ -9,9 +9,9 @@ class ViewModelSignals(QObject):
 
     def connect_signals(self):
         self.model.planer.progress_Update.connect(self.viewModel.on_changed_progress_value)
-        self.model.planer.select_data.select_agency_signal.connect(self.viewModel.on_loaded_agency_list)
         self.model.planer.error_occured.connect(self.viewModel.send_error_message)
         self.model.planer.update_routes_list_signal.connect(self.viewModel.on_loaded_trip_list)
         self.model.planer.update_options_state_signal.connect(self.viewModel.on_changed_options_state)
         self.model.planer.create_sorting_signal.connect(self.viewModel.on_create_sorting_signal)
         self.model.planer.create_finished.connect(self.viewModel.on_create_plan_finished)
+        self.model.planer.import_finished.connect(self.viewModel.on_import_gtfs_data_finished)

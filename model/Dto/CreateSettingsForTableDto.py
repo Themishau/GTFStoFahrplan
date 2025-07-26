@@ -22,6 +22,7 @@ class CreateSettingsForTableDto(QObject):
         self._date_range = None
         self._sample_date = None
         self._date_range_df_format = None
+        self._df_selected_routes = None
 
     def __deepcopy__(self, memo):
         copied = CreateSettingsForTableDto()
@@ -34,6 +35,10 @@ class CreateSettingsForTableDto(QObject):
         copied._timeformat = copy.deepcopy(self._timeformat, memo)
         copied._create_plan_mode = copy.deepcopy(self._create_plan_mode, memo)
         copied._output_path = copy.deepcopy(self._output_path, memo)
+        copied._date_range = copy.deepcopy(self._date_range, memo)
+        copied._sample_date = copy.deepcopy(self._sample_date, memo)
+        copied._date_range_df_format = copy.deepcopy(self._date_range_df_format, memo)
+        copied._df_selected_routes = copy.deepcopy(self._df_selected_routes, memo)
 
 
         return copied
@@ -144,6 +149,18 @@ class CreateSettingsForTableDto(QObject):
     def date_range_df_format(self, value):
             self._date_range_df_format = value
             self.settingsChanged.emit()
+
+    @property
+    def df_selected_routes(self):
+        return self._df_selected_routes
+
+    @df_selected_routes.setter
+    def df_selected_routes(self, value):
+        if isinstance(value, pd.DataFrame):
+            self._df_selected_routes = value
+        else:
+            raise ValueError("df_selected_routes must be a pandas DataFrame")
+        self.settingsChanged.emit()
 
     @Slot()
     def on_nested_settings_change(self):
