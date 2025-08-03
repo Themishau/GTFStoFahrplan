@@ -72,12 +72,20 @@ class AnalyzeData(QObject):
                 gtfs_data_frame_dto.Feedinfos.feed_end_date)
 
     def get_date_range_based_on_selected_trip(self, gtfs_data_frame_dto: GtfsDataFrameDto, create_settings_for_table_dto : CreateSettingsForTableDto):
-        selected_route = create_settings_for_table_dto.route
-        # trip_available_dates_df = pd.DataFrame(columns=['route_id', 'start_date', 'end_date'])
-        # trip_available_dates_df['start_date'] = pd.to_datetime(fahrplan_dates_df['start_date'],
-        #                                                  format='%Y-%m-%d %H:%M:%S.%f')
-        # trip_available_dates_df['end_date'] = pd.to_datetime(fahrplan_dates_df['end_date'],
-        #                                                format='%Y-%m-%d %H:%M:%S.%f')
+        selected_route = create_settings_for_table_dto.selected_route
+        if selected_route is None or selected_route.empty:
+            trips_df = gtfs_data_frame_dto.Trips[gtfs_data_frame_dto.Trips['route_id'] == selected_route['route_id']]
+            calendar_dates_df = gtfs_data_frame_dto.CalendarDates[gtfs_data_frame_dto.CalendarDates['service_id'].isin(trips_df['service_id'].unique())]
+            if not calendar_dates_df.empty:
+                start_date = pd.to_datetime(calendar_dates_df['date'].min(),format='%Y-%m-%d %H:%M:%S.%f')
+                end_date = pd.to_datetime(calendar_dates_df['date'].max(),format='%Y-%m-%d %H:%M:%S.%f')
+                trip_available_dates_df = pd.DataFrame({
+                    'route_id': [selected_route['route_id']],
+                    'start_date': [start_date],
+                    'end_date': [end_date]
+                })
+                create_settings_for_table_dto.date_range_df_format = trip_available_dates_df
+
 
     def analyze_date_range_in_gtfs_data(self, gtfs_data_frame_dto: GtfsDataFrameDto):
         if gtfs_data_frame_dto.Calendarweeks is not None:

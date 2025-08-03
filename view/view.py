@@ -239,7 +239,7 @@ class View(QMainWindow):
 
     def update_routes_list(self):
         self.ui.TripsTableView.setModel(
-            TableModel(self.viewModel.model.planer.select_data.df_selected_routes))
+            TableModel(self.viewModel.model.planer.create_settings_for_table_dto.df_selected_routes))
         update_table_sizes(self.ui.TripsTableView)
 
     def update_individualsorting_table(self):

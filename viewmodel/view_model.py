@@ -137,7 +137,8 @@ class ViewModel(QObject):
 
     def on_changed_selected_record_agency(self, index):
         self.model.planer.create_settings_for_table_dto.selected_agency = index
-        self.model.planer.create_settings_for_table_dto.df_selected_routes =  self.model.planer.get_routes_of_agency(self.model.planer.gtfs_data_frame_dto, self.model.planer.create_settings_for_table_dto)
+        self.model.planer.create_settings_for_table_dto.df_selected_routes =  self.model.planer.analyze_data.get_routes_of_agency(self.model.planer.gtfs_data_frame_dto, self.model.planer.create_settings_for_table_dto.selected_agency)
+        self.on_loaded_trip_list()
 
     def on_changed_selected_record_trip(self, id_us):
         self.model.planer.create_settings_for_table_dto.selected_route = id_us

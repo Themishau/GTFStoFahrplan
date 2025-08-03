@@ -26,7 +26,6 @@ class SchedulePlaner(QObject):
     import_finished = Signal(bool)
     create_finished = Signal(bool)
     settings_changed = Signal()
-    update_routes_list_signal = Signal()
     update_options_state_signal = Signal(bool)
     create_sorting_signal = Signal()
 
@@ -51,9 +50,6 @@ class SchedulePlaner(QObject):
 
     def update_progress(self, value):
         self.progress_Update.emit(copy.deepcopy(value))
-
-    def update_routes_list(self):
-        self.update_routes_list_signal.emit()
 
     def update_options_state(self, value):
         self.update_options_state_signal.emit(value)

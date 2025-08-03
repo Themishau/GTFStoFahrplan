@@ -1,1 +1,1 @@
-from .viewmodel import ViewModel
+from .view_model import ViewModel
