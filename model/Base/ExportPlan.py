@@ -23,8 +23,7 @@ class ExportPlan(QObject):
     def __init__(self, app):
         super().__init__()
         self.app = app
-        self.reset_create = False
-        self._output_path = ""
+        self.output_path = ""
         self.full_output_path = ""
         """ visual internal property """
         self.progress = ProgressSignal()

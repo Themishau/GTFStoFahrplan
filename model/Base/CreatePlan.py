@@ -26,7 +26,6 @@ class CreatePlan(QObject):
     def __init__(self, app):
         super().__init__()
         self.app = app
-        self.reset_create = False
         self.gtfs_data_frame_dto = None
         self.create_settings_for_table_dto = CreateSettingsForTableDto()
         self.strategy = None
