@@ -71,7 +71,7 @@ class View(QMainWindow):
         logging.debug(f"index {index}")
         id_us = self.ui.AgenciesTableView.model().wholeData(index)
         logging.debug(f"index {id_us["agency_id"]}")
-        self.viewModel.on_changed_selected_record_agency(id_us)
+        self.viewModel.view_model_select_data.on_changed_selected_record_agency(id_us)
 
     def update_create_table(self):
         self.send_message_box(
@@ -262,27 +262,27 @@ class View(QMainWindow):
         self.ui.dateEdit.setDate(string_to_qdate(sample_date))
 
     def get_file_path(self):
-        self.viewModel.on_change_input_file_path(get_file_path(self))
+        self.viewModel.view_model_import_data.on_change_input_file_path(get_file_path(self))
 
     def get_output_dir_path(self):
-        self.viewModel.on_change_output_file_path(get_output_dir_path(self))
+        self.viewModel.view_model_import_data.on_change_output_file_path(get_output_dir_path(self))
 
     def get_pickle_save_path(self):
-        self.viewModel.on_changed_pickle_path(get_pickle_save_path(self))
+        self.viewModel.view_model_import_data.on_changed_pickle_path(get_pickle_save_path(self))
 
     def get_changed_selected_record_trip(self):
         index = self.ui.TripsTableView.selectedIndexes()[2]
         logging.debug(f"index {index}")
         id_us = self.ui.TripsTableView.model().wholeData(index)
         logging.debug(f"id {id_us["route_short_name"]}")
-        self.viewModel.on_changed_selected_record_trip(id_us)
+        self.viewModel.view_model_select_data.on_changed_selected_record_trip(id_us)
 
     def get_changed_selected_weekday(self):
         index = self.ui.listDatesWeekday.selectedIndexes()[0]
         logging.debug(f"index {index}")
         id_us = self.ui.listDatesWeekday.model().wholeData(index)
         logging.debug(f"id {id_us["day"]}")
-        self.viewModel.on_changed_selected_weekday(id_us)
+        self.viewModel.view_model_create_data.on_changed_selected_weekday(id_us)
 
     def reset_view(self):
         self.ui.btnImport.setEnabled(True)

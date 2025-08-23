@@ -2,10 +2,7 @@
 import logging
 import re
 from datetime import datetime, timedelta
-
 import pandas as pd
-from PySide6.QtCore import Signal, QObject
-
 from model.Base.Progress import ProgressSignal
 from model.Dto.CreateSettingsForTableDto import CreateSettingsForTableDto
 from model.Dto.CreateTableDataframeDto import CreateTableDataframeDto

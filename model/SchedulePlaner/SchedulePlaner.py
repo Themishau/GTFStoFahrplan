@@ -22,11 +22,10 @@ logging.basicConfig(level=logging.DEBUG,
 
 class SchedulePlaner(QObject):
     progress_Update = Signal(ProgressSignal)
-    error_occured = Signal(str)
     import_finished = Signal(bool)
     create_finished = Signal(bool)
+    error_occured = Signal(str)
     settings_changed = Signal()
-    update_options_state_signal = Signal(bool)
     create_sorting_signal = Signal()
 
     def __init__(self, app):
@@ -50,9 +49,6 @@ class SchedulePlaner(QObject):
 
     def update_progress(self, value):
         self.progress_Update.emit(copy.deepcopy(value))
-
-    def update_options_state(self, value):
-        self.update_options_state_signal.emit(value)
 
     def initialize_signals_settings_dto(self):
         self.create_settings_for_table_dto.settingsChanged.connect(self.settings_changed.emit)
@@ -91,9 +87,6 @@ class SchedulePlaner(QObject):
 
     def update_settings_for_create_table(self):
         self.initialize_create_plan()
-
-    def create_sorting_start(self):
-        self.create_sorting_signal.emit()
 
     def create_table(self) -> bool:
         try:

@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
 import logging
 from datetime import datetime
-
 from PySide6.QtCore import QObject
 from PySide6.QtCore import Signal
-
 from .Progress import ProgressSignal
 from ..Dto import CreateTableDataframeDto
-from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDto
 from ..Enum.GTFSEnums import ProcessType
 
 logging.basicConfig(level=logging.DEBUG,
