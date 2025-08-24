@@ -106,7 +106,7 @@ class View(QMainWindow):
         self.ui.comboBox.setEnabled(True)
         match mode:
             case CreatePlanMode.umlauf_date.value:
-                self.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
+                self.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.create_settings_for_table_dto.sample_date))
                 self.ui.comboBox_direction.setEnabled(False)
                 self.ui.comboBox_direction.setVisible(False)
             case CreatePlanMode.umlauf_weekday.value:
@@ -115,7 +115,7 @@ class View(QMainWindow):
                 self.ui.listDatesWeekday.setEnabled(True)
                 self.ui.listDatesWeekday.setVisible(True)
             case CreatePlanMode.date.value:
-                self.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.analyze_data.sample_date))
+                self.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.create_settings_for_table_dto.sample_date))
                 self.ui.comboBox_direction.setEnabled(True)
                 self.ui.comboBox_direction.setVisible(True)
             case CreatePlanMode.weekday.value:
@@ -231,7 +231,7 @@ class View(QMainWindow):
 
     def handle_selected_date(self):
         date = self.ui.dateEdit.date()
-        self.viewModel.on_changed_selected_dates(date)
+        self.viewModel.view_model_create_data.on_changed_selected_dates(date)
 
     def update_weekday_option_table(self, ):
         self.ui.listDatesWeekday.setModel(TableModel(self.viewModel.model.planer.create_plan.weekdays_df))

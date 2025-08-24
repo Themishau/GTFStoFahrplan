@@ -65,9 +65,9 @@ class ViewModelImportData(QObject):
     def on_changed_time_format_mode(self, text):
         logging.debug(f'time format {text}')
         if text == 0:
-            self.model.planer.create_settings_for_table_dto.selected_timeformat = 1
+            self.model.planer.create_settings_for_table_dto.timeformat = 1
         elif text == 1:
-            self.model.planer.create_settings_for_table_dto.selected_timeformat = 2
+            self.model.planer.create_settings_for_table_dto.timeformat = 2
         self.export_plan_time_format.emit(text)
 
     def send_error_message(self, message):
