@@ -33,37 +33,6 @@ class CreatePlan(QObject):
         """ visual internal property """
         self.progress = ProgressSignal()
 
-        self.days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-
-        # Create DataFrames with category information
-        self.df_all = pd.DataFrame(['All Days'], columns=['day']).assign(category='All Days')
-        self.df_weekend = pd.DataFrame(['Weekend'], columns=['day']).assign(category='Weekend')
-        self.df_weekdays = pd.DataFrame(['Weekdays'], columns=['day']).assign(category='Weekdays')
-        self.df_days_only = pd.DataFrame({
-            'day': self.days,
-            'category': [f'{day} only' for day in self.days]
-        })
-
-        self.weekdays_df = pd.concat([
-            self.df_all,
-            self.df_weekend,
-            self.df_weekdays,
-            self.df_days_only
-        ])
-
-        for day in self.days:
-            weekend_days = ['Saturday', 'Sunday']
-            weekday_days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
-
-            self.weekdays_df[day] = (
-                    (self.weekdays_df['day'] == day.capitalize()) |
-                    ((self.weekdays_df['category'] == 'Weekend') &
-                     (day.capitalize() in weekend_days)) |
-                    ((self.weekdays_df['category'] == 'Weekdays') &
-                     (day.capitalize() in weekday_days)) |
-                    (self.weekdays_df['category'] == 'All Days')
-            ).map({True: day.capitalize(), False: '-'})
-
     @property
     def progress(self):
         return self._progress
@@ -82,7 +51,7 @@ class CreatePlan(QObject):
         self._gtfs_data_frame_dto = value
 
     def check_setting_data(self) -> bool:
-        if not self.check_dates_input(self.create_settings_for_table_dto.dates):
+        if not self.check_dates_input(self.create_settings_for_table_dto.date):
             return False
 
         return True

@@ -48,6 +48,7 @@ def get_pickle_save_path(parent):
 def string_to_qdate(date_string):
     if date_string is None:
         return QDate(2000, 1, 1)
+    date_string = date_string.replace('-', '')
 
     year = int(date_string[:4])
     month = int(date_string[4:6])

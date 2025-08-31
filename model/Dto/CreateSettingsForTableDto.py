@@ -13,16 +13,18 @@ class CreateSettingsForTableDto(QObject):
         self._agency =  None
         self._route =  None
         self._weekday = None
-        self._dates = pd.DataFrame(columns=['date'])
+        self._dates = None
+        self._date = pd.DataFrame(columns=['date'])
         self._direction =  None
         self._individual_sorting =  False
         self._timeformat =  1
         self._create_plan_mode = CreatePlanMode.date
-        self._output_path =  ''
         self._date_range = None
         self._sample_date = None
         self._date_range_df_format = None
         self._df_selected_routes = None
+        self._output_path = ""
+        self._full_output_path = ""
 
     def __deepcopy__(self, memo):
         copied = CreateSettingsForTableDto()
@@ -30,6 +32,7 @@ class CreateSettingsForTableDto(QObject):
         copied._route = copy.deepcopy(self._route, memo)
         copied._weekday = copy.deepcopy(self._weekday, memo)
         copied._dates = copy.deepcopy(self._dates, memo)
+        copied._date = copy.deepcopy(self._date, memo)
         copied._direction = copy.deepcopy(self._direction, memo)
         copied._individual_sorting = copy.deepcopy(self._individual_sorting, memo)
         copied._timeformat = copy.deepcopy(self._timeformat, memo)
@@ -39,9 +42,27 @@ class CreateSettingsForTableDto(QObject):
         copied._sample_date = copy.deepcopy(self._sample_date, memo)
         copied._date_range_df_format = copy.deepcopy(self._date_range_df_format, memo)
         copied._df_selected_routes = copy.deepcopy(self._df_selected_routes, memo)
-
-
+        copied._output_path = copy.deepcopy(self._output_path, memo)
+        copied._full_output_path = copy.deepcopy(self._full_output_path, memo)
         return copied
+
+
+    @property
+    def full_output_path(self):
+        return self._full_output_path
+    @full_output_path.setter
+    def full_output_path(self, value):
+        self._full_output_path = value
+        self.settingsChanged.emit()
+
+    @property
+    def output_path(self):
+        return self._output_path
+    @output_path.setter
+    def output_path(self, value):
+        self._output_path = value
+        self.settingsChanged.emit()
+
     @property
     def agency(self) :
         return self._agency
@@ -76,6 +97,15 @@ class CreateSettingsForTableDto(QObject):
     @dates.setter
     def dates(self, value):
             self._dates = value
+            self.settingsChanged.emit()
+
+    @property
+    def date(self):
+        return self._date
+
+    @date.setter
+    def date(self, value):
+            self._date = value
             self.settingsChanged.emit()
         
     @property
@@ -112,15 +142,6 @@ class CreateSettingsForTableDto(QObject):
     @timeformat.setter
     def timeformat(self, value):
             self._timeformat = value
-            self.settingsChanged.emit()
-
-    @property
-    def output_path(self) :
-        return self._output_path
-
-    @output_path.setter
-    def output_path(self, value):
-            self._output_path = value
             self.settingsChanged.emit()
 
     @property

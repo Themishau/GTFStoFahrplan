@@ -10,6 +10,7 @@ class ViewModelSignals(QObject):
     def connect_signals(self):
 
         self.model.planer.import_finished.connect(self.viewModel.view_model_import_data.on_import_gtfs_data_finished)
+        self.model.planer.import_finished.connect(self.viewModel.view_model_create_data.on_import_gtfs_data_finished)
 
         self.viewModel.view_model_import_data.update_progress_value.connect(self.viewModel.on_changed_progress_value)
         self.model.planer.progress_Update.connect(self.viewModel.view_model_import_data.on_changed_progress_value)

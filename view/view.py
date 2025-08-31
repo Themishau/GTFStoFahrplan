@@ -75,7 +75,7 @@ class View(QMainWindow):
 
     def update_create_table(self):
         self.send_message_box(
-            f"Success. Create table successfully. Saved here: {self.viewModel.model.planer.export_plan.full_output_path}")
+            f"Success. Create table successfully. Saved here: {self.viewModel.model.planer.create_settings_for_table_dto.full_output_path}")
 
     def update_file_input_path(self, input_path):
         self.ui.lineInputPath.setText(input_path)
@@ -233,8 +233,8 @@ class View(QMainWindow):
         date = self.ui.dateEdit.date()
         self.viewModel.view_model_create_data.on_changed_selected_dates(date)
 
-    def update_weekday_option_table(self, ):
-        self.ui.listDatesWeekday.setModel(TableModel(self.viewModel.model.planer.create_plan.weekdays_df))
+    def update_weekday_option_table(self):
+        self.ui.listDatesWeekday.setModel(TableModel(self.viewModel.view_model_create_data.weekdays_df))
         update_table_sizes(self.ui.listDatesWeekday)
 
     def update_routes_list(self):
@@ -276,6 +276,13 @@ class View(QMainWindow):
         id_us = self.ui.TripsTableView.model().wholeData(index)
         logging.debug(f"id {id_us["route_short_name"]}")
         self.viewModel.view_model_select_data.on_changed_selected_record_trip(id_us)
+        if (self.viewModel.model.planer.create_settings_for_table_dto.date_range_df_format is not None
+        and self.viewModel.model.planer.create_settings_for_table_dto.date_range_df_format.get('start_date') is not None
+        and self.viewModel.model.planer.create_settings_for_table_dto.date_range_df_format.get('end_date') is not None):
+            start_date = self.viewModel.model.planer.create_settings_for_table_dto.date_range_df_format['start_date']
+            end_date = self.viewModel.model.planer.create_settings_for_table_dto.date_range_df_format['end_date']
+            self.update_date_range_based_on_selected_route(start_date.iloc[0].strftime('%Y-%m-%d') + ' - ' + end_date.iloc[0].strftime('%Y-%m-%d'))
+            self.update_date_field_to_first_date_of_selected_route(start_date.iloc[0].strftime('%Y-%m-%d'))
 
     def get_changed_selected_weekday(self):
         index = self.ui.listDatesWeekday.selectedIndexes()[0]

@@ -34,7 +34,7 @@ class UmlaufPlaner():
         self._gtfs_data_frame_dto = value
 
     def check_setting_data(self) -> bool:
-        if not self.check_dates_input(self.create_settings_for_table_dto.dates):
+        if not self.check_dates_input(self.create_settings_for_table_dto.date):
             return False
 
         return True
@@ -44,7 +44,7 @@ class UmlaufPlaner():
         headers = {
             'Agency': [self.create_settings_for_table_dto.agency],
             'Route': [self.create_settings_for_table_dto.route['route_id']],
-            'Dates': [self.create_settings_for_table_dto.dates]
+            'Dates': [self.create_settings_for_table_dto.date]
         }
 
         # Convert headers dictionary to DataFrame
@@ -55,7 +55,7 @@ class UmlaufPlaner():
         self.create_dataframe.Header = df_header_for_export_data
         self.create_dataframe.Direction = pd.DataFrame({'direction_id': [self.create_settings_for_table_dto.direction]})
         self.create_dataframe.RequestedDates = pd.DataFrame(
-            {'date': pd.to_datetime([self.create_settings_for_table_dto.dates], format='%Y%m%d')})
+            {'date': pd.to_datetime([self.create_settings_for_table_dto.date], format='%Y%m%d')})
         self.create_dataframe.SelectedRoute = self.create_settings_for_table_dto.route
         self.create_dataframe.SelectedAgency = self.create_settings_for_table_dto.agency
 
@@ -211,7 +211,7 @@ class UmlaufPlaner():
     def dates_select_dates_delete_exception_2(self):
 
         dfDates = self.gtfs_data_frame_dto.Calendardates
-        requested_datesdf = pd.DataFrame([self.create_settings_for_table_dto.dates], columns=['date'])
+        requested_datesdf = pd.DataFrame([self.create_settings_for_table_dto.date], columns=['date'])
         requested_datesdf['date'] = pd.to_datetime(requested_datesdf['date'], format='%Y%m%d')
         fahrplan_dates = self.create_dataframe.FahrplanDates
 

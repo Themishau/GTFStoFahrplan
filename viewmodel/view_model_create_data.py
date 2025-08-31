@@ -3,6 +3,7 @@ from PySide6.QtCore import Signal, QObject
 from view.view_helpers import qdate_to_string
 from model.Base.Progress import ProgressSignal
 from model.Enum.GTFSEnums import *
+import pandas as pd
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
@@ -29,6 +30,38 @@ class ViewModelCreateData(QObject):
         self.app = app
         self.model = model
 
+        self.days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+
+        # Create DataFrames with category information
+        self.df_all = pd.DataFrame(['All Days'], columns=['day']).assign(category='All Days')
+        self.df_weekend = pd.DataFrame(['Weekend'], columns=['day']).assign(category='Weekend')
+        self.df_weekdays = pd.DataFrame(['Weekdays'], columns=['day']).assign(category='Weekdays')
+        self.df_days_only = pd.DataFrame({
+            'day': self.days,
+            'category': [f'{day} only' for day in self.days]
+        })
+
+        self.weekdays_df = pd.concat([
+            self.df_all,
+            self.df_weekend,
+            self.df_weekdays,
+            self.df_days_only
+        ])
+
+        for day in self.days:
+            weekend_days = ['Saturday', 'Sunday']
+            weekday_days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+
+            self.weekdays_df[day] = (
+                    (self.weekdays_df['day'] == day.capitalize()) |
+                    ((self.weekdays_df['category'] == 'Weekend') &
+                     (day.capitalize() in weekend_days)) |
+                    ((self.weekdays_df['category'] == 'Weekdays') &
+                     (day.capitalize() in weekday_days)) |
+                    (self.weekdays_df['category'] == 'All Days')
+            ).map({True: day.capitalize(), False: '-'})
+
+
     def create_table_continue(self):
         self.model.start_function_async(ModelTriggerActionsEnum.planer_start_create_table_continue.value)
 
@@ -44,6 +77,9 @@ class ViewModelCreateData(QObject):
             return False
         self.model.planer.create_settings_for_table_dto.weekday = selected_weekday
         return None
+
+    def on_import_gtfs_data_finished(self):
+        self.model.planer.create_settings_for_table_dto.direction = 0
 
     def on_create_plan_finished(self):
         self.create_table_finshed.emit()
@@ -63,8 +99,8 @@ class ViewModelCreateData(QObject):
 
     def on_changed_selected_dates(self, selected_dates):
         # gtfs format uses "YYYYMMDD" as date format
-        self.model.planer.create_settings_for_table_dto.dates = qdate_to_string(selected_dates)
-        self.update_select_data.emit(self.model.planer.create_settings_for_table_dto.dates)
+        self.model.planer.create_settings_for_table_dto.date = qdate_to_string(selected_dates)
+        self.update_select_data.emit(self.model.planer.create_settings_for_table_dto.date)
 
     def on_changed_direction_mode(self, text):
         if text == Direction.direction_1.value:
@@ -82,13 +118,13 @@ class ViewModelCreateData(QObject):
                 self.model.planer.create_settings_for_table_dto.weekday = None
             case CreatePlanMode.weekday.value:
                 mode = CreatePlanMode.weekday
-                self.model.planer.create_settings_for_table_dto.dates = None
+                self.model.planer.create_settings_for_table_dto.date = None
             case CreatePlanMode.umlauf_date.value:
                 mode = CreatePlanMode.umlauf_date
                 self.model.planer.create_settings_for_table_dto.weekday = None
             case CreatePlanMode.umlauf_weekday.value:
                 mode = CreatePlanMode.umlauf_weekday
-                self.model.planer.create_settings_for_table_dto.dates = None
+                self.model.planer.create_settings_for_table_dto.date = None
             case _:
                 logging.error(f"Unexpected text value: {text}")
                 mode = None

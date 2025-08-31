@@ -24,30 +24,7 @@ class AnalyzeData(QObject):
 
         """ visual internal property """
         self.progress = ProgressSignal()
-        self.options_dates_weekday = ['Dates', 'Weekday']
-        self.week_day_options = {0: [0, 'Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday'],
-                                 1: [1, 'Monday, Tuesday, Wednesday, Thursday, Friday'],
-                                 2: [2, 'Monday'],
-                                 3: [3, 'Tuesday'],
-                                 4: [4, 'Wednesday'],
-                                 5: [5, 'Thursday'],
-                                 6: [6, 'Friday'],
-                                 7: [7, 'Saturday'],
-                                 8: [8, 'Sunday'],
-                                 }
 
-        # Create DataFrame
-        self.weekday_options_df = pd.DataFrame(self.week_day_options)
-
-        self.week_day_options_list = ['0,Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday',
-                                   '1,Monday, Tuesday, Wednesday, Thursday, Friday',
-                                   '2,Monday',
-                                   '3,Tuesday',
-                                   '4,Wednesday',
-                                   '5,Thursday',
-                                   '6,Friday',
-                                   '7,Saturday',
-                                   '8,Sunday']
 
     def get_routes_of_agency(self, gtfs_data_frame_dto, selected_agency):
         if selected_agency is not None:
@@ -86,7 +63,7 @@ class AnalyzeData(QObject):
                 'end_date': [end_date]
             })
             create_settings_for_table_dto.date_range_df_format = trip_available_dates_df
-
+            create_settings_for_table_dto.date = create_settings_for_table_dto.date_range_df_format.iloc[0].start_date.strftime('%Y%m%d')
 
     def analyze_date_range_in_gtfs_data(self, gtfs_data_frame_dto: GtfsDataFrameDto):
         if gtfs_data_frame_dto.Calendarweeks is not None:
