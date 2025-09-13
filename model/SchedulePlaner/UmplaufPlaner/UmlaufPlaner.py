@@ -261,12 +261,12 @@ class UmlaufPlaner():
         days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         fahrplan_dates_df_date = fahrplan_dates_df[(fahrplan_dates_df['date'].isin(requested_datesdf['date']))]
 
-        #fahrplan_dates_df_date = fahrplan_dates_df_date[(fahrplan_dates_df_date['service_id'].isin(exception_type_1_dates['service_id']))]
-        for _, row in exception_type_1_dates.iterrows():
-            # Check if the record is not already in fahrplan_dates_df_date
-            if row['service_id'] not in fahrplan_dates_df_date['service_id'].values:
-                # Add the record to fahrplan_dates_df_date
-                fahrplan_dates_df_date = pd.concat([fahrplan_dates_df_date, row.to_frame().T], ignore_index=True)
+        fahrplan_dates_df_date = fahrplan_dates_df_date[(fahrplan_dates_df_date['service_id'].isin(exception_type_1_dates['service_id']))]
+        # for _, row in exception_type_1_dates.iterrows():
+        #     # Check if the record is not already in fahrplan_dates_df_date
+        #     if row['service_id'] not in fahrplan_dates_df_date['service_id'].values:
+        #         # Add the record to fahrplan_dates_df_date
+        #         fahrplan_dates_df_date = pd.concat([fahrplan_dates_df_date, row.to_frame().T], ignore_index=True)
 
         fahrplan_dates_df_date = fahrplan_dates_df_date[(~fahrplan_dates_df_date['service_id'].isin(exception_type_2_dates['service_id']))]
         fahrplan_dates_df_date = fahrplan_dates_df_date[(fahrplan_dates_df_date['day'].isin(days))]
