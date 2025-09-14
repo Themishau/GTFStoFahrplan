@@ -91,7 +91,7 @@ class ImportData(QObject):
             return None
 
         if import_settings_dto.pickle_export_checked is True and import_settings_dto.pickle_save_path_filename is not None:
-            self.save_pickle(imported_data)
+            self.save_pickle(imported_data, import_settings_dto)
         self.progress_Update.emit(self.progress.set_progress(100, ProcessType.import_data, "import_gtfs done"))
         return gtfsDataFrameDto
 

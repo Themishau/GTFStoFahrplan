@@ -42,6 +42,7 @@ class ImportSettingsDto(QObject):
     @pickle_save_path_filename.setter
     def pickle_save_path_filename(self, value):
         if value is not None:
+            self._pickle_save_path_filename = value
             self._pickle_save_path = value.replace(value.split('/')[-1], '')
 
     @property
