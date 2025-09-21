@@ -63,8 +63,8 @@ class ImportData(QObject):
     def import_gtfs(self, import_settings_dto: ImportSettingsDto) -> GtfsDataFrameDto | None:
         self.progress.set_progress(0, ProcessType.import_data, "Import GTFS data started")
         self.progress_Update.emit(self.progress)
+        self.progress_Update.emit(self.progress.set_progress(10, ProcessType.import_data, "pre checks"))
         if not self.pre_checks(import_settings_dto):
-            self.progress_Update.emit(self.progress.set_progress(0, ProcessType.import_data, "pre checks"))
             self.reset_data_cause_of_error()
             return None
 
@@ -158,7 +158,8 @@ class ImportData(QObject):
                 logging.debug('no feed info data')
 
             logging.debug(f"raw_data keys: {raw_data.keys()}")
-
+            self.progress_Update.emit(
+                self.progress.set_progress(40, ProcessType.import_data, "reading zip file"))
             return self.create_dfs(raw_data)
 
     def read_file_from_zip(self, zip_file, filename, start_line=0):
@@ -225,7 +226,8 @@ class ImportData(QObject):
                     return None
 
         logging.debug(f"raw_dict_data creation: {raw_dict_data.keys()}")
-
+        self.progress_Update.emit(
+            self.progress.set_progress(60, ProcessType.import_data, "transforming data"))
         # Define DataFrame creation steps
         df_creation_steps = [
             ("routes", self.create_df_routes),
@@ -253,7 +255,8 @@ class ImportData(QObject):
                 except Exception as e:
                     logging.debug(f"Error in DataFrame creation: {str(e)} {df.name.value if df is not None else 'unknown df'}")
                     return None
-
+        self.progress_Update.emit(
+            self.progress.set_progress(80, ProcessType.import_data, "optimizing data for searching trips"))
         logging.debug(f"df_collection creation: {df_collection.keys()}")
         return df_collection
 

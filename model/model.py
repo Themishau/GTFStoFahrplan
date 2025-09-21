@@ -19,11 +19,11 @@ class Worker(QObject):
         self.function = function
 
     def run(self):
-        # try:
-        self.function()
-        self.finished.emit()
-        # except Exception as e:
-        #     self.error.emit(e)
+        try:
+            self.function()
+            self.finished.emit()
+        except Exception as e:
+            self.error.emit(e)
 
 # noinspection PyUnresolvedReferences
 class Model(QObject):

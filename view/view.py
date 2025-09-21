@@ -72,6 +72,7 @@ class View(QMainWindow):
         id_us = self.ui.AgenciesTableView.model().wholeData(index)
         logging.debug(f"index {id_us["agency_id"]}")
         self.viewModel.view_model_select_data.on_changed_selected_record_agency(id_us)
+        self.ui.line_Selection_agency = self.viewModel.model.planer.create_settings_for_table_dto.selected_agency_text
 
     def update_create_table(self):
         self.send_message_box(
@@ -242,6 +243,7 @@ class View(QMainWindow):
             TableModel(self.viewModel.model.planer.create_settings_for_table_dto.df_selected_routes))
         update_table_sizes(self.ui.TripsTableView)
 
+
     def update_individualsorting_table(self):
         self.ui.tableView_sorting_stops.setModel(
             TableModelSort(self.viewModel.model.planer.create_plan.strategy.plans.create_dataframe.FilteredStopNamesDataframe))
@@ -276,6 +278,7 @@ class View(QMainWindow):
         id_us = self.ui.TripsTableView.model().wholeData(index)
         logging.debug(f"id {id_us["route_short_name"]}")
         self.viewModel.view_model_select_data.on_changed_selected_record_trip(id_us)
+        self.ui.line_Selection_trips = self.viewModel.model.planer.create_settings_for_table_dto.selected_route_text
         if (self.viewModel.model.planer.create_settings_for_table_dto.date_range_df_format is not None
         and self.viewModel.model.planer.create_settings_for_table_dto.date_range_df_format.get('start_date') is not None
         and self.viewModel.model.planer.create_settings_for_table_dto.date_range_df_format.get('end_date') is not None):

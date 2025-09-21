@@ -406,9 +406,9 @@ class UmlaufPlaner():
         sortedDataframe.rename(columns=lambda x: f'sorted_{x}', inplace=True)
         df_filtered_stop_names = self.create_dataframe.FilteredStopNamesDataframe
         if sortedDataframe.empty:
-            raise Exception('')
+            raise Exception(ErrorMessageRessources.no_trips_found_in_date_range.value)
         if df_filtered_stop_names.empty:
-            raise Exception('')
+            raise Exception(ErrorMessageRessources.no_trips_found_in_date_range.value)
 
         joined_df = pd.merge(sortedDataframe, df_filtered_stop_names, left_on='sorted_stop_id', right_on='stop_id',
                              how='left')

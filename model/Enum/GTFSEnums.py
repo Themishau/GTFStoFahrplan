@@ -231,6 +231,7 @@ class ErrorMessageRessources(Enum):
     error_in_SchedulePlaner_class = 'error_in_SchedulePlaner_class'
     error_load_data = 'Error. Could not load data.'
     no_trips_found = 'No trips found for the selected date range.'
+    no_trips_found_in_date_range = 'No trips found in the selected date range.'
 
 
 class InfoMessageRessources(Enum):

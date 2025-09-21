@@ -23,6 +23,8 @@ class CreateSettingsForTableDto(QObject):
         self._sample_date = None
         self._date_range_df_format = None
         self._df_selected_routes = None
+        self._selected_agency_text = ""
+        self._selected_route_text = ""
         self._output_path = ""
         self._full_output_path = ""
 
@@ -42,6 +44,8 @@ class CreateSettingsForTableDto(QObject):
         copied._sample_date = copy.deepcopy(self._sample_date, memo)
         copied._date_range_df_format = copy.deepcopy(self._date_range_df_format, memo)
         copied._df_selected_routes = copy.deepcopy(self._df_selected_routes, memo)
+        copied._selected_agency_text = copy.deepcopy(self._selected_agency_text, memo)
+        copied._selected_route_text = copy.deepcopy(self._selected_route_text, memo)
         copied._output_path = copy.deepcopy(self._output_path, memo)
         copied._full_output_path = copy.deepcopy(self._full_output_path, memo)
         return copied
@@ -70,6 +74,10 @@ class CreateSettingsForTableDto(QObject):
     @agency.setter
     def agency(self, value):
             self._agency = value
+            if value is not None:
+                self.selected_agency_text = f"{value.iloc[0]['agency_id']}, {value.iloc[0]['agency_name']}"
+            else:
+                self.selected_agency_text = ""
             self.settingsChanged.emit()
 
     @property
@@ -79,6 +87,10 @@ class CreateSettingsForTableDto(QObject):
     @route.setter
     def route(self, value):
             self._route = value
+            if value is not None:
+                self.selected_route_text = f"{value.iloc[0]['route_id']}, {value.iloc[0]['route_short_name']}, {value.iloc[0]['route_long_name']}"
+            else:
+                self.selected_route_text = ""
             self.settingsChanged.emit()
 
     @property
@@ -181,6 +193,24 @@ class CreateSettingsForTableDto(QObject):
             self._df_selected_routes = value
         else:
             raise ValueError("df_selected_routes must be a pandas DataFrame")
+        self.settingsChanged.emit()
+
+    @property
+    def selected_agency_text(self):
+        return self._selected_agency_text
+
+    @selected_agency_text.setter
+    def selected_agency_text(self, value):
+        self._selected_agency_text = value
+        self.settingsChanged.emit()
+
+    @property
+    def selected_route_text(self):
+        return self._selected_route_text
+
+    @selected_route_text.setter
+    def selected_route_text(self, value):
+        self._selected_route_text = value
         self.settingsChanged.emit()
 
     @Slot()

@@ -89,7 +89,7 @@ class ProgressBarDelegate(QStyledItemDelegate):
         opt.maximum = 100
         opt.progress = progress.value
         opt.textVisible = True
-        opt.text = f"{progress.process_name}: {progress.value}%"
+        opt.text = f"{progress.process_name} {progress.message}: {progress.value}%"
         opt.textAlignment = Qt.AlignCenter
 
         # Save painter state
