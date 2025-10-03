@@ -448,10 +448,6 @@ class UmlaufPlaner():
             axis=0)
 
     def filterStopSequence(self, data):
-        """
-        take all stop ids and search for the earliest stop time
-        for each stop to determine sorting
-        """
         stopsequence = {}
         sorted_stopsequence = {
             "stop_id": [],
@@ -555,9 +551,6 @@ class UmlaufPlaner():
         return sorted_stopsequence
 
     def sortStopSequence(self, stopsequence):
-        """
-        sort dict of stops (cust. bubble sort)
-        """
         sequence_count = len(stopsequence)
 
         # init data structure

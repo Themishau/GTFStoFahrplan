@@ -95,7 +95,6 @@ class ImportData(QObject):
         self.progress_Update.emit(self.progress.set_progress(100, ProcessType.import_data, "import_gtfs done"))
         return gtfsDataFrameDto
 
-
     def read_pickle_from_zip(self, zf, file_name):
         with zf.open(file_name, mode="r") as file:
             compressed_data = file.read()
@@ -104,6 +103,7 @@ class ImportData(QObject):
 
     def read_gtfs_data(self, import_settings_dto: ImportSettingsDto):
         df_gtfs_data = {}
+        self._pkl_loaded = False
 
         with zipfile.ZipFile(import_settings_dto.input_path) as zf:
             logging.debug(zf.namelist())
@@ -112,55 +112,30 @@ class ImportData(QObject):
                     self._pkl_loaded = True
                     break
 
-            if self._pkl_loaded is True:
+            if self._pkl_loaded:
                 logging.debug('pickle data detected')
-                for step in GtfsProcessingStep:
-                    df_gtfs_data[step.df_name] = self.read_pickle_from_zip(zf, step.file_path)
-                    self.progress_Update.emit(self.progress.set_progress(step.progress_value, ProcessType.import_data, step.name))
-
-                try:
-                    with zipfile.ZipFile(import_settings_dto.input_path) as zf:
-                        with zf.open("Tmp/dffeed_info.pkl", mode="r") as feed_info:
-                            df_gtfs_data["dffeed_info"] = pd.read_pickle(feed_info, compression='zip')
-                except:
-                    logging.debug('no feed info header')
+                df_gtfs_data = self.load_pickleData(zf, df_gtfs_data, import_settings_dto)
                 return df_gtfs_data
 
-        if self._pkl_loaded is False:
-            raw_data = {}
-
-            try:
-                with zipfile.ZipFile(import_settings_dto.input_path) as zf:
-                    files_to_process = [
-                        ("stops.txt", GtfsColumnNames.stopsList),
-                        ("stop_times.txt", GtfsColumnNames.stopTimesList),
-                        ("trips.txt", GtfsColumnNames.tripsList),
-                        ("calendar.txt", GtfsColumnNames.calendarList),
-                        ("calendar_dates.txt", GtfsColumnNames.calendar_datesList),
-                        ("routes.txt", GtfsColumnNames.routesList),
-                        ("agency.txt", GtfsColumnNames.agencyList)
-                    ]
-
-                    for filename, column_name in files_to_process:
-                        header = self.read_file_from_zip(zf, filename, start_line=0)
-                        if header:
-                            raw_data[column_name] = [header[0].rstrip()]
-
-                    for filename, column_name in files_to_process:
-                        data = self.read_file_from_zip(zf, filename, start_line=1)
-                        if data:
-                            raw_data[column_name].extend(data)
-
-            except Exception as e:
-                logging.debug(f'Error processing GTFS files: {str(e)}')
-                return None
-            except:
-                logging.debug('no feed info data')
-
-            logging.debug(f"raw_data keys: {raw_data.keys()}")
-            self.progress_Update.emit(
-                self.progress.set_progress(40, ProcessType.import_data, "reading zip file"))
+        if not self._pkl_loaded:
+            raw_data = self.load_raw_gtfs_data(import_settings_dto)
             return self.create_dfs(raw_data)
+
+        return None
+
+    def load_pickleData(self, zf, df_gtfs_data, import_settings_dto):
+        for step in GtfsProcessingStep:
+            df_gtfs_data[step.df_name] = self.read_pickle_from_zip(zf, step.file_path)
+            self.progress_Update.emit(
+                self.progress.set_progress(step.progress_value, ProcessType.import_data, step.name))
+        try:
+            with zipfile.ZipFile(import_settings_dto.input_path) as zf:
+                with zf.open("Tmp/dffeed_info.pkl", mode="r") as feed_info:
+                    df_gtfs_data["dffeed_info"] = pd.read_pickle(feed_info, compression='zip')
+        except:
+            logging.debug('no feed info header')
+
+        return df_gtfs_data
 
     def read_file_from_zip(self, zip_file, filename, start_line=0):
         encodings = ["utf-8", "utf-8-sig"]
@@ -199,17 +174,17 @@ class ImportData(QObject):
 
         # Define processing steps
         dict_creation_steps = [
-            ("routes", self.get_gtfs_routes),
-            ("trips", self.get_gtfs_trips),
-            ("stop_times", self.get_gtfs_stop_times),
-            ("stops", self.get_gtfs_stops),
-            ("week", self.get_gtfs_week),
-            ("dates", self.get_gtfs_dates),
-            ("agency", self.get_gtfs_agency)
+            (CreationSteps.routes, self.get_gtfs_routes),
+            (CreationSteps.trips, self.get_gtfs_trips),
+            (CreationSteps.stop_times, self.get_gtfs_stop_times),
+            (CreationSteps.stops, self.get_gtfs_stops),
+            (CreationSteps.week, self.get_gtfs_week),
+            (CreationSteps.dates, self.get_gtfs_dates),
+            (CreationSteps.agency, self.get_gtfs_agency)
         ]
 
         if raw_data.get(GtfsColumnNames.feed_info) is not None:
-            dict_creation_steps.append(("feed_info", self.get_gtfs_feed_info))
+            dict_creation_steps.append((CreationSteps.feed_info, self.get_gtfs_feed_info))
 
         # Create dictionaries in parallel
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
@@ -230,17 +205,17 @@ class ImportData(QObject):
             self.progress.set_progress(60, ProcessType.import_data, "transforming data"))
         # Define DataFrame creation steps
         df_creation_steps = [
-            ("routes", self.create_df_routes),
-            ("trips", self.create_df_trips),
-            ("stop_times", self.create_df_stop_times),
-            ("stops", self.create_df_stops),
-            ("week", self.create_df_week),
-            ("dates", self.create_df_dates),
-            ("agency", self.create_df_agency)
+            (CreationSteps.routes, self.create_df_routes),
+            (CreationSteps.trips, self.create_df_trips),
+            (CreationSteps.stop_times, self.create_df_stop_times),
+            (CreationSteps.stops, self.create_df_stops),
+            (CreationSteps.week, self.create_df_week),
+            (CreationSteps.dates, self.create_df_dates),
+            (CreationSteps.agency, self.create_df_agency)
         ]
 
         if raw_dict_data.get(GtfsColumnNames.feed_info) is not None:
-            df_creation_steps.append(("feed_info", self.create_df_feed))
+            df_creation_steps.append((CreationSteps.feed_info, self.create_df_feed))
 
         # Create DataFrames in parallel
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
@@ -260,192 +235,52 @@ class ImportData(QObject):
         logging.debug(f"df_collection creation: {df_collection.keys()}")
         return df_collection
 
+    def _parse_gtfs_section(self, raw_data, column_key, df_name):
+        """
+        Generic parser for GTFS sections.
+        Returns a tuple (GtfsDfNames.<X>, dict) matching existing method contracts.
+        """
+        rows = raw_data.get(column_key, [])
+        if not rows:
+            return df_name, {}
+
+        # header = first line, remaining = data lines
+        header = rows[0].replace('"', "").strip()
+        headers = header.split(",")
+        out = {h: [] for h in headers}
+
+        for line in rows[1:]:
+            line = line.replace(", ", " ").replace('"', "").strip()
+            parts = line.split(",")
+            for idx, col in enumerate(headers):
+                out[col].append(parts[idx] if idx < len(parts) else "")
+
+        return df_name, out
+
     def get_gtfs_trips(self, raw_data):
-        tripdict = {
-        }
-
-        headers = raw_data[GtfsColumnNames.tripsList][0].replace('"', "").split(",")
-        itripDate = len(headers)
-        header_names = []
-        for haltestellen_header in headers:
-            tripdict[haltestellen_header] = []
-            header_names.append(haltestellen_header)
-
-        raw_data[GtfsColumnNames.tripsList].remove(raw_data[GtfsColumnNames.tripsList][0])
-
-        for data in raw_data[GtfsColumnNames.tripsList]:
-            data = data.replace(", ", " ")
-            data = data.replace('"', "")
-            data = data.replace('\n', "")
-            tripDate = data.split(",")
-            for idx in range(itripDate):
-                tripdict[header_names[idx]].append(tripDate[idx])
-
-        return GtfsDfNames.Trips, tripdict
+        return self._parse_gtfs_section(raw_data, GtfsColumnNames.tripsList, GtfsDfNames.Trips)
 
     def get_gtfs_stops(self, raw_data):
-
-        stopsdict = {
-        }
-        headers = raw_data[GtfsColumnNames.stopsList][0].replace('"', "").split(",")
-        istopDate = len(headers)
-        header_names = []
-        for haltestellen_header in headers:
-            stopsdict[haltestellen_header] = []
-            header_names.append(haltestellen_header)
-
-        raw_data[GtfsColumnNames.stopsList].remove(raw_data[GtfsColumnNames.stopsList][0])
-
-        for haltestellen in raw_data[GtfsColumnNames.stopsList]:
-            haltestellen = haltestellen.replace(", ", " ")
-            haltestellen = haltestellen.replace('"', "")
-            haltestellen = haltestellen.replace('\n', "")
-            stopData = haltestellen.split(",")
-
-            for idx in range(istopDate):
-                stopsdict[header_names[idx]].append(stopData[idx])
-
-        return GtfsDfNames.Stops, stopsdict
+        return self._parse_gtfs_section(raw_data, GtfsColumnNames.stopsList, GtfsDfNames.Stops)
 
     def get_gtfs_stop_times(self, raw_data):
-        stopTimesdict = {
-        }
-
-        headers = raw_data[GtfsColumnNames.stopTimesList][0].replace('"', "").split(",")
-        istopTimeData = len(headers)
-        header_names = []
-        for haltestellen_header in headers:
-            stopTimesdict[haltestellen_header] = []
-            header_names.append(haltestellen_header)
-
-        raw_data[GtfsColumnNames.stopTimesList].remove(raw_data[GtfsColumnNames.stopTimesList][0])
-
-        for data in raw_data[GtfsColumnNames.stopTimesList]:
-            data = data.replace(", ", " ")
-            data = data.replace('"', "")
-            data = data.replace('\n', "")
-            stopTimeData = data.split(",")
-
-            for idx in range(istopTimeData):
-                stopTimesdict[header_names[idx]].append(stopTimeData[idx])
-
-        return GtfsDfNames.Stoptimes, stopTimesdict
+        return self._parse_gtfs_section(raw_data, GtfsColumnNames.stopTimesList, GtfsDfNames.Stoptimes)
 
     def get_gtfs_week(self, raw_data):
-        calendarWeekdict = {
-        }
-
-        headers = raw_data[GtfsColumnNames.calendarList][0].replace('"', "").split(",")
-        icalendarDate = len(headers)
-        header_names = []
-        for haltestellen_header in headers:
-            calendarWeekdict[haltestellen_header] = []
-            header_names.append(haltestellen_header)
-
-        raw_data[GtfsColumnNames.calendarList].remove(raw_data[GtfsColumnNames.calendarList][0])
-
-        for data in raw_data[GtfsColumnNames.calendarList]:
-            data = data.replace(", ", " ")
-            data = data.replace('"', "")
-            data = data.replace('\n', "")
-            calendarDate = data.split(",")
-
-            for idx in range(icalendarDate):
-                calendarWeekdict[header_names[idx]].append(calendarDate[idx])
-
-        return GtfsDfNames.Calendarweeks, calendarWeekdict
+        return self._parse_gtfs_section(raw_data, GtfsColumnNames.calendarList, GtfsDfNames.Calendarweeks)
 
     def get_gtfs_dates(self, raw_data):
-        calendarDatesdict = {
-        }
-
-        headers = raw_data[GtfsColumnNames.calendar_datesList][0].replace('"', "").split(",")
-        icalendarDate = len(headers)
-        header_names = []
-        for haltestellen_header in headers:
-            calendarDatesdict[haltestellen_header] = []
-            header_names.append(haltestellen_header)
-
-        raw_data[GtfsColumnNames.calendar_datesList].remove(raw_data[GtfsColumnNames.calendar_datesList][0])
-
-        for data in raw_data[GtfsColumnNames.calendar_datesList]:
-            data = data.replace(", ", " ")
-            data = data.replace('"', "")
-            data = data.replace('\n', "")
-            calendarDatesDate = data.split(",")
-            for idx in range(icalendarDate):
-                calendarDatesdict[header_names[idx]].append(calendarDatesDate[idx])
-
-        return GtfsDfNames.Calendardates, calendarDatesdict
+        return self._parse_gtfs_section(raw_data, GtfsColumnNames.calendar_datesList, GtfsDfNames.Calendardates)
 
     def get_gtfs_routes(self, raw_data):
-        routesFahrtdict = {
-        }
-
-        headers = raw_data[GtfsColumnNames.routesList][0].replace('"', "").split(",")
-        iroutesFahrt = len(headers)
-        header_names = []
-        for haltestellen_header in headers:
-            routesFahrtdict[haltestellen_header] = []
-            header_names.append(haltestellen_header)
-
-        raw_data[GtfsColumnNames.routesList].remove(raw_data[GtfsColumnNames.routesList][0])
-
-        for data in raw_data[GtfsColumnNames.routesList]:
-            data = data.replace(", ", " ")
-            data = data.replace('"', "")
-            data = data.replace('\n', "")
-            routesFahrtData = data.split(",")
-            for idx in range(iroutesFahrt):
-                routesFahrtdict[header_names[idx]].append(routesFahrtData[idx])
-
-        return GtfsDfNames.Routes, routesFahrtdict
-
-    def get_gtfs_feed_info(self, raw_data):
-        feed_infodict = {
-        }
-
-        headers = raw_data[GtfsColumnNames.feed_info][0].replace('"', "").split(",")
-        ifeed_infodict = len(headers)
-        header_names = []
-        for haltestellen_header in headers:
-            feed_infodict[haltestellen_header] = []
-            header_names.append(haltestellen_header)
-
-        raw_data[GtfsColumnNames.feed_info].remove(raw_data[GtfsColumnNames.feed_info][0])
-
-        for data in raw_data[GtfsColumnNames.feed_info]:
-            data = data.replace(", ", " ")
-            data = data.replace('"', "")
-            data = data.replace('\n', "")
-            feed_infodictData = data.split(",")
-            for idx in range(ifeed_infodict):
-                feed_infodict[header_names[idx]].append(feed_infodictData[idx])
-
-        return GtfsDfNames.Feedinfos, feed_infodict
+        return self._parse_gtfs_section(raw_data, GtfsColumnNames.routesList, GtfsDfNames.Routes)
 
     def get_gtfs_agency(self, raw_data):
+        return self._parse_gtfs_section(raw_data, GtfsColumnNames.agencyList, GtfsDfNames.Agencies)
 
-        agencyFahrtdict = {
-        }
-
-        headers = raw_data[GtfsColumnNames.agencyList][0].replace('"', "").split(",")
-        iagencyData = len(headers)
-        header_names = []
-        for haltestellen_header in headers:
-            agencyFahrtdict[haltestellen_header] = []
-            header_names.append(haltestellen_header)
-        raw_data[GtfsColumnNames.agencyList].remove(raw_data[GtfsColumnNames.agencyList][0])
-
-        for data in raw_data[GtfsColumnNames.agencyList]:
-            data = data.replace(", ", " ")
-            data = data.replace('"', "")
-            data = data.replace('\n', "")
-            agencyData = data.split(",")
-            for idx in range(iagencyData):
-                agencyFahrtdict[header_names[idx]].append(agencyData[idx])
-
-        return GtfsDfNames.Agencies, agencyFahrtdict
+    def get_gtfs_feed_info(self, raw_data):
+        # feed_info may be optional; use same parser
+        return self._parse_gtfs_section(raw_data, GtfsColumnNames.feed_info, GtfsDfNames.Feedinfos)
 
     # region creation dataframes
 
@@ -660,3 +495,38 @@ class ImportData(QObject):
 
         if GtfsDfNames.Feedinfos in imported_df_data:
             os.remove(import_settings_dto.pickle_save_path + "dffeed_info.pkl")
+
+    def load_raw_gtfs_data(self, import_settings_dto):
+        raw_data = {}
+
+        try:
+            with zipfile.ZipFile(import_settings_dto.input_path) as zf:
+                files_to_process = [
+                    ("stops.txt", GtfsColumnNames.stopsList),
+                    ("stop_times.txt", GtfsColumnNames.stopTimesList),
+                    ("trips.txt", GtfsColumnNames.tripsList),
+                    ("calendar.txt", GtfsColumnNames.calendarList),
+                    ("calendar_dates.txt", GtfsColumnNames.calendar_datesList),
+                    ("routes.txt", GtfsColumnNames.routesList),
+                    ("agency.txt", GtfsColumnNames.agencyList)
+                ]
+
+                for filename, column_name in files_to_process:
+                    header = self.read_file_from_zip(zf, filename, start_line=0)
+                    if header:
+                        raw_data[column_name] = [header[0].rstrip()]
+
+                for filename, column_name in files_to_process:
+                    data = self.read_file_from_zip(zf, filename, start_line=1)
+                    if data:
+                        raw_data[column_name].extend(data)
+        except Exception as e:
+            logging.debug(f'Error processing GTFS files: {str(e)}')
+            return None
+        except:
+            logging.debug('no feed info data')
+
+        logging.debug(f"raw_data keys: {raw_data.keys()}")
+        self.progress_Update.emit(
+            self.progress.set_progress(40, ProcessType.import_data, "reading zip file"))
+        return raw_data

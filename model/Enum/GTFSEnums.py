@@ -257,3 +257,14 @@ class Weekday(Enum):
     @classmethod
     def is_weekend(cls, day):
         return isinstance(day, Weekday) and day in cls.WEEKEND
+
+
+class CreationSteps(Enum):
+    routes = "routes"
+    trips = "trips"
+    stop_times = "stop_times"
+    stops = "stops"
+    week = "week"
+    dates = "dates"
+    agency = "agency"
+    feed_info = "feed_info"

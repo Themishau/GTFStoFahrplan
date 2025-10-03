@@ -76,9 +76,3 @@ class AnalyzeData(QObject):
             return 'No date range available'
         return str(date_range_df_format.iloc[0].start_date) + '-' + str(
                 date_range_df_format.iloc[0].end_date)
-
-
-
-
-
-

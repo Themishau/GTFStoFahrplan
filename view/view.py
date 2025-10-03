@@ -45,7 +45,7 @@ class View(QMainWindow):
         self.signals.init_signals()
 
         self.initialize_window()
-        self.initialize_modified_progress_bar()
+        #self.initialize_modified_progress_bar()
         self.initialize_tabs()
         self.show_home_window()
 
@@ -72,7 +72,8 @@ class View(QMainWindow):
         id_us = self.ui.AgenciesTableView.model().wholeData(index)
         logging.debug(f"index {id_us["agency_id"]}")
         self.viewModel.view_model_select_data.on_changed_selected_record_agency(id_us)
-        self.ui.line_Selection_agency = self.viewModel.model.planer.create_settings_for_table_dto.selected_agency_text
+        self.ui.line_Selection_agency.setText(f"selected trips: {self.viewModel.model.planer.create_settings_for_table_dto.selected_agency_text}")
+        self.update_time_format(self.viewModel.model.planer.create_settings_for_table_dto.timeformat)
 
     def update_create_table(self):
         self.send_message_box(
@@ -91,11 +92,7 @@ class View(QMainWindow):
         self.ui.checkBox_savepickle.setChecked(checked)
 
     def update_time_format(self, time_format):
-        self.ui.line_Selection_format.setText(time_format)
-
-    def update_time_format_based_on_dto(self):
-        self.ui.line_Selection_format.setText(
-            f'time format {self.viewModel.model.planer.create_settings_for_table_dto.timeformat}')
+        self.ui.line_Selection_format.setText(f'time format {self.viewModel.model.planer.create_settings_for_table_dto.timeformat}')
 
     def update_direction_mode(self, mode):
         self.ui.comboBox_direction.setCurrentText(mode)
@@ -132,13 +129,10 @@ class View(QMainWindow):
         if self.viewModel.model.planer.select_data.selected_route is not None:
             self.ui.line_Selection_trips.setText(
                 f"selected Trip: {self.viewModel.model.planer.select_data.selected_route[DfRouteColumnEnum.route_short_name.value].iloc[0]}")
-        self.update_time_format_based_on_dto()
         return
 
     def initialize_window(self):
-        self.setFixedSize(1920, 1080)
         self.setWindowFlags(Qt.FramelessWindowHint)
-        self.center()
         self.oldPos = self.pos()
 
     def mousePressEvent(self, event):
@@ -158,7 +152,7 @@ class View(QMainWindow):
         self.move(qr.topLeft())
 
     def update_progress(self, progress_data: ProgressSignal):
-        self.update_progress_bar(progress_data.value)
+        #self.update_progress_bar(progress_data.value)
         self.update_progress_list(progress_data)
         return True
 
@@ -166,14 +160,14 @@ class View(QMainWindow):
         self.ui.progress_history_list_view.updateProgress(progress_data)
 
     def update_progress_bar(self, value: int):
-        self.ui.progressBar.set_value(value)
+        #self.ui.progressBar.set_value(value)
         return True
 
     def initialize_modified_progress_bar(self):
         self.ui.progressBar = RoundProgress()
         self.ui.progressBar.value = 0
         self.ui.progressBar.setMinimumSize(self.ui.progressBar.width, self.ui.progressBar.height)
-        self.ui.progress_widget.addWidget(self.ui.progressBar, 1, 1, 1, 1, Qt.AlignHCenter | Qt.AlignVCenter)
+        #self.ui.progress_widget.addWidget(self.ui.progressBar, 1, 1, 1, 1, Qt.AlignHCenter | Qt.AlignVCenter)
 
     def initialize_tabs(self):
         self.ui.main_view_stacked_widget.addWidget(self.ui.create_import_page)
@@ -278,7 +272,7 @@ class View(QMainWindow):
         id_us = self.ui.TripsTableView.model().wholeData(index)
         logging.debug(f"id {id_us["route_short_name"]}")
         self.viewModel.view_model_select_data.on_changed_selected_record_trip(id_us)
-        self.ui.line_Selection_trips = self.viewModel.model.planer.create_settings_for_table_dto.selected_route_text
+        self.ui.line_Selection_trips.setText(f"selected trips: {self.viewModel.model.planer.create_settings_for_table_dto.selected_route_text}")
         if (self.viewModel.model.planer.create_settings_for_table_dto.date_range_df_format is not None
         and self.viewModel.model.planer.create_settings_for_table_dto.date_range_df_format.get('start_date') is not None
         and self.viewModel.model.planer.create_settings_for_table_dto.date_range_df_format.get('end_date') is not None):

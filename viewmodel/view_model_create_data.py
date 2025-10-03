@@ -112,6 +112,7 @@ class ViewModelCreateData(QObject):
         self.model.planer.create_settings_for_table_dto.weekday = text
 
     def on_changed_create_plan_mode(self, text):
+        mode = None
         match text:
             case CreatePlanMode.date.value:
                 mode = CreatePlanMode.date

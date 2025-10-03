@@ -37,13 +37,13 @@ class Ui_MainWindow(object):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
         MainWindow.setEnabled(True)
-        MainWindow.resize(1920, 954)
+        MainWindow.resize(1600, 800)
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(MainWindow.sizePolicy().hasHeightForWidth())
         MainWindow.setSizePolicy(sizePolicy)
-        MainWindow.setMaximumSize(QSize(16777215, 954))
+        MainWindow.setMaximumSize(QSize(1600, 800))
         font = QFont()
         font.setPointSize(12)
         font.setStyleStrategy(QFont.PreferAntialias)
@@ -128,6 +128,7 @@ class Ui_MainWindow(object):
         self.centralwidget.setObjectName(u"centralwidget")
         sizePolicy.setHeightForWidth(self.centralwidget.sizePolicy().hasHeightForWidth())
         self.centralwidget.setSizePolicy(sizePolicy)
+        self.centralwidget.setMaximumSize(QSize(1600, 800))
         self.centralwidget.setStyleSheet(u"* {\n"
 "background-color: #f4d6b7;\n"
 "color: #1e1e1e;\n"
@@ -142,13 +143,14 @@ class Ui_MainWindow(object):
         self.gridLayout_3 = QGridLayout(self.centralwidget)
         self.gridLayout_3.setSpacing(0)
         self.gridLayout_3.setObjectName(u"gridLayout_3")
-        self.gridLayout_3.setSizeConstraint(QLayout.SizeConstraint.SetNoConstraint)
+        self.gridLayout_3.setSizeConstraint(QLayout.SizeConstraint.SetDefaultConstraint)
         self.gridLayout_3.setContentsMargins(0, 0, 0, 0)
         self.splitter = QSplitter(self.centralwidget)
         self.splitter.setObjectName(u"splitter")
         sizePolicy.setHeightForWidth(self.splitter.sizePolicy().hasHeightForWidth())
         self.splitter.setSizePolicy(sizePolicy)
-        self.splitter.setMinimumSize(QSize(0, 952))
+        self.splitter.setMinimumSize(QSize(0, 0))
+        self.splitter.setMaximumSize(QSize(1608, 800))
         self.splitter.setFrameShape(QFrame.Shape.Box)
         self.splitter.setFrameShadow(QFrame.Shadow.Raised)
         self.splitter.setOrientation(Qt.Orientation.Horizontal)
@@ -156,10 +158,13 @@ class Ui_MainWindow(object):
         self.splitter.setChildrenCollapsible(False)
         self.menu_widget = QWidget(self.splitter)
         self.menu_widget.setObjectName(u"menu_widget")
-        sizePolicy.setHeightForWidth(self.menu_widget.sizePolicy().hasHeightForWidth())
-        self.menu_widget.setSizePolicy(sizePolicy)
-        self.menu_widget.setMinimumSize(QSize(229, 952))
-        self.menu_widget.setMaximumSize(QSize(167772, 167770))
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.menu_widget.sizePolicy().hasHeightForWidth())
+        self.menu_widget.setSizePolicy(sizePolicy1)
+        self.menu_widget.setMinimumSize(QSize(200, 800))
+        self.menu_widget.setMaximumSize(QSize(200, 800))
         font1 = QFont()
         font1.setFamilies([u"Segoe UI"])
         font1.setPointSize(18)
@@ -220,28 +225,27 @@ class Ui_MainWindow(object):
         self.gridLayout = QGridLayout(self.menu_widget)
         self.gridLayout.setSpacing(0)
         self.gridLayout.setObjectName(u"gridLayout")
-        self.gridLayout.setSizeConstraint(QLayout.SizeConstraint.SetDefaultConstraint)
+        self.gridLayout.setSizeConstraint(QLayout.SizeConstraint.SetMaximumSize)
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
         self.frame = QFrame(self.menu_widget)
         self.frame.setObjectName(u"frame")
         sizePolicy.setHeightForWidth(self.frame.sizePolicy().hasHeightForWidth())
         self.frame.setSizePolicy(sizePolicy)
-        self.frame.setMinimumSize(QSize(0, 952))
+        self.frame.setMinimumSize(QSize(200, 800))
+        self.frame.setMaximumSize(QSize(200, 800))
         self.frame.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
         self.frame.setStyleSheet(u"")
         self.frame.setFrameShape(QFrame.Shape.StyledPanel)
         self.frame.setFrameShadow(QFrame.Shadow.Raised)
-        self.verticalLayout = QVBoxLayout(self.frame)
-        self.verticalLayout.setObjectName(u"verticalLayout")
-        self.verticalLayout.setSizeConstraint(QLayout.SizeConstraint.SetMaximumSize)
+        self._2 = QVBoxLayout(self.frame)
+        self._2.setObjectName(u"_2")
+        self._2.setSizeConstraint(QLayout.SizeConstraint.SetMinimumSize)
         self.toolBox = AnimatedQToolBox(self.frame)
         self.toolBox.setObjectName(u"toolBox")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.toolBox.sizePolicy().hasHeightForWidth())
         self.toolBox.setSizePolicy(sizePolicy1)
         self.toolBox.setMinimumSize(QSize(0, 0))
+        self.toolBox.setMaximumSize(QSize(16777215, 300))
         font2 = QFont()
         font2.setFamilies([u"Segoe UI"])
         font2.setPointSize(12)
@@ -253,7 +257,7 @@ class Ui_MainWindow(object):
         self.toolBox.setStyleSheet(u"")
         self.page = QWidget()
         self.page.setObjectName(u"page")
-        self.page.setGeometry(QRect(0, 0, 211, 336))
+        self.page.setGeometry(QRect(0, 0, 182, 130))
         sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
         sizePolicy2.setHorizontalStretch(0)
         sizePolicy2.setVerticalStretch(0)
@@ -277,7 +281,7 @@ class Ui_MainWindow(object):
         self.toolBox.addItem(self.page, icon, u"General")
         self.page_2 = QWidget()
         self.page_2.setObjectName(u"page_2")
-        self.page_2.setGeometry(QRect(0, 0, 211, 336))
+        self.page_2.setGeometry(QRect(0, 0, 182, 134))
         sizePolicy2.setHeightForWidth(self.page_2.sizePolicy().hasHeightForWidth())
         self.page_2.setSizePolicy(sizePolicy2)
         self.page_2.setStyleSheet(u"")
@@ -316,7 +320,7 @@ class Ui_MainWindow(object):
 
         self.gridLayout_5.addWidget(self.pushButton_4, 2, 0, 1, 2)
 
-        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+        self.verticalSpacer_2 = QSpacerItem(20, 20, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
 
         self.gridLayout_5.addItem(self.verticalSpacer_2, 3, 0, 1, 1)
 
@@ -325,7 +329,7 @@ class Ui_MainWindow(object):
         self.toolBox.addItem(self.page_2, icon4, u"Create Table")
         self.page_3 = QWidget()
         self.page_3.setObjectName(u"page_3")
-        self.page_3.setGeometry(QRect(0, 0, 211, 336))
+        self.page_3.setGeometry(QRect(0, 0, 182, 90))
         sizePolicy2.setHeightForWidth(self.page_3.sizePolicy().hasHeightForWidth())
         self.page_3.setSizePolicy(sizePolicy2)
         self.gridLayout_2 = QGridLayout(self.page_3)
@@ -345,11 +349,11 @@ class Ui_MainWindow(object):
         icon5.addFile(u":/newPrefix/icons/bootstrap-icons-1.10.3/download.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.toolBox.addItem(self.page_3, icon5, u"Download GTFS")
 
-        self.verticalLayout.addWidget(self.toolBox)
+        self._2.addWidget(self.toolBox, 0, Qt.AlignmentFlag.AlignTop)
 
-        self.verticalSpacer_4 = QSpacerItem(20, 100, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.verticalSpacer_4 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
 
-        self.verticalLayout.addItem(self.verticalSpacer_4)
+        self._2.addItem(self.verticalSpacer_4)
 
         self.btnExit = FadingButton(self.frame)
         self.btnExit.setObjectName(u"btnExit")
@@ -359,6 +363,7 @@ class Ui_MainWindow(object):
         sizePolicy3.setHeightForWidth(self.btnExit.sizePolicy().hasHeightForWidth())
         self.btnExit.setSizePolicy(sizePolicy3)
         self.btnExit.setMinimumSize(QSize(100, 40))
+        self.btnExit.setMaximumSize(QSize(200, 100))
         font3 = QFont()
         font3.setPointSize(12)
         font3.setBold(True)
@@ -366,10 +371,10 @@ class Ui_MainWindow(object):
         self.btnExit.setFont(font3)
         self.btnExit.setStyleSheet(u"")
 
-        self.verticalLayout.addWidget(self.btnExit)
+        self._2.addWidget(self.btnExit, 0, Qt.AlignmentFlag.AlignBottom)
 
 
-        self.gridLayout.addWidget(self.frame, 0, 0, 1, 1)
+        self.gridLayout.addWidget(self.frame, 0, 0, 1, 1, Qt.AlignmentFlag.AlignTop)
 
         self.splitter.addWidget(self.menu_widget)
         self.main_widget = QWidget(self.splitter)
@@ -377,6 +382,7 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.main_widget.sizePolicy().hasHeightForWidth())
         self.main_widget.setSizePolicy(sizePolicy)
         self.main_widget.setMinimumSize(QSize(0, 0))
+        self.main_widget.setMaximumSize(QSize(1400, 800))
         self.main_widget.setStyleSheet(u"\n"
 "* {\n"
 "  background-color: #f4d6b7;\n"
@@ -384,6 +390,7 @@ class Ui_MainWindow(object):
 "\n"
 "#bottom_info_widget {\n"
 "  border-top: 1px solid #1e1e1e;\n"
+"  border-left: 1px solid #1e1e1e;\n"
 "}\n"
 "\n"
 "")
@@ -391,24 +398,110 @@ class Ui_MainWindow(object):
         self.gridLayout_4.setObjectName(u"gridLayout_4")
         self.gridLayout_4.setSizeConstraint(QLayout.SizeConstraint.SetMaximumSize)
         self.gridLayout_4.setContentsMargins(0, 0, 0, 0)
-        self.widget = QWidget(self.main_widget)
-        self.widget.setObjectName(u"widget")
-        sizePolicy4 = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+        self.bottom_info_widget = QWidget(self.main_widget)
+        self.bottom_info_widget.setObjectName(u"bottom_info_widget")
+        sizePolicy3.setHeightForWidth(self.bottom_info_widget.sizePolicy().hasHeightForWidth())
+        self.bottom_info_widget.setSizePolicy(sizePolicy3)
+        self.bottom_info_widget.setMaximumSize(QSize(1400, 175))
+        self.bottom_info_widget.setStyleSheet(u"")
+        self.info_widget = QGridLayout(self.bottom_info_widget)
+        self.info_widget.setObjectName(u"info_widget")
+        self.info_widget.setSizeConstraint(QLayout.SizeConstraint.SetMinimumSize)
+        self.progess_log = QGridLayout()
+        self.progess_log.setObjectName(u"progess_log")
+        self.progress_history_list_view = ProgressHistoryListView(self.bottom_info_widget)
+        self.progress_history_list_view.setObjectName(u"progress_history_list_view")
+        sizePolicy4 = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         sizePolicy4.setHorizontalStretch(0)
         sizePolicy4.setVerticalStretch(0)
-        sizePolicy4.setHeightForWidth(self.widget.sizePolicy().hasHeightForWidth())
-        self.widget.setSizePolicy(sizePolicy4)
-        self.widget.setStyleSheet(u"#pushButton  {\n"
+        sizePolicy4.setHeightForWidth(self.progress_history_list_view.sizePolicy().hasHeightForWidth())
+        self.progress_history_list_view.setSizePolicy(sizePolicy4)
+        self.progress_history_list_view.setMinimumSize(QSize(500, 0))
+        self.progress_history_list_view.setMaximumSize(QSize(1000, 100))
+        self.progress_history_list_view.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
+
+        self.progess_log.addWidget(self.progress_history_list_view, 0, 0, 1, 1)
+
+
+        self.info_widget.addLayout(self.progess_log, 2, 0, 1, 1)
+
+        self.selection_box = QWidget(self.bottom_info_widget)
+        self.selection_box.setObjectName(u"selection_box")
+        self.selection_box.setMaximumSize(QSize(16777215, 125))
+        self.selection_box.setStyleSheet(u"border-style: solid;\n"
+"border-width: 1px;\n"
+"border-radius: 1px;")
+        self.selection_grid = QGridLayout(self.selection_box)
+        self.selection_grid.setObjectName(u"selection_grid")
+        self.verticalLayout_2 = QVBoxLayout()
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.line_Selection_format = QLineEdit(self.selection_box)
+        self.line_Selection_format.setObjectName(u"line_Selection_format")
+        self.line_Selection_format.setEnabled(False)
+        sizePolicy3.setHeightForWidth(self.line_Selection_format.sizePolicy().hasHeightForWidth())
+        self.line_Selection_format.setSizePolicy(sizePolicy3)
+        self.line_Selection_format.setStyleSheet(u"")
+
+        self.verticalLayout_2.addWidget(self.line_Selection_format)
+
+        self.line_Selection_agency = QLineEdit(self.selection_box)
+        self.line_Selection_agency.setObjectName(u"line_Selection_agency")
+        self.line_Selection_agency.setEnabled(False)
+        self.line_Selection_agency.setStyleSheet(u"")
+
+        self.verticalLayout_2.addWidget(self.line_Selection_agency)
+
+        self.line_Selection_trips = QLineEdit(self.selection_box)
+        self.line_Selection_trips.setObjectName(u"line_Selection_trips")
+        self.line_Selection_trips.setEnabled(False)
+        sizePolicy3.setHeightForWidth(self.line_Selection_trips.sizePolicy().hasHeightForWidth())
+        self.line_Selection_trips.setSizePolicy(sizePolicy3)
+        self.line_Selection_trips.setStyleSheet(u"")
+
+        self.verticalLayout_2.addWidget(self.line_Selection_trips)
+
+
+        self.selection_grid.addLayout(self.verticalLayout_2, 1, 0, 1, 1)
+
+        self.label_16 = QLabel(self.selection_box)
+        self.label_16.setObjectName(u"label_16")
+        sizePolicy3.setHeightForWidth(self.label_16.sizePolicy().hasHeightForWidth())
+        self.label_16.setSizePolicy(sizePolicy3)
+        font4 = QFont()
+        font4.setFamilies([u"72"])
+        font4.setPointSize(8)
+        font4.setBold(True)
+        font4.setItalic(False)
+        self.label_16.setFont(font4)
+        self.label_16.setStyleSheet(u"")
+
+        self.selection_grid.addWidget(self.label_16, 0, 0, 1, 1)
+
+
+        self.info_widget.addWidget(self.selection_box, 2, 2, 1, 1)
+
+
+        self.gridLayout_4.addWidget(self.bottom_info_widget, 3, 0, 1, 1)
+
+        self.top_widget = QWidget(self.main_widget)
+        self.top_widget.setObjectName(u"top_widget")
+        sizePolicy5 = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+        sizePolicy5.setHorizontalStretch(0)
+        sizePolicy5.setVerticalStretch(0)
+        sizePolicy5.setHeightForWidth(self.top_widget.sizePolicy().hasHeightForWidth())
+        self.top_widget.setSizePolicy(sizePolicy5)
+        self.top_widget.setMaximumSize(QSize(1400, 75))
+        self.top_widget.setStyleSheet(u"#pushButton  {\n"
 "    border: 1px solid #1e1e1e;\n"
 "    border-style: solid;\n"
 "}")
-        self.horizontalLayout = QHBoxLayout(self.widget)
+        self.horizontalLayout = QHBoxLayout(self.top_widget)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.horizontalLayout.setSizeConstraint(QLayout.SizeConstraint.SetDefaultConstraint)
-        self.pushButton = QPushButton(self.widget)
+        self.pushButton = QPushButton(self.top_widget)
         self.pushButton.setObjectName(u"pushButton")
-        sizePolicy.setHeightForWidth(self.pushButton.sizePolicy().hasHeightForWidth())
-        self.pushButton.setSizePolicy(sizePolicy)
+        sizePolicy3.setHeightForWidth(self.pushButton.sizePolicy().hasHeightForWidth())
+        self.pushButton.setSizePolicy(sizePolicy3)
         self.pushButton.setSizeIncrement(QSize(30, 30))
         self.pushButton.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
         self.pushButton.setStyleSheet(u"")
@@ -426,16 +519,15 @@ class Ui_MainWindow(object):
         self.horizontalLayout.addItem(self.horizontalSpacer)
 
 
-        self.gridLayout_4.addWidget(self.widget, 0, 0, 1, 1)
+        self.gridLayout_4.addWidget(self.top_widget, 0, 0, 1, 1)
 
         self.main_view_stacked_widget = QStackedWidget(self.main_widget)
         self.main_view_stacked_widget.setObjectName(u"main_view_stacked_widget")
-        sizePolicy5 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        sizePolicy5.setHorizontalStretch(10)
-        sizePolicy5.setVerticalStretch(10)
-        sizePolicy5.setHeightForWidth(self.main_view_stacked_widget.sizePolicy().hasHeightForWidth())
-        self.main_view_stacked_widget.setSizePolicy(sizePolicy5)
-        self.main_view_stacked_widget.setMinimumSize(QSize(1600, 600))
+        self.main_view_stacked_widget.setEnabled(True)
+        sizePolicy4.setHeightForWidth(self.main_view_stacked_widget.sizePolicy().hasHeightForWidth())
+        self.main_view_stacked_widget.setSizePolicy(sizePolicy4)
+        self.main_view_stacked_widget.setMinimumSize(QSize(1400, 600))
+        self.main_view_stacked_widget.setMaximumSize(QSize(1400, 600))
         self.main_view_stacked_widget.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
         self.main_view_stacked_widget.setAutoFillBackground(False)
         self.main_view_stacked_widget.setStyleSheet(u"* {\n"
@@ -520,65 +612,55 @@ class Ui_MainWindow(object):
 "     color: white;\n"
 "}\n"
 "")
+        self.main_view_stacked_widget.setFrameShape(QFrame.Shape.Box)
+        self.main_view_stacked_widget.setFrameShadow(QFrame.Shadow.Plain)
         self.general_information_page = QWidget()
         self.general_information_page.setObjectName(u"general_information_page")
-        self.general_information_page.setMaximumSize(QSize(1682, 759))
+        sizePolicy4.setHeightForWidth(self.general_information_page.sizePolicy().hasHeightForWidth())
+        self.general_information_page.setSizePolicy(sizePolicy4)
+        self.general_information_page.setMinimumSize(QSize(0, 0))
+        self.general_information_page.setMaximumSize(QSize(1400, 600))
         self.gridLayoutWidget = QWidget(self.general_information_page)
         self.gridLayoutWidget.setObjectName(u"gridLayoutWidget")
-        self.gridLayoutWidget.setGeometry(QRect(9, 19, 1661, 731))
-        self.gridLayout_7 = QGridLayout(self.gridLayoutWidget)
-        self.gridLayout_7.setObjectName(u"gridLayout_7")
-        self.gridLayout_7.setContentsMargins(0, 0, 0, 0)
-        self.line_3 = QFrame(self.gridLayoutWidget)
-        self.line_3.setObjectName(u"line_3")
-        self.line_3.setFrameShape(QFrame.Shape.VLine)
-        self.line_3.setFrameShadow(QFrame.Shadow.Sunken)
-
-        self.gridLayout_7.addWidget(self.line_3, 1, 0, 1, 1)
-
-        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.gridLayout_7.addItem(self.horizontalSpacer_2, 0, 1, 1, 1)
-
+        self.gridLayoutWidget.setGeometry(QRect(9, 19, 1402, 434))
+        self.verticalLayout_3 = QVBoxLayout(self.gridLayoutWidget)
+        self.verticalLayout_3.setSpacing(0)
+        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.verticalLayout_3.setSizeConstraint(QLayout.SizeConstraint.SetDefaultConstraint)
+        self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
         self.plainTextEdit = QPlainTextEdit(self.gridLayoutWidget)
         self.plainTextEdit.setObjectName(u"plainTextEdit")
-        font4 = QFont()
-        font4.setFamilies([u"MS Reference Sans Serif"])
-        font4.setBold(True)
-        font4.setItalic(False)
-        self.plainTextEdit.setFont(font4)
+        self.plainTextEdit.setMinimumSize(QSize(1000, 400))
+        font5 = QFont()
+        font5.setFamilies([u"MS Reference Sans Serif"])
+        font5.setBold(True)
+        font5.setItalic(False)
+        self.plainTextEdit.setFont(font5)
 
-        self.gridLayout_7.addWidget(self.plainTextEdit, 0, 0, 1, 1)
+        self.verticalLayout_3.addWidget(self.plainTextEdit, 0, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+
+        self.horizontalSpacer_2 = QSpacerItem(1000, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.verticalLayout_3.addItem(self.horizontalSpacer_2)
 
         self.main_view_stacked_widget.addWidget(self.general_information_page)
         self.create_import_page = QWidget()
         self.create_import_page.setObjectName(u"create_import_page")
-        self.create_import_page.setMaximumSize(QSize(1682, 759))
+        sizePolicy4.setHeightForWidth(self.create_import_page.sizePolicy().hasHeightForWidth())
+        self.create_import_page.setSizePolicy(sizePolicy4)
+        self.create_import_page.setMaximumSize(QSize(1400, 600))
         self.create_import_page.setStyleSheet(u"")
         self.gridLayoutWidget_3 = QWidget(self.create_import_page)
         self.gridLayoutWidget_3.setObjectName(u"gridLayoutWidget_3")
-        self.gridLayoutWidget_3.setGeometry(QRect(0, 0, 1671, 751))
-        self.gridLayout_9 = QGridLayout(self.gridLayoutWidget_3)
-        self.gridLayout_9.setObjectName(u"gridLayout_9")
-        self.gridLayout_9.setContentsMargins(0, 0, 0, 0)
-        self.gridLayout_14 = QGridLayout()
-        self.gridLayout_14.setObjectName(u"gridLayout_14")
-        self.gridLayout_14.setContentsMargins(0, -1, -1, -1)
-        self.tableView = Customtableview(self.gridLayoutWidget_3)
-        self.tableView.setObjectName(u"tableView")
-
-        self.gridLayout_14.addWidget(self.tableView, 1, 0, 1, 1)
-
-        self.label_2 = QLabel(self.gridLayoutWidget_3)
-        self.label_2.setObjectName(u"label_2")
-
-        self.gridLayout_14.addWidget(self.label_2, 0, 0, 1, 1)
-
-
-        self.gridLayout_9.addLayout(self.gridLayout_14, 0, 2, 1, 1)
-
+        self.gridLayoutWidget_3.setGeometry(QRect(0, 0, 1391, 591))
+        self.horizontalLayout_3 = QHBoxLayout(self.gridLayoutWidget_3)
+        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
+        self.horizontalLayout_3.setSizeConstraint(QLayout.SizeConstraint.SetMinimumSize)
+        self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_11 = QGridLayout()
         self.gridLayout_11.setObjectName(u"gridLayout_11")
+        self.gridLayout_11.setSizeConstraint(QLayout.SizeConstraint.SetDefaultConstraint)
+        self.gridLayout_11.setContentsMargins(-1, 0, -1, -1)
         self.lineInputPath = QLineEdit(self.gridLayoutWidget_3)
         self.lineInputPath.setObjectName(u"lineInputPath")
         self.lineInputPath.setFont(font3)
@@ -598,7 +680,7 @@ class Ui_MainWindow(object):
 
         self.label_11 = QLabel(self.gridLayoutWidget_3)
         self.label_11.setObjectName(u"label_11")
-        self.label_11.setFont(font4)
+        self.label_11.setFont(font5)
         self.label_11.setStyleSheet(u"")
 
         self.gridLayout_11.addWidget(self.label_11, 0, 0, 1, 1)
@@ -647,18 +729,15 @@ class Ui_MainWindow(object):
 
         self.label_10 = QLabel(self.gridLayoutWidget_3)
         self.label_10.setObjectName(u"label_10")
-        self.label_10.setFont(font4)
+        self.label_10.setFont(font5)
         self.label_10.setStyleSheet(u"")
 
         self.gridLayout_11.addWidget(self.label_10, 1, 0, 1, 1)
 
         self.checkBox_savepickle = QCheckBox(self.gridLayoutWidget_3)
         self.checkBox_savepickle.setObjectName(u"checkBox_savepickle")
-        sizePolicy6 = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        sizePolicy6.setHorizontalStretch(0)
-        sizePolicy6.setVerticalStretch(0)
-        sizePolicy6.setHeightForWidth(self.checkBox_savepickle.sizePolicy().hasHeightForWidth())
-        self.checkBox_savepickle.setSizePolicy(sizePolicy6)
+        sizePolicy4.setHeightForWidth(self.checkBox_savepickle.sizePolicy().hasHeightForWidth())
+        self.checkBox_savepickle.setSizePolicy(sizePolicy4)
 
         self.gridLayout_11.addWidget(self.checkBox_savepickle, 2, 0, 1, 1)
 
@@ -671,12 +750,44 @@ class Ui_MainWindow(object):
         self.gridLayout_11.addWidget(self.btnRestart, 4, 0, 1, 1)
 
 
-        self.gridLayout_9.addLayout(self.gridLayout_11, 0, 0, 1, 1)
+        self.horizontalLayout_3.addLayout(self.gridLayout_11)
+
+        self.gridLayout_14 = QGridLayout()
+        self.gridLayout_14.setSpacing(0)
+        self.gridLayout_14.setObjectName(u"gridLayout_14")
+        self.gridLayout_14.setSizeConstraint(QLayout.SizeConstraint.SetMinimumSize)
+        self.gridLayout_14.setContentsMargins(0, -1, -1, -1)
+        self.label_2 = QLabel(self.gridLayoutWidget_3)
+        self.label_2.setObjectName(u"label_2")
+        sizePolicy1.setHeightForWidth(self.label_2.sizePolicy().hasHeightForWidth())
+        self.label_2.setSizePolicy(sizePolicy1)
+        self.label_2.setMaximumSize(QSize(300, 100))
+        self.label_2.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
+        self.label_2.setWordWrap(False)
+
+        self.gridLayout_14.addWidget(self.label_2, 0, 0, 1, 1)
+
+        self.verticalSpacer_8 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.gridLayout_14.addItem(self.verticalSpacer_8, 4, 0, 1, 1)
+
+        self.tableView = Customtableview(self.gridLayoutWidget_3)
+        self.tableView.setObjectName(u"tableView")
+        sizePolicy.setHeightForWidth(self.tableView.sizePolicy().hasHeightForWidth())
+        self.tableView.setSizePolicy(sizePolicy)
+        self.tableView.setMaximumSize(QSize(500, 200))
+
+        self.gridLayout_14.addWidget(self.tableView, 3, 0, 1, 1)
+
+
+        self.horizontalLayout_3.addLayout(self.gridLayout_14)
 
         self.main_view_stacked_widget.addWidget(self.create_import_page)
         self.create_select_page = QWidget()
         self.create_select_page.setObjectName(u"create_select_page")
-        self.create_select_page.setMaximumSize(QSize(1682, 759))
+        sizePolicy4.setHeightForWidth(self.create_select_page.sizePolicy().hasHeightForWidth())
+        self.create_select_page.setSizePolicy(sizePolicy4)
+        self.create_select_page.setMaximumSize(QSize(1400, 600))
         self.create_select_page.setStyleSheet(u"")
         self.gridLayoutWidget_4 = QWidget(self.create_select_page)
         self.gridLayoutWidget_4.setObjectName(u"gridLayoutWidget_4")
@@ -686,24 +797,19 @@ class Ui_MainWindow(object):
         self.gridLayout_10.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_13 = QGridLayout()
         self.gridLayout_13.setObjectName(u"gridLayout_13")
-        self.label_5 = QLabel(self.gridLayoutWidget_4)
-        self.label_5.setObjectName(u"label_5")
-        self.label_5.setFont(font2)
-        self.label_5.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
-        self.label_5.setStyleSheet(u"")
+        self.verticalSpacer_10 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
-        self.gridLayout_13.addWidget(self.label_5, 1, 0, 1, 1)
+        self.gridLayout_13.addItem(self.verticalSpacer_10, 4, 0, 1, 1)
 
-        self.TripsTableView = AnimatedTableView(self.gridLayoutWidget_4)
-        self.TripsTableView.setObjectName(u"TripsTableView")
+        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.gridLayout_13.addWidget(self.TripsTableView, 2, 1, 1, 1)
+        self.gridLayout_13.addItem(self.horizontalSpacer_3, 1, 2, 1, 1)
 
-        self.AgenciesTableView = AnimatedTableView(self.gridLayoutWidget_4)
+        self.AgenciesTableView = QTableView(self.gridLayoutWidget_4)
         self.AgenciesTableView.setObjectName(u"AgenciesTableView")
-        self.AgenciesTableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.AgenciesTableView.setMaximumSize(QSize(16777215, 500))
 
-        self.gridLayout_13.addWidget(self.AgenciesTableView, 2, 0, 1, 1)
+        self.gridLayout_13.addWidget(self.AgenciesTableView, 3, 0, 1, 1)
 
         self.label_8 = QLabel(self.gridLayoutWidget_4)
         self.label_8.setObjectName(u"label_8")
@@ -712,85 +818,58 @@ class Ui_MainWindow(object):
 
         self.gridLayout_13.addWidget(self.label_8, 1, 1, 1, 1)
 
-        self.horizontalSpacer_4 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        self.TripsTableView = AnimatedTableView(self.gridLayoutWidget_4)
+        self.TripsTableView.setObjectName(u"TripsTableView")
+        self.TripsTableView.setMaximumSize(QSize(16777215, 500))
 
-        self.gridLayout_13.addItem(self.horizontalSpacer_4, 2, 2, 1, 1)
+        self.gridLayout_13.addWidget(self.TripsTableView, 3, 1, 1, 1)
+
+        self.label_5 = QLabel(self.gridLayoutWidget_4)
+        self.label_5.setObjectName(u"label_5")
+        self.label_5.setFont(font2)
+        self.label_5.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
+        self.label_5.setStyleSheet(u"")
+
+        self.gridLayout_13.addWidget(self.label_5, 1, 0, 1, 1)
 
 
         self.gridLayout_10.addLayout(self.gridLayout_13, 0, 0, 1, 1)
 
-        self.gridLayout_12 = QGridLayout()
-        self.gridLayout_12.setObjectName(u"gridLayout_12")
-        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.gridLayout_12.addItem(self.horizontalSpacer_3, 2, 0, 1, 1)
-
-
-        self.gridLayout_10.addLayout(self.gridLayout_12, 2, 0, 1, 1)
-
         self.main_view_stacked_widget.addWidget(self.create_select_page)
         self.create_create_page = QWidget()
         self.create_create_page.setObjectName(u"create_create_page")
-        self.create_create_page.setMaximumSize(QSize(1682, 759))
-        self.gridLayoutWidget_5 = QWidget(self.create_create_page)
-        self.gridLayoutWidget_5.setObjectName(u"gridLayoutWidget_5")
-        self.gridLayoutWidget_5.setGeometry(QRect(-1, -1, 1681, 711))
-        self.gridLayout_15 = QGridLayout(self.gridLayoutWidget_5)
-        self.gridLayout_15.setObjectName(u"gridLayout_15")
-        self.gridLayout_15.setContentsMargins(0, 0, 0, 0)
-        self.gridLayout_22 = QGridLayout()
-        self.gridLayout_22.setObjectName(u"gridLayout_22")
-        self.verticalSpacer_8 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-
-        self.gridLayout_22.addItem(self.verticalSpacer_8, 0, 0, 1, 1)
-
-
-        self.gridLayout_15.addLayout(self.gridLayout_22, 0, 1, 1, 1)
-
-        self.gridLayout_17 = QGridLayout()
-        self.gridLayout_17.setObjectName(u"gridLayout_17")
+        sizePolicy4.setHeightForWidth(self.create_create_page.sizePolicy().hasHeightForWidth())
+        self.create_create_page.setSizePolicy(sizePolicy4)
+        self.create_create_page.setMaximumSize(QSize(1400, 600))
+        self.create_create_page.setSizeIncrement(QSize(0, 0))
+        self.layoutWidget = QWidget(self.create_create_page)
+        self.layoutWidget.setObjectName(u"layoutWidget")
+        self.layoutWidget.setGeometry(QRect(0, 0, 1391, 571))
+        self.horizontalLayout_2 = QHBoxLayout(self.layoutWidget)
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_23 = QGridLayout()
         self.gridLayout_23.setObjectName(u"gridLayout_23")
-        self.btnStop = QPushButton(self.gridLayoutWidget_5)
-        self.btnStop.setObjectName(u"btnStop")
-        self.btnStop.setEnabled(False)
-        self.btnStop.setFont(font3)
-        self.btnStop.setStyleSheet(u"")
-
-        self.gridLayout_23.addWidget(self.btnStop, 14, 0, 1, 1)
-
-        self.label_13 = QLabel(self.gridLayoutWidget_5)
+        self.gridLayout_23.setSizeConstraint(QLayout.SizeConstraint.SetMaximumSize)
+        self.label_13 = QLabel(self.layoutWidget)
         self.label_13.setObjectName(u"label_13")
-        font5 = QFont()
-        font5.setFamilies([u"72"])
-        font5.setBold(True)
-        font5.setItalic(False)
-        self.label_13.setFont(font5)
+        font6 = QFont()
+        font6.setFamilies([u"72"])
+        font6.setBold(True)
+        font6.setItalic(False)
+        self.label_13.setFont(font6)
         self.label_13.setStyleSheet(u"")
 
         self.gridLayout_23.addWidget(self.label_13, 4, 0, 1, 1)
 
-        self.dateEdit = QDateEdit(self.gridLayoutWidget_5)
-        self.dateEdit.setObjectName(u"dateEdit")
+        self.label_15 = QLabel(self.layoutWidget)
+        self.label_15.setObjectName(u"label_15")
+        self.label_15.setFont(font6)
+        self.label_15.setStyleSheet(u"")
 
-        self.gridLayout_23.addWidget(self.dateEdit, 4, 1, 1, 1)
+        self.gridLayout_23.addWidget(self.label_15, 1, 1, 1, 1)
 
-        self.btnStart = QPushButton(self.gridLayoutWidget_5)
-        self.btnStart.setObjectName(u"btnStart")
-        self.btnStart.setEnabled(False)
-        self.btnStart.setFont(font3)
-        self.btnStart.setStyleSheet(u"")
-
-        self.gridLayout_23.addWidget(self.btnStart, 13, 0, 1, 1)
-
-        self.label_6 = QLabel(self.gridLayoutWidget_5)
-        self.label_6.setObjectName(u"label_6")
-        self.label_6.setFont(font5)
-        self.label_6.setStyleSheet(u"")
-
-        self.gridLayout_23.addWidget(self.label_6, 9, 1, 1, 1)
-
-        self.comboBox_direction = QComboBox(self.gridLayoutWidget_5)
+        self.comboBox_direction = QComboBox(self.layoutWidget)
         self.comboBox_direction.addItem("")
         self.comboBox_direction.addItem("")
         self.comboBox_direction.setObjectName(u"comboBox_direction")
@@ -798,11 +877,24 @@ class Ui_MainWindow(object):
         self.comboBox_direction.setFont(font3)
         self.comboBox_direction.setStyleSheet(u"")
 
-        self.gridLayout_23.addWidget(self.comboBox_direction, 1, 0, 1, 1)
+        self.gridLayout_23.addWidget(self.comboBox_direction, 2, 0, 1, 1)
 
-        self.listDatesWeekday = AnimatedTableView(self.gridLayoutWidget_5)
+        self.label_6 = QLabel(self.layoutWidget)
+        self.label_6.setObjectName(u"label_6")
+        self.label_6.setFont(font6)
+        self.label_6.setStyleSheet(u"")
+
+        self.gridLayout_23.addWidget(self.label_6, 9, 1, 1, 1)
+
+        self.listDatesWeekday = QTableView(self.layoutWidget)
         self.listDatesWeekday.setObjectName(u"listDatesWeekday")
         self.listDatesWeekday.setEnabled(False)
+        sizePolicy6 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        sizePolicy6.setHorizontalStretch(2)
+        sizePolicy6.setVerticalStretch(0)
+        sizePolicy6.setHeightForWidth(self.listDatesWeekday.sizePolicy().hasHeightForWidth())
+        self.listDatesWeekday.setSizePolicy(sizePolicy6)
+        self.listDatesWeekday.setMaximumSize(QSize(400, 1000))
         self.listDatesWeekday.setFont(font3)
         self.listDatesWeekday.setStyleSheet(u"")
         self.listDatesWeekday.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -810,44 +902,17 @@ class Ui_MainWindow(object):
         self.listDatesWeekday.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
         self.listDatesWeekday.setHorizontalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
 
-        self.gridLayout_23.addWidget(self.listDatesWeekday, 12, 1, 1, 1)
+        self.gridLayout_23.addWidget(self.listDatesWeekday, 11, 1, 1, 1)
 
-        self.line_Selection_date_range = QLineEdit(self.gridLayoutWidget_5)
-        self.line_Selection_date_range.setObjectName(u"line_Selection_date_range")
-        self.line_Selection_date_range.setEnabled(False)
-        self.line_Selection_date_range.setStyleSheet(u"")
+        self.btnStop = QPushButton(self.layoutWidget)
+        self.btnStop.setObjectName(u"btnStop")
+        self.btnStop.setEnabled(False)
+        self.btnStop.setFont(font3)
+        self.btnStop.setStyleSheet(u"")
 
-        self.gridLayout_23.addWidget(self.line_Selection_date_range, 6, 1, 1, 1)
+        self.gridLayout_23.addWidget(self.btnStop, 15, 1, 1, 1)
 
-        self.UseIndividualSorting = QCheckBox(self.gridLayoutWidget_5)
-        self.UseIndividualSorting.setObjectName(u"UseIndividualSorting")
-
-        self.gridLayout_23.addWidget(self.UseIndividualSorting, 3, 1, 1, 1)
-
-        self.verticalSpacer_7 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-
-        self.gridLayout_23.addItem(self.verticalSpacer_7, 15, 1, 1, 1)
-
-        self.comboBox = QComboBox(self.gridLayoutWidget_5)
-        self.comboBox.addItem("")
-        self.comboBox.addItem("")
-        self.comboBox.addItem("")
-        self.comboBox.addItem("")
-        self.comboBox.setObjectName(u"comboBox")
-        self.comboBox.setEnabled(False)
-        self.comboBox.setFont(font3)
-        self.comboBox.setStyleSheet(u"")
-
-        self.gridLayout_23.addWidget(self.comboBox, 1, 1, 1, 1)
-
-        self.label_17 = QLabel(self.gridLayoutWidget_5)
-        self.label_17.setObjectName(u"label_17")
-        self.label_17.setFont(font5)
-        self.label_17.setStyleSheet(u"")
-
-        self.gridLayout_23.addWidget(self.label_17, 6, 0, 1, 1)
-
-        self.comboBox_time_format = QComboBox(self.gridLayoutWidget_5)
+        self.comboBox_time_format = QComboBox(self.layoutWidget)
         self.comboBox_time_format.addItem("")
         self.comboBox_time_format.addItem("")
         self.comboBox_time_format.setObjectName(u"comboBox_time_format")
@@ -857,69 +922,119 @@ class Ui_MainWindow(object):
 
         self.gridLayout_23.addWidget(self.comboBox_time_format, 2, 1, 1, 1)
 
-        self.label_15 = QLabel(self.gridLayoutWidget_5)
-        self.label_15.setObjectName(u"label_15")
-        self.label_15.setFont(font5)
-        self.label_15.setStyleSheet(u"")
+        self.btnStart = QPushButton(self.layoutWidget)
+        self.btnStart.setObjectName(u"btnStart")
+        self.btnStart.setEnabled(False)
+        self.btnStart.setFont(font3)
+        self.btnStart.setStyleSheet(u"")
 
-        self.gridLayout_23.addWidget(self.label_15, 2, 0, 1, 1)
+        self.gridLayout_23.addWidget(self.btnStart, 15, 0, 1, 1)
 
+        self.label_17 = QLabel(self.layoutWidget)
+        self.label_17.setObjectName(u"label_17")
+        self.label_17.setFont(font6)
+        self.label_17.setStyleSheet(u"")
 
-        self.gridLayout_17.addLayout(self.gridLayout_23, 5, 0, 1, 1)
+        self.gridLayout_23.addWidget(self.label_17, 9, 0, 1, 1)
 
-        self.gridLayout_24 = QGridLayout()
-        self.gridLayout_24.setObjectName(u"gridLayout_24")
-        self.btnContinueCreate = QPushButton(self.gridLayoutWidget_5)
-        self.btnContinueCreate.setObjectName(u"btnContinueCreate")
-        self.btnContinueCreate.setEnabled(False)
+        self.comboBox = QComboBox(self.layoutWidget)
+        self.comboBox.addItem("")
+        self.comboBox.addItem("")
+        self.comboBox.addItem("")
+        self.comboBox.addItem("")
+        self.comboBox.setObjectName(u"comboBox")
+        self.comboBox.setEnabled(False)
+        self.comboBox.setFont(font3)
+        self.comboBox.setStyleSheet(u"")
 
-        self.gridLayout_24.addWidget(self.btnContinueCreate, 3, 0, 1, 1)
+        self.gridLayout_23.addWidget(self.comboBox, 3, 0, 1, 1)
 
-        self.verticalSpacer_5 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.dateEdit = QDateEdit(self.layoutWidget)
+        self.dateEdit.setObjectName(u"dateEdit")
 
-        self.gridLayout_24.addItem(self.verticalSpacer_5, 4, 0, 1, 1)
+        self.gridLayout_23.addWidget(self.dateEdit, 5, 0, 1, 1)
 
-        self.tableView_sorting_stops = Customtableview(self.gridLayoutWidget_5)
-        self.tableView_sorting_stops.setObjectName(u"tableView_sorting_stops")
-        sizePolicy7 = QSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
-        sizePolicy7.setHorizontalStretch(0)
-        sizePolicy7.setVerticalStretch(0)
-        sizePolicy7.setHeightForWidth(self.tableView_sorting_stops.sizePolicy().hasHeightForWidth())
-        self.tableView_sorting_stops.setSizePolicy(sizePolicy7)
+        self.UseIndividualSorting = QCheckBox(self.layoutWidget)
+        self.UseIndividualSorting.setObjectName(u"UseIndividualSorting")
+        sizePolicy7 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+        sizePolicy7.setHorizontalStretch(2)
+        sizePolicy7.setVerticalStretch(1)
+        sizePolicy7.setHeightForWidth(self.UseIndividualSorting.sizePolicy().hasHeightForWidth())
+        self.UseIndividualSorting.setSizePolicy(sizePolicy7)
+        self.UseIndividualSorting.setMaximumSize(QSize(200, 30))
 
-        self.gridLayout_24.addWidget(self.tableView_sorting_stops, 2, 0, 1, 1)
+        self.gridLayout_23.addWidget(self.UseIndividualSorting, 13, 0, 1, 1)
 
-
-        self.gridLayout_17.addLayout(self.gridLayout_24, 5, 1, 1, 1)
-
-        self.label_12 = QLabel(self.gridLayoutWidget_5)
+        self.label_12 = QLabel(self.layoutWidget)
         self.label_12.setObjectName(u"label_12")
+        sizePolicy3.setHeightForWidth(self.label_12.sizePolicy().hasHeightForWidth())
+        self.label_12.setSizePolicy(sizePolicy3)
         self.label_12.setFont(font3)
         self.label_12.setStyleSheet(u"")
 
-        self.gridLayout_17.addWidget(self.label_12, 4, 0, 1, 1)
+        self.gridLayout_23.addWidget(self.label_12, 0, 0, 1, 1)
+
+        self.line_Selection_date_range = QLineEdit(self.layoutWidget)
+        self.line_Selection_date_range.setObjectName(u"line_Selection_date_range")
+        self.line_Selection_date_range.setEnabled(False)
+        self.line_Selection_date_range.setStyleSheet(u"")
+
+        self.gridLayout_23.addWidget(self.line_Selection_date_range, 10, 0, 1, 1)
+
+        self.verticalSpacer_7 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.gridLayout_23.addItem(self.verticalSpacer_7, 11, 0, 1, 1)
 
 
-        self.gridLayout_15.addLayout(self.gridLayout_17, 0, 0, 1, 1)
+        self.horizontalLayout_2.addLayout(self.gridLayout_23)
+
+        self.verticalLayout = QVBoxLayout()
+        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.verticalLayout.setSizeConstraint(QLayout.SizeConstraint.SetDefaultConstraint)
+        self.tableView_sorting_stops = Customtableview(self.layoutWidget)
+        self.tableView_sorting_stops.setObjectName(u"tableView_sorting_stops")
+        sizePolicy.setHeightForWidth(self.tableView_sorting_stops.sizePolicy().hasHeightForWidth())
+        self.tableView_sorting_stops.setSizePolicy(sizePolicy)
+        self.tableView_sorting_stops.setMaximumSize(QSize(800, 300))
+
+        self.verticalLayout.addWidget(self.tableView_sorting_stops)
+
+        self.btnContinueCreate = QPushButton(self.layoutWidget)
+        self.btnContinueCreate.setObjectName(u"btnContinueCreate")
+        self.btnContinueCreate.setEnabled(False)
+        sizePolicy8 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        sizePolicy8.setHorizontalStretch(0)
+        sizePolicy8.setVerticalStretch(0)
+        sizePolicy8.setHeightForWidth(self.btnContinueCreate.sizePolicy().hasHeightForWidth())
+        self.btnContinueCreate.setSizePolicy(sizePolicy8)
+        self.btnContinueCreate.setMaximumSize(QSize(200, 200))
+
+        self.verticalLayout.addWidget(self.btnContinueCreate)
+
+        self.verticalSpacer_5 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.verticalLayout.addItem(self.verticalSpacer_5)
+
+
+        self.horizontalLayout_2.addLayout(self.verticalLayout)
 
         self.main_view_stacked_widget.addWidget(self.create_create_page)
         self.download_page = QWidget()
         self.download_page.setObjectName(u"download_page")
-        self.download_page.setMaximumSize(QSize(1682, 759))
+        sizePolicy4.setHeightForWidth(self.download_page.sizePolicy().hasHeightForWidth())
+        self.download_page.setSizePolicy(sizePolicy4)
+        self.download_page.setMaximumSize(QSize(1400, 600))
         self.gridLayoutWidget_2 = QWidget(self.download_page)
         self.gridLayoutWidget_2.setObjectName(u"gridLayoutWidget_2")
-        self.gridLayoutWidget_2.setGeometry(QRect(-1, -1, 1681, 721))
+        self.gridLayoutWidget_2.setGeometry(QRect(-1, -1, 1681, 591))
         self.gridLayout_8 = QGridLayout(self.gridLayoutWidget_2)
         self.gridLayout_8.setObjectName(u"gridLayout_8")
         self.gridLayout_8.setContentsMargins(0, 0, 0, 0)
-        self.verticalSpacer_9 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-
-        self.gridLayout_8.addItem(self.verticalSpacer_9, 0, 2, 1, 1)
-
         self.gridLayout_16 = QGridLayout()
         self.gridLayout_16.setObjectName(u"gridLayout_16")
         self.tableView_2 = AnimatedTableView(self.gridLayoutWidget_2)
         self.tableView_2.setObjectName(u"tableView_2")
+        self.tableView_2.setMaximumSize(QSize(16777215, 400))
 
         self.gridLayout_16.addWidget(self.tableView_2, 0, 0, 1, 1)
 
@@ -936,24 +1051,6 @@ class Ui_MainWindow(object):
 
         self.gridLayout_20.addItem(self.horizontalSpacer_6, 0, 2, 1, 1)
 
-        self.lineInputPath_2 = QLineEdit(self.gridLayoutWidget_2)
-        self.lineInputPath_2.setObjectName(u"lineInputPath_2")
-        self.lineInputPath_2.setFont(font3)
-        self.lineInputPath_2.setStyleSheet(u"")
-
-        self.gridLayout_20.addWidget(self.lineInputPath_2, 1, 0, 1, 1)
-
-        self.verticalSpacer_6 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-
-        self.gridLayout_20.addItem(self.verticalSpacer_6, 2, 0, 1, 1)
-
-        self.label_14 = QLabel(self.gridLayoutWidget_2)
-        self.label_14.setObjectName(u"label_14")
-        self.label_14.setFont(font4)
-        self.label_14.setStyleSheet(u"")
-
-        self.gridLayout_20.addWidget(self.label_14, 0, 0, 1, 1)
-
         self.comboBox_display = QComboBox(self.gridLayoutWidget_2)
         self.comboBox_display.addItem("")
         self.comboBox_display.addItem("")
@@ -962,7 +1059,7 @@ class Ui_MainWindow(object):
         self.comboBox_display.setFont(font3)
         self.comboBox_display.setStyleSheet(u"")
 
-        self.gridLayout_20.addWidget(self.comboBox_display, 6, 0, 1, 1)
+        self.gridLayout_20.addWidget(self.comboBox_display, 5, 0, 1, 1)
 
         self.btnLoadOnlineData = FadingButton(self.gridLayoutWidget_2)
         self.btnLoadOnlineData.setObjectName(u"btnLoadOnlineData")
@@ -974,7 +1071,21 @@ class Ui_MainWindow(object):
         self.btnLoadOnlineData.setIcon(icon7)
         self.btnLoadOnlineData.setIconSize(QSize(24, 24))
 
-        self.gridLayout_20.addWidget(self.btnLoadOnlineData, 6, 2, 1, 1)
+        self.gridLayout_20.addWidget(self.btnLoadOnlineData, 5, 2, 1, 1)
+
+        self.label_14 = QLabel(self.gridLayoutWidget_2)
+        self.label_14.setObjectName(u"label_14")
+        self.label_14.setFont(font5)
+        self.label_14.setStyleSheet(u"")
+
+        self.gridLayout_20.addWidget(self.label_14, 0, 0, 1, 1)
+
+        self.lineInputPath_2 = QLineEdit(self.gridLayoutWidget_2)
+        self.lineInputPath_2.setObjectName(u"lineInputPath_2")
+        self.lineInputPath_2.setFont(font3)
+        self.lineInputPath_2.setStyleSheet(u"")
+
+        self.gridLayout_20.addWidget(self.lineInputPath_2, 2, 0, 1, 1)
 
 
         self.gridLayout_8.addLayout(self.gridLayout_20, 0, 0, 1, 1)
@@ -991,123 +1102,10 @@ class Ui_MainWindow(object):
 
         self.gridLayout_4.addWidget(self.main_view_stacked_widget, 1, 0, 1, 1)
 
-        self.bottom_info_widget = QWidget(self.main_widget)
-        self.bottom_info_widget.setObjectName(u"bottom_info_widget")
-        self.bottom_info_widget.setStyleSheet(u"")
-        self.info_widget = QGridLayout(self.bottom_info_widget)
-        self.info_widget.setObjectName(u"info_widget")
-        self.info_widget.setSizeConstraint(QLayout.SizeConstraint.SetMinimumSize)
-        self.progress_box = QWidget(self.bottom_info_widget)
-        self.progress_box.setObjectName(u"progress_box")
-        self.progress_box.setStyleSheet(u"border-style: solid;\n"
-"border-width: 1px;\n"
-"border-radius: 1px;")
-        self.progress_widget = QGridLayout(self.progress_box)
-        self.progress_widget.setObjectName(u"progress_widget")
-        self.progress_widget.setSizeConstraint(QLayout.SizeConstraint.SetFixedSize)
-        self.label_progress = QLabel(self.progress_box)
-        self.label_progress.setObjectName(u"label_progress")
-        self.label_progress.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        self.progress_widget.addWidget(self.label_progress, 0, 1, 1, 1)
-
-        self.label_3 = QLabel(self.progress_box)
-        self.label_3.setObjectName(u"label_3")
-
-        self.progress_widget.addWidget(self.label_3, 2, 0, 1, 1)
-
-        self.label = QLabel(self.progress_box)
-        self.label.setObjectName(u"label")
-
-        self.progress_widget.addWidget(self.label, 1, 0, 1, 1)
-
-        self.progressBar = RoundProgress(self.progress_box)
-        self.progressBar.setObjectName(u"progressBar")
-
-        self.progress_widget.addWidget(self.progressBar, 1, 1, 1, 1)
-
-
-        self.info_widget.addWidget(self.progress_box, 2, 0, 1, 1)
-
-        self.selection_box = QWidget(self.bottom_info_widget)
-        self.selection_box.setObjectName(u"selection_box")
-        self.selection_box.setStyleSheet(u"border-style: solid;\n"
-"border-width: 1px;\n"
-"border-radius: 1px;")
-        self.selection_grid = QGridLayout(self.selection_box)
-        self.selection_grid.setObjectName(u"selection_grid")
-        self.verticalLayout_2 = QVBoxLayout()
-        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.line_Selection_format = QLineEdit(self.selection_box)
-        self.line_Selection_format.setObjectName(u"line_Selection_format")
-        self.line_Selection_format.setEnabled(False)
-        self.line_Selection_format.setStyleSheet(u"")
-
-        self.verticalLayout_2.addWidget(self.line_Selection_format)
-
-        self.line_Selection_agency = QLineEdit(self.selection_box)
-        self.line_Selection_agency.setObjectName(u"line_Selection_agency")
-        self.line_Selection_agency.setEnabled(False)
-        self.line_Selection_agency.setStyleSheet(u"")
-
-        self.verticalLayout_2.addWidget(self.line_Selection_agency)
-
-        self.line_Selection_trips = QLineEdit(self.selection_box)
-        self.line_Selection_trips.setObjectName(u"line_Selection_trips")
-        self.line_Selection_trips.setEnabled(False)
-        self.line_Selection_trips.setStyleSheet(u"")
-
-        self.verticalLayout_2.addWidget(self.line_Selection_trips)
-
-
-        self.selection_grid.addLayout(self.verticalLayout_2, 1, 0, 1, 1)
-
-        self.label_16 = QLabel(self.selection_box)
-        self.label_16.setObjectName(u"label_16")
-        font6 = QFont()
-        font6.setFamilies([u"72"])
-        font6.setPointSize(8)
-        font6.setBold(True)
-        font6.setItalic(False)
-        self.label_16.setFont(font6)
-        self.label_16.setStyleSheet(u"")
-
-        self.selection_grid.addWidget(self.label_16, 0, 0, 1, 1)
-
-
-        self.info_widget.addWidget(self.selection_box, 2, 5, 1, 1)
-
-        self.line_2 = QFrame(self.bottom_info_widget)
-        self.line_2.setObjectName(u"line_2")
-        self.line_2.setFrameShape(QFrame.Shape.VLine)
-        self.line_2.setFrameShadow(QFrame.Shadow.Sunken)
-
-        self.info_widget.addWidget(self.line_2, 2, 4, 1, 1)
-
-        self.line = QFrame(self.bottom_info_widget)
-        self.line.setObjectName(u"line")
-        self.line.setFrameShape(QFrame.Shape.VLine)
-        self.line.setFrameShadow(QFrame.Shadow.Sunken)
-
-        self.info_widget.addWidget(self.line, 2, 1, 1, 1)
-
-        self.progess_log = QGridLayout()
-        self.progess_log.setObjectName(u"progess_log")
-        self.progress_history_list_view = ProgressHistoryListView(self.bottom_info_widget)
-        self.progress_history_list_view.setObjectName(u"progress_history_list_view")
-        #sizePolicy7.setHeightForWidth(self.progress_history_list_view.sizePolicy().hasHeightForWidth())
-        self.progess_log.addWidget(self.progress_history_list_view, 0, 0, 1, 1)
-
-
-        self.info_widget.addLayout(self.progess_log, 2, 2, 1, 1)
-
-
-        self.gridLayout_4.addWidget(self.bottom_info_widget, 3, 0, 1, 1)
-
         self.splitter.addWidget(self.main_widget)
         self.main_view_stacked_widget.raise_()
         self.bottom_info_widget.raise_()
-        self.widget.raise_()
+        self.top_widget.raise_()
 
         self.gridLayout_3.addWidget(self.splitter, 0, 0, 1, 1)
 
@@ -1121,7 +1119,7 @@ class Ui_MainWindow(object):
         self.btnExit.clicked.connect(MainWindow.close)
         self.pushButton.toggled.connect(self.menu_widget.setHidden)
 
-        self.toolBox.setCurrentIndex(1)
+        self.toolBox.setCurrentIndex(0)
         self.main_view_stacked_widget.setCurrentIndex(3)
 
 
@@ -1139,6 +1137,7 @@ class Ui_MainWindow(object):
         self.pushButton_6.setText(QCoreApplication.translate("MainWindow", u"Download GTFS Data", None))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page_3), QCoreApplication.translate("MainWindow", u"Download GTFS", None))
         self.btnExit.setText(QCoreApplication.translate("MainWindow", u"Exit", None))
+        self.label_16.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Selection</span></p></body></html>", None))
         self.pushButton.setText("")
         self.plainTextEdit.setPlainText(QCoreApplication.translate("MainWindow", u"GTFStoFahrplan is a Python script designed to convert GTFS (General Transit Feed Specification) data into Fahrplan-compatible format. Fahrplan is a widely-used transit schedule format primarily used in the German-speaking regions.\n"
 "\n"
@@ -1158,7 +1157,6 @@ class Ui_MainWindow(object):
 "- Icons by Petras Nargela\n"
 "\n"
 "- PySide6 is used.", None))
-        self.label_2.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
         self.lineInputPath.setText("")
         self.lineInputPath.setPlaceholderText(QCoreApplication.translate("MainWindow", u"C:/Tmp/GTFS.zip", None))
         self.btnGetPickleFile.setText("")
@@ -1179,39 +1177,36 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(whatsthis)
         self.checkBox_savepickle.setText(QCoreApplication.translate("MainWindow", u"save data to pickle format", None))
         self.btnRestart.setText(QCoreApplication.translate("MainWindow", u"Restart Import", None))
-        self.label_5.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Agencies</span></p></body></html>", None))
+        self.label_2.setText(QCoreApplication.translate("MainWindow", u"Information Import:", None))
         self.label_8.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Trips</span></p></body></html>", None))
-        self.btnStop.setText(QCoreApplication.translate("MainWindow", u"Stop", None))
+        self.label_5.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Agencies</span></p></body></html>", None))
         self.label_13.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Date</span></p></body></html>", None))
-        self.btnStart.setText(QCoreApplication.translate("MainWindow", u"Create Table", None))
-        self.label_6.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Weekday</span></p></body></html>", None))
+        self.label_15.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Time Format</span></p></body></html>", None))
         self.comboBox_direction.setItemText(0, QCoreApplication.translate("MainWindow", u"direction 1", None))
         self.comboBox_direction.setItemText(1, QCoreApplication.translate("MainWindow", u"direction 2", None))
 
-        self.UseIndividualSorting.setText(QCoreApplication.translate("MainWindow", u"Use individual sorting", None))
+        self.label_6.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Weekday</span></p></body></html>", None))
+        self.btnStop.setText(QCoreApplication.translate("MainWindow", u"Stop", None))
+        self.comboBox_time_format.setItemText(0, QCoreApplication.translate("MainWindow", u"1", None))
+        self.comboBox_time_format.setItemText(1, QCoreApplication.translate("MainWindow", u"2", None))
+
+        self.btnStart.setText(QCoreApplication.translate("MainWindow", u"Create Table", None))
+        self.label_17.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Detected Date Range</span></p></body></html>", None))
         self.comboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"Date", None))
         self.comboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"Weekday", None))
         self.comboBox.setItemText(2, QCoreApplication.translate("MainWindow", u"Umlaufplan Date", None))
         self.comboBox.setItemText(3, QCoreApplication.translate("MainWindow", u"Umlaufplan Weekday", None))
 
-        self.label_17.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Detected Date Range</span></p></body></html>", None))
-        self.comboBox_time_format.setItemText(0, QCoreApplication.translate("MainWindow", u"1", None))
-        self.comboBox_time_format.setItemText(1, QCoreApplication.translate("MainWindow", u"2", None))
-
-        self.label_15.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Time Format</span></p></body></html>", None))
-        self.btnContinueCreate.setText(QCoreApplication.translate("MainWindow", u"Continue Creating Table", None))
+        self.UseIndividualSorting.setText(QCoreApplication.translate("MainWindow", u"Use individual sorting", None))
         self.label_12.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Mode Settings</span></p></body></html>", None))
-        self.lineInputPath_2.setText("")
-        self.lineInputPath_2.setPlaceholderText(QCoreApplication.translate("MainWindow", u"C:/Tmp/", None))
-        self.label_14.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Save Location</span></p></body></html>", None))
+        self.btnContinueCreate.setText(QCoreApplication.translate("MainWindow", u"Continue Creating Table", None))
         self.comboBox_display.setItemText(0, QCoreApplication.translate("MainWindow", u"opendata.ruhr", None))
         self.comboBox_display.setItemText(1, QCoreApplication.translate("MainWindow", u"opendata.vbb", None))
 
         self.btnLoadOnlineData.setText(QCoreApplication.translate("MainWindow", u"Load Online Data", None))
+        self.label_14.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Save Location</span></p></body></html>", None))
+        self.lineInputPath_2.setText("")
+        self.lineInputPath_2.setPlaceholderText(QCoreApplication.translate("MainWindow", u"C:/Tmp/", None))
         self.btnDownloadSelected.setText(QCoreApplication.translate("MainWindow", u"Download Selected Data", None))
-        self.label_progress.setText(QCoreApplication.translate("MainWindow", u"Progress", None))
-        self.label_3.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
-        self.label.setText(QCoreApplication.translate("MainWindow", u"current Progress: ", None))
-        self.label_16.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Selection</span></p></body></html>", None))
     # retranslateUi
 
