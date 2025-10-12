@@ -29,9 +29,9 @@ class SequentialTableCreationStrategy(QObject, TableCreationStrategy, metaclass=
         self.plans.create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
         self.plans.gtfs_data_frame_dto = copy.deepcopy(self.gtfs_data_frame_dto)
         strategy = None
-        if self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date and self.create_settings_for_table_dto.individual_sorting:
+        if self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date and self.create_settings_for_table_dto.use_individual_sorting:
             strategy = IndividualDateTableCreationStrategy(self.app, self.plans)
-        elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.weekday and self.create_settings_for_table_dto.individual_sorting:
+        elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.weekday and self.create_settings_for_table_dto.use_individual_sorting:
             strategy = IndividualWeekdayTableCreationStrategy(self.app, self.plans)
         elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.date:
             strategy = DateTableCreationStrategy(self.app, self.plans)

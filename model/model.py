@@ -101,7 +101,7 @@ class Model(QObject):
         self.planer.import_gtfs_data()
 
     def planer_start_create_table(self):
-        if self.planer.create_settings_for_table_dto.individual_sorting:
+        if self.planer.create_settings_for_table_dto.use_individual_sorting:
             if(self.planer.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_date
                     or self.planer.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_weekday):
                 self.planer.create_table_individual_sorting()
@@ -121,7 +121,7 @@ class Model(QObject):
         self.planer.create_table_continue()
 
     def  planer_start_create_umlaufplan_continue(self):
-        if self.planer.create_settings_for_table_dto.individual_sorting:
+        if self.planer.create_settings_for_table_dto.use_individual_sorting:
             self.planer.create_table_individual_sorting()
         else:
             self.planer.create_table()

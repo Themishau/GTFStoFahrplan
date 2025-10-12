@@ -59,14 +59,14 @@ class Ui_MainWindow(object):
 "\n"
 "QLineEdit {\n"
 "	background-color: #F0FCF7;\n"
-"    border-radius: 10px;\n"
-"	padding: 5px 5px 5px 5px;\n"
+"    border-radius: 1px;\n"
+"	padding: 1px 1px 1px 1px;\n"
 "	text-align: center;\n"
 "    color:#41312b;\n"
 "}\n"
 "\n"
 "QLabel {\n"
-"   border-radius: 10px;\n"
+"   border-radius: 1px;\n"
 "	padding: 5px 5px 5px 5px;\n"
 "	text-align: center;\n"
 "    color:#41312b;\n"
@@ -89,7 +89,7 @@ class Ui_MainWindow(object):
 "\n"
 "QTableView {\n"
 "	background-color: #F0FCF7;\n"
-"    border-radius: 10px;\n"
+"    border-radius: 1px;\n"
 "	padding: 5px 5px 5px 5px;\n"
 "	text-align: center;\n"
 "    color:#41312b;\n"
@@ -98,8 +98,8 @@ class Ui_MainWindow(object):
 "QLabel {\n"
 "   border-radius: 10px;\n"
 "	padding: 5px 5px 5px 5px;\n"
-"	text-align: cent"
-                        "er;\n"
+"	text-align: center;"
+                        "\n"
 "    font-weight: bold;\n"
 "    color:#41312b;\n"
 "}\n"
@@ -121,6 +121,9 @@ class Ui_MainWindow(object):
 "    subcontrol-position: right bottom;\n"
 "    width: 40px;\n"
 "    border-left: 1px solid #ccc;\n"
+"}\n"
+"ProgressHistoryListView {\n"
+"   color:#fde1d6;\n"
 "}\n"
 "")
         MainWindow.setTabShape(QTabWidget.TabShape.Triangular)
@@ -351,7 +354,7 @@ class Ui_MainWindow(object):
 
         self._2.addWidget(self.toolBox, 0, Qt.AlignmentFlag.AlignTop)
 
-        self.verticalSpacer_4 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+        self.verticalSpacer_4 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self._2.addItem(self.verticalSpacer_4)
 
@@ -392,7 +395,10 @@ class Ui_MainWindow(object):
 "  border-top: 1px solid #1e1e1e;\n"
 "  border-left: 1px solid #1e1e1e;\n"
 "}\n"
-"\n"
+"#ProgressHistoryListView{\n"
+"  border-top: 1px solid #1e1e1e;\n"
+"  border-left: 1px solid #1e1e1e;\n"
+"}\n"
 "")
         self.gridLayout_4 = QGridLayout(self.main_widget)
         self.gridLayout_4.setObjectName(u"gridLayout_4")
@@ -415,9 +421,6 @@ class Ui_MainWindow(object):
         sizePolicy4.setHorizontalStretch(0)
         sizePolicy4.setVerticalStretch(0)
         sizePolicy4.setHeightForWidth(self.progress_history_list_view.sizePolicy().hasHeightForWidth())
-        self.progress_history_list_view.setSizePolicy(sizePolicy4)
-        self.progress_history_list_view.setMinimumSize(QSize(500, 0))
-        self.progress_history_list_view.setMaximumSize(QSize(1000, 100))
         self.progress_history_list_view.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
 
         self.progess_log.addWidget(self.progress_history_list_view, 0, 0, 1, 1)
@@ -844,73 +847,42 @@ class Ui_MainWindow(object):
         self.create_create_page.setSizeIncrement(QSize(0, 0))
         self.layoutWidget = QWidget(self.create_create_page)
         self.layoutWidget.setObjectName(u"layoutWidget")
-        self.layoutWidget.setGeometry(QRect(0, 0, 1391, 571))
+        self.layoutWidget.setGeometry(QRect(0, 0, 1391, 595))
         self.horizontalLayout_2 = QHBoxLayout(self.layoutWidget)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_23 = QGridLayout()
         self.gridLayout_23.setObjectName(u"gridLayout_23")
         self.gridLayout_23.setSizeConstraint(QLayout.SizeConstraint.SetMaximumSize)
-        self.label_13 = QLabel(self.layoutWidget)
-        self.label_13.setObjectName(u"label_13")
-        font6 = QFont()
-        font6.setFamilies([u"72"])
-        font6.setBold(True)
-        font6.setItalic(False)
-        self.label_13.setFont(font6)
-        self.label_13.setStyleSheet(u"")
-
-        self.gridLayout_23.addWidget(self.label_13, 4, 0, 1, 1)
-
-        self.label_15 = QLabel(self.layoutWidget)
-        self.label_15.setObjectName(u"label_15")
-        self.label_15.setFont(font6)
-        self.label_15.setStyleSheet(u"")
-
-        self.gridLayout_23.addWidget(self.label_15, 1, 1, 1, 1)
-
         self.comboBox_direction = QComboBox(self.layoutWidget)
         self.comboBox_direction.addItem("")
         self.comboBox_direction.addItem("")
         self.comboBox_direction.setObjectName(u"comboBox_direction")
         self.comboBox_direction.setEnabled(False)
+        self.comboBox_direction.setMaximumSize(QSize(200, 16777215))
         self.comboBox_direction.setFont(font3)
         self.comboBox_direction.setStyleSheet(u"")
 
         self.gridLayout_23.addWidget(self.comboBox_direction, 2, 0, 1, 1)
 
-        self.label_6 = QLabel(self.layoutWidget)
-        self.label_6.setObjectName(u"label_6")
-        self.label_6.setFont(font6)
-        self.label_6.setStyleSheet(u"")
+        self.btnStart = QPushButton(self.layoutWidget)
+        self.btnStart.setObjectName(u"btnStart")
+        self.btnStart.setEnabled(False)
+        self.btnStart.setFont(font3)
+        self.btnStart.setStyleSheet(u"")
 
-        self.gridLayout_23.addWidget(self.label_6, 9, 1, 1, 1)
+        self.gridLayout_23.addWidget(self.btnStart, 17, 0, 1, 1)
 
-        self.listDatesWeekday = QTableView(self.layoutWidget)
-        self.listDatesWeekday.setObjectName(u"listDatesWeekday")
-        self.listDatesWeekday.setEnabled(False)
-        sizePolicy6 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-        sizePolicy6.setHorizontalStretch(2)
-        sizePolicy6.setVerticalStretch(0)
-        sizePolicy6.setHeightForWidth(self.listDatesWeekday.sizePolicy().hasHeightForWidth())
-        self.listDatesWeekday.setSizePolicy(sizePolicy6)
-        self.listDatesWeekday.setMaximumSize(QSize(400, 1000))
-        self.listDatesWeekday.setFont(font3)
-        self.listDatesWeekday.setStyleSheet(u"")
-        self.listDatesWeekday.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.listDatesWeekday.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.listDatesWeekday.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
-        self.listDatesWeekday.setHorizontalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
+        self.label_15 = QLabel(self.layoutWidget)
+        self.label_15.setObjectName(u"label_15")
+        font6 = QFont()
+        font6.setFamilies([u"72"])
+        font6.setBold(True)
+        font6.setItalic(False)
+        self.label_15.setFont(font6)
+        self.label_15.setStyleSheet(u"")
 
-        self.gridLayout_23.addWidget(self.listDatesWeekday, 11, 1, 1, 1)
-
-        self.btnStop = QPushButton(self.layoutWidget)
-        self.btnStop.setObjectName(u"btnStop")
-        self.btnStop.setEnabled(False)
-        self.btnStop.setFont(font3)
-        self.btnStop.setStyleSheet(u"")
-
-        self.gridLayout_23.addWidget(self.btnStop, 15, 1, 1, 1)
+        self.gridLayout_23.addWidget(self.label_15, 1, 1, 1, 1)
 
         self.comboBox_time_format = QComboBox(self.layoutWidget)
         self.comboBox_time_format.addItem("")
@@ -922,48 +894,34 @@ class Ui_MainWindow(object):
 
         self.gridLayout_23.addWidget(self.comboBox_time_format, 2, 1, 1, 1)
 
-        self.btnStart = QPushButton(self.layoutWidget)
-        self.btnStart.setObjectName(u"btnStart")
-        self.btnStart.setEnabled(False)
-        self.btnStart.setFont(font3)
-        self.btnStart.setStyleSheet(u"")
+        self.line_Selection_date_range = QLineEdit(self.layoutWidget)
+        self.line_Selection_date_range.setObjectName(u"line_Selection_date_range")
+        self.line_Selection_date_range.setEnabled(False)
+        self.line_Selection_date_range.setStyleSheet(u"")
 
-        self.gridLayout_23.addWidget(self.btnStart, 15, 0, 1, 1)
+        self.gridLayout_23.addWidget(self.line_Selection_date_range, 10, 0, 1, 1)
 
-        self.label_17 = QLabel(self.layoutWidget)
-        self.label_17.setObjectName(u"label_17")
-        self.label_17.setFont(font6)
-        self.label_17.setStyleSheet(u"")
+        self.label_6 = QLabel(self.layoutWidget)
+        self.label_6.setObjectName(u"label_6")
+        self.label_6.setFont(font6)
+        self.label_6.setStyleSheet(u"")
 
-        self.gridLayout_23.addWidget(self.label_17, 9, 0, 1, 1)
+        self.gridLayout_23.addWidget(self.label_6, 11, 0, 1, 1)
 
-        self.comboBox = QComboBox(self.layoutWidget)
-        self.comboBox.addItem("")
-        self.comboBox.addItem("")
-        self.comboBox.addItem("")
-        self.comboBox.addItem("")
-        self.comboBox.setObjectName(u"comboBox")
-        self.comboBox.setEnabled(False)
-        self.comboBox.setFont(font3)
-        self.comboBox.setStyleSheet(u"")
+        self.label_13 = QLabel(self.layoutWidget)
+        self.label_13.setObjectName(u"label_13")
+        self.label_13.setFont(font6)
+        self.label_13.setStyleSheet(u"")
 
-        self.gridLayout_23.addWidget(self.comboBox, 3, 0, 1, 1)
+        self.gridLayout_23.addWidget(self.label_13, 4, 0, 1, 1)
 
-        self.dateEdit = QDateEdit(self.layoutWidget)
-        self.dateEdit.setObjectName(u"dateEdit")
+        self.btnStop = QPushButton(self.layoutWidget)
+        self.btnStop.setObjectName(u"btnStop")
+        self.btnStop.setEnabled(False)
+        self.btnStop.setFont(font3)
+        self.btnStop.setStyleSheet(u"")
 
-        self.gridLayout_23.addWidget(self.dateEdit, 5, 0, 1, 1)
-
-        self.UseIndividualSorting = QCheckBox(self.layoutWidget)
-        self.UseIndividualSorting.setObjectName(u"UseIndividualSorting")
-        sizePolicy7 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
-        sizePolicy7.setHorizontalStretch(2)
-        sizePolicy7.setVerticalStretch(1)
-        sizePolicy7.setHeightForWidth(self.UseIndividualSorting.sizePolicy().hasHeightForWidth())
-        self.UseIndividualSorting.setSizePolicy(sizePolicy7)
-        self.UseIndividualSorting.setMaximumSize(QSize(200, 30))
-
-        self.gridLayout_23.addWidget(self.UseIndividualSorting, 13, 0, 1, 1)
+        self.gridLayout_23.addWidget(self.btnStop, 17, 1, 1, 1)
 
         self.label_12 = QLabel(self.layoutWidget)
         self.label_12.setObjectName(u"label_12")
@@ -974,16 +932,59 @@ class Ui_MainWindow(object):
 
         self.gridLayout_23.addWidget(self.label_12, 0, 0, 1, 1)
 
-        self.line_Selection_date_range = QLineEdit(self.layoutWidget)
-        self.line_Selection_date_range.setObjectName(u"line_Selection_date_range")
-        self.line_Selection_date_range.setEnabled(False)
-        self.line_Selection_date_range.setStyleSheet(u"")
+        self.comboBox = QComboBox(self.layoutWidget)
+        self.comboBox.addItem("")
+        self.comboBox.addItem("")
+        self.comboBox.addItem("")
+        self.comboBox.addItem("")
+        self.comboBox.setObjectName(u"comboBox")
+        self.comboBox.setEnabled(False)
+        self.comboBox.setMaximumSize(QSize(200, 16777215))
+        self.comboBox.setFont(font3)
+        self.comboBox.setStyleSheet(u"")
 
-        self.gridLayout_23.addWidget(self.line_Selection_date_range, 10, 0, 1, 1)
+        self.gridLayout_23.addWidget(self.comboBox, 3, 0, 1, 1)
 
-        self.verticalSpacer_7 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.label_17 = QLabel(self.layoutWidget)
+        self.label_17.setObjectName(u"label_17")
+        self.label_17.setFont(font6)
+        self.label_17.setStyleSheet(u"")
 
-        self.gridLayout_23.addItem(self.verticalSpacer_7, 11, 0, 1, 1)
+        self.gridLayout_23.addWidget(self.label_17, 9, 0, 1, 1)
+
+        self.dateEdit = QDateEdit(self.layoutWidget)
+        self.dateEdit.setObjectName(u"dateEdit")
+
+        self.gridLayout_23.addWidget(self.dateEdit, 5, 0, 1, 1)
+
+        self.listDatesWeekday = QTableView(self.layoutWidget)
+        self.listDatesWeekday.setObjectName(u"listDatesWeekday")
+        self.listDatesWeekday.setEnabled(False)
+        sizePolicy6 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        sizePolicy6.setHorizontalStretch(2)
+        sizePolicy6.setVerticalStretch(0)
+        sizePolicy6.setHeightForWidth(self.listDatesWeekday.sizePolicy().hasHeightForWidth())
+        self.listDatesWeekday.setSizePolicy(sizePolicy6)
+        self.listDatesWeekday.setMaximumSize(QSize(600, 1000))
+        self.listDatesWeekday.setFont(font3)
+        self.listDatesWeekday.setStyleSheet(u"")
+        self.listDatesWeekday.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.listDatesWeekday.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.listDatesWeekday.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
+        self.listDatesWeekday.setHorizontalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
+
+        self.gridLayout_23.addWidget(self.listDatesWeekday, 12, 0, 1, 1)
+
+        self.UseIndividualSorting = QCheckBox(self.layoutWidget)
+        self.UseIndividualSorting.setObjectName(u"UseIndividualSorting")
+        sizePolicy7 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+        sizePolicy7.setHorizontalStretch(2)
+        sizePolicy7.setVerticalStretch(1)
+        sizePolicy7.setHeightForWidth(self.UseIndividualSorting.sizePolicy().hasHeightForWidth())
+        self.UseIndividualSorting.setSizePolicy(sizePolicy7)
+        self.UseIndividualSorting.setMaximumSize(QSize(200, 30))
+
+        self.gridLayout_23.addWidget(self.UseIndividualSorting, 1, 0, 1, 1)
 
 
         self.horizontalLayout_2.addLayout(self.gridLayout_23)
@@ -995,7 +996,7 @@ class Ui_MainWindow(object):
         self.tableView_sorting_stops.setObjectName(u"tableView_sorting_stops")
         sizePolicy.setHeightForWidth(self.tableView_sorting_stops.sizePolicy().hasHeightForWidth())
         self.tableView_sorting_stops.setSizePolicy(sizePolicy)
-        self.tableView_sorting_stops.setMaximumSize(QSize(800, 300))
+        self.tableView_sorting_stops.setMaximumSize(QSize(600, 300))
 
         self.verticalLayout.addWidget(self.tableView_sorting_stops)
 
@@ -1137,7 +1138,9 @@ class Ui_MainWindow(object):
         self.pushButton_6.setText(QCoreApplication.translate("MainWindow", u"Download GTFS Data", None))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page_3), QCoreApplication.translate("MainWindow", u"Download GTFS", None))
         self.btnExit.setText(QCoreApplication.translate("MainWindow", u"Exit", None))
-        self.label_16.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Selection</span></p></body></html>", None))
+        self.line_Selection_format.setText(QCoreApplication.translate("MainWindow", u"Agency", None))
+        self.line_Selection_agency.setText(QCoreApplication.translate("MainWindow", u"Route", None))
+        self.label_16.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-weight:600;\">Selection</span></p></body></html>", None))
         self.pushButton.setText("")
         self.plainTextEdit.setPlainText(QCoreApplication.translate("MainWindow", u"GTFStoFahrplan is a Python script designed to convert GTFS (General Transit Feed Specification) data into Fahrplan-compatible format. Fahrplan is a widely-used transit schedule format primarily used in the German-speaking regions.\n"
 "\n"
@@ -1180,25 +1183,25 @@ class Ui_MainWindow(object):
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"Information Import:", None))
         self.label_8.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Trips</span></p></body></html>", None))
         self.label_5.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Agencies</span></p></body></html>", None))
-        self.label_13.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Date</span></p></body></html>", None))
-        self.label_15.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Time Format</span></p></body></html>", None))
         self.comboBox_direction.setItemText(0, QCoreApplication.translate("MainWindow", u"direction 1", None))
         self.comboBox_direction.setItemText(1, QCoreApplication.translate("MainWindow", u"direction 2", None))
 
-        self.label_6.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Weekday</span></p></body></html>", None))
-        self.btnStop.setText(QCoreApplication.translate("MainWindow", u"Stop", None))
+        self.btnStart.setText(QCoreApplication.translate("MainWindow", u"Create Table", None))
+        self.label_15.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Time Format</span></p></body></html>", None))
         self.comboBox_time_format.setItemText(0, QCoreApplication.translate("MainWindow", u"1", None))
         self.comboBox_time_format.setItemText(1, QCoreApplication.translate("MainWindow", u"2", None))
 
-        self.btnStart.setText(QCoreApplication.translate("MainWindow", u"Create Table", None))
-        self.label_17.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Detected Date Range</span></p></body></html>", None))
+        self.label_6.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Weekday</span></p></body></html>", None))
+        self.label_13.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Date</span></p></body></html>", None))
+        self.btnStop.setText(QCoreApplication.translate("MainWindow", u"Stop", None))
+        self.label_12.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Mode Settings</span></p></body></html>", None))
         self.comboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"Date", None))
         self.comboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"Weekday", None))
         self.comboBox.setItemText(2, QCoreApplication.translate("MainWindow", u"Umlaufplan Date", None))
         self.comboBox.setItemText(3, QCoreApplication.translate("MainWindow", u"Umlaufplan Weekday", None))
 
+        self.label_17.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Detected Date Range</span></p></body></html>", None))
         self.UseIndividualSorting.setText(QCoreApplication.translate("MainWindow", u"Use individual sorting", None))
-        self.label_12.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Mode Settings</span></p></body></html>", None))
         self.btnContinueCreate.setText(QCoreApplication.translate("MainWindow", u"Continue Creating Table", None))
         self.comboBox_display.setItemText(0, QCoreApplication.translate("MainWindow", u"opendata.ruhr", None))
         self.comboBox_display.setItemText(1, QCoreApplication.translate("MainWindow", u"opendata.vbb", None))

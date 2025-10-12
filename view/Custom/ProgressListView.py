@@ -12,11 +12,6 @@ class ProgressHistoryItem(QWidget):
         super().__init__()
         self.title = progress.message
         self.progress = progress
-        self.setMinimumSize(QSize(300, 80))
-
-    @override
-    def sizeHint(self):
-        return QSize(300, 80)
 
 class ProgressHistoryModel(QAbstractTableModel):
     def __init__(self, parent=None):
@@ -65,7 +60,6 @@ class ProgressHistoryListView(QListView):
         super().__init__(parent)
         self.setModel(ProgressHistoryModel())
         self.setViewMode(QListView.ListMode)
-        self.setMinimumSize(300, 200)
         self.setItemDelegate(ProgressBarDelegate())
         self.setUniformItemSizes(True)
         self.setSpacing(10)
@@ -90,13 +84,11 @@ class ProgressBarDelegate(QStyledItemDelegate):
         opt.progress = progress.value
         opt.textVisible = True
         opt.text = f"{progress.process_name} {progress.message}: {progress.value}%"
-        opt.textAlignment = Qt.AlignCenter
+        opt.textVisible = False
 
-        # Save painter state
         painter.save()
-
-        # Draw the progress bar
         QApplication.style().drawControl(QStyle.CE_ProgressBar, opt, painter)
-
-        # Restore painter state
+        painter.setPen(QColor(0, 0, 0))
+        text = f"{progress.process_name} {progress.message}: {progress.value}%"
+        painter.drawText(opt.rect, Qt.AlignCenter, text)
         painter.restore()

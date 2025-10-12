@@ -73,7 +73,7 @@ class CreatePlan(QObject):
                 self.gtfs_data_frame_dto
             )
 
-        if self.create_settings_for_table_dto.individual_sorting:
+        if self.create_settings_for_table_dto.use_individual_sorting:
             self.data_selected.emit()
 
         self.strategy.progress_Update.connect(self.update_progress)

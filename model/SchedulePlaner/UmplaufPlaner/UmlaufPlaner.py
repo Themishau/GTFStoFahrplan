@@ -571,7 +571,7 @@ class UmlaufPlaner():
                 d[str(k)]["stop_sequence"] = stopsequence[j]['stop_sequence']
                 d[str(k)]["stop_name"] = stopsequence[j]['stop_name']
 
-        if self.create_settings_for_table_dto.individual_sorting == 1:
+        if self.create_settings_for_table_dto.use_individual_sorting:
             # bubble sort
             for i in range(sequence_count - 1):
                 for j in range(0, sequence_count - i - 1):

@@ -44,10 +44,10 @@ class ParallelTableCreationStrategy(QObject, TableCreationStrategy, metaclass=Co
         strategy_direction_1 = None
         strategy_direction_2 = None
 
-        if self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_date and self.create_settings_for_table_dto.individual_sorting:
+        if self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_date and self.create_settings_for_table_dto.use_individual_sorting:
             strategy_direction_1 = IndividualWeekdayTableCreationStrategy(self.app, self.plans[0])
             strategy_direction_2 = IndividualWeekdayTableCreationStrategy(self.app, self.plans[1])
-        elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_weekday and self.create_settings_for_table_dto.individual_sorting:
+        elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_weekday and self.create_settings_for_table_dto.use_individual_sorting:
             strategy_direction_1 = IndividualWeekdayTableCreationStrategy(self.app, self.plans[0])
             strategy_direction_2 = IndividualWeekdayTableCreationStrategy(self.app, self.plans[1])
         elif self.create_settings_for_table_dto.create_plan_mode == CreatePlanMode.umlauf_date:

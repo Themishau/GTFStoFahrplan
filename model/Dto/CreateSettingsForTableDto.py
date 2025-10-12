@@ -16,7 +16,7 @@ class CreateSettingsForTableDto(QObject):
         self._dates = None
         self._date = pd.DataFrame(columns=['date'])
         self._direction =  None
-        self._individual_sorting =  False
+        self._use_individual_sorting =  False
         self._timeformat =  1
         self._create_plan_mode = CreatePlanMode.date
         self._date_range = None
@@ -36,7 +36,7 @@ class CreateSettingsForTableDto(QObject):
         copied._dates = copy.deepcopy(self._dates, memo)
         copied._date = copy.deepcopy(self._date, memo)
         copied._direction = copy.deepcopy(self._direction, memo)
-        copied._individual_sorting = copy.deepcopy(self._individual_sorting, memo)
+        copied._use_individual_sorting = copy.deepcopy(self._use_individual_sorting, memo)
         copied._timeformat = copy.deepcopy(self._timeformat, memo)
         copied._create_plan_mode = copy.deepcopy(self._create_plan_mode, memo)
         copied._output_path = copy.deepcopy(self._output_path, memo)
@@ -130,12 +130,12 @@ class CreateSettingsForTableDto(QObject):
             self.settingsChanged.emit()
 
     @property
-    def individual_sorting(self) :
-        return self._individual_sorting
+    def use_individual_sorting(self) :
+        return self._use_individual_sorting
 
-    @individual_sorting.setter
-    def individual_sorting(self, value):
-            self._individual_sorting = value
+    @use_individual_sorting.setter
+    def use_individual_sorting(self, value):
+            self._use_individual_sorting = value
             self.settingsChanged.emit()
 
     @property
