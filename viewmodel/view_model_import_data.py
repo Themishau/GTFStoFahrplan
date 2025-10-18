@@ -55,7 +55,7 @@ class ViewModelImportData(QObject):
         ):
             self.model.start_function_async(ModelTriggerActionsEnum.planer_start_load_data.value)
         else:
-            self.send_error_message(ErrorMessageRessources.error_load_data)
+            self.send_error_message(ErrorMessageRessources.error_path_not_valid)
             return
 
     def on_change_output_file_path(self, path):

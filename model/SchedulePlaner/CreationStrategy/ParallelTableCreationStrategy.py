@@ -21,6 +21,7 @@ from model.SchedulePlaner.UmplaufPlaner.UmlaufPlaner import UmlaufPlaner
 class ParallelTableCreationStrategy(QObject, TableCreationStrategy, metaclass=CommonMeta):
     progress_Update = Signal(ProgressSignal)
     error_occured = Signal(str)
+
     def __init__(self, app, create_settings_for_table_dto, gtfs_data_frame_dto):
         super().__init__()
         self.app = app

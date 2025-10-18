@@ -230,6 +230,7 @@ class ErrorMessageRessources(Enum):
     no_export_object_generated = 'There has been an error while exporting data to file.'
     error_in_SchedulePlaner_class = 'error_in_SchedulePlaner_class'
     error_load_data = 'Error. Could not load data.'
+    error_path_not_valid = 'The selected path is not valid.'
     no_trips_found = 'No trips found for the selected date range.'
     no_trips_found_in_date_range = 'No trips found in the selected date range.'
 
