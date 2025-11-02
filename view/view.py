@@ -3,7 +3,6 @@ from PySide6.QtCore import Qt, QPoint, QSize
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QMainWindow, QApplication, QHeaderView
 from model.Base.Progress import ProgressSignal
 from model.Enum.GTFSEnums import CreatePlanMode, DfRouteColumnEnum, DfAgencyColumnEnum
-from view.Custom.round_progress_bar import RoundProgress
 from view.Custom.select_table_view import TableModel
 from view.Custom.sort_table_view import TableModelSort
 from view.pyui.ui_main_window import Ui_MainWindow
