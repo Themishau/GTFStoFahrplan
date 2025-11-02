@@ -85,7 +85,13 @@ class View(QMainWindow):
         self.ui.checkBox_savepickle.setChecked(checked)
 
     def update_warning_table_view(self):
-        self.ui.create_import_page.tableView.setModel(TableModel(self.viewModel.model.planer.import_Data.missing_columns_in_gtfs_file))
+        if self.viewModel.model.planer.import_Data.missing_columns_in_gtfs_file.empty:
+            self.ui.import_missing_view.setVisible(False)
+            self.ui.information_label_label.setVisible(False)
+            return
+        self.ui.import_missing_view.setVisible(True)
+        self.ui.information_label_label.setVisible(True)
+        self.ui.import_missing_view.setModel(TableModel(self.viewModel.model.planer.import_Data.missing_columns_in_gtfs_file))
         update_table_sizes(self.ui.create_import_page.tableView)
 
     def update_time_format(self, time_format):
@@ -131,6 +137,11 @@ class View(QMainWindow):
     def initialize_window(self):
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.oldPos = self.pos()
+        self.initialize_objects()
+
+    def initialize_objects(self):
+        self.ui.import_missing_view.setVisible(False)
+        self.ui.information_label_label.setVisible(False)
 
     def mousePressEvent(self, event):
         self.oldPos = event.globalPos()
@@ -242,7 +253,6 @@ class View(QMainWindow):
 
     def update_date_field_to_first_date_of_selected_route(self, sample_date):
         self.ui.dateEdit.setDate(string_to_qdate(sample_date))
-
     def get_file_path(self):
         self.viewModel.view_model_import_data.on_change_input_file_path(get_file_path(self))
 

@@ -52,11 +52,7 @@ class ImportData(QObject):
     def reset_import(self, value):
         self._reset_import = value
 
-    def _check_input_fields_based_on_settings(self, import_settings_dto: ImportSettingsDto) -> bool:
-        if not _check_paths():
-            self.error_occured.emit(f"could not read data from path: {import_settings_dto.input_path}")
-            return False
-        return None
+
     def pre_checks(self,  import_settings_dto: ImportSettingsDto):
         return import_settings_dto.input_path is not None
 

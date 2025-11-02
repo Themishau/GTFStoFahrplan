@@ -49,6 +49,7 @@ class ViewModelImportData(QObject):
         self.update_agency_list_signal.emit()
         self.set_up_create_tab_signal.emit()
 
+
     def start_import_gtfs_data(self):
         if (self.find(self.model.planer.import_settings_dto.input_path.split('/')[-1],
                       self.model.planer.import_settings_dto.input_path.replace(
@@ -58,8 +59,7 @@ class ViewModelImportData(QObject):
         else:
             self.send_error_message(ErrorMessageRessources.error_path_not_valid)
 
-        if self.model.planer.import_Data.missing_columns_in_gtfs_file.empty is False:
-            self.update_warning_table_view.emit()
+        self.update_warning_table_view.emit()
 
 
     def on_change_output_file_path(self, path):
