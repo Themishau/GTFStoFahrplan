@@ -17,6 +17,7 @@ class ViewModelImportData(QObject):
     output_file_path = Signal(str)
     update_pickle_export_checked = Signal(bool)
     update_progress_value = Signal(ProgressSignal)
+    update_warning_table_view = Signal()
     export_plan_time_format = Signal(str)
     error_message = Signal(str)
     update_agency_list_signal = Signal()
@@ -56,7 +57,10 @@ class ViewModelImportData(QObject):
             self.model.start_function_async(ModelTriggerActionsEnum.planer_start_load_data.value)
         else:
             self.send_error_message(ErrorMessageRessources.error_path_not_valid)
-            return
+
+        if self.model.planer.import_Data.missing_columns_in_gtfs_file.empty is False:
+            self.update_warning_table_view.emit()
+
 
     def on_change_output_file_path(self, path):
         self.model.planer.create_settings_for_table_dto.output_path = path

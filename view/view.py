@@ -20,9 +20,6 @@ class View(QMainWindow):
         super().__init__()
         self.viewModel = viewModel
 
-        self.progressRound = None
-        self.spinner_label = None
-
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
@@ -45,12 +42,8 @@ class View(QMainWindow):
         self.signals.init_signals()
 
         self.initialize_window()
-        #self.initialize_modified_progress_bar()
         self.initialize_tabs()
         self.show_home_window()
-
-    def initialize_busy_inficator(self):
-        NotImplemented()
 
     def update_individualsorting(self, checked):
         self.ui.UseIndividualSorting.setChecked(checked)
@@ -90,6 +83,10 @@ class View(QMainWindow):
 
     def update_pickle_export_checked(self, checked):
         self.ui.checkBox_savepickle.setChecked(checked)
+
+    def update_warning_table_view(self):
+        self.ui.create_import_page.tableView.setModel(TableModel(self.viewModel.model.planer.import_Data.missing_columns_in_gtfs_file))
+        update_table_sizes(self.ui.create_import_page.tableView)
 
     def update_time_format(self, time_format):
         self.ui.line_Selection_format.setText(f'time format {self.viewModel.model.planer.create_settings_for_table_dto.timeformat}')
@@ -152,22 +149,11 @@ class View(QMainWindow):
         self.move(qr.topLeft())
 
     def update_progress(self, progress_data: ProgressSignal):
-        #self.update_progress_bar(progress_data.value)
         self.update_progress_list(progress_data)
         return True
 
     def update_progress_list(self, progress_data: ProgressSignal):
         self.ui.progress_history_list_view.updateProgress(progress_data)
-
-    def update_progress_bar(self, value: int):
-        #self.ui.progressBar.set_value(value)
-        return True
-
-    def initialize_modified_progress_bar(self):
-        self.ui.progressBar = RoundProgress()
-        self.ui.progressBar.value = 0
-        self.ui.progressBar.setMinimumSize(self.ui.progressBar.width, self.ui.progressBar.height)
-        #self.ui.progress_widget.addWidget(self.ui.progressBar, 1, 1, 1, 1, Qt.AlignHCenter | Qt.AlignVCenter)
 
     def initialize_tabs(self):
         self.ui.main_view_stacked_widget.addWidget(self.ui.create_import_page)

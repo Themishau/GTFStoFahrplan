@@ -57,6 +57,8 @@ class ViewSignals(QObject):
         self.view.ui.TripsTableView.clicked.connect(self.view.get_changed_selected_record_trip)
         self.view.ui.listDatesWeekday.clicked.connect(self.view.get_changed_selected_weekday)
 
+        self.viewModel.view_model_import_data.update_warning_table_view.connect(self.view.update_warning_table_view)
+
         self.viewModel.view_model_import_data.update_agency_list_signal.connect(self.view.update_agency_list, lol.Qt.ConnectionType.UniqueConnection)
         self.viewModel.view_model_select_data.update_routes_list_signal.connect(self.view.update_routes_list)
         self.viewModel.view_model_create_data.update_options_state_signal.connect(self.view.update_create_options_state)
