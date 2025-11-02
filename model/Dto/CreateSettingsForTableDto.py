@@ -3,7 +3,6 @@ from model.Enum.GTFSEnums import CreatePlanMode
 from PySide6.QtCore import QObject
 from PySide6.QtCore import Signal, Slot
 import pandas as pd
-from typing import Optional
 
 class CreateSettingsForTableDto(QObject):
     settingsChanged = Signal()

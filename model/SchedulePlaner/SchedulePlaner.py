@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import logging
 import copy
 from PySide6.QtCore import QObject
