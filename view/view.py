@@ -106,7 +106,7 @@ class View(QMainWindow):
         self.ui.comboBox.setEnabled(True)
         match mode:
             case CreatePlanMode.umlauf_date.value:
-                self.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.create_settings_for_table_dto.sample_date))
+                self.update_date_field_to_first_date_of_selected_route(self.viewModel.model.planer.create_settings_for_table_dto.sample_date)
                 self.ui.comboBox_direction.setEnabled(False)
                 self.ui.comboBox_direction.setVisible(False)
             case CreatePlanMode.umlauf_weekday.value:
@@ -115,7 +115,7 @@ class View(QMainWindow):
                 self.ui.listDatesWeekday.setEnabled(True)
                 self.ui.listDatesWeekday.setVisible(True)
             case CreatePlanMode.date.value:
-                self.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.create_settings_for_table_dto.sample_date))
+                self.update_date_field_to_first_date_of_selected_route(self.viewModel.model.planer.create_settings_for_table_dto.sample_date)
                 self.ui.comboBox_direction.setEnabled(True)
                 self.ui.comboBox_direction.setVisible(True)
             case CreatePlanMode.weekday.value:
@@ -252,6 +252,7 @@ class View(QMainWindow):
 
     def update_date_field_to_first_date_of_selected_route(self, sample_date):
         self.ui.dateEdit.setDate(string_to_qdate(sample_date))
+
     def get_file_path(self):
         self.viewModel.view_model_import_data.on_change_input_file_path(get_file_path(self))
 

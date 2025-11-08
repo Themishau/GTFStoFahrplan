@@ -64,6 +64,8 @@ class AnalyzeData(QObject):
             })
             create_settings_for_table_dto.date_range_df_format = trip_available_dates_df
             create_settings_for_table_dto.date = create_settings_for_table_dto.date_range_df_format.iloc[0].start_date.strftime('%Y%m%d')
+            create_settings_for_table_dto.sample_date = create_settings_for_table_dto.date_range_df_format.iloc[
+                0].start_date.strftime('%Y%m%d')
 
     def analyze_date_range_in_gtfs_data(self, gtfs_data_frame_dto: GtfsDataFrameDto):
         if gtfs_data_frame_dto.Calendarweeks is not None:

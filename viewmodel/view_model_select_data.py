@@ -35,7 +35,7 @@ class ViewModelSelectData(QObject):
         self.model.planer.create_settings_for_table_dto.route = id_us
         if self.model.planer.create_settings_for_table_dto.route is not None:
             self.model.planer.create_settings_for_table_dto.dates = self.model.planer.analyze_data.get_date_range(self.model.planer.gtfs_data_frame_dto)
-            self.model.planer.create_settings_for_table_dto.sample_date = self.model.planer.analyze_data.get_date_range_based_on_selected_trip(self.model.planer.gtfs_data_frame_dto, self.model.planer.create_settings_for_table_dto)
+            self.model.planer.analyze_data.get_date_range_based_on_selected_trip(self.model.planer.gtfs_data_frame_dto, self.model.planer.create_settings_for_table_dto)
 
     def send_error_message(self, message):
         self.error_message.emit(message)

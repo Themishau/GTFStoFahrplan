@@ -87,9 +87,6 @@ class ViewModelCreateData(QObject):
     def on_create_sorting_signal(self):
         self.on_changed_individualsorting_table.emit()
 
-    def on_changed_options_state(self, value):
-        self.update_options_state_signal.emit(value)
-
     def on_changed_individualsorting(self, value):
         self.model.planer.create_settings_for_table_dto.use_individual_sorting = value
         self.update_individualsorting.emit(value)
