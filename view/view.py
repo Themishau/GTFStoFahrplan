@@ -17,6 +17,7 @@ logging.basicConfig(level=logging.DEBUG,
 class View(QMainWindow):
     def __init__(self, viewModel):
         super().__init__()
+        self.oldPos = None
         self.viewModel = viewModel
 
         self.ui = Ui_MainWindow()
@@ -90,8 +91,9 @@ class View(QMainWindow):
             return
         self.ui.import_missing_view.setVisible(True)
         self.ui.information_label_label.setVisible(True)
-        self.ui.import_missing_view.setModel(TableModel(self.viewModel.model.planer.import_Data.missing_columns_in_gtfs_file))
-        update_table_sizes(self.ui.create_import_page.tableView)
+        self.ui.import_missing_view.setModel(TableModelSort(
+            self.viewModel.model.planer.import_Data.missing_columns_in_gtfs_file))
+        update_table_sizes(self.ui.import_missing_view)
 
     def update_time_format(self, time_format):
         self.ui.line_Selection_format.setText(f'time format {self.viewModel.model.planer.create_settings_for_table_dto.timeformat}')

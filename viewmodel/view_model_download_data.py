@@ -5,8 +5,6 @@ from model.Base.Progress import ProgressSignal
 logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(levelname)s %(message)s",
                     datefmt="%Y-%m-%d %H:%M:%S")
-delimiter = " "
-lineend = '\n'
 
 
 class ViewModelDownloadedData(QObject):
