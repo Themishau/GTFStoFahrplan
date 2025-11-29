@@ -111,20 +111,30 @@ class View(QMainWindow):
                 self.update_date_field_to_first_date_of_selected_route(self.viewModel.model.planer.create_settings_for_table_dto.sample_date)
                 self.ui.comboBox_direction.setEnabled(False)
                 self.ui.comboBox_direction.setVisible(False)
+                self.ui.dateEdit.setEnabled(True)
+                self.ui.dateEdit.setVisible(True)
             case CreatePlanMode.umlauf_weekday.value:
                 self.ui.comboBox_direction.setEnabled(False)
                 self.ui.comboBox_direction.setVisible(False)
                 self.ui.listDatesWeekday.setEnabled(True)
                 self.ui.listDatesWeekday.setVisible(True)
+                self.ui.dateEdit.setEnabled(False)
+                self.ui.dateEdit.setVisible(False)
             case CreatePlanMode.date.value:
                 self.update_date_field_to_first_date_of_selected_route(self.viewModel.model.planer.create_settings_for_table_dto.sample_date)
                 self.ui.comboBox_direction.setEnabled(True)
                 self.ui.comboBox_direction.setVisible(True)
+                self.ui.listDatesWeekday.setEnabled(False)
+                self.ui.listDatesWeekday.setVisible(False)
+                self.ui.dateEdit.setEnabled(True)
+                self.ui.dateEdit.setVisible(True)
             case CreatePlanMode.weekday.value:
                 self.ui.comboBox_direction.setEnabled(True)
                 self.ui.comboBox_direction.setVisible(True)
                 self.ui.listDatesWeekday.setEnabled(True)
                 self.ui.listDatesWeekday.setVisible(True)
+                self.ui.dateEdit.setEnabled(False)
+                self.ui.dateEdit.setVisible(False)
 
     def update_create_options_state(self):
         if self.viewModel.model.planer.select_data.selected_agency is not None:
