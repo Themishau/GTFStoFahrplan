@@ -9,7 +9,6 @@ import pandas as pd
 from PySide6.QtCore import QObject, Slot
 from PySide6.QtCore import Signal
 
-from model.Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
 from model.Enum.GTFSEnums import *
 from .Progress import ProgressSignal
 from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
@@ -60,6 +59,12 @@ class ImportData(QObject):
         self.progress.set_progress(0, ProcessType.import_data, "Import GTFS data started")
         self.progress_Update.emit(self.progress)
         self.progress_Update.emit(self.progress.set_progress(10, ProcessType.import_data, "pre checks"))
+
+        self.missing_columns_in_gtfs_file = pd.DataFrame({
+            'table': [],
+            'column': []
+        })
+
         if not self.pre_checks(import_settings_dto):
             self.reset_data_cause_of_error()
             return None
@@ -199,7 +204,7 @@ class ImportData(QObject):
         logging.debug(f"raw_dict_data creation: {raw_dict_data.keys()}")
         self.progress_Update.emit(
             self.progress.set_progress(60, ProcessType.import_data, "transforming data"))
-        # Define DataFrame creation steps
+
         df_creation_steps = [
             (CreationSteps.routes, self.create_df_routes),
             (CreationSteps.trips, self.create_df_trips),
@@ -232,10 +237,6 @@ class ImportData(QObject):
         return df_collection
 
     def _parse_gtfs_section(self, raw_data, column_key, df_name):
-        """
-        Generic parser for GTFS sections.
-        Returns a tuple (GtfsDfNames.<X>, dict) matching existing method contracts.
-        """
         rows = raw_data.get(column_key, [])
         if not rows:
             return df_name, {}
@@ -442,12 +443,11 @@ class ImportData(QObject):
         return df
 
     def missing_columns_in_df(self, df, enum_class):
-        missing_columns = [col for col in enum_class if col not in df.columns]
-        # Add each missing column to the tracking DataFrame
+        missing_columns = [col for col in enum_class if col.value not in df.columns]
         for column in missing_columns:
             self.missing_columns_in_gtfs_file.loc[len(self.missing_columns_in_gtfs_file)] = [
                 df.name,
-                column
+                column.value
             ]
 
 

@@ -71,7 +71,7 @@ class ViewSignals(QObject):
         self.viewModel.view_model_create_data.create_table_finshed.connect(self.view.update_create_table)
 
         self.view.ui.btnContinueCreate.clicked.connect(self.viewModel.view_model_create_data.create_table_continue)
-        self.view.ui.btnStop.clicked.connect(self.viewModel.view_model_create_data.create_table_stop)
+        #self.view.ui.btnStop.clicked.connect(self.viewModel.view_model_create_data.create_table_stop)
 
         self.view.ui.UseIndividualSorting.clicked.connect(self.viewModel.view_model_create_data.on_changed_individualsorting)
         self.viewModel.view_model_create_data.update_individualsorting.connect(self.view.update_individualsorting)
