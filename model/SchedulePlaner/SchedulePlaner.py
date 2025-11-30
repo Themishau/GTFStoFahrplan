@@ -88,25 +88,25 @@ class SchedulePlaner(QObject):
         self.initialize_create_plan()
 
     def create_table(self) -> bool:
-        # try:
-        self.create_plan.create_table()
-        self.export_plan.export_plan(self.create_settings_for_table_dto,
-                                     self.create_plan.strategy.plans.create_dataframe)
-        self.create_finished.emit(True)
-        return True
+        try:
+            self.create_plan.create_table()
+            self.export_plan.export_plan(self.create_settings_for_table_dto,
+                                         self.create_plan.strategy.plans.create_dataframe)
+            self.create_finished.emit(True)
+            return True
 
-        # except AttributeError as e:
-        #     logging.error(f'create_table: {e}')
-        #     self.error_occured.emit(f'{ErrorMessageRessources.no_create_object_generated.value}: \n {e}')
-        #     return False
-        # except ValueError as e:
-        #     logging.error(f"create_table: {e}")
-        #     self.error_occured.emit(f'{ErrorMessageRessources.no_create_object_generated.value}: \n {e}')
-        #     return False
-        # except Exception as e:
-        #     logging.error(f"create_table: {e}")
-        #     self.error_occured.emit(f'{ErrorMessageRessources.no_create_object_generated.value}: \n {e}')
-        #     return False
+        except AttributeError as e:
+            logging.error(f'create_table: {e}')
+            self.error_occured.emit(f'{ErrorMessageRessources.no_create_object_generated.value}: \n {e}')
+            return False
+        except ValueError as e:
+            logging.error(f"create_table: {e}")
+            self.error_occured.emit(f'{ErrorMessageRessources.no_create_object_generated.value}: \n {e}')
+            return False
+        except Exception as e:
+            logging.error(f"create_table: {e}")
+            self.error_occured.emit(f'{ErrorMessageRessources.no_create_object_generated.value}: \n {e}')
+            return False
 
     def create_table_individual_sorting(self) -> bool:
         self.create_plan.create_table()

@@ -89,8 +89,16 @@ class UmlaufPlaner():
             'service_id',
             'route_id',
             'start_date',
-            'end_date'
+            'end_date',
+            'monday',
+            'tuesday',
+            'wednesday',
+            'thursday',
+            'friday',
+            'saturday',
+            'sunday'
         ]
+
 
         result = (
             dfWeek
@@ -185,9 +193,7 @@ class UmlaufPlaner():
                                                        format='%Y-%m-%d %H:%M:%S.%f')
         self.create_dataframe.FahrplanDates = fahrplan_dates_df
 
-
     def dates_select_dates_delete_exception_2(self):
-
         dfDates = self.gtfs_data_frame_dto.Calendardates
         requested_datesdf = pd.DataFrame([self.create_settings_for_table_dto.date], columns=['date'])
         requested_datesdf['date'] = pd.to_datetime(requested_datesdf['date'], format='%Y%m%d')
@@ -200,7 +206,14 @@ class UmlaufPlaner():
                'service_id': row.service_id,
                'route_id': row.route_id,
                'start_date': row.start_date,
-               'end_date': row.end_date
+               'end_date': row.end_date,
+               'monday': row.monday,
+               'tuesday': row.tuesday,
+               'wednesday': row.wednesday,
+               'thursday': row.thursday,
+               'friday': row.friday,
+               'saturday': row.saturday,
+               'sunday': row.sunday
                }) for _, row in fahrplan_dates.iterrows()])
 
         fahrplan_dates['date'] = pd.to_datetime(fahrplan_dates['date'], format='%Y%m%d')
@@ -208,16 +221,52 @@ class UmlaufPlaner():
         fahrplan_dates['end_date'] = pd.to_datetime(fahrplan_dates['end_date'], format='%Y%m%d')
         fahrplan_dates['day'] = fahrplan_dates['date'].dt.day_name()
 
-        fahrplan_dates_df = fahrplan_dates[['date', 'day', 'trip_id', 'service_id', 'route_id', 'start_date', 'end_date']]
+        # # set value in column to day if 1 and compare with day
+        # fahrplan_dates['monday'] = ['Monday' if x == '1' else '-' for x in fahrplan_dates['monday']]
+        # fahrplan_dates['tuesday'] = ['Tuesday' if x == '1' else '-' for x in
+        #                              fahrplan_dates['tuesday']]
+        # fahrplan_dates['wednesday'] = ['Wednesday' if x == '1' else '-' for x in
+        #                                fahrplan_dates['wednesday']]
+        # fahrplan_dates['thursday'] = ['Thursday' if x == '1' else '-' for x in
+        #                               fahrplan_dates['thursday']]
+        # fahrplan_dates['friday'] = ['Friday' if x == '1' else '-' for x in fahrplan_dates['friday']]
+        # fahrplan_dates['saturday'] = ['Saturday' if x == '1' else '-' for x in
+        #                               fahrplan_dates['saturday']]
+        # fahrplan_dates['sunday'] = ['Sunday' if x == '1' else '-' for x in fahrplan_dates['sunday']]
+
+        fahrplan_dates_df = fahrplan_dates[
+            ['date', 'day', 'trip_id', 'service_id', 'route_id', 'start_date', 'end_date', 'monday', 'tuesday',
+             'wednesday', 'thursday', 'friday', 'saturday', 'sunday']]
+
         dfDates['date'] =  pd.to_datetime(dfDates['date'], format='%Y%m%d')
         exception_type_dates = dfDates[dfDates['service_id'].isin(fahrplan_dates_df['service_id'])]
         exception_type_dates = exception_type_dates[exception_type_dates['date'].isin(requested_datesdf['date'])]
         exception_type_1_dates = exception_type_dates[exception_type_dates['exception_type'] == 1]
         exception_type_2_dates = exception_type_dates[exception_type_dates['exception_type'] == 2]
 
-        fahrplan_dates_df_date = fahrplan_dates_df[(fahrplan_dates_df['date'].isin(requested_datesdf['date']))]
-        fahrplan_dates_df_date = fahrplan_dates_df_date[(fahrplan_dates_df_date['service_id'].isin(exception_type_1_dates['service_id']))]
+        # add exceptions first!
+        if exception_type_1_dates.empty == False:
+            fahrplan_dates_df_date = fahrplan_dates_df[(fahrplan_dates_df['service_id'].isin(exception_type_1_dates['service_id']))]
+        else:
+            date_weekday = requested_datesdf['date'].dt.day_name()
+            weekday_columns = {
+                'Monday': 'monday',
+                'Tuesday': 'tuesday',
+                'Wednesday': 'wednesday',
+                'Thursday': 'thursday',
+                'Friday': 'friday',
+                'Saturday': 'saturday',
+                'Sunday': 'sunday'
+            }
+            weekday_column = weekday_columns[date_weekday[0]]
+            selected_service_ids = self.gtfs_data_frame_dto.Calendarweeks[self.gtfs_data_frame_dto.Calendarweeks[weekday_column] == '1']
+            fahrplan_dates_df_date = fahrplan_dates_df[
+                (fahrplan_dates_df['service_id'].isin(selected_service_ids['service_id']))]
+
+        fahrplan_dates_df_date = fahrplan_dates_df_date[(fahrplan_dates_df_date['date'].isin(requested_datesdf['date']))]
         fahrplan_dates_df_date = fahrplan_dates_df_date[(~fahrplan_dates_df_date['service_id'].isin(exception_type_2_dates['service_id']))]
+
+
 
         fahrplan_dates_df_date = fahrplan_dates_df_date.drop_duplicates(subset=['trip_id'])
         fahrplan_dates_df = fahrplan_dates_df_date.drop_duplicates()

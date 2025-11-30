@@ -753,6 +753,7 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.AgenciesTableView.sizePolicy().hasHeightForWidth())
         self.AgenciesTableView.setSizePolicy(sizePolicy)
         self.AgenciesTableView.setMaximumSize(QSize(16777215, 500))
+        self.AgenciesTableView.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 
         self.verticalLayout.addWidget(self.AgenciesTableView)
 
@@ -779,6 +780,8 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.TripsTableView.sizePolicy().hasHeightForWidth())
         self.TripsTableView.setSizePolicy(sizePolicy)
         self.TripsTableView.setMaximumSize(QSize(16777215, 500))
+        self.TripsTableView.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        self.TripsTableView.setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustIgnored)
 
         self.verticalLayout_4.addWidget(self.TripsTableView)
 
@@ -1241,7 +1244,7 @@ class Ui_MainWindow(object):
         self.pushButton.toggled.connect(self.menu_widget.setHidden)
 
         self.toolBox.setCurrentIndex(1)
-        self.main_view_stacked_widget.setCurrentIndex(1)
+        self.main_view_stacked_widget.setCurrentIndex(2)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
