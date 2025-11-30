@@ -77,7 +77,6 @@ class UmlaufPlaner():
 
 
     def datesWeekday_select_dates_for_date_range(self):
-        # conditions for searching in dfs
         dfTrips = self.gtfs_data_frame_dto.Trips
         dfWeek = self.gtfs_data_frame_dto.Calendarweeks
         dfRoutes = self.gtfs_data_frame_dto.Routes
@@ -90,35 +89,19 @@ class UmlaufPlaner():
             'service_id',
             'route_id',
             'start_date',
-            'end_date',
-            'monday',
-            'tuesday',
-            'wednesday',
-            'thursday',
-            'friday',
-            'saturday',
-            'sunday'
+            'end_date'
         ]
 
-        if DfTripColumnEnum.direction_id.value in dfTrips.columns:
-            result = (
-                dfWeek
-                .merge(dfTrips, on='service_id', how='inner')
-                .merge(dfRoutes, on='route_id', how='inner')
-                .merge(dfSelectedRoute, on=['route_id','route_short_name','agency_id', 'route_long_name'], how='inner')
-                .merge(dfSelectedAgency, on='agency_id', how='inner')
-                .merge(requested_directiondf, on='direction_id', how='inner')
-                .sort_values('service_id')
-            )
-        else:
-            result = (
-                dfWeek
-                .merge(dfTrips, on='service_id', how='inner')
-                .merge(dfRoutes, on='route_id', how='inner')
-                .merge(dfSelectedRoute, on=['route_id','route_short_name','agency_id', 'route_long_name'], how='inner')
-                .merge(dfSelectedAgency, on='agency_id', how='inner')
-                .sort_values('service_id')
-            )
+        result = (
+            dfWeek
+            .merge(dfTrips, on='service_id', how='inner')
+            .merge(dfRoutes, on='route_id', how='inner')
+            .merge(dfSelectedRoute, on=['route_id', 'agency_id'], how='inner', suffixes=('', '_duplicate'))
+            .merge(dfSelectedAgency, on='agency_id', how='inner', suffixes=('', '_duplicate'))
+            .merge(requested_directiondf, on='direction_id', how='inner')
+            .sort_values('service_id')
+        )
+
         result = result[selected_columns]
 
         if len(result) == 0:
@@ -217,50 +200,24 @@ class UmlaufPlaner():
                'service_id': row.service_id,
                'route_id': row.route_id,
                'start_date': row.start_date,
-               'end_date': row.end_date,
-               'monday': row.monday,
-               'tuesday': row.tuesday,
-               'wednesday': row.wednesday,
-               'thursday': row.thursday,
-               'friday': row.friday,
-               'saturday': row.saturday,
-               'sunday': row.sunday
+               'end_date': row.end_date
                }) for _, row in fahrplan_dates.iterrows()])
 
-        # need to convert the date after using iterows (itertuples might be faster)
         fahrplan_dates['date'] = pd.to_datetime(fahrplan_dates['date'], format='%Y%m%d')
         fahrplan_dates['start_date'] = pd.to_datetime(fahrplan_dates['start_date'], format='%Y%m%d')
         fahrplan_dates['end_date'] = pd.to_datetime(fahrplan_dates['end_date'], format='%Y%m%d')
         fahrplan_dates['day'] = fahrplan_dates['date'].dt.day_name()
 
-        # set value in column to day if 1 and compare with day
-        fahrplan_dates['monday'] = ['Monday' if x == '1' else '-' for x in fahrplan_dates['monday']]
-        fahrplan_dates['tuesday'] = ['Tuesday' if x == '1' else '-' for x in
-                                     fahrplan_dates['tuesday']]
-        fahrplan_dates['wednesday'] = ['Wednesday' if x == '1' else '-' for x in
-                                       fahrplan_dates['wednesday']]
-        fahrplan_dates['thursday'] = ['Thursday' if x == '1' else '-' for x in
-                                      fahrplan_dates['thursday']]
-        fahrplan_dates['friday'] = ['Friday' if x == '1' else '-' for x in fahrplan_dates['friday']]
-        fahrplan_dates['saturday'] = ['Saturday' if x == '1' else '-' for x in
-                                      fahrplan_dates['saturday']]
-        fahrplan_dates['sunday'] = ['Sunday' if x == '1' else '-' for x in fahrplan_dates['sunday']]
-
-        fahrplan_dates_df = fahrplan_dates[['date', 'day', 'trip_id', 'service_id', 'route_id', 'start_date', 'end_date','monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']]
+        fahrplan_dates_df = fahrplan_dates[['date', 'day', 'trip_id', 'service_id', 'route_id', 'start_date', 'end_date']]
         dfDates['date'] =  pd.to_datetime(dfDates['date'], format='%Y%m%d')
         exception_type_dates = dfDates[dfDates['service_id'].isin(fahrplan_dates_df['service_id'])]
         exception_type_dates = exception_type_dates[exception_type_dates['date'].isin(requested_datesdf['date'])]
         exception_type_1_dates = exception_type_dates[exception_type_dates['exception_type'] == 1]
         exception_type_2_dates = exception_type_dates[exception_type_dates['exception_type'] == 2]
 
-        days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-
         fahrplan_dates_df_date = fahrplan_dates_df[(fahrplan_dates_df['date'].isin(requested_datesdf['date']))]
-
         fahrplan_dates_df_date = fahrplan_dates_df_date[(fahrplan_dates_df_date['service_id'].isin(exception_type_1_dates['service_id']))]
-
         fahrplan_dates_df_date = fahrplan_dates_df_date[(~fahrplan_dates_df_date['service_id'].isin(exception_type_2_dates['service_id']))]
-        fahrplan_dates_df_date = fahrplan_dates_df_date[(fahrplan_dates_df_date['day'].isin(days))]
 
         fahrplan_dates_df_date = fahrplan_dates_df_date.drop_duplicates(subset=['trip_id'])
         fahrplan_dates_df = fahrplan_dates_df_date.drop_duplicates()
@@ -276,16 +233,15 @@ class UmlaufPlaner():
     def datesWeekday_select_stops_for_trips(self):
 
         dfselected_Route_Id = self.create_dataframe.SelectedRoute
-        requested_directiondf = self.create_dataframe.Direction.astype('string')
+        requested_directiondf = self.create_dataframe.Direction
+        #pd.DataFrame({'direction_id': [self.create_settings_for_table_dto.direction]})
         varTestAgency = self.create_dataframe.SelectedAgency
 
         dfRoutes = self.gtfs_data_frame_dto.Routes
         dfRoutes = pd.merge(left=dfRoutes, right=dfselected_Route_Id, how='inner', on=[DfRouteColumnEnum.route_id.value, DfRouteColumnEnum.route_short_name.value, DfRouteColumnEnum.agency_id.value, DfRouteColumnEnum.route_long_name.value])
         dfRoutes = pd.merge(left=dfRoutes, right=varTestAgency, how='inner', on=DfRouteColumnEnum.agency_id.value)
         dfTrip = self.gtfs_data_frame_dto.Trips
-        if "direction_id" in dfTrip.columns:
-            dfTrip['direction_id'] = dfTrip['direction_id'].astype('string')
-            dfTrip = pd.merge(left=dfTrip, right=requested_directiondf, how='inner', on='direction_id')
+        dfTrip = pd.merge(left=dfTrip, right=requested_directiondf, how='inner', on='direction_id')
         dfTrip = pd.merge(left=dfTrip, right=dfRoutes, how='inner', on='route_id')
         dfStopTimes = self.gtfs_data_frame_dto.Stoptimes
         dfTrip['trip_id'] = dfTrip['trip_id'].astype('string')
@@ -404,6 +360,7 @@ class UmlaufPlaner():
         sortedDataframe = self.create_dataframe.SortedDataframe
         sortedDataframe.rename(columns=lambda x: f'sorted_{x}', inplace=True)
         df_filtered_stop_names = self.create_dataframe.FilteredStopNamesDataframe
+
         if sortedDataframe.empty:
             raise Exception(ErrorMessageRessources.no_trips_found_in_date_range.value)
         if df_filtered_stop_names.empty:

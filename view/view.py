@@ -1,12 +1,12 @@
 import logging
-from PySide6.QtCore import Qt, QPoint, QSize
-from PySide6.QtWidgets import QFileDialog, QMessageBox, QMainWindow, QApplication, QHeaderView
+from PySide6.QtCore import Qt, QPoint
+from PySide6.QtWidgets import QMessageBox, QMainWindow, QApplication
 from model.Base.Progress import ProgressSignal
 from model.Enum.GTFSEnums import CreatePlanMode, DfRouteColumnEnum, DfAgencyColumnEnum
 from view.Custom.select_table_view import TableModel
 from view.Custom.sort_table_view import TableModelSort
 from view.pyui.ui_main_window import Ui_MainWindow
-from view.view_helpers import get_file_path, get_output_dir_path, get_pickle_save_path, string_to_qdate, qdate_to_string, update_table_sizes
+from view.view_helpers import get_file_path, get_output_dir_path, get_pickle_save_path, string_to_qdate, update_table_sizes
 from view.view_signals import ViewSignals
 
 logging.basicConfig(level=logging.DEBUG,
@@ -85,14 +85,18 @@ class View(QMainWindow):
         self.ui.checkBox_savepickle.setChecked(checked)
 
     def update_warning_table_view(self):
+        self.ui.import_missing_view.setModel(TableModelSort(
+            self.viewModel.model.planer.import_Data.missing_columns_in_gtfs_file))
+
         if self.viewModel.model.planer.import_Data.missing_columns_in_gtfs_file.empty:
             self.ui.import_missing_view.setVisible(False)
             self.ui.information_label_label.setVisible(False)
+            self.ui.information_missingtext_label.setVisible(False)
             return
+
         self.ui.import_missing_view.setVisible(True)
         self.ui.information_label_label.setVisible(True)
-        self.ui.import_missing_view.setModel(TableModelSort(
-            self.viewModel.model.planer.import_Data.missing_columns_in_gtfs_file))
+        self.ui.information_missingtext_label.setVisible(True)
         update_table_sizes(self.ui.import_missing_view)
 
     def update_time_format(self, time_format):
@@ -108,33 +112,47 @@ class View(QMainWindow):
         self.ui.comboBox.setEnabled(True)
         match mode:
             case CreatePlanMode.umlauf_date.value:
-                self.update_date_field_to_first_date_of_selected_route(self.viewModel.model.planer.create_settings_for_table_dto.sample_date)
-                self.ui.comboBox_direction.setEnabled(False)
-                self.ui.comboBox_direction.setVisible(False)
-                self.ui.dateEdit.setEnabled(True)
-                self.ui.dateEdit.setVisible(True)
+                self.update_to_umlauf_date_mode()
             case CreatePlanMode.umlauf_weekday.value:
-                self.ui.comboBox_direction.setEnabled(False)
-                self.ui.comboBox_direction.setVisible(False)
-                self.ui.listDatesWeekday.setEnabled(True)
-                self.ui.listDatesWeekday.setVisible(True)
-                self.ui.dateEdit.setEnabled(False)
-                self.ui.dateEdit.setVisible(False)
+                self.update_to_umlauf_weekday_mode()
             case CreatePlanMode.date.value:
-                self.update_date_field_to_first_date_of_selected_route(self.viewModel.model.planer.create_settings_for_table_dto.sample_date)
-                self.ui.comboBox_direction.setEnabled(True)
-                self.ui.comboBox_direction.setVisible(True)
-                self.ui.listDatesWeekday.setEnabled(False)
-                self.ui.listDatesWeekday.setVisible(False)
-                self.ui.dateEdit.setEnabled(True)
-                self.ui.dateEdit.setVisible(True)
+                self.update_to_date_mode()
             case CreatePlanMode.weekday.value:
-                self.ui.comboBox_direction.setEnabled(True)
-                self.ui.comboBox_direction.setVisible(True)
-                self.ui.listDatesWeekday.setEnabled(True)
-                self.ui.listDatesWeekday.setVisible(True)
-                self.ui.dateEdit.setEnabled(False)
-                self.ui.dateEdit.setVisible(False)
+                self.update_to_weekday_mode()
+
+    def update_to_date_mode(self):
+        self.update_date_field_to_first_date_of_selected_route(
+        self.viewModel.model.planer.create_settings_for_table_dto.sample_date)
+        self.ui.comboBox_direction.setEnabled(True)
+        self.ui.comboBox_direction.setVisible(True)
+        self.ui.listDatesWeekday.setEnabled(False)
+        self.ui.listDatesWeekday.setVisible(False)
+        self.ui.dateEdit.setEnabled(True)
+        self.ui.dateEdit.setVisible(True)
+
+    def update_to_weekday_mode(self):
+        self.ui.comboBox_direction.setEnabled(True)
+        self.ui.comboBox_direction.setVisible(True)
+        self.ui.listDatesWeekday.setEnabled(True)
+        self.ui.listDatesWeekday.setVisible(True)
+        self.ui.dateEdit.setEnabled(False)
+        self.ui.dateEdit.setVisible(False)
+
+    def update_to_umlauf_date_mode(self):
+        self.update_date_field_to_first_date_of_selected_route(
+        self.viewModel.model.planer.create_settings_for_table_dto.sample_date)
+        self.ui.comboBox_direction.setEnabled(False)
+        self.ui.comboBox_direction.setVisible(False)
+        self.ui.dateEdit.setEnabled(True)
+        self.ui.dateEdit.setVisible(True)
+
+    def update_to_umlauf_weekday_mode(self):
+        self.ui.comboBox_direction.setEnabled(False)
+        self.ui.comboBox_direction.setVisible(False)
+        self.ui.listDatesWeekday.setEnabled(True)
+        self.ui.listDatesWeekday.setVisible(True)
+        self.ui.dateEdit.setEnabled(False)
+        self.ui.dateEdit.setVisible(False)
 
     def update_create_options_state(self):
         if self.viewModel.model.planer.select_data.selected_agency is not None:
@@ -153,6 +171,7 @@ class View(QMainWindow):
     def initialize_objects(self):
         self.ui.import_missing_view.setVisible(False)
         self.ui.information_label_label.setVisible(False)
+        self.ui.information_missingtext_label.setVisible(False)
 
     def mousePressEvent(self, event):
         self.oldPos = event.globalPos()
@@ -255,9 +274,11 @@ class View(QMainWindow):
     def update_agency_list(self):
         self.ui.AgenciesTableView.setModel(
             TableModel(self.viewModel.model.planer.gtfs_data_frame_dto.Agencies))
-        self.show_Create_Select_Window()
         update_table_sizes(self.ui.AgenciesTableView)
-        logging.debug("loaded agency list")
+        if self.viewModel.model.planer.import_Data.missing_columns_in_gtfs_file.empty:
+            self.show_Create_Select_Window()
+
+        self.update_to_date_mode()
 
     def update_date_range_based_on_selected_route(self, date_range):
         self.ui.line_Selection_date_range.setText(date_range)

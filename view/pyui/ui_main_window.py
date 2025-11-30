@@ -683,19 +683,20 @@ class Ui_MainWindow(object):
         self.gridLayout_14.setObjectName(u"gridLayout_14")
         self.gridLayout_14.setSizeConstraint(QLayout.SizeConstraint.SetMinimumSize)
         self.gridLayout_14.setContentsMargins(1, -1, -1, -1)
+        self.verticalSpacer_8 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.gridLayout_14.addItem(self.verticalSpacer_8, 6, 0, 1, 1)
+
         self.information_label_label = QLabel(self.import_box_2)
         self.information_label_label.setObjectName(u"information_label_label")
         sizePolicy1.setHeightForWidth(self.information_label_label.sizePolicy().hasHeightForWidth())
         self.information_label_label.setSizePolicy(sizePolicy1)
         self.information_label_label.setMaximumSize(QSize(300, 100))
+        self.information_label_label.setFont(font3)
         self.information_label_label.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
         self.information_label_label.setWordWrap(False)
 
         self.gridLayout_14.addWidget(self.information_label_label, 0, 0, 1, 1)
-
-        self.verticalSpacer_8 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-
-        self.gridLayout_14.addItem(self.verticalSpacer_8, 4, 0, 1, 1)
 
         self.import_missing_view = Customtableview(self.import_box_2)
         self.import_missing_view.setObjectName(u"import_missing_view")
@@ -703,7 +704,12 @@ class Ui_MainWindow(object):
         self.import_missing_view.setSizePolicy(sizePolicy)
         self.import_missing_view.setMaximumSize(QSize(500, 200))
 
-        self.gridLayout_14.addWidget(self.import_missing_view, 3, 0, 1, 1)
+        self.gridLayout_14.addWidget(self.import_missing_view, 4, 0, 1, 1)
+
+        self.information_missingtext_label = QLabel(self.import_box_2)
+        self.information_missingtext_label.setObjectName(u"information_missingtext_label")
+
+        self.gridLayout_14.addWidget(self.information_missingtext_label, 1, 0, 1, 1)
 
 
         self.horizontalLayout_3.addWidget(self.import_box_2)
@@ -1234,8 +1240,8 @@ class Ui_MainWindow(object):
         self.btnExit.clicked.connect(MainWindow.close)
         self.pushButton.toggled.connect(self.menu_widget.setHidden)
 
-        self.toolBox.setCurrentIndex(0)
-        self.main_view_stacked_widget.setCurrentIndex(3)
+        self.toolBox.setCurrentIndex(1)
+        self.main_view_stacked_widget.setCurrentIndex(1)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -1292,6 +1298,7 @@ class Ui_MainWindow(object):
         self.checkBox_savepickle.setText(QCoreApplication.translate("MainWindow", u"save data to pickle format", None))
         self.btnRestart.setText(QCoreApplication.translate("MainWindow", u"Restart Import", None))
         self.information_label_label.setText(QCoreApplication.translate("MainWindow", u"Information Import:", None))
+        self.information_missingtext_label.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Attention: </p><p>Missing Columns in GTFS Data. </p><p>Creating tables might result into errors.</p><p>Following columns are missing in dataset: </p></body></html>", None))
         self.label_5.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p align=\"center\">Agencies</p></body></html>", None))
         self.label_8.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p align=\"center\">Trips</p></body></html>", None))
         self.label_13.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">Date</span></p></body></html>", None))

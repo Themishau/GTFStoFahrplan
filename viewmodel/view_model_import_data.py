@@ -46,6 +46,7 @@ class ViewModelImportData(QObject):
         self.pickle_file_path.emit(path[0])
 
     def on_import_gtfs_data_finished(self):
+        self.update_warning_table_view.emit()
         self.update_agency_list_signal.emit()
         self.set_up_create_tab_signal.emit()
 
@@ -58,8 +59,6 @@ class ViewModelImportData(QObject):
             self.model.start_function_async(ModelTriggerActionsEnum.planer_start_load_data.value)
         else:
             self.send_error_message(ErrorMessageRessources.error_path_not_valid.value)
-
-        self.update_warning_table_view.emit()
 
 
     def on_change_output_file_path(self, path):

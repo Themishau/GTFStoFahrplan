@@ -14,7 +14,7 @@ class CreateSettingsForTableDto(QObject):
         self._weekday = None
         self._dates = None
         self._date = pd.DataFrame(columns=['date'])
-        self._direction =  None
+        self._direction = 0
         self._use_individual_sorting =  False
         self._timeformat =  1
         self._create_plan_mode = CreatePlanMode.date

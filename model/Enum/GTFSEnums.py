@@ -160,7 +160,6 @@ class DfStopTimesColumnEnum(Enum):
     departure_time = 'departure_time'
     stop_id = 'stop_id'
     stop_sequence = 'stop_sequence'
-    stop_headsign = 'stop_headsign'
 
 
 class SubscriberTypes(Enum):
