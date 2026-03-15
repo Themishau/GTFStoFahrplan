@@ -29,6 +29,7 @@ class ViewSignals(QObject):
         self.view.ui.pushButton_3.clicked.connect(self.view.show_Create_Select_Window)
         self.view.ui.pushButton_4.clicked.connect(self.view.show_Create_Create_Window)
         self.view.ui.pushButton_5.clicked.connect(self.view.show_home_window)
+        self.view.ui.pushButton_7.clicked.connect(self.view.show_History_Gtfs_Window)
         self.view.ui.pushButton_6.clicked.connect(self.view.show_GTFSDownload_window)
 
         self.view.ui.btnImport.clicked.connect(self.viewModel.view_model_import_data.start_import_gtfs_data)
@@ -44,6 +45,8 @@ class ViewSignals(QObject):
 
         self.view.ui.checkBox_savepickle.clicked.connect(self.viewModel.view_model_import_data.on_changed_pickle_export_checked)
         self.viewModel.view_model_import_data.update_pickle_export_checked.connect(self.view.update_pickle_export_checked)
+        self.view.ui.checkBox_archivezip.clicked.connect(self.viewModel.view_model_import_data.on_changed_archive_input_checked)
+        self.viewModel.view_model_import_data.update_archive_input_checked.connect(self.view.update_archive_input_checked)
 
         self.view.ui.comboBox_time_format.activated[int].connect(self.viewModel.view_model_import_data.on_changed_time_format_mode)
         self.viewModel.view_model_import_data.export_plan_time_format.connect(self.view.update_time_format)
@@ -59,6 +62,7 @@ class ViewSignals(QObject):
         self.view.ui.listDatesWeekday.clicked.connect(self.view.get_changed_selected_weekday)
 
         self.viewModel.view_model_import_data.update_warning_table_view.connect(self.view.update_warning_table_view)
+        self.viewModel.view_model_import_data.update_history_table_signal.connect(self.view.update_history_list)
 
         self.viewModel.view_model_import_data.update_agency_list_signal.connect(self.view.update_agency_list, lol.Qt.ConnectionType.UniqueConnection)
         self.viewModel.view_model_select_data.update_routes_list_signal.connect(self.view.update_routes_list)

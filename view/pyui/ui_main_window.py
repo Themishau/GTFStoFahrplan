@@ -259,7 +259,7 @@ class Ui_MainWindow(object):
         self.toolBox.setStyleSheet(u"")
         self.page = QWidget()
         self.page.setObjectName(u"page")
-        self.page.setGeometry(QRect(0, 0, 182, 130))
+        self.page.setGeometry(QRect(0, 0, 153, 162))
         sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
         sizePolicy2.setHorizontalStretch(0)
         sizePolicy2.setVerticalStretch(0)
@@ -274,9 +274,15 @@ class Ui_MainWindow(object):
 
         self.gridLayout_6.addWidget(self.pushButton_5, 0, 0, 1, 2)
 
+        self.pushButton_7 = FadingButton(self.page)
+        self.pushButton_7.setObjectName(u"pushButton_7")
+        self.pushButton_7.setCheckable(True)
+
+        self.gridLayout_6.addWidget(self.pushButton_7, 1, 0, 1, 2)
+
         self.verticalSpacer = QSpacerItem(20, 80, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
 
-        self.gridLayout_6.addItem(self.verticalSpacer, 1, 0, 1, 1)
+        self.gridLayout_6.addItem(self.verticalSpacer, 2, 0, 1, 1)
 
         icon = QIcon()
         icon.addFile(u":/newPrefix/icons/bootstrap-icons-1.10.3/house-door.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
@@ -331,7 +337,7 @@ class Ui_MainWindow(object):
         self.toolBox.addItem(self.page_2, icon4, u"Create Table")
         self.page_3 = QWidget()
         self.page_3.setObjectName(u"page_3")
-        self.page_3.setGeometry(QRect(0, 0, 182, 90))
+        self.page_3.setGeometry(QRect(0, 0, 157, 90))
         sizePolicy2.setHeightForWidth(self.page_3.sizePolicy().hasHeightForWidth())
         self.page_3.setSizePolicy(sizePolicy2)
         self.gridLayout_2 = QGridLayout(self.page_3)
@@ -567,6 +573,29 @@ class Ui_MainWindow(object):
         self.verticalLayout_3.addItem(self.horizontalSpacer_2)
 
         self.main_view_stacked_widget.addWidget(self.general_information_page)
+        self.history_gtfs_page = QWidget()
+        self.history_gtfs_page.setObjectName(u"history_gtfs_page")
+        sizePolicy5.setHeightForWidth(self.history_gtfs_page.sizePolicy().hasHeightForWidth())
+        self.history_gtfs_page.setSizePolicy(sizePolicy5)
+        self.history_gtfs_page.setMaximumSize(QSize(1400, 600))
+        self.verticalLayout_history = QVBoxLayout(self.history_gtfs_page)
+        self.verticalLayout_history.setObjectName(u"verticalLayout_history")
+        self.label_history_gtfs = QLabel(self.history_gtfs_page)
+        self.label_history_gtfs.setObjectName(u"label_history_gtfs")
+        self.label_history_gtfs.setFont(font3)
+
+        self.verticalLayout_history.addWidget(self.label_history_gtfs)
+
+        self.historyTableView = QTableView(self.history_gtfs_page)
+        self.historyTableView.setObjectName(u"historyTableView")
+        self.historyTableView.setMinimumSize(QSize(0, 450))
+        self.historyTableView.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.historyTableView.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.historyTableView.setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
+
+        self.verticalLayout_history.addWidget(self.historyTableView)
+
+        self.main_view_stacked_widget.addWidget(self.history_gtfs_page)
         self.create_import_page = QWidget()
         self.create_import_page.setObjectName(u"create_import_page")
         sizePolicy5.setHeightForWidth(self.create_import_page.sizePolicy().hasHeightForWidth())
@@ -585,29 +614,13 @@ class Ui_MainWindow(object):
         self.gridLayout_11.setObjectName(u"gridLayout_11")
         self.gridLayout_11.setSizeConstraint(QLayout.SizeConstraint.SetDefaultConstraint)
         self.gridLayout_11.setContentsMargins(-1, 1, -1, -1)
-        self.lineInputPath = QLineEdit(self.import_box)
-        self.lineInputPath.setObjectName(u"lineInputPath")
-        self.lineInputPath.setFont(font3)
-        self.lineInputPath.setStyleSheet(u"")
-        self.lineInputPath.setReadOnly(True)
+        self.btnRestart = FadingButton(self.import_box)
+        self.btnRestart.setObjectName(u"btnRestart")
+        self.btnRestart.setEnabled(False)
+        self.btnRestart.setFont(font3)
+        self.btnRestart.setStyleSheet(u"")
 
-        self.gridLayout_11.addWidget(self.lineInputPath, 0, 1, 1, 1)
-
-        self.btnGetPickleFile = FadingButton(self.import_box)
-        self.btnGetPickleFile.setObjectName(u"btnGetPickleFile")
-        self.btnGetPickleFile.setEnabled(True)
-        self.btnGetPickleFile.setFont(font3)
-        self.btnGetPickleFile.setStyleSheet(u"")
-        self.btnGetPickleFile.setIcon(icon2)
-
-        self.gridLayout_11.addWidget(self.btnGetPickleFile, 2, 2, 1, 1)
-
-        self.label_11 = QLabel(self.import_box)
-        self.label_11.setObjectName(u"label_11")
-        self.label_11.setFont(font4)
-        self.label_11.setStyleSheet(u"")
-
-        self.gridLayout_11.addWidget(self.label_11, 0, 0, 1, 1)
+        self.gridLayout_11.addWidget(self.btnRestart, 5, 0, 1, 1)
 
         self.btnGetOutputDir = FadingButton(self.import_box)
         self.btnGetOutputDir.setObjectName(u"btnGetOutputDir")
@@ -618,13 +631,30 @@ class Ui_MainWindow(object):
 
         self.gridLayout_11.addWidget(self.btnGetOutputDir, 1, 2, 1, 1)
 
-        self.lineOutputPath = QLineEdit(self.import_box)
-        self.lineOutputPath.setObjectName(u"lineOutputPath")
-        self.lineOutputPath.setFont(font3)
-        self.lineOutputPath.setStyleSheet(u"")
-        self.lineOutputPath.setReadOnly(True)
+        self.picklesavename = QLineEdit(self.import_box)
+        self.picklesavename.setObjectName(u"picklesavename")
+        self.picklesavename.setFont(font3)
+        self.picklesavename.setStyleSheet(u"")
+        self.picklesavename.setReadOnly(True)
 
-        self.gridLayout_11.addWidget(self.lineOutputPath, 1, 1, 1, 1)
+        self.gridLayout_11.addWidget(self.picklesavename, 2, 1, 1, 1)
+
+        self.btnImport = FadingButton(self.import_box)
+        self.btnImport.setObjectName(u"btnImport")
+        self.btnImport.setEnabled(True)
+        self.btnImport.setFont(font3)
+        self.btnImport.setStyleSheet(u"")
+
+        self.gridLayout_11.addWidget(self.btnImport, 4, 0, 1, 1)
+
+        self.btnGetPickleFile = FadingButton(self.import_box)
+        self.btnGetPickleFile.setObjectName(u"btnGetPickleFile")
+        self.btnGetPickleFile.setEnabled(True)
+        self.btnGetPickleFile.setFont(font3)
+        self.btnGetPickleFile.setStyleSheet(u"")
+        self.btnGetPickleFile.setIcon(icon2)
+
+        self.gridLayout_11.addWidget(self.btnGetPickleFile, 2, 2, 1, 1)
 
         self.btnGetFile = FadingButton(self.import_box)
         self.btnGetFile.setObjectName(u"btnGetFile")
@@ -635,21 +665,12 @@ class Ui_MainWindow(object):
 
         self.gridLayout_11.addWidget(self.btnGetFile, 0, 2, 1, 1)
 
-        self.btnImport = FadingButton(self.import_box)
-        self.btnImport.setObjectName(u"btnImport")
-        self.btnImport.setEnabled(True)
-        self.btnImport.setFont(font3)
-        self.btnImport.setStyleSheet(u"")
+        self.checkBox_savepickle = QCheckBox(self.import_box)
+        self.checkBox_savepickle.setObjectName(u"checkBox_savepickle")
+        sizePolicy5.setHeightForWidth(self.checkBox_savepickle.sizePolicy().hasHeightForWidth())
+        self.checkBox_savepickle.setSizePolicy(sizePolicy5)
 
-        self.gridLayout_11.addWidget(self.btnImport, 3, 0, 1, 1)
-
-        self.picklesavename = QLineEdit(self.import_box)
-        self.picklesavename.setObjectName(u"picklesavename")
-        self.picklesavename.setFont(font3)
-        self.picklesavename.setStyleSheet(u"")
-        self.picklesavename.setReadOnly(True)
-
-        self.gridLayout_11.addWidget(self.picklesavename, 2, 1, 1, 1)
+        self.gridLayout_11.addWidget(self.checkBox_savepickle, 2, 0, 1, 1)
 
         self.label_10 = QLabel(self.import_box)
         self.label_10.setObjectName(u"label_10")
@@ -658,20 +679,33 @@ class Ui_MainWindow(object):
 
         self.gridLayout_11.addWidget(self.label_10, 1, 0, 1, 1)
 
-        self.checkBox_savepickle = QCheckBox(self.import_box)
-        self.checkBox_savepickle.setObjectName(u"checkBox_savepickle")
-        sizePolicy5.setHeightForWidth(self.checkBox_savepickle.sizePolicy().hasHeightForWidth())
-        self.checkBox_savepickle.setSizePolicy(sizePolicy5)
+        self.lineOutputPath = QLineEdit(self.import_box)
+        self.lineOutputPath.setObjectName(u"lineOutputPath")
+        self.lineOutputPath.setFont(font3)
+        self.lineOutputPath.setStyleSheet(u"")
+        self.lineOutputPath.setReadOnly(True)
 
-        self.gridLayout_11.addWidget(self.checkBox_savepickle, 2, 0, 1, 1)
+        self.gridLayout_11.addWidget(self.lineOutputPath, 1, 1, 1, 1)
 
-        self.btnRestart = FadingButton(self.import_box)
-        self.btnRestart.setObjectName(u"btnRestart")
-        self.btnRestart.setEnabled(False)
-        self.btnRestart.setFont(font3)
-        self.btnRestart.setStyleSheet(u"")
+        self.label_11 = QLabel(self.import_box)
+        self.label_11.setObjectName(u"label_11")
+        self.label_11.setFont(font4)
+        self.label_11.setStyleSheet(u"")
 
-        self.gridLayout_11.addWidget(self.btnRestart, 4, 0, 1, 1)
+        self.gridLayout_11.addWidget(self.label_11, 0, 0, 1, 1)
+
+        self.lineInputPath = QLineEdit(self.import_box)
+        self.lineInputPath.setObjectName(u"lineInputPath")
+        self.lineInputPath.setFont(font3)
+        self.lineInputPath.setStyleSheet(u"")
+        self.lineInputPath.setReadOnly(True)
+
+        self.gridLayout_11.addWidget(self.lineInputPath, 0, 1, 1, 1)
+
+        self.checkBox_archivezip = QCheckBox(self.import_box)
+        self.checkBox_archivezip.setObjectName(u"checkBox_archivezip")
+
+        self.gridLayout_11.addWidget(self.checkBox_archivezip, 3, 0, 1, 1)
 
 
         self.horizontalLayout_3.addWidget(self.import_box)
@@ -1253,6 +1287,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
         self.pushButton_5.setText(QCoreApplication.translate("MainWindow", u"General Information", None))
+        self.pushButton_7.setText(QCoreApplication.translate("MainWindow", u"GTFS History", None))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page), QCoreApplication.translate("MainWindow", u"General", None))
         self.pushButton_3.setText(QCoreApplication.translate("MainWindow", u"Select", None))
         self.pushButton_2.setText(QCoreApplication.translate("MainWindow", u"Import", None))
@@ -1280,18 +1315,14 @@ class Ui_MainWindow(object):
 "- Icons by Petras Nargela\n"
 "\n"
 "- PySide6 is used.", None))
-        self.lineInputPath.setText("")
-        self.lineInputPath.setPlaceholderText(QCoreApplication.translate("MainWindow", u"C:/Tmp/GTFS.zip", None))
-        self.btnGetPickleFile.setText("")
-        self.label_11.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">input data</span></p></body></html>", None))
+        self.label_history_gtfs.setText(QCoreApplication.translate("MainWindow", u"Imported GTFS History", None))
+        self.btnRestart.setText(QCoreApplication.translate("MainWindow", u"Restart Import", None))
         self.btnGetOutputDir.setText("")
-        self.lineOutputPath.setText("")
-        self.lineOutputPath.setPlaceholderText(QCoreApplication.translate("MainWindow", u"C:/Tmp/", None))
-        self.btnGetFile.setText("")
-        self.btnImport.setText(QCoreApplication.translate("MainWindow", u"Start Import", None))
         self.picklesavename.setText("")
         self.picklesavename.setPlaceholderText(QCoreApplication.translate("MainWindow", u"C:/Tmp/GTFS.zip", None))
-        self.label_10.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">output path</span></p></body></html>", None))
+        self.btnImport.setText(QCoreApplication.translate("MainWindow", u"Start Import", None))
+        self.btnGetPickleFile.setText("")
+        self.btnGetFile.setText("")
 #if QT_CONFIG(tooltip)
         self.checkBox_savepickle.setToolTip(QCoreApplication.translate("MainWindow", u"saves data to faster format", None))
 #endif // QT_CONFIG(tooltip)
@@ -1299,7 +1330,19 @@ class Ui_MainWindow(object):
         self.checkBox_savepickle.setWhatsThis(QCoreApplication.translate("MainWindow", u"saves data to faster format", None))
 #endif // QT_CONFIG(whatsthis)
         self.checkBox_savepickle.setText(QCoreApplication.translate("MainWindow", u"save data to pickle format", None))
-        self.btnRestart.setText(QCoreApplication.translate("MainWindow", u"Restart Import", None))
+        self.label_10.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">output path</span></p></body></html>", None))
+        self.lineOutputPath.setText("")
+        self.lineOutputPath.setPlaceholderText(QCoreApplication.translate("MainWindow", u"C:/Tmp/", None))
+        self.label_11.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">input data</span></p></body></html>", None))
+        self.lineInputPath.setText("")
+        self.lineInputPath.setPlaceholderText(QCoreApplication.translate("MainWindow", u"C:/Tmp/GTFS.zip", None))
+#if QT_CONFIG(tooltip)
+        self.checkBox_archivezip.setToolTip(QCoreApplication.translate("MainWindow", u"copies the imported zip into the local history archive", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(whatsthis)
+        self.checkBox_archivezip.setWhatsThis(QCoreApplication.translate("MainWindow", u"copies the imported zip into the local history archive", None))
+#endif // QT_CONFIG(whatsthis)
+        self.checkBox_archivezip.setText(QCoreApplication.translate("MainWindow", u"copy imported zip into history archive", None))
         self.information_label_label.setText(QCoreApplication.translate("MainWindow", u"Information Import:", None))
         self.information_missingtext_label.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Attention: </p><p>Missing Columns in GTFS Data. </p><p>Creating tables might result into errors.</p><p>Following columns are missing in dataset: </p></body></html>", None))
         self.label_5.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p align=\"center\">Agencies</p></body></html>", None))

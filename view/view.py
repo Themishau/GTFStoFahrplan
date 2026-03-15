@@ -27,12 +27,14 @@ class View(QMainWindow):
         self.createTableSelect_btn = self.ui.pushButton_3
         self.createTableCreate_btn = self.ui.pushButton_4
         self.generalNavPush_btn = self.ui.pushButton_5
+        self.historyNavPush_btn = self.ui.pushButton_7
         self.downloadGTFSNavPush_btn = self.ui.pushButton_6
 
         self.menu_btns_dict = {self.createTableImport_btn: self.ui.create_import_page,
                                self.createTableSelect_btn: self.ui.create_select_page,
                                self.createTableCreate_btn: self.ui.create_create_page,
                                self.generalNavPush_btn: self.ui.general_information_page,
+                               self.historyNavPush_btn: self.ui.history_gtfs_page,
                                self.downloadGTFSNavPush_btn: self.ui.download_page}
 
         self.signals = ViewSignals(self, self.viewModel, parent=self)
@@ -41,6 +43,7 @@ class View(QMainWindow):
 
         self.initialize_window()
         self.initialize_tabs()
+        self.update_history_list()
         self.show_home_window()
 
     def update_individualsorting(self, checked):
@@ -56,6 +59,7 @@ class View(QMainWindow):
         self.ui.create_import_page.ui.btnGetPickleFile.setEnabled(False)
         self.ui.create_import_page.ui.btnGetOutputDir.setEnabled(False)
         self.ui.create_import_page.ui.checkBox_savepickle.setEnabled(False)
+        self.ui.create_import_page.ui.checkBox_archivezip.setEnabled(False)
 
     def _get_selected_row_index(self, table_view, clicked_index: QModelIndex | None = None):
         if clicked_index is not None and clicked_index.isValid():
@@ -97,6 +101,9 @@ class View(QMainWindow):
 
     def update_pickle_export_checked(self, checked):
         self.ui.checkBox_savepickle.setChecked(checked)
+
+    def update_archive_input_checked(self, checked):
+        self.ui.checkBox_archivezip.setChecked(checked)
 
     def update_warning_table_view(self):
         missing_columns_df = self.viewModel.view_model_import_data.get_missing_columns_df()
@@ -211,6 +218,7 @@ class View(QMainWindow):
         self.ui.progress_history_list_view.updateProgress(progress_data)
 
     def initialize_tabs(self):
+        self.ui.main_view_stacked_widget.addWidget(self.ui.history_gtfs_page)
         self.ui.main_view_stacked_widget.addWidget(self.ui.create_import_page)
         self.ui.main_view_stacked_widget.addWidget(self.ui.create_select_page)
         self.ui.main_view_stacked_widget.addWidget(self.ui.create_create_page)
@@ -226,6 +234,12 @@ class View(QMainWindow):
         self.set_btn_checked(self.generalNavPush_btn)
         self.ui.toolBox.setCurrentWidget(self.ui.page)
         self.ui.main_view_stacked_widget.setCurrentWidget(self.ui.general_information_page)
+
+    def show_History_Gtfs_Window(self):
+        self.set_btn_checked(self.historyNavPush_btn)
+        self.ui.toolBox.setCurrentWidget(self.ui.page)
+        self.update_history_list()
+        self.ui.main_view_stacked_widget.setCurrentWidget(self.ui.history_gtfs_page)
 
     def show_Create_Import_Window(self):
         self.set_btn_checked(self.createTableImport_btn)
@@ -295,6 +309,10 @@ class View(QMainWindow):
             self.show_Create_Select_Window()
 
         self.update_to_date_mode()
+
+    def update_history_list(self):
+        self.ui.historyTableView.setModel(TableModel(self.viewModel.view_model_import_data.get_history_df()))
+        update_table_sizes(self.ui.historyTableView)
 
     def update_date_range_based_on_selected_route(self, date_range):
         self.ui.line_Selection_date_range.setText(date_range)

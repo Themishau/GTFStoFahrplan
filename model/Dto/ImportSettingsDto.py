@@ -12,6 +12,7 @@ class ImportSettingsDto(QObject):
         self._pickle_save_path_filename = ""
         self._pickle_save_path = ""
         self._pickle_export_checked = False
+        self._archive_input_file_checked = False
         self._time_format = 1
         self._df_date_range_in_gtfs_data = pd.DataFrame()
 
@@ -21,6 +22,7 @@ class ImportSettingsDto(QObject):
         copied._input_path = copy.deepcopy(self._input_path, memo)
         copied._pickle_save_path_filename = copy.deepcopy(self._pickle_save_path_filename, memo)
         copied._pickle_export_checked = copy.deepcopy(self._pickle_export_checked, memo)
+        copied._archive_input_file_checked = copy.deepcopy(self._archive_input_file_checked, memo)
         copied._time_format = copy.deepcopy(self._time_format, memo)
         copied._pickle_save_path = copy.deepcopy(self._pickle_save_path, memo)
         copied._df_date_range_in_gtfs_data = copy.deepcopy(self._df_date_range_in_gtfs_data, memo)
@@ -61,6 +63,15 @@ class ImportSettingsDto(QObject):
     @pickle_export_checked.setter
     def pickle_export_checked(self, value):
         self._pickle_export_checked = value
+        self.import_settings_changed.emit()
+
+    @property
+    def archive_input_file_checked(self):
+        return self._archive_input_file_checked
+
+    @archive_input_file_checked.setter
+    def archive_input_file_checked(self, value):
+        self._archive_input_file_checked = value
         self.import_settings_changed.emit()
 
     @property
