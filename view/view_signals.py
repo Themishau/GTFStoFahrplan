@@ -4,8 +4,8 @@ from view.Custom.ProgressListView import ProgressHistoryModel, ProgressBarDelega
 from PySide6.QtWidgets import QAbstractItemView
 
 class ViewSignals(QObject):
-    def __init__(self, view, viewModel):
-        super().__init__()
+    def __init__(self, view, viewModel, parent=None):
+        super().__init__(parent)
         self.view = view
         self.viewModel = viewModel
 
@@ -15,6 +15,7 @@ class ViewSignals(QObject):
 
         self.view.ui.progress_history_list_view.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.view.ui.progress_history_list_view.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.view.ui.progress_history_list_view.setEnabled(True)
         self.view.ui.progress_history_list_view.setModel(ProgressHistoryModel())
         self.view.ui.progress_history_list_view.setItemDelegate(ProgressBarDelegate())
 

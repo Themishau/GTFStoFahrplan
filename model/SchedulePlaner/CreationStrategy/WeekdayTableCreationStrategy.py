@@ -1,6 +1,6 @@
 from typing import List, Optional
 import copy
-from PySide6.QtCore import Signal, QObject
+from PySide6.QtCore import Signal, QObject, QThread
 from model.Base.Progress import ProgressSignal
 from model.Enum.GTFSEnums import ProcessType
 from model.SchedulePlaner.CreationStrategy.CommonMeta import CommonMeta
@@ -28,6 +28,8 @@ class WeekdayTableCreationStrategy(QObject, TableCreationStrategy, metaclass=Com
         ]
 
         for step, description in steps:
+            if QThread.currentThread().isInterruptionRequested():
+                raise InterruptedError("Operation cancelled.")
             self.process = self.process + 10
             self.progress_Update.emit(self.progress.set_progress(self.process, ProcessType.create_plan, description))
             step()

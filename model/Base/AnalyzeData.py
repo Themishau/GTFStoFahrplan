@@ -8,10 +8,6 @@ from .Progress import ProgressSignal
 from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDto
 from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
 
-logging.basicConfig(level=logging.DEBUG,
-                    format="%(asctime)s %(levelname)s %(message)s",
-                    datefmt="%Y-%m-%d %H:%M:%S")
-
 
 class AnalyzeData(QObject):
     progress_Update = Signal(ProgressSignal)

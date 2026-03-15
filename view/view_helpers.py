@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QFileDialog, QHeaderView
+from PySide6.QtWidgets import QFileDialog, QHeaderView, QTableView
 from PySide6.QtCore import QDate
 import os
 
@@ -59,8 +59,36 @@ def qdate_to_string(qdate):
     format_str = 'yyyyMMdd'
     return qdate.toString(format_str)
 
-def update_table_sizes(qViewTable):
-    qViewTable.horizontalHeader().setSectionResizeMode(
-        qViewTable.horizontalHeader().logicalIndex(0), QHeaderView.Interactive)
-    qViewTable.horizontalHeader().setSectionResizeMode(
-        qViewTable.horizontalHeader().logicalIndex(1), QHeaderView.Stretch)
+def configure_table_view(table_view: QTableView):
+    horizontal_header = table_view.horizontalHeader()
+    vertical_header = table_view.verticalHeader()
+
+    horizontal_header.setVisible(True)
+    vertical_header.setVisible(False)
+    horizontal_header.setStretchLastSection(False)
+    horizontal_header.setMinimumSectionSize(24)
+    horizontal_header.setSectionResizeMode(QHeaderView.Interactive)
+
+    table_view.setWordWrap(False)
+    table_view.setAlternatingRowColors(True)
+
+
+def update_table_sizes(table_view: QTableView):
+    configure_table_view(table_view)
+
+    model = table_view.model()
+    if model is None:
+        return
+
+    column_count = model.columnCount()
+    if column_count <= 0:
+        return
+
+    horizontal_header = table_view.horizontalHeader()
+
+    for column in range(column_count):
+        resize_mode = QHeaderView.ResizeToContents if column == 0 else QHeaderView.Interactive
+        horizontal_header.setSectionResizeMode(column, resize_mode)
+
+    horizontal_header.setStretchLastSection(True)
+    table_view.resizeColumnsToContents()

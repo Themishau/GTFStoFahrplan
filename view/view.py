@@ -1,17 +1,15 @@
 import logging
-from PySide6.QtCore import Qt, QPoint
+from PySide6.QtCore import Qt, QPoint, QModelIndex
 from PySide6.QtWidgets import QMessageBox, QMainWindow, QApplication
 from model.Base.Progress import ProgressSignal
-from model.Enum.GTFSEnums import CreatePlanMode, DfRouteColumnEnum, DfAgencyColumnEnum
+from model.Enum.GTFSEnums import CreatePlanMode
 from view.Custom.select_table_view import TableModel
 from view.Custom.sort_table_view import TableModelSort
 from view.pyui.ui_main_window import Ui_MainWindow
 from view.view_helpers import get_file_path, get_output_dir_path, get_pickle_save_path, string_to_qdate, update_table_sizes
 from view.view_signals import ViewSignals
 
-logging.basicConfig(level=logging.DEBUG,
-                    format="%(asctime)s %(levelname)s %(message)s",
-                    datefmt="%Y-%m-%d %H:%M:%S")
+logger = logging.getLogger(__name__)
 
 
 class View(QMainWindow):
@@ -23,7 +21,7 @@ class View(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        self.messageBox_model = QMessageBox()
+        self.messageBox_model = QMessageBox(self)
 
         self.createTableImport_btn = self.ui.pushButton_2
         self.createTableSelect_btn = self.ui.pushButton_3
@@ -37,7 +35,7 @@ class View(QMainWindow):
                                self.generalNavPush_btn: self.ui.general_information_page,
                                self.downloadGTFSNavPush_btn: self.ui.download_page}
 
-        self.signals = ViewSignals(self, self.viewModel)
+        self.signals = ViewSignals(self, self.viewModel, parent=self)
         self.signals.connect_signals()
         self.signals.init_signals()
 
@@ -59,18 +57,34 @@ class View(QMainWindow):
         self.ui.create_import_page.ui.btnGetOutputDir.setEnabled(False)
         self.ui.create_import_page.ui.checkBox_savepickle.setEnabled(False)
 
-    def get_selected_agency_table_record(self):
-        index = self.ui.AgenciesTableView.selectedIndexes()[0]
-        logging.debug(f"index {index}")
+    def _get_selected_row_index(self, table_view, clicked_index: QModelIndex | None = None):
+        if clicked_index is not None and clicked_index.isValid():
+            return clicked_index
+
+        selection_model = table_view.selectionModel()
+        if selection_model is None:
+            return None
+
+        selected_rows = selection_model.selectedRows()
+        if not selected_rows:
+            return None
+        return selected_rows[0]
+
+    def get_selected_agency_table_record(self, index: QModelIndex):
+        index = self._get_selected_row_index(self.ui.AgenciesTableView, index)
+        if index is None:
+            return
+        logger.debug(f"index {index}")
         id_us = self.ui.AgenciesTableView.model().wholeData(index)
-        logging.debug(f"index {id_us["agency_id"]}")
+        logger.debug(f"index {id_us["agency_id"]}")
         self.viewModel.view_model_select_data.on_changed_selected_record_agency(id_us)
-        self.ui.line_Selection_agency.setText(f"selected trips: {self.viewModel.model.planer.create_settings_for_table_dto.selected_agency_text}")
-        self.update_time_format(self.viewModel.model.planer.create_settings_for_table_dto.timeformat)
+        self.ui.line_Selection_agency.setText(
+            f"selected trips: {self.viewModel.view_model_select_data.get_selected_agency_text()}"
+        )
+        self.update_time_format(self.viewModel.view_model_import_data.get_time_format())
 
     def update_create_table(self):
-        self.send_message_box(
-            f"Success. Create table successfully. Saved here: {self.viewModel.model.planer.create_settings_for_table_dto.full_output_path}")
+        self.send_message_box(self.viewModel.view_model_create_data.get_success_message())
 
     def update_file_input_path(self, input_path):
         self.ui.lineInputPath.setText(input_path)
@@ -85,10 +99,10 @@ class View(QMainWindow):
         self.ui.checkBox_savepickle.setChecked(checked)
 
     def update_warning_table_view(self):
-        self.ui.import_missing_view.setModel(TableModelSort(
-            self.viewModel.model.planer.import_Data.missing_columns_in_gtfs_file))
+        missing_columns_df = self.viewModel.view_model_import_data.get_missing_columns_df()
+        self.ui.import_missing_view.setModel(TableModelSort(missing_columns_df))
 
-        if self.viewModel.model.planer.import_Data.missing_columns_in_gtfs_file.empty:
+        if not self.viewModel.view_model_import_data.has_missing_columns():
             self.ui.import_missing_view.setVisible(False)
             self.ui.information_label_label.setVisible(False)
             self.ui.information_missingtext_label.setVisible(False)
@@ -100,7 +114,7 @@ class View(QMainWindow):
         update_table_sizes(self.ui.import_missing_view)
 
     def update_time_format(self, time_format):
-        self.ui.line_Selection_format.setText(f'time format {self.viewModel.model.planer.create_settings_for_table_dto.timeformat}')
+        self.ui.line_Selection_format.setText(f'time format {time_format}')
 
     def update_direction_mode(self, mode):
         self.ui.comboBox_direction.setCurrentText(mode)
@@ -122,7 +136,7 @@ class View(QMainWindow):
 
     def update_to_date_mode(self):
         self.update_date_field_to_first_date_of_selected_route(
-        self.viewModel.model.planer.create_settings_for_table_dto.sample_date)
+        self.viewModel.view_model_create_data.get_sample_date())
         self.ui.comboBox_direction.setEnabled(True)
         self.ui.comboBox_direction.setVisible(True)
         self.ui.listDatesWeekday.setEnabled(False)
@@ -140,7 +154,7 @@ class View(QMainWindow):
 
     def update_to_umlauf_date_mode(self):
         self.update_date_field_to_first_date_of_selected_route(
-        self.viewModel.model.planer.create_settings_for_table_dto.sample_date)
+        self.viewModel.view_model_create_data.get_sample_date())
         self.ui.comboBox_direction.setEnabled(False)
         self.ui.comboBox_direction.setVisible(False)
         self.ui.dateEdit.setEnabled(True)
@@ -155,12 +169,12 @@ class View(QMainWindow):
         self.ui.dateEdit.setVisible(False)
 
     def update_create_options_state(self):
-        if self.viewModel.model.planer.select_data.selected_agency is not None:
-            self.ui.line_Selection_agency.setText(
-                f"selected agency: {self.viewModel.model.planer.select_data.selected_agency[DfAgencyColumnEnum.agency_name.value].iloc[0]}")
-        if self.viewModel.model.planer.select_data.selected_route is not None:
-            self.ui.line_Selection_trips.setText(
-                f"selected Trip: {self.viewModel.model.planer.select_data.selected_route[DfRouteColumnEnum.route_short_name.value].iloc[0]}")
+        selected_agency_text = self.viewModel.view_model_select_data.get_selected_agency_text()
+        if selected_agency_text:
+            self.ui.line_Selection_agency.setText(f"selected agency: {selected_agency_text}")
+        selected_route_text = self.viewModel.view_model_select_data.get_selected_route_text()
+        if selected_route_text:
+            self.ui.line_Selection_trips.setText(f"selected Trip: {selected_route_text}")
         return
 
     def initialize_window(self):
@@ -205,22 +219,27 @@ class View(QMainWindow):
 
     def show_GTFSDownload_window(self):
         self.set_btn_checked(self.downloadGTFSNavPush_btn)
+        self.ui.toolBox.setCurrentWidget(self.ui.page_3)
         self.ui.main_view_stacked_widget.setCurrentWidget(self.ui.download_page)
 
     def show_home_window(self):
         self.set_btn_checked(self.generalNavPush_btn)
+        self.ui.toolBox.setCurrentWidget(self.ui.page)
         self.ui.main_view_stacked_widget.setCurrentWidget(self.ui.general_information_page)
 
     def show_Create_Import_Window(self):
         self.set_btn_checked(self.createTableImport_btn)
+        self.ui.toolBox.setCurrentWidget(self.ui.page_2)
         self.ui.main_view_stacked_widget.setCurrentWidget(self.ui.create_import_page)
 
     def show_Create_Select_Window(self):
         self.set_btn_checked(self.createTableSelect_btn)
+        self.ui.toolBox.setCurrentWidget(self.ui.page_2)
         self.ui.main_view_stacked_widget.setCurrentWidget(self.ui.create_select_page)
 
     def show_Create_Create_Window(self):
         self.set_btn_checked(self.createTableCreate_btn)
+        self.ui.toolBox.setCurrentWidget(self.ui.page_2)
         self.ui.main_view_stacked_widget.setCurrentWidget(self.ui.create_create_page)
 
     def set_btn_checked(self, btn):
@@ -247,7 +266,7 @@ class View(QMainWindow):
 
     def initialize_create_view_weekdaydate_option(self):
         self.initialize_create_base_option()
-        self.ui.dateEdit.setDate(string_to_qdate(self.viewModel.model.planer.create_settings_for_table_dto.sample_date))
+        self.ui.dateEdit.setDate(string_to_qdate(self.viewModel.view_model_import_data.get_sample_date()))
         self.ui.dateEdit.setEnabled(True)
         self.update_weekday_option_table()
 
@@ -260,22 +279,19 @@ class View(QMainWindow):
         update_table_sizes(self.ui.listDatesWeekday)
 
     def update_routes_list(self):
-        self.ui.TripsTableView.setModel(
-            TableModel(self.viewModel.model.planer.create_settings_for_table_dto.df_selected_routes))
+        self.ui.TripsTableView.setModel(TableModel(self.viewModel.view_model_select_data.get_routes_df()))
         update_table_sizes(self.ui.TripsTableView)
 
 
     def update_individualsorting_table(self):
-        self.ui.tableView_sorting_stops.setModel(
-            TableModelSort(self.viewModel.model.planer.create_plan.strategy.plans.create_dataframe.FilteredStopNamesDataframe))
+        self.ui.tableView_sorting_stops.setModel(TableModelSort(self.viewModel.view_model_create_data.get_sorting_df()))
         update_table_sizes(self.ui.tableView_sorting_stops)
         self.ui.btnContinueCreate.setEnabled(True)
 
     def update_agency_list(self):
-        self.ui.AgenciesTableView.setModel(
-            TableModel(self.viewModel.model.planer.gtfs_data_frame_dto.Agencies))
+        self.ui.AgenciesTableView.setModel(TableModel(self.viewModel.view_model_import_data.get_agencies_df()))
         update_table_sizes(self.ui.AgenciesTableView)
-        if self.viewModel.model.planer.import_Data.missing_columns_in_gtfs_file.empty:
+        if not self.viewModel.view_model_import_data.has_missing_columns():
             self.show_Create_Select_Window()
 
         self.update_to_date_mode()
@@ -295,26 +311,31 @@ class View(QMainWindow):
     def get_pickle_save_path(self):
         self.viewModel.view_model_import_data.on_changed_pickle_path(get_pickle_save_path(self))
 
-    def get_changed_selected_record_trip(self):
-        index = self.ui.TripsTableView.selectedIndexes()[2]
-        logging.debug(f"index {index}")
+    def get_changed_selected_record_trip(self, index: QModelIndex):
+        index = self._get_selected_row_index(self.ui.TripsTableView, index)
+        if index is None:
+            return
+        logger.debug(f"index {index}")
         id_us = self.ui.TripsTableView.model().wholeData(index)
-        logging.debug(f"id {id_us["route_short_name"]}")
+        logger.debug(f"id {id_us["route_short_name"]}")
         self.viewModel.view_model_select_data.on_changed_selected_record_trip(id_us)
-        self.ui.line_Selection_trips.setText(f"selected trips: {self.viewModel.model.planer.create_settings_for_table_dto.selected_route_text}")
-        if (self.viewModel.model.planer.create_settings_for_table_dto.date_range_df_format is not None
-        and self.viewModel.model.planer.create_settings_for_table_dto.date_range_df_format.get('start_date') is not None
-        and self.viewModel.model.planer.create_settings_for_table_dto.date_range_df_format.get('end_date') is not None):
-            start_date = self.viewModel.model.planer.create_settings_for_table_dto.date_range_df_format['start_date']
-            end_date = self.viewModel.model.planer.create_settings_for_table_dto.date_range_df_format['end_date']
-            self.update_date_range_based_on_selected_route(start_date.iloc[0].strftime('%Y-%m-%d') + ' - ' + end_date.iloc[0].strftime('%Y-%m-%d'))
-            self.update_date_field_to_first_date_of_selected_route(start_date.iloc[0].strftime('%Y-%m-%d'))
+        self.ui.line_Selection_trips.setText(
+            f"selected trips: {self.viewModel.view_model_select_data.get_selected_route_text()}"
+        )
+        date_range_text = self.viewModel.view_model_select_data.get_selected_route_date_range_text()
+        if date_range_text is not None:
+            self.update_date_range_based_on_selected_route(date_range_text)
+        sample_date = self.viewModel.view_model_select_data.get_selected_route_sample_date()
+        if sample_date is not None:
+            self.update_date_field_to_first_date_of_selected_route(sample_date)
 
-    def get_changed_selected_weekday(self):
-        index = self.ui.listDatesWeekday.selectedIndexes()[0]
-        logging.debug(f"index {index}")
+    def get_changed_selected_weekday(self, index: QModelIndex):
+        index = self._get_selected_row_index(self.ui.listDatesWeekday, index)
+        if index is None:
+            return
+        logger.debug(f"index {index}")
         id_us = self.ui.listDatesWeekday.model().wholeData(index)
-        logging.debug(f"id {id_us["day"]}")
+        logger.debug(f"id {id_us["day"]}")
         self.viewModel.view_model_create_data.on_changed_selected_weekday(id_us)
 
     def reset_view(self):
@@ -329,4 +350,4 @@ class View(QMainWindow):
 
         self.ui.listDatesWeekday.clear()
         self.ui.tableView_sorting_stops.clear()
-        self.viewModel.model.planer.initilize_scheduler()
+        self.viewModel.reset_schedule_planer()

@@ -1,10 +1,17 @@
 # -*- coding: utf-8 -*-
+import logging
 import sys
 from model import Model
 from viewmodel import ViewModel
 from view import SplashScreen
 from view import View
 from PySide6.QtWidgets import *
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s %(levelname)s %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
 
 
 if __name__ == '__main__':

@@ -117,11 +117,6 @@ class AnimatedToggle(QCheckBox):
 
     @handle_position.setter
     def handle_position(self, pos):
-        """change the property
-        we need to trigger QWidget.update() method, either by:
-            1- calling it here [ what we're doing ].
-            2- connecting the QPropertyAnimation.valueChanged() signal to it.
-        """
         self._handle_position = pos
         self.update()
 

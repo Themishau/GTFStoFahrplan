@@ -21,19 +21,22 @@ class Customtableview(QTableView):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.verticalHeader().hide()
+        self.horizontalHeader().setVisible(True)
+        self.verticalHeader().setVisible(False)
         self.setSelectionBehavior(QAbstractItemView.SelectRows)  # Fixed line
         self.setSelectionMode(QAbstractItemView.SingleSelection)
         self.setDragDropMode(QAbstractItemView.InternalMove)
         self.setDragDropOverwriteMode(False)
         self.setStyle(self.DropmarkerStyle())
-        self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.horizontalHeader().setStretchLastSection(True)
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
 
     def dropEvent(self, event):
         if (event.source() is not self or
                 (event.dropAction() != Qt.MoveAction and
                  self.dragDropMode() != self.InternalMove)):
             super().dropEvent(event)
+            return
 
         selection = self.selectedIndexes()
         from_index = selection[0].row() if selection else -1
@@ -43,4 +46,6 @@ class Customtableview(QTableView):
                 from_index != to_index):
             self.model().relocateRow(from_index, to_index)
             event.accept()
+            return
+
         super().dropEvent(event)

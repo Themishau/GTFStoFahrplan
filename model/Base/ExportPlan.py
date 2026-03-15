@@ -7,10 +7,6 @@ from ..Dto import CreateTableDataframeDto
 from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDto
 from ..Enum.GTFSEnums import ProcessType
 
-logging.basicConfig(level=logging.DEBUG,
-                    format="%(asctime)s %(levelname)s %(message)s",
-                    datefmt="%Y-%m-%d %H:%M:%S")
-
 
 class ExportPlan(QObject):
     progress_Update = Signal(ProgressSignal)

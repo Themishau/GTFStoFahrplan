@@ -3,10 +3,6 @@ import os
 from PySide6.QtCore import Signal, QObject
 from model.Base.Progress import ProgressSignal
 from model.Enum.GTFSEnums import *
-
-logging.basicConfig(level=logging.DEBUG,
-                    format="%(asctime)s %(levelname)s %(message)s",
-                    datefmt="%Y-%m-%d %H:%M:%S")
 delimiter = " "
 lineend = '\n'
 
@@ -23,13 +19,32 @@ class ViewModelImportData(QObject):
     update_agency_list_signal = Signal()
     set_up_create_tab_signal = Signal()
 
-    def __init__(self, app, model):
-        super().__init__()
+    def __init__(self, app, model, parent=None):
+        super().__init__(parent)
         self.app = app
         self.model = model
 
     def on_changed_progress_value(self, progress_data: ProgressSignal):
         self.update_progress_value.emit(progress_data)
+
+    def get_missing_columns_df(self):
+        return self.model.planer.import_Data.missing_columns_in_gtfs_file
+
+    def has_missing_columns(self):
+        missing_columns_df = self.get_missing_columns_df()
+        return missing_columns_df is not None and not missing_columns_df.empty
+
+    def get_agencies_df(self):
+        gtfs_data = self.model.planer.gtfs_data_frame_dto
+        if gtfs_data is None:
+            return None
+        return gtfs_data.Agencies
+
+    def get_time_format(self):
+        return self.model.planer.create_settings_for_table_dto.timeformat
+
+    def get_sample_date(self):
+        return self.model.planer.create_settings_for_table_dto.sample_date
 
     def on_changed_pickle_export_checked(self, checked):
         self.model.planer.import_settings_dto.pickle_export_checked = checked

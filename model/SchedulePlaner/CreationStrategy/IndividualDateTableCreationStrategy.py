@@ -1,4 +1,4 @@
-from PySide6.QtCore import Signal, QObject
+from PySide6.QtCore import Signal, QObject, QThread
 import copy
 from model.Base.Progress import ProgressSignal
 from model.Enum.GTFSEnums import ProcessType
@@ -29,10 +29,14 @@ class IndividualDateTableCreationStrategy(QObject, TableCreationStrategy, metacl
         ]
 
         for step, description in steps:
+            if QThread.currentThread().isInterruptionRequested():
+                raise InterruptedError("Operation cancelled.")
             self.process = self.process + 10
             self.progress_Update.emit(self.progress.set_progress(self.process, ProcessType.create_plan, description))
             step()
 
+        if QThread.currentThread().isInterruptionRequested():
+            raise InterruptedError("Operation cancelled.")
         self.create_sorting.emit()
 
 

@@ -4,10 +4,6 @@ from view.view_helpers import qdate_to_string
 from model.Base.Progress import ProgressSignal
 from model.Enum.GTFSEnums import *
 import pandas as pd
-
-logging.basicConfig(level=logging.DEBUG,
-                    format="%(asctime)s %(levelname)s %(message)s",
-                    datefmt="%Y-%m-%d %H:%M:%S")
 delimiter = " "
 lineend = '\n'
 
@@ -25,8 +21,8 @@ class ViewModelCreateData(QObject):
     create_table_finshed = Signal()
     on_changed_individualsorting_table = Signal()
 
-    def __init__(self, app, model):
-        super().__init__()
+    def __init__(self, app, model, parent=None):
+        super().__init__(parent)
         self.app = app
         self.model = model
 
@@ -65,8 +61,21 @@ class ViewModelCreateData(QObject):
     def create_table_continue(self):
         self.model.start_function_async(ModelTriggerActionsEnum.planer_start_create_table_continue.value)
 
+    def get_sample_date(self):
+        return self.model.planer.create_settings_for_table_dto.sample_date
+
+    def get_success_message(self):
+        output_path = self.model.planer.create_settings_for_table_dto.full_output_path
+        return f"Success. Create table successfully. Saved here: {output_path}"
+
+    def get_sorting_df(self):
+        strategy = getattr(self.model.planer.create_plan, "strategy", None)
+        plans = getattr(strategy, "plans", None)
+        create_dataframe = getattr(plans, "create_dataframe", None)
+        return getattr(create_dataframe, "FilteredStopNamesDataframe", None)
+
     def create_table_stop(self):
-        self.model.model_instance.cancel_async_operation()
+        self.model.cancel_async_operation()
 
     def start_create_table(self):
         self.model.planer.update_settings_for_create_table()

@@ -5,6 +5,10 @@ from PySide6.QtWidgets import *
 class AnimatedTableView(QTableView):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.horizontalHeader().setVisible(True)
+        self.verticalHeader().setVisible(False)
+        self.horizontalHeader().setStretchLastSection(True)
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
 
         self.opacity_effect = QGraphicsOpacityEffect(self)
         self.setGraphicsEffect(self.opacity_effect)
@@ -19,9 +23,5 @@ class AnimatedTableView(QTableView):
         self.animation.setStartValue(1)
         self.animation.setEasingCurve(QEasingCurve.SineCurve)
         self.animation.setEndValue(0.2)
-        #self.anim_2.setStartValue(QSize(100, 50))
-        #self.anim_2.setEndValue(QSize(250, 150))
-        #self.anim_2.setDuration(2000)
         self.anim_group.addAnimation(self.animation)
-        #self.anim_group.addAnimation(self.anim_2)
         self.anim_group.start()

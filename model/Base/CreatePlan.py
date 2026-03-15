@@ -13,10 +13,6 @@ from ..SchedulePlaner.CreationStrategy.ParallelTableCreationStrategy import Para
 from ..SchedulePlaner.CreationStrategy.SequentialTableCreationStrategy import SequentialTableCreationStrategy
 from ..SchedulePlaner.CreationStrategy.TableCreationContext import TableCreationContext
 
-logging.basicConfig(level=logging.DEBUG,
-                    format="%(asctime)s %(levelname)s %(message)s",
-                    datefmt="%Y-%m-%d %H:%M:%S")
-
 
 class CreatePlan(QObject):
     progress_Update = Signal(ProgressSignal)
