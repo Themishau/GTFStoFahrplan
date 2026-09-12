@@ -7,7 +7,7 @@
   },
   {
    "optionDest": "filenames",
-   "value": "E:/GTFS/GTFSFahrplan/main.py"
+   "value": "main.py"
   },
   {
    "optionDest": "onefile",
@@ -51,11 +51,11 @@
   },
   {
    "optionDest": "pathex",
-   "value": "E:/GTFS/GTFSFahrplan"
+   "value": "."
   }
  ],
  "nonPyinstallerOptions": {
   "increaseRecursionLimit": true,
-  "manualArguments": ""
+  "manualArguments": "--collect-all duckdb --hidden-import _duckdb"
  }
 }

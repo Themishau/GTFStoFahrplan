@@ -24,6 +24,7 @@ class WeekdayTableCreationStrategy(QObject, TableCreationStrategy, metaclass=Com
             (self.plan.weekday_select_weekday_exception_2, "weekday_select_weekday_exception_2"),
             (self.plan.datesWeekday_select_stops_for_trips, "datesWeekday_select_stops_for_trips"),
             (self.plan.datesWeekday_select_for_every_date_trips_stops, "datesWeekday_select_for_every_date_trips_stops"),
+            (self.plan.datesWeekday_create_sort_stopnames, "datesWeekday_create_sort_stopnames"),
             (self.plan.datesWeekday_create_fahrplan, "datesWeekday_create_fahrplan")
         ]
 

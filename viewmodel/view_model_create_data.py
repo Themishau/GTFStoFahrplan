@@ -78,6 +78,11 @@ class ViewModelCreateData(QObject):
         self.model.cancel_async_operation()
 
     def start_create_table(self):
+        if self.model.thread is not None:
+            return
+        if self.model.planer.gtfs_data_frame_dto is None:
+            self.send_error_message('Open a GTFS feed before creating a plan.')
+            return
         self.model.planer.update_settings_for_create_table()
         self.model.start_function_async(ModelTriggerActionsEnum.planer_start_create_table.value)
 

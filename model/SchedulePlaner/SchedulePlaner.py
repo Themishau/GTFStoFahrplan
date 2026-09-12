@@ -11,7 +11,7 @@ from ..Base.CreatePlan import CreatePlan
 from ..Base.ExportPlan import ExportPlan
 from ..Base.ImportData import ImportData
 from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDto
-from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
+from ..Dto.gtfs_data_source import GtfsDataSource
 from ..Dto.ImportSettingsDto import ImportSettingsDto
 
 logger = logging.getLogger(__name__)
@@ -25,9 +25,10 @@ class SchedulePlaner(QObject):
     settings_changed = Signal()
     create_sorting_signal = Signal()
 
-    def __init__(self, app):
+    def __init__(self, app, cache_service):
         super().__init__()
         self.app = app
+        self.cache_service = cache_service
         self.progress = 0
 
         self.circle_plan = None
@@ -57,7 +58,7 @@ class SchedulePlaner(QObject):
         self.initialize_create_plan()
 
     def initialize_import_data(self):
-        self.import_Data = ImportData(self.app)
+        self.import_Data = ImportData(self.app, self.cache_service)
         self.import_Data.progress_Update.connect(self.update_progress)
         self.import_Data.error_occured.connect(self.send_error)
 
@@ -155,7 +156,7 @@ class SchedulePlaner(QObject):
 
     def import_gtfs_data(self):
         try:
-            self.gtfs_data_frame_dto = self.import_Data.import_gtfs(self.import_settings_dto)
+            self._activate_data(self.import_Data.import_gtfs(self.import_settings_dto))
 
             if self.gtfs_data_frame_dto is None:
                 self.error_occured.emit(f'{ErrorMessageRessources.import_data_error.value}')
@@ -166,6 +167,34 @@ class SchedulePlaner(QObject):
             logger.error(f"import_gtfs_data: {e}")
             self.error_occured.emit(f'{ErrorMessageRessources.no_import_object_generated.value}: \n {e}')
             return False
+
+    def open_cached_feed(self, feed_id):
+        self._activate_data(self.import_Data.open_feed(feed_id))
+        self.import_finished.emit(True)
+
+    def _activate_data(self, data):
+        self.gtfs_data_frame_dto = data
+        self.circle_plan = None
+        self.create_settings_for_table_dto = CreateSettingsForTableDto()
+        self.create_settings_for_table_dto.output_path = self.cache_service.settings.default_export_path
+        self.create_settings_for_table_dto.timeformat = (
+            1 if self.cache_service.settings.time_format == 'HH:mm' else 2)
+        self.create_settings_for_table_dto.output_path = self.cache_service.settings.default_export_path
+        self.create_settings_for_table_dto.timeformat = (
+            1 if self.cache_service.settings.time_format == 'HH:mm' else 2)
+        start = data.feed.metadata.feed_start_date
+        if start is not None:
+            self.create_settings_for_table_dto.sample_date = start.strftime('%Y%m%d')
+            self.create_settings_for_table_dto.date = start.strftime('%Y%m%d')
+        self.initialize_create_plan()
+
+    def delete_cached_feed(self, feed_id):
+        self.cache_service.delete_feed(feed_id)
+        if self.gtfs_data_frame_dto is not None and self.gtfs_data_frame_dto.feed.feed_id == feed_id:
+            self.gtfs_data_frame_dto = None
+            self.create_settings_for_table_dto = CreateSettingsForTableDto()
+            self.circle_plan = None
+            self.initialize_create_plan()
 
     @property
     def progress(self):
@@ -212,5 +241,5 @@ class SchedulePlaner(QObject):
         return self._gtfs_data_frame_dto
 
     @gtfs_data_frame_dto.setter
-    def gtfs_data_frame_dto(self, value: GtfsDataFrameDto):
+    def gtfs_data_frame_dto(self, value: GtfsDataSource):
         self._gtfs_data_frame_dto = value

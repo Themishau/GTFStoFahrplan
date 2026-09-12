@@ -36,11 +36,12 @@ class ParallelTableCreationStrategy(QObject, TableCreationStrategy, metaclass=Co
 
         # Configure plans
         self.plans[0].create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
-        self.plans[0].gtfs_data_frame_dto = copy.deepcopy(self.gtfs_data_frame_dto)
+        self.plans[0].gtfs_data_frame_dto = self.gtfs_data_frame_dto
+        self.plans[0].create_settings_for_table_dto.direction = 0
 
         self.plans[1].create_settings_for_table_dto = copy.deepcopy(self.create_settings_for_table_dto)
         self.plans[1].create_settings_for_table_dto.direction = 1
-        self.plans[1].gtfs_data_frame_dto = copy.deepcopy(self.gtfs_data_frame_dto)
+        self.plans[1].gtfs_data_frame_dto = self.gtfs_data_frame_dto
 
         strategy_direction_1 = None
         strategy_direction_2 = None
@@ -64,20 +65,17 @@ class ParallelTableCreationStrategy(QObject, TableCreationStrategy, metaclass=Co
         context_1 = TableCreationContext(strategy_direction_1)
         context_2 = TableCreationContext(strategy_direction_2)
 
-        try:
-            with ThreadPoolExecutor(max_workers=2) as executor:
-                futures = [
-                    executor.submit(context_1.create_table),
-                    executor.submit(context_2.create_table)
-                ]
-
-                for future in concurrent.futures.as_completed(futures):
-                    try:
-                        _ = future.result()
-                    except Exception as exc:
-                        logging.debug(f'Thread generated an exception: {exc}')
-        except Exception as exc:
-            logging.debug(f'An error occurred during execution: {exc}')
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            futures = [
+                executor.submit(context_1.create_table),
+                executor.submit(context_2.create_table)
+            ]
+            for future in concurrent.futures.as_completed(futures):
+                try:
+                    future.result()
+                except Exception:
+                    logging.exception('Direction planning failed')
+                    raise
 
     def create_table_continue(self):
         self.plans[0].datesWeekday_create_fahrplan_continue()

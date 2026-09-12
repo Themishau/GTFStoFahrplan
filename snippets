@@ -1,0 +1,30 @@
+from add_files.res import resource_rc
+
+pyrcc5 -o resource_boot.py resource_boot.qrc
+
+pyuic5.exe .\main_window.ui -o .\main_window_ui.py
+pyuic5.exe .\main_window_backup.ui -o .\main_window_ui_backup.py
+pyuic5.exe .\ui\create_table_create.ui -o .\pyui\create_table_create_ui.py
+pyuic5.exe .\create_table_import.ui -o .\create_table_import_ui.py
+pyuic5.exe .\create_table_select.ui -o .\create_table_select_ui.py
+pyuic5.exe .\general_window_information.ui -o .\general_window_information_ui.py
+pyuic5.exe .\download_gtfs.ui -o .\download_gtfs_ui.py
+
+
+
+from RoundProgressBar import RoundProgress
+        self.progressRound = RoundProgress()
+        self.progressRound.value = 50
+        self.progressRound.setMinimumSize(self.progressRound.width, self.progressRound.height)
+        self.ui.gridLayout_7.addWidget(self.progressRound,3, 0, 1, 1,  QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter)
+
+        self.progressRound = RoundProgress()
+        self.progressRound.value = 50
+        self.progressRound.setMinimumSize(self.progressRound.width, self.progressRound.height)
+        self.gridLayout_7.addWidget(self.progressRound,3, 0, 1, 1,  QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter)
+
+from add_files.res import resource_boot
+from add_files.res import resource_rc
+
+pyside6-uic .\ui\main_window.ui -o .\pyui\ui_main_window.py
+

@@ -8,7 +8,7 @@ import pandas as pd
 from model.Enum.GTFSEnums import CreatePlanMode
 from .Progress import ProgressSignal
 from ..Dto.CreateSettingsForTableDto import CreateSettingsForTableDto
-from ..Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
+from ..Dto.gtfs_data_source import GtfsDataSource
 from ..SchedulePlaner.CreationStrategy.ParallelTableCreationStrategy import ParallelTableCreationStrategy
 from ..SchedulePlaner.CreationStrategy.SequentialTableCreationStrategy import SequentialTableCreationStrategy
 from ..SchedulePlaner.CreationStrategy.TableCreationContext import TableCreationContext
@@ -43,7 +43,7 @@ class CreatePlan(QObject):
         return self._gtfs_data_frame_dto
 
     @gtfs_data_frame_dto.setter
-    def gtfs_data_frame_dto(self, value: GtfsDataFrameDto):
+    def gtfs_data_frame_dto(self, value: GtfsDataSource):
         self._gtfs_data_frame_dto = value
 
     def check_setting_data(self) -> bool:

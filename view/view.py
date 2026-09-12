@@ -1,6 +1,6 @@
 import logging
 from PySide6.QtCore import Qt, QPoint, QModelIndex
-from PySide6.QtWidgets import QMessageBox, QMainWindow, QApplication
+from PySide6.QtWidgets import QMessageBox, QMainWindow, QApplication, QComboBox, QLabel, QPushButton
 from model.Base.Progress import ProgressSignal
 from model.Enum.GTFSEnums import CreatePlanMode
 from view.Custom.select_table_view import TableModel
@@ -41,7 +41,101 @@ class View(QMainWindow):
 
         self.initialize_window()
         self.initialize_tabs()
+        self.initialize_recent_feeds()
         self.show_home_window()
+
+    def initialize_recent_feeds(self):
+        vm = self.viewModel.view_model_import_data
+        self._cache_busy = False
+        self._closing_after_worker = False
+        # Persistent caching replaces the old optional pickle controls.
+        for widget in (self.ui.checkBox_savepickle, self.ui.picklesavename, self.ui.btnGetPickleFile):
+            widget.hide()
+        self.ui.gridLayout_11.addWidget(QLabel('GTFS data is cached automatically.', self), 2, 0, 1, 3)
+        self.ui.gridLayout_11.addWidget(QLabel('Previously loaded GTFS data', self), 5, 0, 1, 3)
+        self.recent_feeds_combo = QComboBox(self)
+        self.recent_feeds_combo.setMinimumContentsLength(20)
+        self.recent_feeds_combo.setSizeAdjustPolicy(QComboBox.AdjustToMinimumContentsLengthWithIcon)
+        self.recent_feed_details = QLabel(self)
+        self.recent_feed_details.setWordWrap(True)
+        self.open_feed_button = QPushButton('Open', self)
+        self.delete_feed_button = QPushButton('Delete', self)
+        self.ui.gridLayout_11.addWidget(self.recent_feeds_combo, 6, 0, 1, 3)
+        self.ui.gridLayout_11.addWidget(self.recent_feed_details, 7, 0, 1, 3)
+        self.ui.gridLayout_11.addWidget(self.open_feed_button, 8, 0)
+        self.ui.gridLayout_11.addWidget(self.delete_feed_button, 8, 2)
+        self.open_feed_button.clicked.connect(lambda: vm.open_feed(self.recent_feeds_combo.currentData()))
+        self.delete_feed_button.clicked.connect(lambda: vm.delete_feed(self.recent_feeds_combo.currentData()))
+        self.recent_feeds_combo.currentIndexChanged.connect(self.update_recent_feed_details)
+        vm.recent_feeds_changed.connect(self.refresh_recent_feeds)
+        vm.busy_changed.connect(self.set_worker_busy)
+        vm.feed_cleared.connect(self.clear_active_feed)
+        self.ui.btnRestart.setText('Cancel')
+        self.ui.btnRestart.clicked.connect(self.viewModel.model.cancel_async_operation)
+        settings = self.viewModel.model.cache_service.settings
+        self.update_output_file_path(settings.default_export_path)
+        self.ui.comboBox_time_format.setCurrentIndex(0 if settings.time_format == 'HH:mm' else 1)
+        self.refresh_recent_feeds()
+        self.ui.btnStart.setEnabled(False)
+
+    def refresh_recent_feeds(self):
+        vm = self.viewModel.view_model_import_data
+        selected = vm.last_feed_id or self.recent_feeds_combo.currentData()
+        self.recent_feeds_combo.blockSignals(True)
+        self.recent_feeds_combo.clear()
+        for feed in vm.recent_feeds:
+            metadata = feed.metadata
+            self.recent_feeds_combo.addItem(metadata.feed_publisher_name or metadata.source_filename, feed.feed_id)
+        index = self.recent_feeds_combo.findData(selected)
+        if index >= 0:
+            self.recent_feeds_combo.setCurrentIndex(index)
+        self.recent_feeds_combo.blockSignals(False)
+        self.update_recent_feed_details()
+
+    def update_recent_feed_details(self):
+        vm = self.viewModel.view_model_import_data
+        feed_id = self.recent_feeds_combo.currentData()
+        feed = next((item for item in vm.recent_feeds if item.feed_id == feed_id), None)
+        text = 'No cached feeds yet.'
+        if feed:
+            metadata = feed.metadata
+            text = (f'{metadata.source_filename}\n'
+                    f'{metadata.feed_start_date or "?"} – {metadata.feed_end_date or "?"}\n'
+                    f'Imported: {metadata.imported_at.astimezone():%d.%m.%Y %H:%M}')
+            if not vm.can_open_feed(feed_id):
+                text += '\nRe-import the ZIP to update this cached feed.'
+        self.recent_feed_details.setText(text)
+        self.open_feed_button.setEnabled(not self._cache_busy and vm.can_open_feed(feed_id))
+        self.delete_feed_button.setEnabled(not self._cache_busy and feed is not None)
+
+    def set_worker_busy(self, busy):
+        self._cache_busy = busy
+        for widget in (self.ui.btnImport, self.ui.btnGetFile, self.ui.btnGetOutputDir,
+                       self.recent_feeds_combo, self.ui.create_select_page, self.ui.create_create_page):
+            widget.setEnabled(not busy)
+        self.ui.btnRestart.setEnabled(busy)
+        self.update_recent_feed_details()
+
+    def clear_active_feed(self):
+        self.ui.AgenciesTableView.setModel(None)
+        self.ui.TripsTableView.setModel(None)
+        self.ui.tableView_sorting_stops.setModel(None)
+        self.ui.btnStart.setEnabled(False)
+        self.ui.btnContinueCreate.setEnabled(False)
+        self.ui.line_Selection_agency.clear()
+        self.ui.line_Selection_trips.clear()
+        self.ui.line_Selection_date_range.clear()
+
+    def closeEvent(self, event):
+        model = self.viewModel.model
+        if model.thread is not None:
+            event.ignore()
+            if not self._closing_after_worker:
+                self._closing_after_worker = True
+                model.thread.finished.connect(self.close)
+                model.cancel_async_operation()
+            return
+        super().closeEvent(event)
 
     def update_individualsorting(self, checked):
         self.ui.UseIndividualSorting.setChecked(checked)

@@ -4,6 +4,8 @@ from PySide6.QtCore import QObject, QThread, Signal, Slot
 
 from .Enum.GTFSEnums import CreatePlanMode
 from .SchedulePlaner.SchedulePlaner import SchedulePlaner
+from .infrastructure.paths.app_paths import AppPaths
+from .services.gtfs_cache_service import GtfsCacheService
 
 logger = logging.getLogger(__name__)
 
@@ -11,19 +13,21 @@ class Worker(QObject):
     finished = Signal()
     error = Signal(Exception)
 
-    def __init__(self, model, function_name, main_thread):
+    def __init__(self, model, function_name, main_thread, arguments=()):
         super().__init__()
         self.model = model
         self.function_name = function_name
         self.main_thread = main_thread
+        self.arguments = arguments
 
     def run(self):
         try:
             if QThread.currentThread().isInterruptionRequested():
                 raise InterruptedError("Operation cancelled.")
-            self.model._dispatch_planer_action(self.function_name)
+            self.model._dispatch_planer_action(self.function_name, *self.arguments)
         except Exception as e:
-            self.error.emit(e)
+            self.error.emit(InterruptedError('Operation cancelled.')
+                            if QThread.currentThread().isInterruptionRequested() else e)
         finally:
             self.model._move_planer_to_thread(self.main_thread)
             self.finished.emit()
@@ -34,16 +38,19 @@ class Model(QObject):
     create_finished = Signal(bool)
     error_occurred = Signal(str)
     create_sorting_signal = Signal()
+    busy_changed = Signal(bool)
+    feed_deleted = Signal(str)
 
-    def __init__(self, event_loop):
+    def __init__(self, event_loop, cache_service=None):
         super().__init__(event_loop)
         self.worker = None
         self.event_loop = event_loop
         self.planer = None
         self.thread = None
+        self.cache_service = cache_service or GtfsCacheService.for_paths(AppPaths.for_user())
 
     def set_up_schedule_planer(self):
-        self.planer = SchedulePlaner(self.event_loop)
+        self.planer = SchedulePlaner(self.event_loop, self.cache_service)
         self.planer.initilize_scheduler()
         self._connect_planer_signals()
 
@@ -74,13 +81,13 @@ class Model(QObject):
     def _on_planer_create_sorting_signal(self):
         self.create_sorting_signal.emit()
 
-    def start_function_async(self, function_name):
-        if self.thread is not None and self.thread.isRunning():
+    def start_function_async(self, function_name, *arguments):
+        if self.thread is not None:
             logger.warning("A worker thread is already running.")
-            return
+            return False
 
         self.thread = QThread()
-        self.worker = Worker(self, function_name, self.event_loop.thread())
+        self.worker = Worker(self, function_name, self.event_loop.thread(), arguments)
         self._move_planer_to_thread(self.thread)
         self.worker.moveToThread(self.thread)
 
@@ -91,11 +98,14 @@ class Model(QObject):
         self.thread.finished.connect(self._clear_worker_refs)
         self.worker.error.connect(self.handle_worker_error)
 
+        self.busy_changed.emit(True)
         self.thread.start()
+        return True
 
     def _clear_worker_refs(self):
         self.worker = None
         self.thread = None
+        self.busy_changed.emit(False)
 
     def _move_planer_to_thread(self, target_thread):
         if self.planer is None:
@@ -113,10 +123,15 @@ class Model(QObject):
         if isinstance(strategy, QObject):
             strategy.moveToThread(target_thread)
 
-    def _dispatch_planer_action(self, function_name):
+    def _dispatch_planer_action(self, function_name, *arguments):
         match function_name:
             case "planer_start_load_data":
                 self.planer.import_gtfs_data()
+            case "open_cached_feed":
+                self.planer.open_cached_feed(*arguments)
+            case "delete_cached_feed":
+                self.planer.delete_cached_feed(*arguments)
+                self.feed_deleted.emit(arguments[0])
             case "planer_start_create_table":
                 if self.planer.create_settings_for_table_dto.use_individual_sorting:
                     self.planer.create_table_individual_sorting()
@@ -151,10 +166,12 @@ class Model(QObject):
         if self.thread is not None and self.thread.isRunning():
             logger.info("Cancelling ongoing operation...")
             self.thread.requestInterruption()
-            if not self.thread.wait(2000):
-                logger.warning("Worker did not stop within timeout.")
-            else:
-                logger.info("Operation cancelled.")
+            self.cache_service.repository.interrupt()
+
+    def close(self):
+        if self.thread is not None:
+            raise RuntimeError('Wait for the worker to finish before closing the database')
+        self.cache_service.close()
 
     def planer_start_load_data(self):
         self.planer.import_gtfs_data()

@@ -112,6 +112,7 @@ class DfTripColumnEnum(Enum):
     route_id = 'route_id'
     service_id = 'service_id'
     direction_id = 'direction_id'
+    block_id = 'block_id'
 
 
 class DfRouteColumnEnum(Enum):

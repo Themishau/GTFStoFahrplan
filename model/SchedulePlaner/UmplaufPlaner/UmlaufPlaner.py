@@ -5,7 +5,7 @@ import pandas as pd
 from model.Base.Progress import ProgressSignal
 from model.Dto.CreateSettingsForTableDto import CreateSettingsForTableDto
 from model.Dto.CreateTableDataframeDto import CreateTableDataframeDto
-from model.Dto.GeneralTransitFeedSpecificationDto import GtfsDataFrameDto
+from model.Dto.gtfs_data_source import GtfsDataSource
 from model.Enum.GTFSEnums import *
 
 
@@ -26,7 +26,7 @@ class UmlaufPlaner():
         return self._gtfs_data_frame_dto
 
     @gtfs_data_frame_dto.setter
-    def gtfs_data_frame_dto(self, value: GtfsDataFrameDto):
+    def gtfs_data_frame_dto(self, value: GtfsDataSource):
         self._gtfs_data_frame_dto = value
 
     def check_setting_data(self) -> bool:
@@ -74,8 +74,11 @@ class UmlaufPlaner():
 
 
     def datesWeekday_select_dates_for_date_range(self):
-        dfTrips = self.gtfs_data_frame_dto.Trips
+        dfTrips = self.gtfs_data_frame_dto.get_trips(
+            route_id=self.create_dataframe.SelectedRoute.iloc[0]['route_id'],
+            direction_id=self.create_settings_for_table_dto.direction)
         dfWeek = self.gtfs_data_frame_dto.Calendarweeks
+        dfWeek = dfWeek[dfWeek.service_id.isin(dfTrips.service_id)]
         dfRoutes = self.gtfs_data_frame_dto.Routes
         dfSelectedRoute = self.create_dataframe.SelectedRoute
         requested_directiondf = self.create_dataframe.Direction
@@ -161,7 +164,7 @@ class UmlaufPlaner():
         fahrplan_dates['sunday'] = ['Sunday' if x == '1' else '-' for x in fahrplan_dates['sunday']]
 
         fahrplan_dates_df = fahrplan_dates[['date', 'day', 'trip_id', 'service_id', 'route_id', 'start_date', 'end_date','monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']]
-        dfDates['date'] =  pd.to_datetime(dfDates['date'], format='%Y%m%d')
+        dfDates = dfDates.assign(date=pd.to_datetime(dfDates['date'], format='%Y%m%d'))
         exception_type_dates = dfDates[dfDates['service_id'].isin(fahrplan_dates_df['service_id'])]
 
         exception_type_1_dates = exception_type_dates[exception_type_dates['exception_type'] == 1]
@@ -235,7 +238,7 @@ class UmlaufPlaner():
             ['date', 'day', 'trip_id', 'service_id', 'route_id', 'start_date', 'end_date', 'monday', 'tuesday',
              'wednesday', 'thursday', 'friday', 'saturday', 'sunday']]
 
-        dfDates['date'] =  pd.to_datetime(dfDates['date'], format='%Y%m%d')
+        dfDates = dfDates.assign(date=pd.to_datetime(dfDates['date'], format='%Y%m%d'))
         exception_type_dates = dfDates[dfDates['service_id'].isin(fahrplan_dates_df['service_id'])]
         exception_type_dates = exception_type_dates[exception_type_dates['date'].isin(requested_datesdf['date'])]
         exception_type_1_dates = exception_type_dates[exception_type_dates['exception_type'] == 1]
@@ -286,14 +289,17 @@ class UmlaufPlaner():
         dfRoutes = self.gtfs_data_frame_dto.Routes
         dfRoutes = pd.merge(left=dfRoutes, right=dfselected_Route_Id, how='inner', on=[DfRouteColumnEnum.route_id.value, DfRouteColumnEnum.route_short_name.value, DfRouteColumnEnum.agency_id.value, DfRouteColumnEnum.route_long_name.value])
         dfRoutes = pd.merge(left=dfRoutes, right=varTestAgency, how='inner', on=DfRouteColumnEnum.agency_id.value)
-        dfTrip = self.gtfs_data_frame_dto.Trips
+        dfTrip = self.gtfs_data_frame_dto.get_trips(
+            route_id=dfselected_Route_Id.iloc[0]['route_id'],
+            direction_id=self.create_settings_for_table_dto.direction)
         dfTrip = pd.merge(left=dfTrip, right=requested_directiondf, how='inner', on='direction_id')
         dfTrip = pd.merge(left=dfTrip, right=dfRoutes, how='inner', on='route_id')
-        dfStopTimes = self.gtfs_data_frame_dto.Stoptimes
+        dfTrip = dfTrip[dfTrip.trip_id.isin(self.create_dataframe.FahrplanDates.trip_id)]
+        dfStopTimes = self.gtfs_data_frame_dto.get_stop_times_for_trips(dfTrip.trip_id.unique())
         dfTrip['trip_id'] = dfTrip['trip_id'].astype('string')
-        dfStopTimes['trip_id'] = dfStopTimes['trip_id'].astype('string')
+        dfStopTimes = dfStopTimes.assign(trip_id=dfStopTimes['trip_id'].astype('string'))
         dfStopTimes = pd.merge(left=dfStopTimes, right=dfTrip, how='inner', left_on='trip_id', right_on='trip_id')
-        dfStops = self.gtfs_data_frame_dto.Stops
+        dfStops = self.gtfs_data_frame_dto.get_stops(dfStopTimes.stop_id.unique())
 
         joined_df = pd.merge(dfStopTimes, dfTrip[['trip_id', 'service_id']], left_on=['trip_id', 'service_id'],
                              right_on=['trip_id', 'service_id'])
