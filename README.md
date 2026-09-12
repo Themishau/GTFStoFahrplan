@@ -104,6 +104,17 @@ Settings migrations start in `migrate_settings` in `settings_service.py`.
 
 ## Validation and EXE packaging
 
+Edit Qt widgets in `view/ui/main_window.ui`, then regenerate the Python module
+from the `view` directory. Do not edit the generated file by hand:
+
+```powershell
+pyside6-uic .\ui\main_window.ui -o .\pyui\ui_main_window.py
+```
+
+The root-level `resource_rc.py` and `resource_boot_rc.py` modules resolve the
+resource imports emitted by this command. Custom widget import paths, including
+`ProgressHistoryListView`, are defined in the Designer file itself.
+
 Use Python 3.12 or later (the existing UI contains Python 3.12 f-string syntax).
 Run the tests with the project interpreter:
 
@@ -118,12 +129,15 @@ integration. GUI tests run with Qt's offscreen platform.
 
 Install the runtime requirements in the build environment. Run auto-py-to-exe
 from the repository root with `ExportConfig.json`, which includes
-`--collect-all duckdb --hidden-import _duckdb` to bundle DuckDB and its native
-module. These are standard [PyInstaller collection options](https://pyinstaller.org/en/stable/usage.html).
+`--copy-metadata duckdb`. DuckDB reads its installed package version through
+`importlib.metadata` during startup, so its distribution metadata must be present
+in the frozen application. PyInstaller detects the regular `duckdb` and `_duckdb`
+imports without collecting every DuckDB submodule. This is a standard
+[PyInstaller metadata option](https://pyinstaller.org/en/stable/usage.html).
 For a direct build, use:
 
 ```bash
-python -m PyInstaller --onefile --collect-all duckdb --hidden-import _duckdb main.py
+python -m PyInstaller --onefile --copy-metadata duckdb main.py
 ```
 
 Verify the produced EXE on a clean Windows account by importing, closing,

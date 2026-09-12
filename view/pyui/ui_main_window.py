@@ -27,9 +27,8 @@ from view.Custom.AnimatedTableView import AnimatedTableView
 from view.Custom.FadingButton import FadingButton
 from view.Custom.ProgressListView import ProgressHistoryListView
 from view.Custom.custom_table_view import Customtableview
-from view.ui.res import resource_boot
-from view.ui.res import resource_rc
-
+import resource_rc
+import resource_boot_rc
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -593,14 +592,15 @@ class Ui_MainWindow(object):
 
         self.gridLayout_11.addWidget(self.lineInputPath, 0, 1, 1, 1)
 
-        self.btnGetPickleFile = FadingButton(self.import_box)
-        self.btnGetPickleFile.setObjectName(u"btnGetPickleFile")
-        self.btnGetPickleFile.setEnabled(True)
-        self.btnGetPickleFile.setFont(font3)
-        self.btnGetPickleFile.setStyleSheet(u"")
-        self.btnGetPickleFile.setIcon(icon2)
+        self.cache_info_label = QLabel(self.import_box)
+        self.cache_info_label.setObjectName(u"cache_info_label")
+        font5 = QFont()
+        font5.setPointSize(10)
+        font5.setBold(False)
+        font5.setItalic(False)
+        self.cache_info_label.setFont(font5)
 
-        self.gridLayout_11.addWidget(self.btnGetPickleFile, 2, 2, 1, 1)
+        self.gridLayout_11.addWidget(self.cache_info_label, 2, 0, 1, 3)
 
         self.label_11 = QLabel(self.import_box)
         self.label_11.setObjectName(u"label_11")
@@ -643,13 +643,11 @@ class Ui_MainWindow(object):
 
         self.gridLayout_11.addWidget(self.btnImport, 3, 0, 1, 1)
 
-        self.picklesavename = QLineEdit(self.import_box)
-        self.picklesavename.setObjectName(u"picklesavename")
-        self.picklesavename.setFont(font3)
-        self.picklesavename.setStyleSheet(u"")
-        self.picklesavename.setReadOnly(True)
+        self.recent_feeds_label = QLabel(self.import_box)
+        self.recent_feeds_label.setObjectName(u"recent_feeds_label")
+        self.recent_feeds_label.setFont(font3)
 
-        self.gridLayout_11.addWidget(self.picklesavename, 2, 1, 1, 1)
+        self.gridLayout_11.addWidget(self.recent_feeds_label, 4, 0, 1, 3)
 
         self.label_10 = QLabel(self.import_box)
         self.label_10.setObjectName(u"label_10")
@@ -658,20 +656,38 @@ class Ui_MainWindow(object):
 
         self.gridLayout_11.addWidget(self.label_10, 1, 0, 1, 1)
 
-        self.checkBox_savepickle = QCheckBox(self.import_box)
-        self.checkBox_savepickle.setObjectName(u"checkBox_savepickle")
-        sizePolicy5.setHeightForWidth(self.checkBox_savepickle.sizePolicy().hasHeightForWidth())
-        self.checkBox_savepickle.setSizePolicy(sizePolicy5)
-
-        self.gridLayout_11.addWidget(self.checkBox_savepickle, 2, 0, 1, 1)
-
         self.btnRestart = FadingButton(self.import_box)
         self.btnRestart.setObjectName(u"btnRestart")
         self.btnRestart.setEnabled(False)
         self.btnRestart.setFont(font3)
         self.btnRestart.setStyleSheet(u"")
 
-        self.gridLayout_11.addWidget(self.btnRestart, 4, 0, 1, 1)
+        self.gridLayout_11.addWidget(self.btnRestart, 3, 2, 1, 1)
+
+        self.recent_feeds_combo = QComboBox(self.import_box)
+        self.recent_feeds_combo.setObjectName(u"recent_feeds_combo")
+        self.recent_feeds_combo.setMinimumContentsLength(20)
+        self.recent_feeds_combo.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+
+        self.gridLayout_11.addWidget(self.recent_feeds_combo, 5, 0, 1, 3)
+
+        self.recent_feed_details = QLabel(self.import_box)
+        self.recent_feed_details.setObjectName(u"recent_feed_details")
+        self.recent_feed_details.setWordWrap(True)
+
+        self.gridLayout_11.addWidget(self.recent_feed_details, 6, 0, 1, 3)
+
+        self.open_feed_button = FadingButton(self.import_box)
+        self.open_feed_button.setObjectName(u"open_feed_button")
+        self.open_feed_button.setFont(font3)
+
+        self.gridLayout_11.addWidget(self.open_feed_button, 7, 0, 1, 1)
+
+        self.delete_feed_button = FadingButton(self.import_box)
+        self.delete_feed_button.setObjectName(u"delete_feed_button")
+        self.delete_feed_button.setFont(font3)
+
+        self.gridLayout_11.addWidget(self.delete_feed_button, 7, 2, 1, 1)
 
 
         self.horizontalLayout_3.addWidget(self.import_box)
@@ -820,11 +836,11 @@ class Ui_MainWindow(object):
         sizePolicy7.setVerticalStretch(0)
         sizePolicy7.setHeightForWidth(self.label_13.sizePolicy().hasHeightForWidth())
         self.label_13.setSizePolicy(sizePolicy7)
-        font5 = QFont()
-        font5.setFamilies([u"72"])
-        font5.setBold(True)
-        font5.setItalic(False)
-        self.label_13.setFont(font5)
+        font6 = QFont()
+        font6.setFamilies([u"72"])
+        font6.setBold(True)
+        font6.setItalic(False)
+        self.label_13.setFont(font6)
         self.label_13.setStyleSheet(u"")
 
         self.gridLayout_7.addWidget(self.label_13, 8, 0, 1, 1)
@@ -833,7 +849,7 @@ class Ui_MainWindow(object):
         self.label_19.setObjectName(u"label_19")
         sizePolicy5.setHeightForWidth(self.label_19.sizePolicy().hasHeightForWidth())
         self.label_19.setSizePolicy(sizePolicy5)
-        self.label_19.setFont(font5)
+        self.label_19.setFont(font6)
         self.label_19.setStyleSheet(u"")
 
         self.gridLayout_7.addWidget(self.label_19, 3, 0, 1, 1)
@@ -842,7 +858,7 @@ class Ui_MainWindow(object):
         self.label_6.setObjectName(u"label_6")
         sizePolicy5.setHeightForWidth(self.label_6.sizePolicy().hasHeightForWidth())
         self.label_6.setSizePolicy(sizePolicy5)
-        self.label_6.setFont(font5)
+        self.label_6.setFont(font6)
         self.label_6.setStyleSheet(u"")
 
         self.gridLayout_7.addWidget(self.label_6, 9, 0, 1, 1)
@@ -878,7 +894,7 @@ class Ui_MainWindow(object):
         self.label_18.setObjectName(u"label_18")
         sizePolicy5.setHeightForWidth(self.label_18.sizePolicy().hasHeightForWidth())
         self.label_18.setSizePolicy(sizePolicy5)
-        self.label_18.setFont(font5)
+        self.label_18.setFont(font6)
         self.label_18.setStyleSheet(u"")
 
         self.gridLayout_7.addWidget(self.label_18, 4, 0, 1, 1)
@@ -898,7 +914,7 @@ class Ui_MainWindow(object):
         self.label_15.setObjectName(u"label_15")
         sizePolicy5.setHeightForWidth(self.label_15.sizePolicy().hasHeightForWidth())
         self.label_15.setSizePolicy(sizePolicy5)
-        self.label_15.setFont(font5)
+        self.label_15.setFont(font6)
         self.label_15.setStyleSheet(u"")
 
         self.gridLayout_7.addWidget(self.label_15, 6, 0, 1, 1)
@@ -907,7 +923,7 @@ class Ui_MainWindow(object):
         self.label_20.setObjectName(u"label_20")
         sizePolicy5.setHeightForWidth(self.label_20.sizePolicy().hasHeightForWidth())
         self.label_20.setSizePolicy(sizePolicy5)
-        self.label_20.setFont(font5)
+        self.label_20.setFont(font6)
         self.label_20.setStyleSheet(u"")
 
         self.gridLayout_7.addWidget(self.label_20, 7, 0, 1, 1)
@@ -917,7 +933,7 @@ class Ui_MainWindow(object):
         self.label_21.setEnabled(False)
         sizePolicy5.setHeightForWidth(self.label_21.sizePolicy().hasHeightForWidth())
         self.label_21.setSizePolicy(sizePolicy5)
-        self.label_21.setFont(font5)
+        self.label_21.setFont(font6)
         self.label_21.setStyleSheet(u"")
 
         self.gridLayout_7.addWidget(self.label_21, 2, 0, 1, 1)
@@ -929,11 +945,11 @@ class Ui_MainWindow(object):
         self.listDatesWeekday.setSizePolicy(sizePolicy3)
         self.listDatesWeekday.setMinimumSize(QSize(490, 0))
         self.listDatesWeekday.setMaximumSize(QSize(600, 200))
-        font6 = QFont()
-        font6.setPointSize(7)
-        font6.setBold(True)
-        font6.setItalic(False)
-        self.listDatesWeekday.setFont(font6)
+        font7 = QFont()
+        font7.setPointSize(7)
+        font7.setBold(True)
+        font7.setItalic(False)
+        self.listDatesWeekday.setFont(font7)
         self.listDatesWeekday.setStyleSheet(u"")
         self.listDatesWeekday.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.listDatesWeekday.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
@@ -960,7 +976,7 @@ class Ui_MainWindow(object):
         self.label_17.setObjectName(u"label_17")
         sizePolicy5.setHeightForWidth(self.label_17.sizePolicy().hasHeightForWidth())
         self.label_17.setSizePolicy(sizePolicy5)
-        self.label_17.setFont(font5)
+        self.label_17.setFont(font6)
         self.label_17.setStyleSheet(u"")
 
         self.gridLayout_7.addWidget(self.label_17, 5, 0, 1, 1)
@@ -1136,12 +1152,12 @@ class Ui_MainWindow(object):
         self.label_16.setObjectName(u"label_16")
         sizePolicy3.setHeightForWidth(self.label_16.sizePolicy().hasHeightForWidth())
         self.label_16.setSizePolicy(sizePolicy3)
-        font7 = QFont()
-        font7.setFamilies([u"72"])
-        font7.setPointSize(8)
-        font7.setBold(True)
-        font7.setItalic(False)
-        self.label_16.setFont(font7)
+        font8 = QFont()
+        font8.setFamilies([u"72"])
+        font8.setPointSize(8)
+        font8.setBold(True)
+        font8.setItalic(False)
+        self.label_16.setFont(font8)
         self.label_16.setStyleSheet(u"")
 
         self.selection_grid.addWidget(self.label_16, 0, 0, 1, 1)
@@ -1213,12 +1229,12 @@ class Ui_MainWindow(object):
         sizePolicy11.setHeightForWidth(self.label_22.sizePolicy().hasHeightForWidth())
         self.label_22.setSizePolicy(sizePolicy11)
         self.label_22.setMinimumSize(QSize(0, 30))
-        font8 = QFont()
-        font8.setFamilies([u"Segoe UI"])
-        font8.setPointSize(8)
-        font8.setBold(True)
-        font8.setItalic(False)
-        self.label_22.setFont(font8)
+        font9 = QFont()
+        font9.setFamilies([u"Segoe UI"])
+        font9.setPointSize(8)
+        font9.setBold(True)
+        font9.setItalic(False)
+        self.label_22.setFont(font9)
         self.label_22.setStyleSheet(u"")
         self.label_22.setMidLineWidth(0)
 
@@ -1282,24 +1298,19 @@ class Ui_MainWindow(object):
 "- PySide6 is used.", None))
         self.lineInputPath.setText("")
         self.lineInputPath.setPlaceholderText(QCoreApplication.translate("MainWindow", u"C:/Tmp/GTFS.zip", None))
-        self.btnGetPickleFile.setText("")
+        self.cache_info_label.setText(QCoreApplication.translate("MainWindow", u"GTFS data is cached automatically.", None))
         self.label_11.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">input data</span></p></body></html>", None))
         self.btnGetOutputDir.setText("")
         self.lineOutputPath.setText("")
         self.lineOutputPath.setPlaceholderText(QCoreApplication.translate("MainWindow", u"C:/Tmp/", None))
         self.btnGetFile.setText("")
         self.btnImport.setText(QCoreApplication.translate("MainWindow", u"Start Import", None))
-        self.picklesavename.setText("")
-        self.picklesavename.setPlaceholderText(QCoreApplication.translate("MainWindow", u"C:/Tmp/GTFS.zip", None))
+        self.recent_feeds_label.setText(QCoreApplication.translate("MainWindow", u"Previously loaded GTFS data", None))
         self.label_10.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">output path</span></p></body></html>", None))
-#if QT_CONFIG(tooltip)
-        self.checkBox_savepickle.setToolTip(QCoreApplication.translate("MainWindow", u"saves data to faster format", None))
-#endif // QT_CONFIG(tooltip)
-#if QT_CONFIG(whatsthis)
-        self.checkBox_savepickle.setWhatsThis(QCoreApplication.translate("MainWindow", u"saves data to faster format", None))
-#endif // QT_CONFIG(whatsthis)
-        self.checkBox_savepickle.setText(QCoreApplication.translate("MainWindow", u"save data to pickle format", None))
-        self.btnRestart.setText(QCoreApplication.translate("MainWindow", u"Restart Import", None))
+        self.btnRestart.setText(QCoreApplication.translate("MainWindow", u"Cancel", None))
+        self.recent_feed_details.setText(QCoreApplication.translate("MainWindow", u"No cached feeds yet.", None))
+        self.open_feed_button.setText(QCoreApplication.translate("MainWindow", u"Open", None))
+        self.delete_feed_button.setText(QCoreApplication.translate("MainWindow", u"Delete", None))
         self.information_label_label.setText(QCoreApplication.translate("MainWindow", u"Information Import:", None))
         self.information_missingtext_label.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Attention: </p><p>Missing Columns in GTFS Data. </p><p>Creating tables might result into errors.</p><p>Following columns are missing in dataset: </p></body></html>", None))
         self.label_5.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p align=\"center\">Agencies</p></body></html>", None))

@@ -36,14 +36,8 @@ class ViewSignals(QObject):
         self.view.ui.btnGetFile.clicked.connect(self.view.get_file_path)
         self.viewModel.view_model_import_data.input_file_path.connect(self.view.update_file_input_path)
 
-        self.view.ui.btnGetPickleFile.clicked.connect(self.view.get_pickle_save_path)
-        self.viewModel.view_model_import_data.pickle_file_path.connect(self.view.update_pickle_file_path)
-
         self.view.ui.btnGetOutputDir.clicked.connect(self.view.get_output_dir_path)
         self.viewModel.view_model_import_data.output_file_path.connect(self.view.update_output_file_path)
-
-        self.view.ui.checkBox_savepickle.clicked.connect(self.viewModel.view_model_import_data.on_changed_pickle_export_checked)
-        self.viewModel.view_model_import_data.update_pickle_export_checked.connect(self.view.update_pickle_export_checked)
 
         self.view.ui.comboBox_time_format.activated[int].connect(self.viewModel.view_model_import_data.on_changed_time_format_mode)
         self.viewModel.view_model_import_data.export_plan_time_format.connect(self.view.update_time_format)
@@ -84,4 +78,3 @@ class ViewSignals(QObject):
     def init_signals(self):
         self.view.ui.lineInputPath.textChanged.connect(self.viewModel.view_model_import_data.input_file_path.emit)
         self.view.ui.lineOutputPath.textChanged.connect(self.viewModel.view_model_import_data.output_file_path.emit)
-        self.view.ui.picklesavename.textChanged.connect(self.viewModel.view_model_import_data.pickle_file_path.emit)

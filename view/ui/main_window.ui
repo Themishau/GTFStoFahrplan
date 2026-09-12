@@ -1046,27 +1046,17 @@ Ressources:
                   </property>
                  </widget>
                 </item>
-                <item row="2" column="2">
-                 <widget class="FadingButton" name="btnGetPickleFile">
-                  <property name="enabled">
-                   <bool>true</bool>
-                  </property>
+                <item row="2" column="0" colspan="3">
+                 <widget class="QLabel" name="cache_info_label">
                   <property name="font">
                    <font>
-                    <pointsize>12</pointsize>
+                    <pointsize>10</pointsize>
                     <italic>false</italic>
-                    <bold>true</bold>
+                    <bold>false</bold>
                    </font>
                   </property>
-                  <property name="styleSheet">
-                   <string notr="true"/>
-                  </property>
                   <property name="text">
-                   <string/>
-                  </property>
-                  <property name="icon">
-                   <iconset resource="res/resource_boot.qrc">
-                    <normaloff>:/newPrefix/icons/bootstrap-icons-1.10.3/file-earmark-arrow-up.svg</normaloff>:/newPrefix/icons/bootstrap-icons-1.10.3/file-earmark-arrow-up.svg</iconset>
+                   <string>GTFS data is cached automatically.</string>
                   </property>
                  </widget>
                 </item>
@@ -1178,8 +1168,8 @@ Ressources:
                   </property>
                  </widget>
                 </item>
-                <item row="2" column="1">
-                 <widget class="QLineEdit" name="picklesavename">
+                <item row="4" column="0" colspan="3">
+                 <widget class="QLabel" name="recent_feeds_label">
                   <property name="font">
                    <font>
                     <pointsize>12</pointsize>
@@ -1187,17 +1177,8 @@ Ressources:
                     <bold>true</bold>
                    </font>
                   </property>
-                  <property name="styleSheet">
-                   <string notr="true"/>
-                  </property>
                   <property name="text">
-                   <string/>
-                  </property>
-                  <property name="readOnly">
-                   <bool>true</bool>
-                  </property>
-                  <property name="placeholderText">
-                   <string>C:/Tmp/GTFS.zip</string>
+                   <string>Previously loaded GTFS data</string>
                   </property>
                  </widget>
                 </item>
@@ -1218,26 +1199,7 @@ Ressources:
                   </property>
                  </widget>
                 </item>
-                <item row="2" column="0">
-                 <widget class="QCheckBox" name="checkBox_savepickle">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="toolTip">
-                   <string>saves data to faster format</string>
-                  </property>
-                  <property name="whatsThis">
-                   <string>saves data to faster format</string>
-                  </property>
-                  <property name="text">
-                   <string>save data to pickle format</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="4" column="0">
+                <item row="3" column="2">
                  <widget class="FadingButton" name="btnRestart">
                   <property name="enabled">
                    <bool>false</bool>
@@ -1253,7 +1215,55 @@ Ressources:
                    <string notr="true"/>
                   </property>
                   <property name="text">
-                   <string>Restart Import</string>
+                   <string>Cancel</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="0" colspan="3">
+                 <widget class="QComboBox" name="recent_feeds_combo">
+                  <property name="minimumContentsLength">
+                   <number>20</number>
+                  </property>
+                  <property name="sizeAdjustPolicy">
+                   <enum>QComboBox::SizeAdjustPolicy::AdjustToMinimumContentsLengthWithIcon</enum>
+                  </property>
+                 </widget>
+                </item>
+                <item row="6" column="0" colspan="3">
+                 <widget class="QLabel" name="recent_feed_details">
+                  <property name="text">
+                   <string>No cached feeds yet.</string>
+                  </property>
+                  <property name="wordWrap">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="7" column="0">
+                 <widget class="FadingButton" name="open_feed_button">
+                  <property name="font">
+                   <font>
+                    <pointsize>12</pointsize>
+                    <italic>false</italic>
+                    <bold>true</bold>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Open</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="7" column="2">
+                 <widget class="FadingButton" name="delete_feed_button">
+                  <property name="font">
+                   <font>
+                    <pointsize>12</pointsize>
+                    <italic>false</italic>
+                    <bold>true</bold>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Delete</string>
                   </property>
                  </widget>
                 </item>
@@ -2547,7 +2557,7 @@ border-radius: 1px;</string>
   <customwidget>
    <class>ProgressHistoryListView</class>
    <extends>QListView</extends>
-   <header>view.Custom.ProgressHistoryListView</header>
+   <header>view.Custom.ProgressListView</header>
   </customwidget>
  </customwidgets>
  <resources>

@@ -1,5 +1,4 @@
 import logging
-import os
 from pathlib import Path
 from model.Dto.gtfs_feed import is_schema_compatible
 from PySide6.QtCore import Signal, QObject
@@ -11,9 +10,7 @@ lineend = '\n'
 
 class ViewModelImportData(QObject):
     input_file_path = Signal(str)
-    pickle_file_path = Signal(str)
     output_file_path = Signal(str)
-    update_pickle_export_checked = Signal(bool)
     update_progress_value = Signal(ProgressSignal)
     update_warning_table_view = Signal()
     export_plan_time_format = Signal(str)
@@ -82,21 +79,11 @@ class ViewModelImportData(QObject):
     def get_sample_date(self):
         return self.model.planer.create_settings_for_table_dto.sample_date
 
-    def on_changed_pickle_export_checked(self, checked):
-        self.model.planer.import_settings_dto.pickle_export_checked = checked
-        self.update_pickle_export_checked.emit(checked)
-
     def on_change_input_file_path(self, path):
         if not path or not path[0]:
             return
         self.model.planer.import_settings_dto.input_path = path[0]
         self.input_file_path.emit(path[0])
-
-    def on_changed_pickle_path(self, path):
-        if len(path) == 0:
-            return
-        self.model.planer.import_settings_dto.pickle_save_path_filename = path[0]
-        self.pickle_file_path.emit(path[0])
 
     def on_import_gtfs_data_finished(self):
         self.recent_feeds = self.model.cache_service.get_recent_feeds()
@@ -139,11 +126,3 @@ class ViewModelImportData(QObject):
 
     def send_error_message(self, message):
         self.error_message.emit(message)
-
-    @staticmethod
-    def find(name, path):
-        for root, dirs, files in os.walk(path):
-            if name in files:
-                return True
-            return None
-        return None

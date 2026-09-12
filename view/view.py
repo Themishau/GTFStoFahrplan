@@ -1,12 +1,12 @@
 import logging
 from PySide6.QtCore import Qt, QPoint, QModelIndex
-from PySide6.QtWidgets import QMessageBox, QMainWindow, QApplication, QComboBox, QLabel, QPushButton
+from PySide6.QtWidgets import QMessageBox, QMainWindow, QApplication
 from model.Base.Progress import ProgressSignal
 from model.Enum.GTFSEnums import CreatePlanMode
 from view.Custom.select_table_view import TableModel
 from view.Custom.sort_table_view import TableModelSort
 from view.pyui.ui_main_window import Ui_MainWindow
-from view.view_helpers import get_file_path, get_output_dir_path, get_pickle_save_path, string_to_qdate, update_table_sizes
+from view.view_helpers import get_file_path, get_output_dir_path, string_to_qdate, update_table_sizes
 from view.view_signals import ViewSignals
 
 logger = logging.getLogger(__name__)
@@ -48,29 +48,16 @@ class View(QMainWindow):
         vm = self.viewModel.view_model_import_data
         self._cache_busy = False
         self._closing_after_worker = False
-        # Persistent caching replaces the old optional pickle controls.
-        for widget in (self.ui.checkBox_savepickle, self.ui.picklesavename, self.ui.btnGetPickleFile):
-            widget.hide()
-        self.ui.gridLayout_11.addWidget(QLabel('GTFS data is cached automatically.', self), 2, 0, 1, 3)
-        self.ui.gridLayout_11.addWidget(QLabel('Previously loaded GTFS data', self), 5, 0, 1, 3)
-        self.recent_feeds_combo = QComboBox(self)
-        self.recent_feeds_combo.setMinimumContentsLength(20)
-        self.recent_feeds_combo.setSizeAdjustPolicy(QComboBox.AdjustToMinimumContentsLengthWithIcon)
-        self.recent_feed_details = QLabel(self)
-        self.recent_feed_details.setWordWrap(True)
-        self.open_feed_button = QPushButton('Open', self)
-        self.delete_feed_button = QPushButton('Delete', self)
-        self.ui.gridLayout_11.addWidget(self.recent_feeds_combo, 6, 0, 1, 3)
-        self.ui.gridLayout_11.addWidget(self.recent_feed_details, 7, 0, 1, 3)
-        self.ui.gridLayout_11.addWidget(self.open_feed_button, 8, 0)
-        self.ui.gridLayout_11.addWidget(self.delete_feed_button, 8, 2)
+        self.recent_feeds_combo = self.ui.recent_feeds_combo
+        self.recent_feed_details = self.ui.recent_feed_details
+        self.open_feed_button = self.ui.open_feed_button
+        self.delete_feed_button = self.ui.delete_feed_button
         self.open_feed_button.clicked.connect(lambda: vm.open_feed(self.recent_feeds_combo.currentData()))
         self.delete_feed_button.clicked.connect(lambda: vm.delete_feed(self.recent_feeds_combo.currentData()))
         self.recent_feeds_combo.currentIndexChanged.connect(self.update_recent_feed_details)
         vm.recent_feeds_changed.connect(self.refresh_recent_feeds)
         vm.busy_changed.connect(self.set_worker_busy)
         vm.feed_cleared.connect(self.clear_active_feed)
-        self.ui.btnRestart.setText('Cancel')
         self.ui.btnRestart.clicked.connect(self.viewModel.model.cancel_async_operation)
         settings = self.viewModel.model.cache_service.settings
         self.update_output_file_path(settings.default_export_path)
@@ -144,12 +131,7 @@ class View(QMainWindow):
         self.ui.dateEdit.setDate(string_to_qdate(data))
 
     def update_importing_start(self):
-        self.ui.create_import_page.ui.btnImport.setEnabled(False)
-        self.ui.create_import_page.ui.btnRestart.setEnabled(True)
-        self.ui.create_import_page.ui.btnGetFile.setEnabled(False)
-        self.ui.create_import_page.ui.btnGetPickleFile.setEnabled(False)
-        self.ui.create_import_page.ui.btnGetOutputDir.setEnabled(False)
-        self.ui.create_import_page.ui.checkBox_savepickle.setEnabled(False)
+        self.set_worker_busy(True)
 
     def _get_selected_row_index(self, table_view, clicked_index: QModelIndex | None = None):
         if clicked_index is not None and clicked_index.isValid():
@@ -183,14 +165,8 @@ class View(QMainWindow):
     def update_file_input_path(self, input_path):
         self.ui.lineInputPath.setText(input_path)
 
-    def update_pickle_file_path(self, pickle_path):
-        self.ui.picklesavename.setText(pickle_path)
-
     def update_output_file_path(self, output_path):
         self.ui.lineOutputPath.setText(output_path)
-
-    def update_pickle_export_checked(self, checked):
-        self.ui.checkBox_savepickle.setChecked(checked)
 
     def update_warning_table_view(self):
         missing_columns_df = self.viewModel.view_model_import_data.get_missing_columns_df()
@@ -401,9 +377,6 @@ class View(QMainWindow):
 
     def get_output_dir_path(self):
         self.viewModel.view_model_import_data.on_change_output_file_path(get_output_dir_path(self))
-
-    def get_pickle_save_path(self):
-        self.viewModel.view_model_import_data.on_changed_pickle_path(get_pickle_save_path(self))
 
     def get_changed_selected_record_trip(self, index: QModelIndex):
         index = self._get_selected_row_index(self.ui.TripsTableView, index)

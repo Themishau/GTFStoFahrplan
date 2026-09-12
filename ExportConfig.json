@@ -56,6 +56,6 @@
  ],
  "nonPyinstallerOptions": {
   "increaseRecursionLimit": true,
-  "manualArguments": "--collect-all duckdb --hidden-import _duckdb"
+  "manualArguments": "--copy-metadata duckdb"
  }
 }
