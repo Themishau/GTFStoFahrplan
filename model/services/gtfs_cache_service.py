@@ -4,7 +4,7 @@ from pathlib import Path
 from threading import RLock
 from typing import Callable
 
-from model.Dto.gtfs_feed import GtfsFeed, IncompatibleFeedError, is_schema_compatible
+from model.domain.gtfs_feed import GtfsFeed, IncompatibleFeedError, is_schema_compatible
 from model.infrastructure.database.gtfs_importer import GtfsImporter
 from model.infrastructure.database.gtfs_repository import GtfsRepository
 from model.infrastructure.paths.app_paths import AppPaths
@@ -85,6 +85,16 @@ class GtfsCacheService:
     def get_recent_feeds(self) -> list[GtfsFeed]:
         return self.repository.get_recent_feeds()
 
+    def database_size_bytes(self) -> int:
+        total = 0
+        database = self.repository.database_path
+        for path in (database, Path(f'{database}.wal')):
+            try:
+                total += path.stat().st_size
+            except FileNotFoundError:
+                pass
+        return total
+
     def delete_feed(self, feed_id: str) -> None:
         self.repository.delete_feed(feed_id)
         if self.active_feed and self.active_feed.feed_id == feed_id:
@@ -93,6 +103,31 @@ class GtfsCacheService:
             self.last_feed = None
         if self.settings.last_feed_id == feed_id:
             self.update_settings(last_feed_id=None)
+
+    def delete_all_feeds(self) -> None:
+        database = self.repository.database_path
+        temp_directory = self.repository.temp_directory
+        memory_limit = self.repository.memory_limit
+        self.repository.close()
+
+        try:
+            database.unlink(missing_ok=True)
+            Path(f'{database}.wal').unlink(missing_ok=True)
+            repository = GtfsRepository(database, temp_directory, memory_limit)
+        except Exception:
+            # Restore a usable repository even when Windows or antivirus software
+            # temporarily prevents replacing the database file.
+            self.repository = GtfsRepository(database, temp_directory, memory_limit)
+            self.importer = GtfsImporter(self.repository, temp_directory)
+            raise
+
+        self.repository = repository
+        self.importer = GtfsImporter(repository, temp_directory)
+        self.active_feed = None
+        self.last_feed = None
+        if self.settings.last_feed_id is not None:
+            self.update_settings(last_feed_id=None)
+        logger.info("All cached GTFS feeds deleted")
 
     def close(self) -> None:
         self.repository.close()

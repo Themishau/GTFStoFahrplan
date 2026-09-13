@@ -11,34 +11,39 @@ GTFStoFahrplan is a Python script designed to convert GTFS (General Transit Feed
 
 ## Installation
 
-To install GTFStoFahrplan, you need to have Python installed on your system. You can then install the required dependencies using pip:
+GTFStoFahrplan requires Windows and Python 3.12 or later. Clone the repository and run the setup batch file from the project directory:
 
-```bash
-pip install -r requirements.txt
+```powershell
+git clone https://github.com/Themishau/GTFStoFahrplan.git
+cd GTFStoFahrplan
+.\setup.bat
 ```
+
+`setup.bat` creates a local `.venv` virtual environment, updates pip, and installs every dependency from `requirements.txt`. If `.venv` already exists, the script reuses it.
+
+To perform the same setup manually:
+
+```powershell
+py -3 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+The requirements include the application packages (`duckdb`, `pandas`, `PySide6`, and `requests`), `rarfile` for the standalone helper in `Test/test.py`, and the Windows packaging tools `auto-py-to-exe` and `pyinstaller`. Packages installed as dependencies of these libraries do not need separate entries.
 
 ![Screenshot](gfts_example_gui.png)
-
-
-Clone this repository to your local machine:
-
-```
-
-git clone https://github.com/Themishau/GTFStoFahrplan.git
-```
 
 ## Usage
 
 Before using GTFStoFahrplan, make sure you have GTFS data available. GTFS data can be obtained from various public transportation agencies or repositories.
 
-Once you have the GTFS data, you can run the script with the following command:
+Once you have the GTFS data, run the application from the repository root:
 
-```
-start via main.py
-use the UI to create Fahrpläne :)
+```powershell
+.\.venv\Scripts\python.exe main.py
 ```
 
-Choose an export directory in the application; generated CSV plans are written there.
+Use the UI to import a GTFS ZIP and create timetables. Choose an export directory in the application; generated CSV plans are written there.
 
 ## Persistent GTFS cache
 
@@ -48,10 +53,13 @@ imports the required CSV tables into DuckDB in one transaction. Updated content
 under the same filename becomes a separate feed. Legacy pickle ZIPs are no longer
 opened; import their original GTFS CSV ZIP instead.
 
-The import page includes **Previously loaded GTFS data**, with **Open** and
-**Delete** buttons. After restarting, the last used feed is preselected. Opening
-it works without the original ZIP. Deletion removes only the selected feed and
-clears its saved reference when necessary.
+The import page includes **Previously loaded GTFS data**, with **Open**, **Delete
+selected**, and **Delete all data** buttons. After restarting, the last used feed
+is preselected. Opening it works without the original ZIP. Deleting one feed
+preserves the other cached feeds. Deleting all data requires confirmation,
+recreates the DuckDB cache, and clears the active feed. The storage indicator
+shows the current on-disk size of `gtfs.duckdb` and its active write-ahead log in
+MB or GB.
 
 Qt's `QStandardPaths.AppLocalDataLocation`, using the organization/application
 name `GTFStoFahrplan`, determines the per-user storage root:
@@ -74,7 +82,7 @@ is needed for the database, the largest decompressed member, and DuckDB spill da
 `model/services/gtfs_cache_service.py` owns the open/import workflow;
 `model/infrastructure/database/gtfs_repository.py` owns SQL and transactions.
 `CachedGtfsData` implements the planner-facing `GtfsDataSource` contract without
-holding GTFS DataFrames. The legacy `GtfsDataFrameDto` remains supported. Planners
+holding GTFS DataFrames. The legacy `InMemoryGtfsData` remains supported. Planners
 query trips for the selected route/direction and stop times for the selected trip
 IDs, then use existing Pandas calculations and CSV exports. Source frames are
 read-only by convention; settings and results belong to each plan. `block_id` is
@@ -127,8 +135,9 @@ restart without the ZIP, cache reuse, import rollback, settings, optional column
 CSV quoting, time conversion, filtered planning, CSV export, and Qt worker/UI
 integration. GUI tests run with Qt's offscreen platform.
 
-Install the runtime requirements in the build environment. Run auto-py-to-exe
-from the repository root with `ExportConfig.json`, which includes
+The setup batch installs the packaging tools together with the runtime
+requirements. Run auto-py-to-exe from the repository root with
+`ExportConfig.json`, which includes
 `--copy-metadata duckdb`. DuckDB reads its installed package version through
 `importlib.metadata` during startup, so its distribution metadata must be present
 in the frozen application. PyInstaller detects the regular `duckdb` and `_duckdb`

@@ -1,1 +1,3 @@
-from model.model import Model
+from .application_model import ApplicationModel
+
+__all__ = ["ApplicationModel"]

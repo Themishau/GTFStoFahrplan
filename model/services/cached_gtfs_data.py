@@ -6,7 +6,7 @@ so creation strategies can support both sources during the migration.
 """
 import pandas as pd
 
-from model.Dto.gtfs_feed import GtfsFeed
+from model.domain.gtfs_feed import GtfsFeed
 
 DAYS = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
 
@@ -17,15 +17,15 @@ class CachedGtfsData:
         self.repository = repository
 
     @property
-    def Agencies(self):
+    def agencies(self):
         return self.repository.get_agencies(self.feed.feed_id)
 
     @property
-    def Routes(self):
+    def routes(self):
         return self.repository.get_routes(self.feed.feed_id).sort_values("route_short_name")
 
     @property
-    def Calendarweeks(self):
+    def calendar(self):
         calendar = self.repository.get_calendar(self.feed.feed_id)
         exceptions = self.repository.get_calendar_dates(self.feed.feed_id)
         # GTFS permits services defined exclusively by calendar_dates. Supply a
@@ -43,7 +43,7 @@ class CachedGtfsData:
         return calendar
 
     @property
-    def Calendardates(self):
+    def calendar_dates(self):
         result = self.repository.get_calendar_dates(self.feed.feed_id)
         result["date"] = pd.to_datetime(result["date"])
         result["date_day_format"] = result["date"]
@@ -51,7 +51,7 @@ class CachedGtfsData:
         return result
 
     @property
-    def Feedinfos(self):
+    def feed_info(self):
         result = self.repository.get_feed_info(self.feed.feed_id)
         return None if result.empty else result
 

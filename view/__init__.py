@@ -1,2 +1,4 @@
-from view.Custom.splash_screen import SplashScreen
-from view.view import View
+from .main_window import MainWindow
+from .splash_screen import SplashScreen
+
+__all__ = ["MainWindow", "SplashScreen"]

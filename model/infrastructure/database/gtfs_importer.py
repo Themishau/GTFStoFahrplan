@@ -4,7 +4,7 @@ import zipfile
 from pathlib import Path, PurePosixPath
 from typing import Callable
 
-from model.Dto.gtfs_feed import FileFingerprint, GtfsFeed
+from model.domain.gtfs_feed import FileFingerprint, GtfsFeed
 from .gtfs_repository import GtfsRepository
 from .schema import REQUIRED_TABLES, TABLE_COLUMNS
 

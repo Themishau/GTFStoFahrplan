@@ -1,1 +1,3 @@
-from .view_model import ViewModel
+from .application import ApplicationViewModel
+
+__all__ = ["ApplicationViewModel"]

@@ -2,11 +2,11 @@
 import logging
 import sys
 from logging.handlers import RotatingFileHandler
-from model import Model
-from viewmodel import ViewModel
+from model import ApplicationModel
+from viewmodel import ApplicationViewModel
 from view import SplashScreen
-from view import View
-from PySide6.QtWidgets import *
+from view import MainWindow
+from PySide6.QtWidgets import QApplication
 from model.infrastructure.paths.app_paths import AppPaths
 from model.services.gtfs_cache_service import GtfsCacheService
 
@@ -26,9 +26,9 @@ if __name__ == '__main__':
                                      backupCount=3, encoding='utf-8')
     log_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(name)s: %(message)s'))
     logging.getLogger().addHandler(log_handler)
-    model = Model(gtfs_app, GtfsCacheService.for_paths(paths))
-    viewModel = ViewModel(app=gtfs_app, model=model)
-    view = View(viewModel=viewModel)
+    model = ApplicationModel(gtfs_app, GtfsCacheService.for_paths(paths))
+    view_model = ApplicationViewModel(app=gtfs_app, model=model)
+    view = MainWindow(view_model=view_model)
     # show a nice loading window first
     window = SplashScreen(view)
     gtfs_app.aboutToQuit.connect(model.close)

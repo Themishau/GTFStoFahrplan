@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable
 
-from model.Dto.gtfs_feed import FileFingerprint
+from model.domain.gtfs_feed import FileFingerprint
 
 logger = logging.getLogger(__name__)
 

@@ -1,63 +1,34 @@
-from PySide6.QtWidgets import QFileDialog, QHeaderView, QTableView
+from pathlib import Path
+
 from PySide6.QtCore import QDate
-import os
+from PySide6.QtWidgets import QFileDialog, QHeaderView, QTableView
 
 def get_file_path(parent):
-    try:
-        input_file_path = QFileDialog.getOpenFileName(parent=parent,
-                                                      caption='Select GTFS Zip File',
-                                                      dir='C:/Tmp',
-                                                      filter='Zip File (*.zip)',
-                                                      selectedFilter='Zip File (*.zip)')
-
-    except:
-        input_file_path = QFileDialog.getOpenFileName(parent=parent,
-                                                      caption='Select GTFS Zip File',
-                                                      dir=os.getcwd(),
-                                                      filter='Zip File (*.zip)',
-                                                      selectedFilter='Zip File (*.zip)')
-
-    return input_file_path if input_file_path[0] else None
+    selected = QFileDialog.getOpenFileName(
+        parent=parent,
+        caption="Select GTFS ZIP file",
+        dir=str(Path.home()),
+        filter="ZIP file (*.zip)",
+        selectedFilter="ZIP file (*.zip)",
+    )
+    return selected if selected[0] else None
 
 def get_output_dir_path(parent):
-    output_file_path = QFileDialog.getExistingDirectory(parent,
-                                                        caption='Select GTFS Zip File',
-                                                        dir='C:/Tmp')
-    if len(output_file_path) == 0:
-        return None
-
-    return output_file_path if output_file_path[0] else None
-
-def get_pickle_save_path(parent):
-    try:
-        pickle_file_path = QFileDialog.getSaveFileName(parent=parent,
-                                                       caption='Select GTFS Zip File',
-                                                       dir='C:/Tmp',
-                                                       filter='Zip File (*.zip)',
-                                                       selectedFilter='Zip File (*.zip)')
-
-    except:
-        pickle_file_path = QFileDialog.getSaveFileName(parent=parent,
-                                                       caption='Select GTFS Zip File',
-                                                       dir=os.getcwd(),
-                                                       filter='Zip File (*.zip)',
-                                                       selectedFilter='Zip File (*.zip)')
-
-    return pickle_file_path if pickle_file_path[0] else None
+    selected = QFileDialog.getExistingDirectory(
+        parent,
+        caption="Select timetable output directory",
+        dir=str(Path.home()),
+    )
+    return selected or None
 
 def string_to_qdate(date_string):
-    if date_string is None:
+    if not date_string:
         return QDate(2000, 1, 1)
-    date_string = date_string.replace('-', '')
-
-    year = int(date_string[:4])
-    month = int(date_string[4:6])
-    day = int(date_string[6:])
-    return QDate(year, month, day)
+    value = QDate.fromString(str(date_string).replace("-", ""), "yyyyMMdd")
+    return value if value.isValid() else QDate(2000, 1, 1)
 
 def qdate_to_string(qdate):
-    format_str = 'yyyyMMdd'
-    return qdate.toString(format_str)
+    return qdate.toString("yyyyMMdd")
 
 def configure_table_view(table_view: QTableView):
     horizontal_header = table_view.horizontalHeader()

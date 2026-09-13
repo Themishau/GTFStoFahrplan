@@ -11,7 +11,7 @@ from unittest.mock import patch
 import duckdb
 import pandas as pd
 
-from model.Dto.gtfs_feed import CURRENT_GTFS_SCHEMA_VERSION, IncompatibleFeedError
+from model.domain.gtfs_feed import CURRENT_GTFS_SCHEMA_VERSION, IncompatibleFeedError
 from model.infrastructure.database.gtfs_repository import GtfsRepository
 from model.infrastructure.database.schema import TABLE_COLUMNS
 from model.infrastructure.paths.app_paths import AppPaths
@@ -230,6 +230,32 @@ class CacheTests(unittest.TestCase):
         self.assertIsNone(self.cache.active_feed)
         self.assertIsNone(self.cache.last_feed)
 
+    def test_delete_all_feeds_recreates_database_and_reclaims_storage(self):
+        self.cache.open_or_import_gtfs(self.zip_path)
+        make_feed(self.zip_path, publisher='Second cached feed')
+        self.cache.open_or_import_gtfs(self.zip_path)
+        self.assertEqual(len(self.cache.get_recent_feeds()), 2)
+        size_before = self.cache.database_size_bytes()
+        self.assertGreater(size_before, 0)
+
+        self.cache.delete_all_feeds()
+
+        self.assertEqual(self.cache.get_recent_feeds(), [])
+        self.assertIsNone(self.cache.settings.last_feed_id)
+        self.assertIsNone(self.cache.active_feed)
+        self.assertIsNone(self.cache.last_feed)
+        self.assertTrue(self.paths.database.is_file())
+        files_size = self.paths.database.stat().st_size
+        wal = Path(f'{self.paths.database}.wal')
+        if wal.exists():
+            files_size += wal.stat().st_size
+        self.assertEqual(self.cache.database_size_bytes(), files_size)
+        self.assertLess(self.cache.database_size_bytes(), size_before)
+
+        result = self.cache.open_or_import_gtfs(self.zip_path)
+        self.assertFalse(result.cache_hit)
+        self.assertEqual(len(self.cache.get_recent_feeds()), 1)
+
     def test_failed_deletion_rolls_back(self):
         feed = self.cache.open_or_import_gtfs(self.zip_path).feed
         # Simulate a failure after deletions from the valid GTFS tables.
@@ -295,7 +321,7 @@ class CacheTests(unittest.TestCase):
         self.assertTrue((trips.direction_id == 0).all())
         self.assertEqual(self.cache.repository.get_agencies(feed.feed_id).agency_id.iloc[0],
                          self.cache.repository.get_routes(feed.feed_id).agency_id.iloc[0])
-        self.assertIsNone(CachedGtfsData(feed, self.cache.repository).Feedinfos)
+        self.assertIsNone(CachedGtfsData(feed, self.cache.repository).feed_info)
         self.assertEqual(str(feed.metadata.feed_start_date), "2026-09-12")
 
     def test_calendar_without_exception_file(self):
@@ -306,15 +332,15 @@ class CacheTests(unittest.TestCase):
                     target.writestr(name, source.read(name))
         feed = self.cache.open_or_import_gtfs(replacement).feed
         self.assertTrue(self.cache.repository.get_calendar_dates(feed.feed_id).empty)
-        self.assertFalse(CachedGtfsData(feed, self.cache.repository).Calendarweeks.empty)
+        self.assertFalse(CachedGtfsData(feed, self.cache.repository).calendar.empty)
 
     def test_calendar_dates_only_feed(self):
         make_feed(self.zip_path, calendar=False)
         feed = self.cache.open_or_import_gtfs(self.zip_path).feed
         self.assertTrue(self.cache.repository.get_calendar(feed.feed_id).empty)
         legacy = CachedGtfsData(feed, self.cache.repository)
-        self.assertEqual(legacy.Calendarweeks.service_id.tolist(), ["s1"])
-        self.assertEqual(legacy.Calendarweeks.saturday.tolist(), ["0"])
+        self.assertEqual(legacy.calendar.service_id.tolist(), ["s1"])
+        self.assertEqual(legacy.calendar.saturday.tolist(), ["0"])
 
     def test_filters_empty_ids_and_feed_isolation(self):
         feed = self.cache.open_or_import_gtfs(self.zip_path).feed

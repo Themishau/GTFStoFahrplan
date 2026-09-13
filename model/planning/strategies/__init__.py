@@ -1,0 +1,1 @@
+"""Timetable creation strategies."""

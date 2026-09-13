@@ -22,11 +22,11 @@ from PySide6.QtWidgets import (QAbstractItemView, QAbstractScrollArea, QApplicat
     QSizePolicy, QSpacerItem, QSplitter, QStackedWidget,
     QTabWidget, QTableView, QVBoxLayout, QWidget)
 
-from view.Custom.AnimatedQToolBox import AnimatedQToolBox
-from view.Custom.AnimatedTableView import AnimatedTableView
-from view.Custom.FadingButton import FadingButton
-from view.Custom.ProgressListView import ProgressHistoryListView
-from view.Custom.custom_table_view import Customtableview
+from view.widgets.animated_table_view import AnimatedTableView
+from view.widgets.animated_tool_box import AnimatedToolBox
+from view.widgets.fading_button import FadingButton
+from view.widgets.progress_list import ProgressHistoryListView
+from view.widgets.reorderable_table_view import ReorderableTableView
 import resource_rc
 import resource_boot_rc
 
@@ -238,7 +238,7 @@ class Ui_MainWindow(object):
         self._2 = QVBoxLayout(self.frame)
         self._2.setObjectName(u"_2")
         self._2.setSizeConstraint(QLayout.SizeConstraint.SetMinimumSize)
-        self.toolBox = AnimatedQToolBox(self.frame)
+        self.toolBox = AnimatedToolBox(self.frame)
         self.toolBox.setObjectName(u"toolBox")
         sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         sizePolicy1.setHorizontalStretch(0)
@@ -689,6 +689,17 @@ class Ui_MainWindow(object):
 
         self.gridLayout_11.addWidget(self.delete_feed_button, 7, 2, 1, 1)
 
+        self.cache_size_label = QLabel(self.import_box)
+        self.cache_size_label.setObjectName(u"cache_size_label")
+
+        self.gridLayout_11.addWidget(self.cache_size_label, 8, 0, 1, 2)
+
+        self.delete_all_feeds_button = FadingButton(self.import_box)
+        self.delete_all_feeds_button.setObjectName(u"delete_all_feeds_button")
+        self.delete_all_feeds_button.setFont(font3)
+
+        self.gridLayout_11.addWidget(self.delete_all_feeds_button, 8, 2, 1, 1)
+
 
         self.horizontalLayout_3.addWidget(self.import_box)
 
@@ -714,7 +725,7 @@ class Ui_MainWindow(object):
 
         self.gridLayout_14.addWidget(self.information_label_label, 0, 0, 1, 1)
 
-        self.import_missing_view = Customtableview(self.import_box_2)
+        self.import_missing_view = ReorderableTableView(self.import_box_2)
         self.import_missing_view.setObjectName(u"import_missing_view")
         sizePolicy.setHeightForWidth(self.import_missing_view.sizePolicy().hasHeightForWidth())
         self.import_missing_view.setSizePolicy(sizePolicy)
@@ -1012,7 +1023,7 @@ class Ui_MainWindow(object):
         self.gridLayout_23.setObjectName(u"gridLayout_23")
         self.gridLayout_23.setSizeConstraint(QLayout.SizeConstraint.SetMinAndMaxSize)
         self.gridLayout_23.setContentsMargins(5, 5, 5, 5)
-        self.tableView_sorting_stops = Customtableview(self.settings_grid_2)
+        self.tableView_sorting_stops = ReorderableTableView(self.settings_grid_2)
         self.tableView_sorting_stops.setObjectName(u"tableView_sorting_stops")
         sizePolicy.setHeightForWidth(self.tableView_sorting_stops.sizePolicy().hasHeightForWidth())
         self.tableView_sorting_stops.setSizePolicy(sizePolicy)
@@ -1310,7 +1321,9 @@ class Ui_MainWindow(object):
         self.btnRestart.setText(QCoreApplication.translate("MainWindow", u"Cancel", None))
         self.recent_feed_details.setText(QCoreApplication.translate("MainWindow", u"No cached feeds yet.", None))
         self.open_feed_button.setText(QCoreApplication.translate("MainWindow", u"Open", None))
-        self.delete_feed_button.setText(QCoreApplication.translate("MainWindow", u"Delete", None))
+        self.delete_feed_button.setText(QCoreApplication.translate("MainWindow", u"Delete selected", None))
+        self.cache_size_label.setText(QCoreApplication.translate("MainWindow", u"DuckDB storage: 0.00 MB", None))
+        self.delete_all_feeds_button.setText(QCoreApplication.translate("MainWindow", u"Delete all data", None))
         self.information_label_label.setText(QCoreApplication.translate("MainWindow", u"Information Import:", None))
         self.information_missingtext_label.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Attention: </p><p>Missing Columns in GTFS Data. </p><p>Creating tables might result into errors.</p><p>Following columns are missing in dataset: </p></body></html>", None))
         self.label_5.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p align=\"center\">Agencies</p></body></html>", None))

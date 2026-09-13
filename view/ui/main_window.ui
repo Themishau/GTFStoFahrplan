@@ -334,7 +334,7 @@ background-color: #ae636f;
             <enum>QLayout::SizeConstraint::SetMinimumSize</enum>
            </property>
            <item alignment="Qt::AlignmentFlag::AlignTop">
-            <widget class="AnimatedQToolBox" name="toolBox">
+       <widget class="AnimatedToolBox" name="toolBox">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
                <horstretch>0</horstretch>
@@ -1263,7 +1263,28 @@ Ressources:
                    </font>
                   </property>
                   <property name="text">
-                   <string>Delete</string>
+                   <string>Delete selected</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="8" column="0" colspan="2">
+                 <widget class="QLabel" name="cache_size_label">
+                  <property name="text">
+                   <string>DuckDB storage: 0.00 MB</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="8" column="2">
+                 <widget class="FadingButton" name="delete_all_feeds_button">
+                  <property name="font">
+                   <font>
+                    <pointsize>12</pointsize>
+                    <italic>false</italic>
+                    <bold>true</bold>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Delete all data</string>
                   </property>
                  </widget>
                 </item>
@@ -1328,7 +1349,7 @@ Ressources:
                  </widget>
                 </item>
                 <item row="4" column="0">
-                 <widget class="Customtableview" name="import_missing_view">
+                 <widget class="ReorderableTableView" name="import_missing_view">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                     <horstretch>0</horstretch>
@@ -2053,7 +2074,7 @@ Ressources:
                  <number>1</number>
                 </property>
                 <item row="11" column="2">
-                 <widget class="Customtableview" name="tableView_sorting_stops">
+                 <widget class="ReorderableTableView" name="tableView_sorting_stops">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                     <horstretch>0</horstretch>
@@ -2536,28 +2557,28 @@ border-radius: 1px;</string>
   <customwidget>
    <class>FadingButton</class>
    <extends>QPushButton</extends>
-   <header>view.Custom.FadingButton</header>
+   <header>view.widgets.fading_button</header>
   </customwidget>
   <customwidget>
-   <class>AnimatedQToolBox</class>
+   <class>AnimatedToolBox</class>
    <extends>QToolBox</extends>
-   <header>view.Custom.AnimatedQToolBox</header>
+   <header>view.widgets.animated_tool_box</header>
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>Customtableview</class>
+   <class>ReorderableTableView</class>
    <extends>QTableView</extends>
-   <header>view.Custom.custom_table_view</header>
+   <header>view.widgets.reorderable_table_view</header>
   </customwidget>
   <customwidget>
    <class>AnimatedTableView</class>
    <extends>QTableView</extends>
-   <header>view.Custom.AnimatedTableView</header>
+   <header>view.widgets.animated_table_view</header>
   </customwidget>
   <customwidget>
    <class>ProgressHistoryListView</class>
    <extends>QListView</extends>
-   <header>view.Custom.ProgressListView</header>
+   <header>view.widgets.progress_list</header>
   </customwidget>
  </customwidgets>
  <resources>

@@ -11,7 +11,7 @@ from uuid import uuid4
 import duckdb
 import pandas as pd
 
-from model.Dto.gtfs_feed import (
+from model.domain.gtfs_feed import (
     CURRENT_GTFS_SCHEMA_VERSION, FeedMetadata, FileFingerprint, GtfsFeed,
 )
 from model.services.gtfs_time import GTFS_TIME_PATTERN
@@ -31,6 +31,9 @@ class GtfsRepository:
         database, temp_directory = Path(database), Path(temp_directory)
         database.parent.mkdir(parents=True, exist_ok=True)
         temp_directory.mkdir(parents=True, exist_ok=True)
+        self.database_path = database
+        self.temp_directory = temp_directory
+        self.memory_limit = memory_limit
         self._lock = RLock()
         self._interrupt_lock = Lock()
         self._active_cursor = None
