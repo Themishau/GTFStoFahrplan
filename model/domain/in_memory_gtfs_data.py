@@ -9,15 +9,15 @@ class InMemoryGtfsData:
     """Expose data frames through the same query API as the DuckDB adapter."""
 
     def __init__(
-        self,
-        routes: pd.DataFrame,
-        trips: pd.DataFrame,
-        stop_times: pd.DataFrame,
-        stops: pd.DataFrame,
-        calendar: pd.DataFrame,
-        calendar_dates: pd.DataFrame,
-        agencies: pd.DataFrame,
-        feed_info: pd.DataFrame | None,
+            self,
+            routes: pd.DataFrame,
+            trips: pd.DataFrame,
+            stop_times: pd.DataFrame,
+            stops: pd.DataFrame,
+            calendar: pd.DataFrame,
+            calendar_dates: pd.DataFrame,
+            agencies: pd.DataFrame,
+            feed_info: pd.DataFrame | None,
     ) -> None:
         self.routes = routes
         self.trips = trips
@@ -29,10 +29,10 @@ class InMemoryGtfsData:
         self.feed_info = feed_info
 
     def get_trips(
-        self,
-        route_id: str | None = None,
-        direction_id: int | None = None,
-        service_ids: Iterable[str] | None = None,
+            self,
+            route_id: str | None = None,
+            direction_id: int | None = None,
+            service_ids: Iterable[str] | None = None,
     ) -> pd.DataFrame:
         trips = self.trips
         if route_id is not None:
@@ -50,4 +50,3 @@ class InMemoryGtfsData:
         if stop_ids is None:
             return self.stops
         return self.stops[self.stops.stop_id.isin(stop_ids)]
-

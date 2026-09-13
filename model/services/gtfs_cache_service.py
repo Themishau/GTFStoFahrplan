@@ -9,28 +9,36 @@ from model.infrastructure.database.gtfs_importer import GtfsImporter
 from model.infrastructure.database.gtfs_repository import GtfsRepository
 from model.infrastructure.paths.app_paths import AppPaths
 from model.infrastructure.settings.settings_service import SettingsService
+
 from .gtfs_fingerprint import GtfsFingerprintService
 
 logger = logging.getLogger(__name__)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class OpenFeedResult:
     feed: GtfsFeed
     cache_hit: bool
 
 
 class GtfsCacheService:
-    def __init__(self, repository: GtfsRepository, importer: GtfsImporter,
-                 settings_service: SettingsService, fingerprint_service=None):
+    def __init__(
+        self,
+        repository: GtfsRepository,
+        importer: GtfsImporter,
+        settings_service: SettingsService,
+        fingerprint_service: GtfsFingerprintService | None = None,
+    ):
         self.repository = repository
         self.importer = importer
         self.settings_service = settings_service
-        self.fingerprint_service = fingerprint_service or GtfsFingerprintService()
+        self.fingerprint_service: GtfsFingerprintService = (
+            fingerprint_service or GtfsFingerprintService()
+        )
         self._settings_lock = RLock()
         self.settings = settings_service.load()
         self.active_feed: GtfsFeed | None = None
-        self.last_feed = None
+        self.last_feed: GtfsFeed | None = None
         if self.settings.last_feed_id:
             self.last_feed = repository.get_feed(self.settings.last_feed_id)
             if self.last_feed is None or not is_schema_compatible(self.last_feed.metadata.import_schema_version):
@@ -88,11 +96,11 @@ class GtfsCacheService:
     def database_size_bytes(self) -> int:
         total = 0
         database = self.repository.database_path
-        for path in (database, Path(f'{database}.wal')):
+        for path in (database, Path(f"{database}.wal")):
             try:
                 total += path.stat().st_size
             except FileNotFoundError:
-                pass
+                continue
         return total
 
     def delete_feed(self, feed_id: str) -> None:
@@ -112,7 +120,7 @@ class GtfsCacheService:
 
         try:
             database.unlink(missing_ok=True)
-            Path(f'{database}.wal').unlink(missing_ok=True)
+            Path(f"{database}.wal").unlink(missing_ok=True)
             repository = GtfsRepository(database, temp_directory, memory_limit)
         except Exception:
             # Restore a usable repository even when Windows or antivirus software

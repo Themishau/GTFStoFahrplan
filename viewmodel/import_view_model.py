@@ -4,24 +4,25 @@ from pathlib import Path
 from PySide6.QtCore import QObject, Signal
 
 from model.domain.gtfs_feed import is_schema_compatible
-from model.enums import ErrorMessages, ModelAction
+from model.enums import ErrorMessage, ModelAction, TimeFormat
+
+logger = logging.getLogger(__name__)
 
 
 class ImportViewModel(QObject):
-    input_file_path = Signal(str)
-    output_file_path = Signal(str)
-    update_warning_table_view = Signal()
-    export_plan_time_format = Signal(str)
+    input_path_changed = Signal(str)
+    output_path_changed = Signal(str)
+    missing_columns_changed = Signal()
+    time_format_changed = Signal(str)
     error_message = Signal(str)
-    update_agency_list_signal = Signal()
-    set_up_create_tab_signal = Signal()
+    agencies_changed = Signal()
+    feed_activated = Signal()
     recent_feeds_changed = Signal()
     busy_changed = Signal(bool)
     feed_cleared = Signal()
 
-    def __init__(self, app, model, parent=None):
+    def __init__(self, model, parent=None):
         super().__init__(parent)
-        self.app = app
         self.model = model
         self.recent_feeds = self.model.cache_service.get_recent_feeds()
         self.model.busy_changed.connect(self._on_busy_changed)
@@ -38,26 +39,26 @@ class ImportViewModel(QObject):
 
     def open_feed(self, feed_id):
         if feed_id:
-            return self.model.start_function_async(ModelAction.OPEN_CACHED_FEED, feed_id)
+            return self.model.start_action(ModelAction.OPEN_CACHED_FEED, feed_id)
         return False
 
     def delete_feed(self, feed_id):
         if feed_id:
-            return self.model.start_function_async(ModelAction.DELETE_CACHED_FEED, feed_id)
+            return self.model.start_action(ModelAction.DELETE_CACHED_FEED, feed_id)
         return False
 
     def delete_all_feeds(self):
         if self.recent_feeds:
-            return self.model.start_function_async(ModelAction.DELETE_ALL_CACHED_FEEDS)
+            return self.model.start_action(ModelAction.DELETE_ALL_CACHED_FEEDS)
         return False
 
-    def get_database_size_text(self):
-        size = self.model.cache_service.database_size_bytes()
+    def get_database_size_text(self) -> str:
+        size = int(self.model.cache_service.database_size_bytes())
         gibibyte = 1024 ** 3
         mebibyte = 1024 ** 2
         if size >= gibibyte:
-            return f'{size / gibibyte:.2f} GB'
-        return f'{size / mebibyte:.2f} MB'
+            return f"{size / gibibyte:.2f} GB"
+        return f"{size / mebibyte:.2f} MB"
 
     def _on_busy_changed(self, busy):
         if not busy:
@@ -91,50 +92,53 @@ class ImportViewModel(QObject):
     def get_sample_date(self):
         return self.model.planner.planning_settings.sample_date
 
-    def set_input_path(self, path):
-        if not path or not path[0]:
+    def set_input_path(self, input_path: Path | None) -> None:
+        if input_path is None:
             return
-        self.model.planner.import_settings.input_path = path[0]
-        self.input_file_path.emit(path[0])
+        self.model.planner.import_settings.input_path = input_path
+        self.input_path_changed.emit(str(input_path))
 
     def handle_import_finished(self):
         self.recent_feeds = self.model.cache_service.get_recent_feeds()
         self.recent_feeds_changed.emit()
-        self.update_warning_table_view.emit()
-        self.update_agency_list_signal.emit()
-        self.set_up_create_tab_signal.emit()
-
+        self.missing_columns_changed.emit()
+        self.agencies_changed.emit()
+        self.feed_activated.emit()
 
     def start_import(self):
         path = self.model.planner.import_settings.input_path
-        if path and Path(path).is_file():
-            self.model.start_function_async(ModelAction.IMPORT_GTFS.value)
+        if path is not None and path.is_file():
+            self.model.start_action(ModelAction.IMPORT_GTFS)
         else:
-            self.send_error_message(ErrorMessages.INVALID_PATH.value)
+            self.send_error_message(ErrorMessage.INVALID_PATH)
 
-
-    def set_output_path(self, path):
-        if not path:
+    def set_output_path(self, path: Path | None) -> None:
+        if path is None:
             return
+        path_text = str(path)
         try:
-            self.model.cache_service.update_settings(default_export_path=path)
+            self.model.cache_service.update_settings(default_export_path=path_text)
         except OSError as error:
             self.send_error_message(str(error))
             return
-        self.model.planner.planning_settings.output_path = path
-        self.output_file_path.emit(path)
+        self.model.planner.planning_settings.output_path = path_text
+        self.output_path_changed.emit(path_text)
 
-    def set_time_format(self, text):
-        logging.debug(f'time format {text}')
-        if text == 0:
-            self.model.planner.planning_settings.time_format = 1
-        elif text == 1:
-            self.model.planner.planning_settings.time_format = 2
+    def set_time_format(self, index):
         try:
-            self.model.cache_service.update_settings(time_format='HH:mm' if text == 0 else 'HH:mm:ss')
+            selected_format = tuple(TimeFormat)[index]
+        except IndexError:
+            self.send_error_message("Invalid time format selected.")
+            return
+
+        logger.debug("Time format: %s", selected_format)
+        self.model.planner.planning_settings.time_format = selected_format
+        try:
+            self.model.cache_service.update_settings(time_format=selected_format.value)
         except OSError as error:
             self.send_error_message(str(error))
-        self.export_plan_time_format.emit(str(text))
+            return
+        self.time_format_changed.emit(selected_format.value)
 
     def send_error_message(self, message):
         self.error_message.emit(message)

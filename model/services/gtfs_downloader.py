@@ -1,47 +1,92 @@
-import json
+import argparse
 from datetime import datetime
+from pathlib import Path
+
 import requests
 
-
-def main(packages):
-
-    if packages == 'vrr':
-        response = requests.get(packages)
-        response_dict = json.loads(response.content)
-        assert response_dict['success'] is True
-
-        package = 'soll-fahrplandaten-vrr'
-        base_url = 'https://opendata.ruhr/api/3/action/package_show?id='
-        package_information_url = base_url + package
-        print(package_information_url)
-
-        package_information = requests.get(package_information_url)
-        package_dict = json.loads(package_information.content)
-        assert package_dict['success'] is True
-
-        package_dict = package_dict['result']
-
-        data_name = package_dict['resources'][-1]['name']
-        print('Data url:     ' + data_name)
-
-        data_url = package_dict['resources'][-1]['url']
-        print('Data url:     ' + data_url)
-
-        data_format = package_dict['resources'][-1]['format']
-        print('Data format:  ' + data_format)
-
-    elif 'vbb':
-        url = 'https://vbb.de/vbbgtfs'
-        r = requests.get(url, allow_redirects=True)
-
-        now = datetime.now()
-        now = now.strftime("%Y_%m_%d_%H_%M_%S")
-        with open('C:/Tmp/VBB_{}_GTFS.zip'.format(now), 'wb') as file:
-            file.write(r.content)
+VBB_GTFS_URL = "https://vbb.de/vbbgtfs"
+VRR_PACKAGE_URL = (
+    "https://opendata.ruhr/api/3/action/"
+    "package_show?id=soll-fahrplandaten-vrr"
+)
+DEFAULT_TIMEOUT_SECONDS = 30
 
 
-if __name__ == '__main__':
-    packages = 'vbb'
-    print("start")
-    main(packages)
+def _resolve_download_url(
+        provider: str,
+        session: requests.Session,
+        timeout: int,
+) -> str:
+    if provider == "vbb":
+        return VBB_GTFS_URL
+    if provider != "vrr":
+        raise ValueError(f"Unsupported GTFS provider: {provider!r}")
 
+    response = session.get(VRR_PACKAGE_URL, timeout=timeout)
+    response.raise_for_status()
+    payload = response.json()
+    if payload.get("success") is not True:
+        raise RuntimeError("The VRR data catalog returned an unsuccessful response")
+
+    resources = payload.get("result", {}).get("resources", [])
+    downloads = [
+        resource
+        for resource in resources
+        if resource.get("url")
+           and (
+                   str(resource.get("format", "")).lower() in {"gtfs", "zip"}
+                   or str(resource["url"]).lower().endswith(".zip")
+           )
+    ]
+    if not downloads:
+        raise RuntimeError("The VRR data catalog contains no GTFS download")
+    return str(downloads[-1]["url"])
+
+
+def download_gtfs_feed(
+        provider: str,
+        output_directory: Path,
+        *,
+        timeout: int = DEFAULT_TIMEOUT_SECONDS,
+) -> Path:
+    """Download a supported provider's current GTFS feed."""
+    provider = provider.lower()
+    output_directory = Path(output_directory)
+    output_directory.mkdir(parents=True, exist_ok=True)
+
+    with requests.Session() as session:
+        download_url = _resolve_download_url(provider, session, timeout)
+        response = session.get(
+            download_url,
+            allow_redirects=True,
+            stream=True,
+            timeout=timeout,
+        )
+        response.raise_for_status()
+
+        timestamp = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+        output_path = output_directory / f"{provider.upper()}_{timestamp}_GTFS.zip"
+        with output_path.open("wb") as stream:
+            for chunk in response.iter_content(chunk_size=1024 * 1024):
+                if chunk:
+                    stream.write(chunk)
+    return output_path
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Download a GTFS feed")
+    parser.add_argument("provider", choices=("vbb", "vrr"))
+    parser.add_argument(
+        "output_directory",
+        nargs="?",
+        type=Path,
+        default=Path.cwd(),
+    )
+    arguments = parser.parse_args(argv)
+    output_path = download_gtfs_feed(arguments.provider, arguments.output_directory)
+    print(output_path)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

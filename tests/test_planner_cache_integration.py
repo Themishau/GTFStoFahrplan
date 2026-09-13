@@ -12,12 +12,12 @@ import pandas as pd
 from PySide6.QtCore import QEventLoop, QThread, QTimer
 from PySide6.QtWidgets import QApplication, QMessageBox
 
-from model.planning.exporter import PlanExporter
+from model.planning.plan_exporter import PlanExporter
 from model.domain.planning_settings import PlanningSettings
 from model.domain.in_memory_gtfs_data import InMemoryGtfsData
-from model.enums import PlanMode
-from model.planning.strategies.parallel_strategy import ParallelTableCreationStrategy
-from model.planning.strategies.sequential_strategy import SequentialTableCreationStrategy
+from model.enums import ModelAction, PlanMode
+from model.planning.strategies.parallel_strategy import ParallelTimetableStrategy
+from model.planning.strategies.sequential_strategy import SequentialTimetableStrategy
 from model.planning.vehicle_circulation_planner import VehicleCirculationPlanner
 from model.infrastructure.paths.app_paths import AppPaths
 from model.application_model import ApplicationModel
@@ -48,7 +48,7 @@ class PlannerCacheTests(unittest.TestCase):
         settings.route = self.source.routes.query("route_id == 'r1'")
         settings.date = "20260912"
         settings.output_path = str(self.root)
-        settings.create_plan_mode = mode
+        settings.plan_mode = mode
         days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
         settings.weekday = pd.DataFrame({"day": ["All Days"], "category": ["All Days"],
                                          **{day: [day] for day in days}})
@@ -65,12 +65,12 @@ class PlannerCacheTests(unittest.TestCase):
         settings = self.settings(PlanMode.DATE)
         legacy = self.legacy_source()
         snapshot = copy.deepcopy(legacy)
-        expected = SequentialTableCreationStrategy(self.app, settings, legacy)
-        expected.create_table()
-        cached = SequentialTableCreationStrategy(self.app, settings, self.source)
+        expected = SequentialTimetableStrategy(settings, legacy)
+        expected.create_timetable()
+        cached = SequentialTimetableStrategy(settings, self.source)
         with patch.object(self.cache.repository, "get_stop_times_for_trips",
                           wraps=self.cache.repository.get_stop_times_for_trips) as query:
-            cached.create_table()
+            cached.create_timetable()
         self.assertEqual(list(query.call_args.args[1]), ["t1"])
         self.assertIs(cached.plans.gtfs_data, self.source)
         result = cached.plans.timetable_data.timetable
@@ -79,64 +79,64 @@ class PlannerCacheTests(unittest.TestCase):
         for name, frame in vars(legacy).items():
             if isinstance(frame, pd.DataFrame):
                 pd.testing.assert_frame_equal(frame, getattr(snapshot, name))
-        PlanExporter(self.app).export_plan(settings, cached.plans.timetable_data)
+        PlanExporter().export_timetable(settings, cached.plans.timetable_data)
         text = Path(settings.full_output_path).read_text(encoding="utf-8")
         self.assertIn("06:30", text)
         self.assertIn("Central", text)
 
     def test_parallel_directions_share_source_and_export_circulation(self):
         settings = self.settings(PlanMode.CIRCULATION_DATE)
-        strategy = ParallelTableCreationStrategy(self.app, settings, self.source)
+        strategy = ParallelTimetableStrategy(settings, self.source)
         with patch.object(self.cache.repository, "get_stop_times_for_trips",
                           wraps=self.cache.repository.get_stop_times_for_trips) as query:
-            strategy.create_table()
+            strategy.create_timetable()
         self.assertEqual({tuple(call.args[1]) for call in query.call_args_list}, {("t1",), ("t2",)})
         self.assertTrue(all(plan.gtfs_data is self.source for plan in strategy.plans))
         self.assertIsNot(strategy.plans[0].planning_settings,
                          strategy.plans[1].planning_settings)
-        circle = VehicleCirculationPlanner(strategy.plans, self.app)
-        self.assertTrue(circle.create_circulation_plan())
-        PlanExporter(self.app).export_circle_plan(settings, strategy.plans)
+        circle = VehicleCirculationPlanner(strategy.plans)
+        circle.create_circulation_plan()
+        PlanExporter().export_circulation_plan(settings, strategy.plans)
         text = Path(settings.full_output_path).read_text(encoding="utf-8")
         self.assertIn("06:30", text)
         self.assertIn("06:45", text)
 
     def test_weekday_plan(self):
-        strategy = SequentialTableCreationStrategy(self.app, self.settings(PlanMode.WEEKDAY), self.source)
-        strategy.create_table()
+        strategy = SequentialTimetableStrategy(self.settings(PlanMode.WEEKDAY), self.source)
+        strategy.create_timetable()
         self.assertFalse(strategy.plans.timetable_data.timetable.empty)
 
     def test_weekday_individual_sorting_continue(self):
         settings = self.settings(PlanMode.WEEKDAY)
         settings.use_individual_sorting = True
-        strategy = SequentialTableCreationStrategy(self.app, settings, self.source)
-        strategy.create_table()
-        strategy.create_table_continue()
+        strategy = SequentialTimetableStrategy(settings, self.source)
+        strategy.create_timetable()
+        strategy.continue_timetable()
         self.assertFalse(strategy.plans.timetable_data.timetable.empty)
 
     def test_circulation_weekday_export(self):
         settings = self.settings(PlanMode.CIRCULATION_WEEKDAY)
-        strategy = ParallelTableCreationStrategy(self.app, settings, self.source)
-        strategy.create_table()
-        VehicleCirculationPlanner(strategy.plans, self.app).create_circulation_plan()
-        PlanExporter(self.app).export_circle_plan(settings, strategy.plans)
+        strategy = ParallelTimetableStrategy(settings, self.source)
+        strategy.create_timetable()
+        VehicleCirculationPlanner(strategy.plans).create_circulation_plan()
+        PlanExporter().export_circulation_plan(settings, strategy.plans)
         self.assertTrue(Path(settings.full_output_path).is_file())
 
     def test_calendar_dates_only_plan(self):
         make_feed(self.zip_path, calendar=False)
         feed = self.cache.open_or_import_gtfs(self.zip_path).feed
         source = CachedGtfsData(feed, self.cache.repository)
-        strategy = SequentialTableCreationStrategy(self.app, self.settings(PlanMode.DATE), source)
-        strategy.create_table()
+        strategy = SequentialTimetableStrategy(self.settings(PlanMode.DATE), source)
+        strategy.create_timetable()
         self.assertEqual(strategy.plans.timetable_data.timetable.iloc[:, 0].tolist(),
                          ["06:30", "06:40"])
 
     def test_individual_sorting_continue(self):
         settings = self.settings(PlanMode.DATE)
         settings.use_individual_sorting = True
-        strategy = SequentialTableCreationStrategy(self.app, settings, self.source)
-        strategy.create_table()
-        strategy.create_table_continue()
+        strategy = SequentialTimetableStrategy(settings, self.source)
+        strategy.create_timetable()
+        strategy.continue_timetable()
         self.assertFalse(strategy.plans.timetable_data.timetable.empty)
 
     def wait_worker(self, model):
@@ -144,9 +144,11 @@ class PlannerCacheTests(unittest.TestCase):
         timer = QTimer()
         timer.setSingleShot(True)
         timer.timeout.connect(loop.quit)
+
         def done(busy):
             if not busy:
                 loop.quit()
+
         model.busy_changed.connect(done)
         timer.start(10000)
         loop.exec()
@@ -157,16 +159,18 @@ class PlannerCacheTests(unittest.TestCase):
     def test_qthread_import_and_reopen_without_zip(self):
         from viewmodel.application import ApplicationViewModel
         model = ApplicationModel(self.app, self.cache)
-        vm = ApplicationViewModel(self.app, model)
+        vm = ApplicationViewModel(model, parent=self.app)
         errors = []
         model.error_occurred.connect(errors.append)
         import_vm = vm.import_view_model
-        import_vm.set_input_path((str(self.zip_path), "ZIP"))
+        import_vm.set_input_path(self.zip_path)
         threads = []
         calculate = self.cache.fingerprint_service.calculate
+
         def record(*args):
             threads.append(QThread.currentThread() == self.app.thread())
             return calculate(*args)
+
         with patch.object(self.cache.fingerprint_service, "calculate", side_effect=record):
             import_vm.start_import()
             self.wait_worker(model)
@@ -191,7 +195,7 @@ class PlannerCacheTests(unittest.TestCase):
         self.cache = GtfsCacheService.for_paths(self.paths)
         self.addCleanup(self.cache.close)
         model = ApplicationModel(self.app, self.cache)
-        vm = ApplicationViewModel(self.app, model)
+        vm = ApplicationViewModel(model, parent=self.app)
         window = MainWindow(vm)
         self.addCleanup(window.close)
         self.assertEqual(window.recent_feeds_combo.currentData(), self.feed.feed_id)
@@ -209,7 +213,7 @@ class PlannerCacheTests(unittest.TestCase):
         from viewmodel.application import ApplicationViewModel
         from view.main_window import MainWindow
         model = ApplicationModel(self.app, self.cache)
-        vm = ApplicationViewModel(self.app, model)
+        vm = ApplicationViewModel(model, parent=self.app)
         window = MainWindow(vm)
         self.addCleanup(window.close)
         size_before = self.cache.database_size_bytes()
@@ -233,20 +237,24 @@ class PlannerCacheTests(unittest.TestCase):
 
     def test_gui_remains_responsive_during_hash_and_cancel(self):
         model = ApplicationModel(self.app, self.cache)
-        model.setup_schedule_planner()
-        model.planner.import_settings.input_path = str(self.zip_path)
+        model.initialize_schedule_planner()
+        model.planner.import_settings.input_path = self.zip_path
         tick = threading.Event()
         calculate = self.cache.fingerprint_service.calculate
+
         def delayed_hash(*args):
             self.assertTrue(tick.wait(5), "GUI event loop stalled")
             return calculate(*args)
+
         errors = []
         model.error_occurred.connect(errors.append)
+
         def gui_tick():
-            model.cancel_async_operation()
+            model.cancel_current_action()
             tick.set()
+
         with patch.object(self.cache.fingerprint_service, "calculate", side_effect=delayed_hash):
-            model.start_function_async("import_gtfs")
+            model.start_action(ModelAction.IMPORT_GTFS)
             QTimer.singleShot(10, gui_tick)
             self.wait_worker(model)
         self.assertTrue(tick.is_set())

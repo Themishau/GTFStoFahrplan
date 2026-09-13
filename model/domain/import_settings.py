@@ -1,8 +1,9 @@
 """Settings required to import a GTFS archive."""
 
 from dataclasses import dataclass
+from pathlib import Path
 
 
-@dataclass
+@dataclass(slots=True)
 class ImportSettings:
-    input_path: str = ""
+    input_path: Path | None = None

@@ -1,68 +1,36 @@
 import logging
 
 import pandas as pd
-from PySide6 import QtCore
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QModelIndex, Qt
+
+from view.widgets.data_frame_table_model import DataFrameTableModel
 
 
-class SortableDataFrameTableModel(QtCore.QAbstractTableModel):
-    def __init__(self, data):
-        super().__init__()
-        self._data = data
-
-    def data_frame(self):
-        return self._data
-
-    def rowCount(self, parent=None):
-        if self._data is None:
-            return 0
-        return self._data.shape[0]
-
-    def columnCount(self, parent=None):
-        if self._data is None:
-            return 0
-        return self._data.shape[1]
-
-    def data(self, index, role=Qt.DisplayRole):
-        if index.isValid() and self._data is not None:
-            if role == Qt.DisplayRole:
-                return str(self._data.iloc[index.row(), index.column()])
-            if role == Qt.TextAlignmentRole:
-                return int(Qt.AlignLeft | Qt.AlignVCenter)
-        return None
-
-    def headerData(self, col, orientation, role):
-        if self._data is None:
-            return None
-        if role == Qt.DisplayRole:
-            if orientation == Qt.Horizontal and 0 <= col < len(self._data.columns):
-                return str(self._data.columns[col])
-            if orientation == Qt.Vertical and 0 <= col < len(self._data.index):
-                return str(col + 1)
-        if role == Qt.TextAlignmentRole:
-            return int(Qt.AlignLeft | Qt.AlignVCenter)
-        return None
+class SortableDataFrameTableModel(DataFrameTableModel):
 
     def mimeData(self, indices):
+        if not indices:
+            return super().mimeData(indices)
         index = indices[0]
         row_indices = [index.sibling(index.row(), column) for column in range(self.columnCount())]
         return super().mimeData(row_indices)
 
     def dropMimeData(self, data, action, row, col, parent):
-        if action != QtCore.Qt.MoveAction:
+        if action != Qt.DropAction.MoveAction:
             return False
         return super().dropMimeData(data, action, row, 0, parent)
 
-    def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlags:
-        # https://doc.qt.io/qt-5/qt.html#ItemFlag-enum
+    def flags(self, index: QModelIndex) -> Qt.ItemFlag:
         if not index.isValid():
-            return QtCore.Qt.ItemIsDropEnabled
-        if index.row() < len(self._data):
-            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsDragEnabled
-        return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable
+            return Qt.ItemFlag.ItemIsDropEnabled
+        return (
+            Qt.ItemFlag.ItemIsEnabled
+            | Qt.ItemFlag.ItemIsSelectable
+            | Qt.ItemFlag.ItemIsDragEnabled
+        )
 
-    def supportedDropActions(self) -> bool:
-        return QtCore.Qt.MoveAction | QtCore.Qt.CopyAction
+    def supportedDropActions(self) -> Qt.DropAction:
+        return Qt.DropAction.MoveAction
 
     def relocate_row(self, row_source, row_target) -> None:
         if self._data is None:
@@ -100,5 +68,4 @@ class SortableDataFrameTableModel(QtCore.QAbstractTableModel):
 
         top_left = self.index(min(row_source, row_target), 0)
         bottom_right = self.index(max(row_source, row_target), self.columnCount() - 1)
-        self.dataChanged.emit(top_left, bottom_right, [Qt.DisplayRole])
-
+        self.dataChanged.emit(top_left, bottom_right, [Qt.ItemDataRole.DisplayRole])

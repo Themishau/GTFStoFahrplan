@@ -56,6 +56,7 @@ class FingerprintTests(unittest.TestCase):
     def test_cancel_hash(self):
         def cancel():
             raise InterruptedError()
+
         with self.assertRaises(InterruptedError):
             GtfsFingerprintService.calculate(self.path, cancel)
 
@@ -181,7 +182,7 @@ class CacheTests(unittest.TestCase):
 
     def test_import_never_materializes_pandas_tables(self):
         with patch.object(pd, "read_csv", side_effect=AssertionError("no Pandas CSV import")), \
-             patch.object(self.cache.repository, "_query", side_effect=AssertionError("no DataFrame queries")):
+                patch.object(self.cache.repository, "_query", side_effect=AssertionError("no DataFrame queries")):
             self.cache.open_or_import_gtfs(self.zip_path)
 
     def test_qt_application_paths(self):
@@ -365,13 +366,16 @@ class CacheTests(unittest.TestCase):
 
     def test_cancel_import_rolls_back_and_cleans_temp(self):
         cancelled = False
+
         def progress(value, message):
             nonlocal cancelled
             if message == "Imported trips":
                 cancelled = True
+
         def check():
             if cancelled:
                 raise InterruptedError()
+
         with self.assertRaises(InterruptedError):
             self.cache.open_or_import_gtfs(self.zip_path, check, progress)
         self.assertEqual(self.cache.get_recent_feeds(), [])

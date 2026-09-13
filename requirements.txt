@@ -4,9 +4,6 @@ pandas>=2.2,<3
 PySide6>=6.7,<7
 requests>=2.31,<3
 
-# Legacy RAR extraction helper in Test/test.py
-rarfile>=4,<5
-
 # Windows executable packaging
 auto-py-to-exe>=2,<3
 pyinstaller>=6,<7

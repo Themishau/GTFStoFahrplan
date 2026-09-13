@@ -1,17 +1,16 @@
 from PySide6.QtCore import QObject, Signal
 
+
 class SelectionViewModel(QObject):
-    update_agency_list_signal = Signal()
-    update_routes_list_signal = Signal()
+    routes_changed = Signal()
     error_message = Signal(str)
 
-    def __init__(self, app, model, parent=None):
+    def __init__(self, model, parent=None):
         super().__init__(parent)
-        self.app = app
         self.model = model
 
     def notify_routes_changed(self):
-        self.update_routes_list_signal.emit()
+        self.routes_changed.emit()
 
     def get_selected_agency_text(self):
         return self.model.planner.planning_settings.selected_agency_text
@@ -41,17 +40,19 @@ class SelectionViewModel(QObject):
 
     def select_agency(self, index):
         self.model.planner.planning_settings.agency = index
-        self.model.planner.planning_settings.selected_routes = self.model.planner.data_analyzer.get_routes_of_agency(
+        self.model.planner.planning_settings.selected_routes = self.model.planner.data_analyzer.get_routes_for_agency(
             self.model.planner.gtfs_data,
             self.model.planner.planning_settings.agency,
         )
         self.notify_routes_changed()
 
-    def select_route(self, id_us):
-        self.model.planner.planning_settings.route = id_us
+    def select_route(self, route):
+        self.model.planner.planning_settings.route = route
         if self.model.planner.planning_settings.route is not None:
-            self.model.planner.planning_settings.dates = self.model.planner.data_analyzer.get_date_range(self.model.planner.gtfs_data)
-            self.model.planner.data_analyzer.get_date_range_based_on_selected_trip(self.model.planner.gtfs_data, self.model.planner.planning_settings)
+            self.model.planner.data_analyzer.update_selected_route_date_range(
+                self.model.planner.gtfs_data,
+                self.model.planner.planning_settings,
+            )
 
     def send_error_message(self, message):
         self.error_message.emit(message)

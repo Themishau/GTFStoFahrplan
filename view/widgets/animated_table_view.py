@@ -1,5 +1,6 @@
-from PySide6.QtCore import QEasingCurve, QParallelAnimationGroup, QPropertyAnimation
+from PySide6.QtCore import QByteArray, QEasingCurve, QParallelAnimationGroup, QPropertyAnimation
 from PySide6.QtWidgets import QGraphicsOpacityEffect, QHeaderView, QTableView
+
 
 class AnimatedTableView(QTableView):
     def __init__(self, parent=None):
@@ -7,19 +8,23 @@ class AnimatedTableView(QTableView):
         self.horizontalHeader().setVisible(True)
         self.verticalHeader().setVisible(False)
         self.horizontalHeader().setStretchLastSection(True)
-        self.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
 
-        self.opacity_effect = QGraphicsOpacityEffect(self)
-        self.setGraphicsEffect(self.opacity_effect)
-        self.animation = QPropertyAnimation(self.opacity_effect, b'opacity')
-        self.anim_group = QParallelAnimationGroup()
-        self.clicked.connect(self.handle_click)
+        self._opacity_effect = QGraphicsOpacityEffect(self)
+        self.setGraphicsEffect(self._opacity_effect)
+        self._animation = QPropertyAnimation(
+            self._opacity_effect,
+            QByteArray(b"opacity"),
+            self,
+        )
+        self._animation.setDuration(200)
+        self._animation.setStartValue(1)
+        self._animation.setEasingCurve(QEasingCurve.Type.SineCurve)
+        self._animation.setEndValue(0.2)
+        self._animation_group = QParallelAnimationGroup(self)
+        self._animation_group.addAnimation(self._animation)
+        self.clicked.connect(self._start_fade)
 
-    def handle_click(self):
-        self.anim_group.stop()
-        self.animation.setDuration(200)
-        self.animation.setStartValue(1)
-        self.animation.setEasingCurve(QEasingCurve.SineCurve)
-        self.animation.setEndValue(0.2)
-        self.anim_group.addAnimation(self.animation)
-        self.anim_group.start()
+    def _start_fade(self) -> None:
+        self._animation_group.stop()
+        self._animation_group.start()

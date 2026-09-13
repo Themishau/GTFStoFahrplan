@@ -1,31 +1,33 @@
 """Temporary bridge for the Pandas planner. This object stores no GTFS rows.
 
 Source frames must be treated as read-only. Large stop times are available only
-through an explicit trip query. The in-memory DTO exposes the same query methods
-so creation strategies can support both sources during the migration.
+through an explicit trip query. The in-memory adapter exposes the same query
+methods for tests and direct integrations.
 """
+from collections.abc import Iterable
+
 import pandas as pd
 
 from model.domain.gtfs_feed import GtfsFeed
-
-DAYS = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
+from model.infrastructure.database.gtfs_repository import GtfsRepository
+from model.infrastructure.database.schema import DAYS
 
 
 class CachedGtfsData:
-    def __init__(self, feed: GtfsFeed, repository):
+    def __init__(self, feed: GtfsFeed, repository: GtfsRepository) -> None:
         self.feed = feed
         self.repository = repository
 
     @property
-    def agencies(self):
+    def agencies(self) -> pd.DataFrame:
         return self.repository.get_agencies(self.feed.feed_id)
 
     @property
-    def routes(self):
+    def routes(self) -> pd.DataFrame:
         return self.repository.get_routes(self.feed.feed_id).sort_values("route_short_name")
 
     @property
-    def calendar(self):
+    def calendar(self) -> pd.DataFrame:
         calendar = self.repository.get_calendar(self.feed.feed_id)
         exceptions = self.repository.get_calendar_dates(self.feed.feed_id)
         # GTFS permits services defined exclusively by calendar_dates. Supply a
@@ -43,7 +45,7 @@ class CachedGtfsData:
         return calendar
 
     @property
-    def calendar_dates(self):
+    def calendar_dates(self) -> pd.DataFrame:
         result = self.repository.get_calendar_dates(self.feed.feed_id)
         result["date"] = pd.to_datetime(result["date"])
         result["date_day_format"] = result["date"]
@@ -51,15 +53,20 @@ class CachedGtfsData:
         return result
 
     @property
-    def feed_info(self):
+    def feed_info(self) -> pd.DataFrame | None:
         result = self.repository.get_feed_info(self.feed.feed_id)
         return None if result.empty else result
 
-    def get_trips(self, route_id=None, direction_id=None, service_ids=None):
+    def get_trips(
+        self,
+        route_id: str | None = None,
+        direction_id: int | None = None,
+        service_ids: Iterable[str] | None = None,
+    ) -> pd.DataFrame:
         return self.repository.get_trips(self.feed.feed_id, route_id, direction_id, service_ids)
 
-    def get_stop_times_for_trips(self, trip_ids):
+    def get_stop_times_for_trips(self, trip_ids: Iterable[str]) -> pd.DataFrame:
         return self.repository.get_stop_times_for_trips(self.feed.feed_id, trip_ids)
 
-    def get_stops(self, stop_ids=None):
+    def get_stops(self, stop_ids: Iterable[str] | None = None) -> pd.DataFrame:
         return self.repository.get_stops(self.feed.feed_id, stop_ids)

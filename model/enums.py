@@ -7,8 +7,7 @@ class ProcessKind(StrEnum):
     """Long-running operations displayed in the progress history."""
 
     IMPORT_DATA = "import_data"
-    CREATE_TABLE = "create_table"
-    CREATE_PLAN = "create_plan"
+    CREATE_TIMETABLE = "create_timetable"
     EXPORT_PLAN = "export_plan"
 
 
@@ -28,20 +27,14 @@ class DirectionIndex(IntEnum):
     SECOND = 1
 
 
-class DateProcessingStep(IntEnum):
-    """Progress milestones for date-based timetable creation."""
+class TimeFormat(StrEnum):
+    """Display format for exported stop times."""
 
-    INITIALIZE = 10
-    PREPARE_DATA = 20
-    SELECT_DATES = 30
-    HANDLE_EXCEPTIONS = 40
-    SELECT_STOPS = 50
-    PROCESS_DATES = 70
-    SORT_STOPS = 80
-    CREATE_PLAN = 90
+    HOURS_MINUTES = "HH:mm"
+    HOURS_MINUTES_SECONDS = "HH:mm:ss"
 
 
-class RouteColumns(StrEnum):
+class RouteColumn(StrEnum):
     ROUTE_ID = "route_id"
     SHORT_NAME = "route_short_name"
     LONG_NAME = "route_long_name"
@@ -59,7 +52,7 @@ class ModelAction(StrEnum):
     CONTINUE_TIMETABLE = "continue_timetable"
 
 
-class ErrorMessages(StrEnum):
+class ErrorMessage(StrEnum):
     NO_IMPORTED_DATA = "No GTFS data is open."
     IMPORT_FAILED = "GTFS data could not be imported."
     PLAN_CREATION_FAILED = "The timetable could not be created."

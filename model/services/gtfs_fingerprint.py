@@ -1,19 +1,27 @@
 import hashlib
 import logging
+from collections.abc import Callable
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Callable
+from typing import Final
 
 from model.domain.gtfs_feed import FileFingerprint
 
 logger = logging.getLogger(__name__)
 
 
+def _never_cancel() -> None:
+    return None
+
+
 class GtfsFingerprintService:
-    CHUNK_SIZE = 8 * 1024 * 1024
+    CHUNK_SIZE: Final = 8 * 1024 * 1024
 
     @staticmethod
-    def calculate(path: Path, check_cancelled: Callable[[], None] = lambda: None) -> FileFingerprint:
+    def calculate(
+        path: Path,
+        check_cancelled: Callable[[], None] = _never_cancel,
+    ) -> FileFingerprint:
         path = Path(path)
         before = path.stat()
         digest = hashlib.sha256()

@@ -93,18 +93,59 @@ class GtfsRepository:
                 if not versions:
                     db.execute("INSERT INTO cache_schema VALUES (?)", [DATABASE_LAYOUT_VERSION])
                 db.execute("""
-                    CREATE TABLE IF NOT EXISTS feeds (
-                        feed_id VARCHAR PRIMARY KEY,
-                        source_filename VARCHAR NOT NULL, source_hash VARCHAR NOT NULL,
-                        source_size BIGINT NOT NULL, source_modified TIMESTAMPTZ NOT NULL,
-                        imported_at TIMESTAMPTZ NOT NULL, feed_publisher_name VARCHAR,
-                        feed_start_date DATE, feed_end_date DATE,
-                        agency_count BIGINT, route_count BIGINT, trip_count BIGINT,
-                        stop_count BIGINT, stop_time_count BIGINT,
-                        import_schema_version INTEGER NOT NULL,
-                        UNIQUE (source_hash, import_schema_version)
-                    )
-                """)
+                           CREATE TABLE IF NOT EXISTS feeds
+                           (
+                               feed_id
+                               VARCHAR
+                               PRIMARY
+                               KEY,
+                               source_filename
+                               VARCHAR
+                               NOT
+                               NULL,
+                               source_hash
+                               VARCHAR
+                               NOT
+                               NULL,
+                               source_size
+                               BIGINT
+                               NOT
+                               NULL,
+                               source_modified
+                               TIMESTAMPTZ
+                               NOT
+                               NULL,
+                               imported_at
+                               TIMESTAMPTZ
+                               NOT
+                               NULL,
+                               feed_publisher_name
+                               VARCHAR,
+                               feed_start_date
+                               DATE,
+                               feed_end_date
+                               DATE,
+                               agency_count
+                               BIGINT,
+                               route_count
+                               BIGINT,
+                               trip_count
+                               BIGINT,
+                               stop_count
+                               BIGINT,
+                               stop_time_count
+                               BIGINT,
+                               import_schema_version
+                               INTEGER
+                               NOT
+                               NULL,
+                               UNIQUE
+                           (
+                               source_hash,
+                               import_schema_version
+                           )
+                               )
+                           """)
                 for table, columns in TABLE_COLUMNS.items():
                     definitions = ", ".join(
                         f'"{name}" {dtype}' + (" NOT NULL" if name in REQUIRED_COLUMNS[table] else "")
@@ -186,13 +227,18 @@ class GtfsRepository:
                     raise ValueError("GTFS requires agency, routes, trips, stops, stop_times and a calendar")
                 self._normalize_single_agency(db, feed_id)
                 info = db.execute("""SELECT min(feed_publisher_name), min(feed_start_date), max(feed_end_date)
-                                     FROM feed_info WHERE feed_id = ?""", [feed_id]).fetchone()
+                                     FROM feed_info
+                                     WHERE feed_id = ?""", [feed_id]).fetchone()
                 dates = db.execute("""
-                    SELECT min(start_date), max(end_date) FROM (
-                        SELECT start_date, end_date FROM calendar WHERE feed_id = ?
-                        UNION ALL SELECT date, date FROM calendar_dates WHERE feed_id = ?
-                    )
-                """, [feed_id, feed_id]).fetchone()
+                                   SELECT min(start_date), max(end_date)
+                                   FROM (SELECT start_date, end_date
+                                         FROM calendar
+                                         WHERE feed_id = ?
+                                         UNION ALL
+                                         SELECT date, date
+                                         FROM calendar_dates
+                                         WHERE feed_id = ?)
+                                   """, [feed_id, feed_id]).fetchone()
                 metadata = FeedMetadata(
                     fingerprint.filename, fingerprint.sha256, fingerprint.size, fingerprint.modified,
                     datetime.now(timezone.utc), info[0], info[1] or dates[0], info[2] or dates[1],
@@ -269,8 +315,8 @@ class GtfsRepository:
     def get_trips(self, feed_id: str, route_id: str | None = None, direction_id: int | None = None,
                   service_ids: Iterable[str] | None = None) -> pd.DataFrame:
         return self._query("trips", feed_id, [("route_id", None if route_id is None else [route_id]),
-                          ("direction_id", None if direction_id is None else [direction_id]),
-                          ("service_id", service_ids)])
+                                              ("direction_id", None if direction_id is None else [direction_id]),
+                                              ("service_id", service_ids)])
 
     def get_stop_times_for_trips(self, feed_id: str, trip_ids: Iterable[str]) -> pd.DataFrame:
         if trip_ids is None:

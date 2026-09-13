@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from datetime import date, datetime
+from typing import Final
 
-CURRENT_GTFS_SCHEMA_VERSION = 1
+CURRENT_GTFS_SCHEMA_VERSION: Final = 1
 
 
 def is_schema_compatible(version: int) -> bool:
@@ -12,7 +13,7 @@ class IncompatibleFeedError(ValueError):
     pass
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class FileFingerprint:
     filename: str
     size: int
@@ -21,7 +22,7 @@ class FileFingerprint:
     sha256: str
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class FeedMetadata:
     source_filename: str
     source_hash: str
@@ -39,7 +40,7 @@ class FeedMetadata:
     import_schema_version: int = CURRENT_GTFS_SCHEMA_VERSION
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class GtfsFeed:
     feed_id: str
     metadata: FeedMetadata

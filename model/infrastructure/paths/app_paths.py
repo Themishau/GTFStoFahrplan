@@ -10,7 +10,9 @@ class AppPaths:
 
     @classmethod
     def for_user(cls) -> "AppPaths":
-        location = QStandardPaths.writableLocation(QStandardPaths.AppLocalDataLocation)
+        location = QStandardPaths.writableLocation(
+            QStandardPaths.StandardLocation.AppLocalDataLocation
+        )
         if not location:
             raise OSError("Qt could not determine the application data directory")
         paths = cls(Path(location))

@@ -1,7 +1,7 @@
 import logging
 
-from PySide6.QtCore import QModelIndex, QPoint, Qt
-from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox
+from PySide6.QtCore import QModelIndex, Qt
+from PySide6.QtWidgets import QMainWindow, QMessageBox
 
 from model.enums import PlanMode
 from model.planning.progress import ProgressUpdate
@@ -9,7 +9,12 @@ from view.pyui.ui_main_window import Ui_MainWindow
 from view.signal_binder import ViewSignalBinder
 from view.widgets.data_frame_table_model import DataFrameTableModel
 from view.widgets.sortable_data_frame_table_model import SortableDataFrameTableModel
-from view.view_helpers import get_file_path, get_output_dir_path, string_to_qdate, update_table_sizes
+from view.view_helpers import (
+    select_gtfs_zip,
+    select_output_directory,
+    string_to_qdate,
+    update_table_sizes,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -40,8 +45,8 @@ class MainWindow(QMainWindow):
         self.signal_binder = ViewSignalBinder(self, self.view_model, parent=self)
         self.signal_binder.connect_signals()
 
-        self.initialize_window()
-        self.initialize_tabs()
+        self._initialize_window()
+        self._initialize_tabs()
         self.initialize_recent_feeds()
         self.show_home_window()
 
@@ -62,9 +67,9 @@ class MainWindow(QMainWindow):
         vm.recent_feeds_changed.connect(self.refresh_recent_feeds)
         vm.busy_changed.connect(self.set_worker_busy)
         vm.feed_cleared.connect(self.clear_active_feed)
-        self.ui.btnRestart.clicked.connect(self.view_model.model.cancel_async_operation)
+        self.ui.btnRestart.clicked.connect(self.view_model.model.cancel_current_action)
         settings = self.view_model.model.cache_service.settings
-        self.update_output_file_path(settings.default_export_path)
+        self.show_output_path(settings.default_export_path)
         self.ui.comboBox_time_format.setCurrentIndex(0 if settings.time_format == 'HH:mm' else 1)
         self.refresh_recent_feeds()
         self.ui.btnStart.setEnabled(False)
@@ -137,18 +142,15 @@ class MainWindow(QMainWindow):
             if not self._closing_after_worker:
                 self._closing_after_worker = True
                 model.thread.finished.connect(self.close)
-                model.cancel_async_operation()
+                model.cancel_current_action()
             return
         super().closeEvent(event)
 
     def update_individual_sorting(self, checked):
         self.ui.UseIndividualSorting.setChecked(checked)
 
-    def update_select_data(self, data):
+    def update_selected_date(self, data):
         self.ui.dateEdit.setDate(string_to_qdate(data))
-
-    def update_importing_start(self):
-        self.set_worker_busy(True)
 
     def _get_selected_row_index(self, table_view, clicked_index: QModelIndex | None = None):
         if clicked_index is not None and clicked_index.isValid():
@@ -175,16 +177,16 @@ class MainWindow(QMainWindow):
         )
         self.update_time_format(self.view_model.import_view_model.get_time_format())
 
-    def update_create_table(self):
+    def show_timetable_created(self):
         self.show_message(self.view_model.create_view_model.get_success_message())
 
-    def update_file_input_path(self, input_path):
+    def show_input_path(self, input_path):
         self.ui.lineInputPath.setText(input_path)
 
-    def update_output_file_path(self, output_path):
+    def show_output_path(self, output_path):
         self.ui.lineOutputPath.setText(output_path)
 
-    def update_warning_table_view(self):
+    def update_missing_columns(self):
         missing_columns_df = self.view_model.import_view_model.get_missing_columns_df()
         self.ui.import_missing_view.setModel(SortableDataFrameTableModel(missing_columns_df))
 
@@ -202,13 +204,10 @@ class MainWindow(QMainWindow):
     def update_time_format(self, time_format):
         self.ui.line_Selection_format.setText(f'time format {time_format}')
 
-    def update_direction_mode(self, mode):
-        self.ui.comboBox_direction.setCurrentText(mode)
+    def update_planning_mode(self, mode):
+        self.update_planning_mode_controls(mode)
 
-    def update_create_plan_mode(self, mode):
-        self.update_create_table_settings_ui(mode)
-
-    def update_create_table_settings_ui(self, mode):
+    def update_planning_mode_controls(self, mode):
         self.ui.comboBox.setEnabled(True)
         match mode:
             case PlanMode.CIRCULATION_DATE.value:
@@ -221,8 +220,8 @@ class MainWindow(QMainWindow):
                 self.update_to_weekday_mode()
 
     def update_to_date_mode(self):
-        self.update_date_field_to_first_date_of_selected_route(
-        self.view_model.create_view_model.get_sample_date())
+        self.show_selected_route_sample_date(
+            self.view_model.create_view_model.get_sample_date())
         self.ui.comboBox_direction.setEnabled(True)
         self.ui.comboBox_direction.setVisible(True)
         self.ui.listDatesWeekday.setEnabled(False)
@@ -239,8 +238,8 @@ class MainWindow(QMainWindow):
         self.ui.dateEdit.setVisible(False)
 
     def update_to_circulation_date_mode(self):
-        self.update_date_field_to_first_date_of_selected_route(
-        self.view_model.create_view_model.get_sample_date())
+        self.show_selected_route_sample_date(
+            self.view_model.create_view_model.get_sample_date())
         self.ui.comboBox_direction.setEnabled(False)
         self.ui.comboBox_direction.setVisible(False)
         self.ui.dateEdit.setEnabled(True)
@@ -254,49 +253,29 @@ class MainWindow(QMainWindow):
         self.ui.dateEdit.setEnabled(False)
         self.ui.dateEdit.setVisible(False)
 
-    def update_create_options_state(self):
-        selected_agency_text = self.view_model.selection_view_model.get_selected_agency_text()
-        if selected_agency_text:
-            self.ui.line_Selection_agency.setText(f"selected agency: {selected_agency_text}")
-        selected_route_text = self.view_model.selection_view_model.get_selected_route_text()
-        if selected_route_text:
-            self.ui.line_Selection_trips.setText(f"selected Trip: {selected_route_text}")
-        return
-
-    def initialize_window(self):
-        self.setWindowFlags(Qt.FramelessWindowHint)
+    def _initialize_window(self):
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         self.drag_position = self.pos()
-        self.initialize_objects()
+        self._initialize_widgets()
 
-    def initialize_objects(self):
+    def _initialize_widgets(self):
         self.ui.import_missing_view.setVisible(False)
         self.ui.information_label_label.setVisible(False)
         self.ui.information_missingtext_label.setVisible(False)
 
     def mousePressEvent(self, event):
-        self.drag_position = event.globalPos()
+        self.drag_position = event.globalPosition().toPoint()
 
     def mouseMoveEvent(self, event):
-        delta = QPoint(event.globalPos() - self.drag_position)
+        current_position = event.globalPosition().toPoint()
+        delta = current_position - self.drag_position
         self.move(self.x() + delta.x(), self.y() + delta.y())
-        self.drag_position = event.globalPos()
+        self.drag_position = current_position
 
-    def center(self):
-        qr = self.frameGeometry()
-        screen = QApplication.primaryScreen()
-        screen_geometry = screen.availableGeometry()
-        cp = screen_geometry.center()
-        qr.moveCenter(cp)
-        self.move(qr.topLeft())
-
-    def update_progress(self, progress_data: ProgressUpdate):
-        self.update_progress_list(progress_data)
-        return True
-
-    def update_progress_list(self, progress_data: ProgressUpdate):
+    def update_progress(self, progress_data: ProgressUpdate) -> None:
         self.ui.progress_history_list_view.update_progress(progress_data)
 
-    def initialize_tabs(self):
+    def _initialize_tabs(self):
         self.ui.main_view_stacked_widget.addWidget(self.ui.create_import_page)
         self.ui.main_view_stacked_widget.addWidget(self.ui.create_select_page)
         self.ui.main_view_stacked_widget.addWidget(self.ui.create_create_page)
@@ -308,7 +287,7 @@ class MainWindow(QMainWindow):
         self.ui.toolBox.setCurrentWidget(self.ui.page_3)
         self.ui.main_view_stacked_widget.setCurrentWidget(self.ui.download_page)
 
-    def show_home_window(self):
+    def show_home_page(self):
         self.select_navigation_button(self.general_nav_button)
         self.ui.toolBox.setCurrentWidget(self.ui.page)
         self.ui.main_view_stacked_widget.setCurrentWidget(self.ui.general_information_page)
@@ -328,9 +307,9 @@ class MainWindow(QMainWindow):
         self.ui.toolBox.setCurrentWidget(self.ui.page_2)
         self.ui.main_view_stacked_widget.setCurrentWidget(self.ui.create_create_page)
 
-    def select_navigation_button(self, btn):
+    def select_navigation_button(self, selected_button):
         for button in self.navigation_pages.keys():
-            if button != btn:
+            if button != selected_button:
                 button.setChecked(False)
             else:
                 button.setChecked(True)
@@ -364,9 +343,9 @@ class MainWindow(QMainWindow):
         self.ui.TripsTableView.setModel(DataFrameTableModel(self.view_model.selection_view_model.get_routes_df()))
         update_table_sizes(self.ui.TripsTableView)
 
-
     def update_individual_sorting_table(self):
-        self.ui.tableView_sorting_stops.setModel(SortableDataFrameTableModel(self.view_model.create_view_model.get_sorting_df()))
+        self.ui.tableView_sorting_stops.setModel(
+            SortableDataFrameTableModel(self.view_model.create_view_model.get_sorting_df()))
         update_table_sizes(self.ui.tableView_sorting_stops)
         self.ui.btnContinueCreate.setEnabled(True)
 
@@ -378,17 +357,17 @@ class MainWindow(QMainWindow):
 
         self.update_to_date_mode()
 
-    def update_date_range_based_on_selected_route(self, date_range):
+    def show_selected_route_date_range(self, date_range):
         self.ui.line_Selection_date_range.setText(date_range)
 
-    def update_date_field_to_first_date_of_selected_route(self, sample_date):
+    def show_selected_route_sample_date(self, sample_date):
         self.ui.dateEdit.setDate(string_to_qdate(sample_date))
 
-    def get_file_path(self):
-        self.view_model.import_view_model.set_input_path(get_file_path(self))
+    def choose_input_file(self):
+        self.view_model.import_view_model.set_input_path(select_gtfs_zip(self))
 
-    def get_output_dir_path(self):
-        self.view_model.import_view_model.set_output_path(get_output_dir_path(self))
+    def choose_output_directory(self):
+        self.view_model.import_view_model.set_output_path(select_output_directory(self))
 
     def select_route(self, index: QModelIndex):
         index = self._get_selected_row_index(self.ui.TripsTableView, index)
@@ -402,10 +381,10 @@ class MainWindow(QMainWindow):
         )
         date_range_text = self.view_model.selection_view_model.get_selected_route_date_range_text()
         if date_range_text is not None:
-            self.update_date_range_based_on_selected_route(date_range_text)
+            self.show_selected_route_date_range(date_range_text)
         sample_date = self.view_model.selection_view_model.get_selected_route_sample_date()
         if sample_date is not None:
-            self.update_date_field_to_first_date_of_selected_route(sample_date)
+            self.show_selected_route_sample_date(sample_date)
 
     def select_weekday(self, index: QModelIndex):
         index = self._get_selected_row_index(self.ui.listDatesWeekday, index)

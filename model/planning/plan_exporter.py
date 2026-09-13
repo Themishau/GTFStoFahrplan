@@ -13,31 +13,41 @@ from model.planning.progress import ProgressUpdate
 
 class PlanExporter(QObject):
     progress_updated = Signal(ProgressUpdate)
-    error_occurred = Signal(str)
-    data_selected = Signal(bool)
 
-    def __init__(self, app):
+    def __init__(self):
         super().__init__()
-        self.app = app
         self.progress = ProgressUpdate()
 
-    def export_plan(self, settings: PlanningSettings, timetable: TimetableData) -> None:
-        self.write_timetable(settings, timetable)
+    def export_timetable(self, settings: PlanningSettings, timetable: TimetableData) -> None:
+        self._write_timetable(settings, timetable)
         self._emit_complete()
 
-    def export_circle_plan(self, settings: PlanningSettings, plans: list) -> None:
-        self.write_circle_plan(settings, plans)
+    def export_circulation_plan(self, settings: PlanningSettings, plans: list) -> None:
+        self._write_circulation_plan(settings, plans)
         self._emit_complete()
 
-    def write_timetable(self, settings: PlanningSettings, timetable: TimetableData) -> None:
-        output = self._output_file(settings, timetable.selected_route, "dates")
+    def _write_timetable(self, settings: PlanningSettings, timetable: TimetableData) -> None:
+        if settings.route is None or settings.route.empty:
+            raise ValueError("Select a route before exporting a timetable")
+        output = self._output_file(settings, settings.route, "dates")
         timetable.header.to_csv(output, header=True, quotechar=" ", sep=";", mode="w", encoding="utf8")
         timetable.timetable.to_csv(
             output, header=True, quotechar=" ", index=True, sep=";", mode="a", encoding="utf8"
         )
 
-    def write_circle_plan(self, settings: PlanningSettings, plans: list) -> None:
-        output = self._output_file(settings, plans[0].planning_settings.route, "circle_plan_dates")
+    def _write_circulation_plan(self, settings: PlanningSettings, plans: list) -> None:
+        if not plans:
+            raise ValueError("No circulation plans are available to export")
+        if (
+            plans[0].planning_settings.route is None
+            or plans[0].planning_settings.route.empty
+        ):
+            raise ValueError("Select a route before exporting a circulation plan")
+        output = self._output_file(
+            settings,
+            plans[0].planning_settings.route,
+            "circulation_plan_dates",
+        )
         for index, plan in enumerate(plans):
             mode = "w" if index == 0 else "a"
             plan.timetable_data.header.to_csv(
@@ -52,6 +62,7 @@ class PlanExporter(QObject):
         timestamp = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
         route_name = str(route["route_short_name"].iloc[0])
         output = Path(settings.output_path) / f"{route_name}_{label}_{timestamp}_pivot_table.csv"
+        output.parent.mkdir(parents=True, exist_ok=True)
         settings.full_output_path = str(output)
         return output
 

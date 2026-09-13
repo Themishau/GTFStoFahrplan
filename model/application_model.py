@@ -1,6 +1,10 @@
+from __future__ import annotations
+
 import logging
 
-from PySide6.QtCore import QObject, QThread, Signal, Slot
+from PySide6.QtCore import QCoreApplication, QObject, QThread, Signal, Slot
+
+from model.planning.progress import ProgressUpdate
 
 from .enums import ModelAction, PlanMode
 from .infrastructure.paths.app_paths import AppPaths
@@ -9,86 +13,102 @@ from .services.gtfs_cache_service import GtfsCacheService
 
 logger = logging.getLogger(__name__)
 
+
 class ModelWorker(QObject):
     finished = Signal()
-    error = Signal(Exception)
+    error = Signal(object)
 
-    def __init__(self, model, function_name, main_thread, arguments=()):
+    def __init__(
+        self,
+        model: ApplicationModel,
+        action: ModelAction,
+        gui_thread: QThread,
+        arguments: tuple[object, ...] = (),
+    ) -> None:
         super().__init__()
         self.model = model
-        self.function_name = function_name
-        self.main_thread = main_thread
+        self.action = action
+        self.gui_thread = gui_thread
         self.arguments = arguments
 
-    def run(self):
+    @Slot()
+    def run(self) -> None:
         try:
             if QThread.currentThread().isInterruptionRequested():
                 raise InterruptedError("Operation cancelled.")
-            self.model._dispatch_planner_action(self.function_name, *self.arguments)
-        except Exception as e:
-            self.error.emit(InterruptedError('Operation cancelled.')
-                            if QThread.currentThread().isInterruptionRequested() else e)
+            self.model._dispatch_planner_action(self.action, *self.arguments)
+        except Exception as error:
+            emitted_error = (
+                InterruptedError("Operation cancelled.")
+                if QThread.currentThread().isInterruptionRequested()
+                else error
+            )
+            self.error.emit(emitted_error)
         finally:
-            self.model._move_planner_to_thread(self.main_thread)
+            self.model._move_planner_to_thread(self.gui_thread)
             self.finished.emit()
 
+
 class ApplicationModel(QObject):
-    progress_updated = Signal(object)
+    progress_updated = Signal(ProgressUpdate)
     import_finished = Signal(bool)
-    create_finished = Signal(bool)
+    planning_finished = Signal(bool)
     error_occurred = Signal(str)
-    create_sorting_signal = Signal()
+    sorting_requested = Signal()
     busy_changed = Signal(bool)
     feed_deleted = Signal(str)
     cache_cleared = Signal()
 
-    def __init__(self, event_loop, cache_service=None):
-        super().__init__(event_loop)
-        self.worker = None
-        self.event_loop = event_loop
-        self.planner = None
-        self.thread = None
+    def __init__(
+        self,
+        application: QCoreApplication,
+        cache_service: GtfsCacheService | None = None,
+    ) -> None:
+        super().__init__(application)
+        self.worker: ModelWorker | None = None
+        self.application = application
+        self.planner: SchedulePlanner | None = None
+        self.thread: QThread | None = None
         self.cache_service = cache_service or GtfsCacheService.for_paths(AppPaths.for_user())
 
-    def setup_schedule_planner(self):
-        self.planner = SchedulePlanner(self.event_loop, self.cache_service)
-        self.planner.initialize()
+    def initialize_schedule_planner(self) -> None:
+        self.planner = SchedulePlanner(self.cache_service)
         self._connect_planner_signals()
 
-    def _connect_planner_signals(self):
+    def _connect_planner_signals(self) -> None:
         self.planner.progress_updated.connect(self._on_planner_progress_updated)
         self.planner.import_finished.connect(self._on_planner_import_finished)
-        self.planner.create_finished.connect(self._on_planner_create_finished)
+        self.planner.planning_finished.connect(self._on_planner_planning_finished)
         self.planner.error_occurred.connect(self._on_planner_error_occurred)
-        self.planner.create_sorting_signal.connect(self._on_planner_sorting_requested)
+        self.planner.sorting_requested.connect(self._on_planner_sorting_requested)
 
-    @Slot(object)
-    def _on_planner_progress_updated(self, value):
+    @Slot(ProgressUpdate)
+    def _on_planner_progress_updated(self, value: ProgressUpdate) -> None:
         self.progress_updated.emit(value)
 
     @Slot(bool)
-    def _on_planner_import_finished(self, value):
+    def _on_planner_import_finished(self, value: bool) -> None:
         self.import_finished.emit(value)
 
     @Slot(bool)
-    def _on_planner_create_finished(self, value):
-        self.create_finished.emit(value)
+    def _on_planner_planning_finished(self, value: bool) -> None:
+        self.planning_finished.emit(value)
 
     @Slot(str)
-    def _on_planner_error_occurred(self, value):
+    def _on_planner_error_occurred(self, value: str) -> None:
         self.error_occurred.emit(value)
 
     @Slot()
-    def _on_planner_sorting_requested(self):
-        self.create_sorting_signal.emit()
+    def _on_planner_sorting_requested(self) -> None:
+        self.sorting_requested.emit()
 
-    def start_function_async(self, function_name, *arguments):
+    def start_action(self, action: ModelAction, *arguments) -> bool:
         if self.thread is not None:
             logger.warning("A worker thread is already running.")
             return False
 
         self.thread = QThread()
-        self.worker = ModelWorker(self, function_name, self.event_loop.thread(), arguments)
+        self.worker = ModelWorker(self, action, self.application.thread(), arguments)
         self._move_planner_to_thread(self.thread)
         self.worker.moveToThread(self.thread)
 
@@ -97,34 +117,39 @@ class ApplicationModel(QObject):
         self.worker.finished.connect(self.worker.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
         self.thread.finished.connect(self._clear_worker_refs)
-        self.worker.error.connect(self.handle_worker_error)
+        self.worker.error.connect(self._handle_worker_error)
 
         self.busy_changed.emit(True)
         self.thread.start()
         return True
 
-    def _clear_worker_refs(self):
+    def _clear_worker_refs(self) -> None:
         self.worker = None
         self.thread = None
         self.busy_changed.emit(False)
 
-    def _move_planner_to_thread(self, target_thread):
+    def _move_planner_to_thread(self, target_thread: QThread) -> None:
         if self.planner is None:
             return
 
         self.planner.moveToThread(target_thread)
 
-        for attribute_name in ("data_loader", "plan_exporter", "plan_creator", "circle_planner"):
+        for attribute_name in (
+            "data_loader",
+            "plan_exporter",
+            "timetable_creator",
+                "circulation_planner",
+        ):
             obj = getattr(self.planner, attribute_name, None)
             if obj is None:
                 continue
             obj.moveToThread(target_thread)
 
-        strategy = getattr(getattr(self.planner, "plan_creator", None), "strategy", None)
+        strategy = getattr(getattr(self.planner, "timetable_creator", None), "strategy", None)
         if isinstance(strategy, QObject):
             strategy.moveToThread(target_thread)
 
-    def _dispatch_planner_action(self, action, *arguments):
+    def _dispatch_planner_action(self, action: ModelAction, *arguments) -> None:
         match action:
             case ModelAction.IMPORT_GTFS:
                 self.planner.import_gtfs_data()
@@ -138,39 +163,38 @@ class ApplicationModel(QObject):
                 self.cache_cleared.emit()
             case ModelAction.CREATE_TIMETABLE:
                 if self.planner.planning_settings.use_individual_sorting:
-                    self.planner.create_table_individual_sorting()
-                elif self.planner.planning_settings.create_plan_mode in (
+                    self.planner.prepare_timetable_for_sorting()
+                elif self.planner.planning_settings.plan_mode in (
                         PlanMode.CIRCULATION_DATE,
                         PlanMode.CIRCULATION_WEEKDAY,
                 ):
-                    self.planner.create_circulation_plan()
+                    self.planner.create_and_export_circulation_plan()
                 else:
-                    self.planner.create_table()
+                    self.planner.create_and_export_timetable()
             case ModelAction.CONTINUE_TIMETABLE:
-                self.planner.create_table_continue()
+                self.planner.continue_and_export_timetable()
             case _:
                 raise ValueError(f"Unknown model action: {action!r}")
 
-    def handle_worker_error(self, error):
+    def _handle_worker_error(self, error: Exception) -> None:
         if isinstance(error, InterruptedError):
-            logging.info(str(error))
+            logger.info("%s", error)
             return
 
-        logger.error(f"Worker encountered an error: {error}. {type(error).__name__}")
+        logger.error("Worker encountered an error: %s (%s)", error, type(error).__name__)
         self.error_occurred.emit(str(error))
 
-    def cancel_async_operation(self):
+    def cancel_current_action(self) -> None:
         if self.thread is not None and self.thread.isRunning():
             logger.info("Cancelling ongoing operation...")
             self.thread.requestInterruption()
             self.cache_service.repository.interrupt()
 
-    def close(self):
+    def close(self) -> None:
         if self.thread is not None:
-            raise RuntimeError('Wait for the worker to finish before closing the database')
+            raise RuntimeError("Wait for the worker to finish before closing the database")
         self.cache_service.close()
 
-    def reset_schedule_planner(self):
+    def reset_schedule_planner(self) -> None:
         self.planner = None
-        self.setup_schedule_planner()
-
+        self.initialize_schedule_planner()

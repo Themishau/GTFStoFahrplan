@@ -6,6 +6,9 @@ GTFStoFahrplan is a Python script designed to convert GTFS (General Transit Feed
 
 - [Installation](#installation)
 - [Usage](#usage)
+- [Persistent GTFS cache](#persistent-gtfs-cache)
+- [Project structure](#project-structure)
+- [Validation and EXE packaging](#validation-and-exe-packaging)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -29,7 +32,10 @@ py -3 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
-The requirements include the application packages (`duckdb`, `pandas`, `PySide6`, and `requests`), `rarfile` for the standalone helper in `Test/test.py`, and the Windows packaging tools `auto-py-to-exe` and `pyinstaller`. Packages installed as dependencies of these libraries do not need separate entries.
+The requirements include the application packages (`duckdb`, `pandas`,
+`PySide6`, and `requests`) and the Windows packaging tools `auto-py-to-exe` and
+`pyinstaller`. Packages installed transitively by these libraries do not need
+separate entries.
 
 ![Screenshot](gfts_example_gui.png)
 
@@ -86,8 +92,8 @@ holding GTFS DataFrames. The legacy `InMemoryGtfsData` remains supported. Planne
 query trips for the selected route/direction and stop times for the selected trip
 IDs, then use existing Pandas calculations and CSV exports. Source frames are
 read-only by convention; settings and results belong to each plan. `block_id` is
-retained for a future Umlauf algorithm; this change preserves the current vehicle
-assignment algorithm.
+retained for future vehicle-circulation improvements; the current vehicle
+assignment algorithm remains supported.
 
 GTFS times retain their original strings and gain service-day seconds (for example,
 `24:15:00` is `87300`). Optional columns are nullable; missing `direction_id` maps
@@ -103,12 +109,40 @@ Selected planning results and the smaller calendar/selection tables still use
 Pandas. Further query pushdown and calendar expansion improvements can follow.
 Only one application process should write a given cache at a time.
 
-Importer compatibility is centralized in `model/Dto/gtfs_feed.py`.
+Importer compatibility is centralized in `model/domain/gtfs_feed.py`.
 Increment `CURRENT_GTFS_SCHEMA_VERSION` for changed import semantics; incompatible
 feeds remain listed for deletion and require their ZIP to be re-imported. Physical
 table changes require a migration at `DATABASE_LAYOUT_VERSION` in
 `model/infrastructure/database/schema.py`; unknown database layouts are rejected.
 Settings migrations start in `migrate_settings` in `settings_service.py`.
+
+## Project structure
+
+The maintained Python packages use lowercase `snake_case` module and package
+names. Classes use `CapWords`, while functions, methods, attributes, and Qt
+signals use `snake_case` except where Qt requires an exact override name such as
+`closeEvent` or `mouseMoveEvent`.
+
+```text
+main.py                         application entry point and logging
+model/
+    application_model.py       Qt worker-thread orchestration
+    domain/                     settings and GTFS domain data
+    planning/                   timetable and circulation planning
+        strategies/             date, weekday, and direction strategies
+    services/                   cache, import, time, fingerprint, and download services
+    infrastructure/             DuckDB, filesystem paths, and JSON settings
+view/                           main window, signal binding, and custom widgets
+viewmodel/                      presentation logic between model and view
+tests/                          unit and Qt integration tests
+```
+
+The optional downloader can fetch a current VBB or VRR archive into a chosen
+directory:
+
+```powershell
+.\.venv\Scripts\python.exe -m model.services.gtfs_downloader vbb .\downloads
+```
 
 ## Validation and EXE packaging
 

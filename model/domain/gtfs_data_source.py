@@ -14,10 +14,10 @@ class GtfsDataSource(Protocol):
     feed_info: pd.DataFrame | None
 
     def get_trips(
-        self,
-        route_id: str | None = None,
-        direction_id: int | None = None,
-        service_ids: Iterable[str] | None = None,
+            self,
+            route_id: str | None = None,
+            direction_id: int | None = None,
+            service_ids: Iterable[str] | None = None,
     ) -> pd.DataFrame: ...
 
     def get_stop_times_for_trips(self, trip_ids: Iterable[str]) -> pd.DataFrame: ...

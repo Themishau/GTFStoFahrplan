@@ -1,22 +1,15 @@
 """Mutable result assembled while creating a timetable."""
 
-from dataclasses import dataclass
-from typing import Any
-
+from dataclasses import dataclass, field
 import pandas as pd
 
 
-@dataclass
+@dataclass(slots=True)
 class TimetableData:
-    header: pd.DataFrame | None = None
-    direction: pd.DataFrame | None = None
-    requested_dates: pd.DataFrame | None = None
-    requested_weekdays: Any = None
-    selected_route: pd.DataFrame | None = None
-    selected_agency: pd.DataFrame | None = None
-    timetable_dates: pd.DataFrame | None = None
-    timetable_stops: pd.DataFrame | None = None
-    sorted_stops: pd.DataFrame | None = None
-    filtered_stop_names: pd.DataFrame | None = None
-    gtfs_table_data: pd.DataFrame | None = None
-    timetable: pd.DataFrame | None = None
+    header: pd.DataFrame = field(default_factory=pd.DataFrame)
+    service_dates: pd.DataFrame = field(default_factory=pd.DataFrame)
+    trip_stops: pd.DataFrame = field(default_factory=pd.DataFrame)
+    sorted_stops: pd.DataFrame = field(default_factory=pd.DataFrame)
+    ordered_stops: pd.DataFrame = field(default_factory=pd.DataFrame)
+    timetable_rows: pd.DataFrame = field(default_factory=pd.DataFrame)
+    timetable: pd.DataFrame = field(default_factory=pd.DataFrame)
