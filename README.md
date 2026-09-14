@@ -24,6 +24,12 @@ cd GTFStoFahrplan
 
 `setup.bat` creates a local `.venv` virtual environment, updates pip, and installs every dependency from `requirements.txt`. If `.venv` already exists, the script reuses it.
 
+Python 3.13.0 through 3.13.5 contain
+[CPython issue gh-130522](https://github.com/python/cpython/issues/130522),
+which can print a dummy-thread exception during interpreter shutdown, especially
+under an IDE debugger. The application applies the upstream compatibility fix
+for those releases. Python 3.13.6 and newer include the fix in CPython itself.
+
 To perform the same setup manually:
 
 ```powershell

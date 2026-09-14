@@ -140,6 +140,8 @@ class MainWindow(QMainWindow):
             widget.setEnabled(not busy)
         self.ui.btnRestart.setEnabled(busy)
         self.update_recent_feed_details()
+        if self._closing_after_worker and not busy:
+            self.close()
 
     def clear_active_feed(self):
         self.ui.AgenciesTableView.setModel(None)
@@ -157,7 +159,6 @@ class MainWindow(QMainWindow):
             event.ignore()
             if not self._closing_after_worker:
                 self._closing_after_worker = True
-                model.thread.finished.connect(self.close)
                 model.cancel_current_action()
             return
         super().closeEvent(event)

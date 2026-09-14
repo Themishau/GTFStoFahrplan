@@ -113,16 +113,25 @@ class ApplicationModel(QObject):
 
         thread.started.connect(worker.run)
         worker.finished.connect(thread.quit)
-        worker.finished.connect(worker.deleteLater)
-        thread.finished.connect(thread.deleteLater)
+        thread.finished.connect(worker.deleteLater)
         thread.finished.connect(self._clear_worker_refs)
+        thread.finished.connect(thread.deleteLater)
         worker.error.connect(self._handle_worker_error)
 
         self.busy_changed.emit(True)
         thread.start()
         return True
 
+    @Slot()
     def _clear_worker_refs(self) -> None:
+        thread = self.thread
+        if thread is None:
+            return
+
+        # QThread.finished is emitted just before the native thread returns.
+        # Synchronize here so Python can dispose of its alien-thread state
+        # before the application begins interpreter shutdown.
+        thread.wait()
         self.worker = None
         self.thread = None
         self.busy_changed.emit(False)

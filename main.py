@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QApplication
 
 from model import ApplicationModel
 from model.infrastructure.paths.app_paths import AppPaths
+from model.infrastructure.python_runtime import apply_python_313_threading_shutdown_fix
 from model.services.gtfs_cache_service import GtfsCacheService
 from view import MainWindow, SplashScreen
 from viewmodel import ApplicationViewModel
@@ -30,6 +31,7 @@ def configure_logging(paths: AppPaths) -> None:
 
 
 def main() -> int:
+    apply_python_313_threading_shutdown_fix()
     application = QApplication(sys.argv)
     application.setOrganizationName("GTFStoFahrplan")
     application.setApplicationName("GTFStoFahrplan")
