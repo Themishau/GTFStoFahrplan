@@ -45,19 +45,23 @@ class GtfsImporter:
                 for member in archive.infolist():
                     if member.is_dir():
                         continue
-                    name = PurePosixPath(member.filename).name
-                    table = name.removesuffix(".txt")
-                    if name != f"{table}.txt" or table not in TABLE_COLUMNS:
+                    filename = PurePosixPath(member.filename).name
+                    table = filename.removesuffix(".txt")
+                    if filename != f"{table}.txt" or table not in TABLE_COLUMNS:
                         continue
                     if table in members:
-                        raise ValueError(f"Duplicate GTFS member: {name}")
+                        raise ValueError(f"Duplicate GTFS member: {filename}")
                     members[table] = member
                 if not REQUIRED_TABLES <= members.keys() or not {"calendar", "calendar_dates"} & members.keys():
                     raise ValueError("Select a GTFS CSV ZIP containing the required tables and a calendar. "
                                      "Legacy pickle archives are not supported.")
 
                 def extracted_tables() -> Iterator[tuple[str, Path]]:
-                    available_tables = [name for name in TABLE_COLUMNS if name in members]
+                    available_tables = [
+                        table_name
+                        for table_name in TABLE_COLUMNS
+                        if table_name in members
+                    ]
                     for index, table_name in enumerate(available_tables):
                         check_source()
                         progress(15 + index * 9, f"Reading {table_name}.txt")

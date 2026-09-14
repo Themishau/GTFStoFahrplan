@@ -2,7 +2,8 @@
 
 from PySide6.QtCore import QObject, Signal
 
-from model.planning.progress import ProgressUpdate
+from model.application_model import ApplicationModel
+from model.planning.progress_update import ProgressUpdate
 from viewmodel.create_view_model import CreateViewModel
 from viewmodel.import_view_model import ImportViewModel
 from viewmodel.selection_view_model import SelectionViewModel
@@ -13,21 +14,24 @@ class ApplicationViewModel(QObject):
     update_progress_value = Signal(ProgressUpdate)
     error_message = Signal(str)
 
-    def __init__(self, model, parent=None):
+    def __init__(
+            self,
+            model: ApplicationModel,
+            parent: QObject | None = None,
+    ) -> None:
         super().__init__(parent)
         self.model = model
         self.signal_binder = ViewModelSignalBinder(self, self.model, parent=self)
-        self.model.initialize_schedule_planner()
         self.import_view_model = ImportViewModel(self.model, parent=self)
         self.create_view_model = CreateViewModel(self.model, parent=self)
         self.selection_view_model = SelectionViewModel(self.model, parent=self)
         self.signal_binder.connect_signals()
 
-    def forward_progress(self, progress_data: ProgressUpdate):
+    def forward_progress(self, progress_data: ProgressUpdate) -> None:
         self.update_progress_value.emit(progress_data)
 
-    def send_error_message(self, message):
+    def send_error_message(self, message: str) -> None:
         self.error_message.emit(message)
 
-    def reset_schedule_planner(self):
+    def reset_schedule_planner(self) -> None:
         self.model.reset_schedule_planner()

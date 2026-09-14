@@ -1,21 +1,35 @@
 import time
 
-from PySide6.QtCore import QAbstractListModel, QModelIndex, QRect, QSize, Qt
+from PySide6.QtCore import (
+    QAbstractListModel,
+    QModelIndex,
+    QPersistentModelIndex,
+    QRect,
+    QSize,
+    Qt,
+)
 from PySide6.QtGui import QColor, QPainter, QPen
-from PySide6.QtWidgets import QListView, QStyledItemDelegate
+from PySide6.QtWidgets import QListView, QStyledItemDelegate, QStyleOptionViewItem
 
-from model.planning.progress import ProgressUpdate
+from model.planning.progress_update import ProgressUpdate
 
 
 class ProgressHistoryModel(QAbstractListModel):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self._progress_items: list[ProgressUpdate] = []
 
-    def rowCount(self, parent=None):
+    def rowCount(
+            self,
+            parent: QModelIndex | QPersistentModelIndex = QModelIndex(),
+    ) -> int:
         return len(self._progress_items)
 
-    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
+    def data(
+            self,
+            index: QModelIndex | QPersistentModelIndex,
+            role: int = Qt.ItemDataRole.DisplayRole,
+    ):
         if not index.isValid():
             return None
 
@@ -29,7 +43,7 @@ class ProgressHistoryModel(QAbstractListModel):
 
         return None
 
-    def add_progress_item(self, progress: ProgressUpdate):
+    def add_progress_item(self, progress: ProgressUpdate) -> None:
         if progress.value < 0 or progress.value > 100:
             raise ValueError("Progress value must be between 0 and 100")
 
@@ -68,11 +82,11 @@ class ProgressHistoryModel(QAbstractListModel):
 
 
 class ProgressHistoryListView(QListView):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self.setModel(ProgressHistoryModel())
         self.setViewMode(QListView.ViewMode.ListMode)
-        self.setItemDelegate(ProgressBarDelegate())
+        self.setItemDelegate(ProgressBarDelegate(self))
         self.setUniformItemSizes(False)
         self.setSpacing(4)
         self.setVerticalScrollMode(QListView.ScrollMode.ScrollPerPixel)
@@ -80,8 +94,10 @@ class ProgressHistoryListView(QListView):
         self.setSelectionMode(QListView.SelectionMode.NoSelection)
         self.setEnabled(True)
 
-    def update_progress(self, progress):
+    def update_progress(self, progress: ProgressUpdate) -> None:
         model = self.model()
+        if not isinstance(model, ProgressHistoryModel):
+            raise RuntimeError("Progress history model is not configured")
         model.add_progress_item(progress)
         self.scrollToBottom()
 
@@ -92,10 +108,15 @@ class ProgressBarDelegate(QStyledItemDelegate):
     ITEM_PADDING_Y = 4
     ITEM_PADDING_X = 8
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> None:
         super().__init__(parent)
 
-    def paint(self, painter, option, index):
+    def paint(
+            self,
+            painter: QPainter,
+            option: QStyleOptionViewItem,
+            index: QModelIndex | QPersistentModelIndex,
+    ) -> None:
         progress = index.model().data(index, Qt.ItemDataRole.UserRole)
         if progress is None:
             return
@@ -133,5 +154,9 @@ class ProgressBarDelegate(QStyledItemDelegate):
         painter.drawText(bar_rect, Qt.AlignmentFlag.AlignCenter, text)
         painter.restore()
 
-    def sizeHint(self, option, index):
+    def sizeHint(
+            self,
+            option: QStyleOptionViewItem,
+            index: QModelIndex | QPersistentModelIndex,
+    ) -> QSize:
         return QSize(option.rect.width(), self.ITEM_HEIGHT)

@@ -3,18 +3,20 @@
 from datetime import datetime
 from pathlib import Path
 
+import pandas as pd
 from PySide6.QtCore import QObject, Signal
 
 from model.domain.planning_settings import PlanningSettings
 from model.domain.timetable_data import TimetableData
 from model.enums import ProcessKind
-from model.planning.progress import ProgressUpdate
+from model.planning.progress_update import ProgressUpdate
+from model.planning.timetable_planner import TimetablePlanner
 
 
 class PlanExporter(QObject):
     progress_updated = Signal(ProgressUpdate)
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.progress = ProgressUpdate()
 
@@ -22,7 +24,11 @@ class PlanExporter(QObject):
         self._write_timetable(settings, timetable)
         self._emit_complete()
 
-    def export_circulation_plan(self, settings: PlanningSettings, plans: list) -> None:
+    def export_circulation_plan(
+            self,
+            settings: PlanningSettings,
+            plans: list[TimetablePlanner],
+    ) -> None:
         self._write_circulation_plan(settings, plans)
         self._emit_complete()
 
@@ -35,12 +41,16 @@ class PlanExporter(QObject):
             output, header=True, quotechar=" ", index=True, sep=";", mode="a", encoding="utf8"
         )
 
-    def _write_circulation_plan(self, settings: PlanningSettings, plans: list) -> None:
+    def _write_circulation_plan(
+            self,
+            settings: PlanningSettings,
+            plans: list[TimetablePlanner],
+    ) -> None:
         if not plans:
             raise ValueError("No circulation plans are available to export")
         if (
-            plans[0].planning_settings.route is None
-            or plans[0].planning_settings.route.empty
+                plans[0].planning_settings.route is None
+                or plans[0].planning_settings.route.empty
         ):
             raise ValueError("Select a route before exporting a circulation plan")
         output = self._output_file(
@@ -58,7 +68,11 @@ class PlanExporter(QObject):
             )
 
     @staticmethod
-    def _output_file(settings: PlanningSettings, route, label: str) -> Path:
+    def _output_file(
+            settings: PlanningSettings,
+            route: pd.DataFrame,
+            label: str,
+    ) -> Path:
         timestamp = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
         route_name = str(route["route_short_name"].iloc[0])
         output = Path(settings.output_path) / f"{route_name}_{label}_{timestamp}_pivot_table.csv"

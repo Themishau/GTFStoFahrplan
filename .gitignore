@@ -1,3 +1,14 @@
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+build/
+dist/
+*.duckdb
+*.duckdb.wal
+
 /view/ui/res/icons/bootstrap-icons-1.10.3/fonts/bootstrap-icons.woff
 /view/ui/res/icons/bootstrap-icons-1.10.3/fonts/bootstrap-icons.woff2
 /view/ui/res/icons/bootstrap-icons-1.10.3/0-circle.svg

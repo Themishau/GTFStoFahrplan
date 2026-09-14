@@ -16,7 +16,7 @@ class ProgressUpdate:
     def set_progress(
             self,
             value: int,
-        process_kind: ProcessKind | None = None,
+            process_kind: ProcessKind | None = None,
             message: str | None = None,
     ) -> "ProgressUpdate":
         self.value = value

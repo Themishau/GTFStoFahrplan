@@ -127,13 +127,17 @@ signals use `snake_case` except where Qt requires an exact override name such as
 main.py                         application entry point and logging
 model/
     application_model.py       Qt worker-thread orchestration
+    enums.py                   shared application enums and constants
     domain/                     settings and GTFS domain data
     planning/                   timetable and circulation planning
+        progress_update.py      immutable progress payload
         strategies/             date, weekday, and direction strategies
     services/                   cache, import, time, fingerprint, and download services
     infrastructure/             DuckDB, filesystem paths, and JSON settings
 view/                           main window, signal binding, and custom widgets
-viewmodel/                      presentation logic between model and view
+viewmodel/
+    application_view_model.py  presentation coordinator
+    *_view_model.py            feature-specific presentation logic
 tests/                          unit and Qt integration tests
 ```
 
@@ -198,24 +202,17 @@ Contributions are welcome! If you'd like to contribute to this project, please f
     Push to the branch (git push origin feature/improvement).
     Create a new Pull Request.
 
-Please make sure to follow the existing coding style and add appropriate documentation for new features or changes.
-License
+Please follow the existing coding style and update the documentation when behavior changes.
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-# auto-py-to-exe
+## License
 
-- add add_files
-- mainq5.py as script
+This project is licensed under the MIT License. See `LICENSE` for details.
 
+## Data sources and credits
 
-# Ressources
-- VBB - Verkehrsverbund Berlin-Brandenburg GmbH
-https://daten.berlin.de/datensaetze/vbb-fahrplandaten-gtfs
+- [VBB GTFS data](https://daten.berlin.de/datensaetze/vbb-fahrplandaten-gtfs)
+- [Open Data Portal Metropole Ruhr](https://opendata.ruhr/)
 
-- Open Data Portal Metropole Ruhr
-https://opendata.ruhr/
-
-
-Img by <a href="https://de.freepik.com/vektoren/menschen">Menschen Vektor erstellt von pch.vector - de.freepik.com</a>
-
-Icons by Petras Nargela
+The application image is by
+[pch.vector on Freepik](https://de.freepik.com/vektoren/menschen). Icons are by
+Petras Nargela.

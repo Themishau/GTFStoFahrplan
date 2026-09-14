@@ -8,9 +8,11 @@ from model.domain.planning_settings import PlanningSettings
 from model.enums import ErrorMessage, TimeFormat
 from model.planning.gtfs_data_analyzer import GtfsDataAnalyzer
 from model.planning.plan_exporter import PlanExporter
-from model.planning.progress import ProgressUpdate
+from model.planning.progress_update import ProgressUpdate
 from model.planning.timetable_creator import TimetableCreator
 from model.planning.vehicle_circulation_planner import VehicleCirculationPlanner
+from model.services.gtfs_cache_service import GtfsCacheService
+from model.services.cached_gtfs_data import CachedGtfsData
 from model.services.gtfs_data_loader import GtfsDataLoader
 
 logger = logging.getLogger(__name__)
@@ -23,43 +25,44 @@ class SchedulePlanner(QObject):
     error_occurred = Signal(str)
     sorting_requested = Signal()
 
-    def __init__(self, cache_service):
+    def __init__(self, cache_service: GtfsCacheService) -> None:
         super().__init__()
         self.cache_service = cache_service
         self.circulation_planner: VehicleCirculationPlanner | None = None
-        self.gtfs_data = None
+        self.gtfs_data: CachedGtfsData | None = None
         self.import_settings = ImportSettings()
         self.planning_settings = PlanningSettings()
         self.data_loader = GtfsDataLoader(self.cache_service)
         self.data_analyzer = GtfsDataAnalyzer()
         self.plan_exporter = PlanExporter()
+        self.timetable_creator = self._create_timetable_creator()
         self.data_loader.progress_updated.connect(self.update_progress)
         self.plan_exporter.progress_updated.connect(self.update_progress)
-        self.initialize_timetable_creator()
 
     def update_progress(self, value: ProgressUpdate) -> None:
         self.progress_updated.emit(copy.deepcopy(value))
 
     def _initialize_circulation_planner(self) -> None:
         self.circulation_planner = VehicleCirculationPlanner(
-            plans=self.timetable_creator.strategy.plans,
+            plans=self.timetable_creator.circulation_plans,
         )
 
-    def initialize_timetable_creator(self) -> None:
-        self.timetable_creator = TimetableCreator()
-        self.timetable_creator.progress_updated.connect(self.update_progress)
-        self.timetable_creator.planning_settings = copy.deepcopy(self.planning_settings)
-        self.timetable_creator.gtfs_data = self.gtfs_data
+    def _create_timetable_creator(self) -> TimetableCreator:
+        creator = TimetableCreator()
+        creator.progress_updated.connect(self.update_progress)
+        creator.planning_settings = copy.deepcopy(self.planning_settings)
+        creator.gtfs_data = self.gtfs_data
+        return creator
 
     def refresh_timetable_creator(self) -> None:
-        self.initialize_timetable_creator()
+        self.timetable_creator = self._create_timetable_creator()
 
     def create_and_export_timetable(self) -> bool:
         try:
             self.timetable_creator.create_timetable()
             self.plan_exporter.export_timetable(
                 self.planning_settings,
-                self.timetable_creator.strategy.plans.timetable_data,
+                self.timetable_creator.timetable_plan.timetable_data,
             )
             self.planning_finished.emit(True)
             return True
@@ -80,7 +83,7 @@ class SchedulePlanner(QObject):
             self.timetable_creator.continue_timetable()
             self.plan_exporter.export_timetable(
                 self.planning_settings,
-                self.timetable_creator.strategy.plans.timetable_data,
+                self.timetable_creator.timetable_plan.timetable_data,
             )
             self.planning_finished.emit(True)
             return True
@@ -95,10 +98,13 @@ class SchedulePlanner(QObject):
         try:
             self.timetable_creator.create_timetable()
             self._initialize_circulation_planner()
-            self.circulation_planner.create_circulation_plan()
+            circulation_planner = self.circulation_planner
+            if circulation_planner is None:
+                raise RuntimeError("Could not initialize the circulation planner")
+            circulation_planner.create_circulation_plan()
             self.plan_exporter.export_circulation_plan(
                 self.planning_settings,
-                self.circulation_planner.plans,
+                circulation_planner.plans,
             )
             self.planning_finished.emit(True)
             return True
@@ -129,7 +135,7 @@ class SchedulePlanner(QObject):
         self._activate_data(self.data_loader.open_feed(feed_id))
         self.import_finished.emit(True)
 
-    def _activate_data(self, data):
+    def _activate_data(self, data: CachedGtfsData) -> None:
         self.gtfs_data = data
         self.circulation_planner = None
         self.planning_settings = PlanningSettings()
@@ -137,9 +143,9 @@ class SchedulePlanner(QObject):
         self.planning_settings.time_format = TimeFormat(self.cache_service.settings.time_format)
         start = data.feed.metadata.feed_start_date
         if start is not None:
-            self.planning_settings.sample_date = start.strftime('%Y%m%d')
-            self.planning_settings.date = start.strftime('%Y%m%d')
-        self.initialize_timetable_creator()
+            self.planning_settings.sample_date = start.strftime("%Y%m%d")
+            self.planning_settings.date = start.strftime("%Y%m%d")
+        self.refresh_timetable_creator()
 
     def delete_cached_feed(self, feed_id: str) -> None:
         self.cache_service.delete_feed(feed_id)
@@ -154,4 +160,4 @@ class SchedulePlanner(QObject):
         self.gtfs_data = None
         self.planning_settings = PlanningSettings()
         self.circulation_planner = None
-        self.initialize_timetable_creator()
+        self.refresh_timetable_creator()

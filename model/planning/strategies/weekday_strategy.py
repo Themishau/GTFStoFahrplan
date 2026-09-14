@@ -1,28 +1,20 @@
-from PySide6.QtCore import QObject, Signal
-
-from model.planning.strategies.base import TimetableCreationStrategy
-from model.planning.progress import ProgressUpdate
-from model.planning.strategies.metaclasses import QObjectABCMeta
+from model.planning.strategies.timetable_creation_strategy import TimetableCreationStrategy
 from model.planning.timetable_planner import TimetablePlanner
 
 
-class WeekdayTimetableStrategy(QObject, TimetableCreationStrategy, metaclass=QObjectABCMeta):
-    progress_updated = Signal(ProgressUpdate)
-
-    def __init__(self, timetable_planner: TimetablePlanner):
+class WeekdayTimetableStrategy(TimetableCreationStrategy):
+    def __init__(self, timetable_planner: TimetablePlanner) -> None:
         super().__init__()
-        self.progress = ProgressUpdate()
-        self.process = 10
         self.plan = timetable_planner
 
     def create_timetable(self) -> None:
         steps = [
             (self.plan.prepare_weekday_data, "Prepare weekday selection"),
-            (self.plan.select_dates_for_range, "select_dates_for_range"),
+            (self.plan.select_dates_for_range, "Select service dates"),
             (self.plan.apply_weekday_exceptions, "Apply calendar exceptions"),
-            (self.plan.select_stops_for_trips, "select_stops_for_trips"),
-            (self.plan.build_daily_trip_stops, "build_daily_trip_stops"),
-            (self.plan.prepare_stop_sorting, "prepare_stop_sorting"),
+            (self.plan.select_stops_for_trips, "Select trip stops"),
+            (self.plan.build_daily_trip_stops, "Build daily trip stops"),
+            (self.plan.prepare_stop_sorting, "Prepare stop order"),
             (self.plan.create_timetable, "Create timetable"),
         ]
 

@@ -4,7 +4,7 @@ import logging
 
 from PySide6.QtCore import QCoreApplication, QObject, QThread, Signal, Slot
 
-from model.planning.progress import ProgressUpdate
+from model.planning.progress_update import ProgressUpdate
 
 from .enums import ModelAction, PlanMode
 from .infrastructure.paths.app_paths import AppPaths
@@ -19,11 +19,11 @@ class ModelWorker(QObject):
     error = Signal(object)
 
     def __init__(
-        self,
-        model: ApplicationModel,
-        action: ModelAction,
-        gui_thread: QThread,
-        arguments: tuple[object, ...] = (),
+            self,
+            model: ApplicationModel,
+            action: ModelAction,
+            gui_thread: QThread,
+            arguments: tuple[object, ...] = (),
     ) -> None:
         super().__init__()
         self.model = model
@@ -60,18 +60,15 @@ class ApplicationModel(QObject):
     cache_cleared = Signal()
 
     def __init__(
-        self,
-        application: QCoreApplication,
-        cache_service: GtfsCacheService | None = None,
+            self,
+            application: QCoreApplication,
+            cache_service: GtfsCacheService | None = None,
     ) -> None:
         super().__init__(application)
         self.worker: ModelWorker | None = None
         self.application = application
-        self.planner: SchedulePlanner | None = None
         self.thread: QThread | None = None
         self.cache_service = cache_service or GtfsCacheService.for_paths(AppPaths.for_user())
-
-    def initialize_schedule_planner(self) -> None:
         self.planner = SchedulePlanner(self.cache_service)
         self._connect_planner_signals()
 
@@ -102,25 +99,27 @@ class ApplicationModel(QObject):
     def _on_planner_sorting_requested(self) -> None:
         self.sorting_requested.emit()
 
-    def start_action(self, action: ModelAction, *arguments) -> bool:
+    def start_action(self, action: ModelAction, *arguments: object) -> bool:
         if self.thread is not None:
             logger.warning("A worker thread is already running.")
             return False
 
-        self.thread = QThread()
-        self.worker = ModelWorker(self, action, self.application.thread(), arguments)
-        self._move_planner_to_thread(self.thread)
-        self.worker.moveToThread(self.thread)
+        thread = QThread()
+        worker = ModelWorker(self, action, self.application.thread(), arguments)
+        self.thread = thread
+        self.worker = worker
+        self._move_planner_to_thread(thread)
+        worker.moveToThread(thread)
 
-        self.thread.started.connect(self.worker.run)
-        self.worker.finished.connect(self.thread.quit)
-        self.worker.finished.connect(self.worker.deleteLater)
-        self.thread.finished.connect(self.thread.deleteLater)
-        self.thread.finished.connect(self._clear_worker_refs)
-        self.worker.error.connect(self._handle_worker_error)
+        thread.started.connect(worker.run)
+        worker.finished.connect(thread.quit)
+        worker.finished.connect(worker.deleteLater)
+        thread.finished.connect(thread.deleteLater)
+        thread.finished.connect(self._clear_worker_refs)
+        worker.error.connect(self._handle_worker_error)
 
         self.busy_changed.emit(True)
-        self.thread.start()
+        thread.start()
         return True
 
     def _clear_worker_refs(self) -> None:
@@ -129,27 +128,24 @@ class ApplicationModel(QObject):
         self.busy_changed.emit(False)
 
     def _move_planner_to_thread(self, target_thread: QThread) -> None:
-        if self.planner is None:
-            return
-
         self.planner.moveToThread(target_thread)
 
-        for attribute_name in (
-            "data_loader",
-            "plan_exporter",
-            "timetable_creator",
-                "circulation_planner",
-        ):
-            obj = getattr(self.planner, attribute_name, None)
-            if obj is None:
+        children: tuple[QObject | None, ...] = (
+            self.planner.data_loader,
+            self.planner.plan_exporter,
+            self.planner.timetable_creator,
+            self.planner.circulation_planner,
+        )
+        for child in children:
+            if child is None:
                 continue
-            obj.moveToThread(target_thread)
+            child.moveToThread(target_thread)
 
-        strategy = getattr(getattr(self.planner, "timetable_creator", None), "strategy", None)
+        strategy = self.planner.timetable_creator.strategy
         if isinstance(strategy, QObject):
             strategy.moveToThread(target_thread)
 
-    def _dispatch_planner_action(self, action: ModelAction, *arguments) -> None:
+    def _dispatch_planner_action(self, action: ModelAction, *arguments: object) -> None:
         match action:
             case ModelAction.IMPORT_GTFS:
                 self.planner.import_gtfs_data()
@@ -196,5 +192,5 @@ class ApplicationModel(QObject):
         self.cache_service.close()
 
     def reset_schedule_planner(self) -> None:
-        self.planner = None
-        self.initialize_schedule_planner()
+        self.planner = SchedulePlanner(self.cache_service)
+        self._connect_planner_signals()

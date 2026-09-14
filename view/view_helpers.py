@@ -1,6 +1,7 @@
 from pathlib import Path
+from typing import cast
 
-from PySide6.QtCore import QDate
+from PySide6.QtCore import QAbstractItemModel, QDate
 from PySide6.QtWidgets import QFileDialog, QHeaderView, QTableView
 
 
@@ -52,7 +53,7 @@ def configure_table_view(table_view: QTableView) -> None:
 def update_table_sizes(table_view: QTableView) -> None:
     configure_table_view(table_view)
 
-    model = table_view.model()
+    model = cast(QAbstractItemModel | None, table_view.model())
     if model is None:
         return
 

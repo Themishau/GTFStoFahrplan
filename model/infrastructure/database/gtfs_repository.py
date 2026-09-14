@@ -1,11 +1,11 @@
 import csv
 import logging
+from collections.abc import Callable, Iterable, Iterator
 from contextlib import contextmanager
 from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
 from threading import Lock, RLock
-from typing import Callable, Iterable, Iterator
 from uuid import uuid4
 
 import duckdb
@@ -20,6 +20,14 @@ from .schema import DATABASE_LAYOUT_VERSION, REQUIRED_COLUMNS, REQUIRED_TABLES, 
 logger = logging.getLogger(__name__)
 
 
+def _noop_cancel_check() -> None:
+    """Default cancellation callback for synchronous imports."""
+
+
+def _noop_progress(_value: int, _message: str) -> None:
+    """Default progress callback for synchronous imports."""
+
+
 class GtfsRepository:
     """Serialized access with a separate DuckDB cursor per operation/thread.
 
@@ -27,7 +35,12 @@ class GtfsRepository:
     connection must be closed only after the application's worker has finished.
     """
 
-    def __init__(self, database: Path, temp_directory: Path, memory_limit: str = "512MB"):
+    def __init__(
+            self,
+            database: Path,
+            temp_directory: Path,
+            memory_limit: str = "512MB",
+    ) -> None:
         database, temp_directory = Path(database), Path(temp_directory)
         database.parent.mkdir(parents=True, exist_ok=True)
         temp_directory.mkdir(parents=True, exist_ok=True)
@@ -36,13 +49,18 @@ class GtfsRepository:
         self.memory_limit = memory_limit
         self._lock = RLock()
         self._interrupt_lock = Lock()
-        self._active_cursor = None
-        self._connection = None
+        self._active_cursor: duckdb.DuckDBPyConnection | None = None
+        self._connection: duckdb.DuckDBPyConnection | None = None
         try:
-            self._connection = duckdb.connect(str(database), config={
-                "memory_limit": memory_limit, "threads": 2,
-                "temp_directory": str(temp_directory), "preserve_insertion_order": False,
-            })
+            self._connection = duckdb.connect(
+                str(database),
+                config={
+                    "memory_limit": memory_limit,
+                    "threads": 2,
+                    "temp_directory": str(temp_directory),
+                    "preserve_insertion_order": False,
+                },
+            )
             self._initialize()
         except Exception:
             logger.exception("GTFS database migration/version problem")
@@ -50,7 +68,7 @@ class GtfsRepository:
             raise
 
     @contextmanager
-    def _session(self):
+    def _session(self) -> Iterator[duckdb.DuckDBPyConnection]:
         with self._lock:
             if self._connection is None:
                 raise RuntimeError("GTFS repository is closed")
@@ -76,10 +94,10 @@ class GtfsRepository:
                 self._connection.close()
                 self._connection = None
 
-    def __enter__(self):
+    def __enter__(self) -> "GtfsRepository":
         return self
 
-    def __exit__(self, *_):
+    def __exit__(self, *_: object) -> None:
         self.close()
 
     def _initialize(self) -> None:
@@ -167,7 +185,7 @@ class GtfsRepository:
                 raise
 
     @staticmethod
-    def _feed(row) -> GtfsFeed | None:
+    def _feed(row: tuple | None) -> GtfsFeed | None:
         if row is None:
             return None
         return GtfsFeed(row[0], FeedMetadata(*row[1:]))
@@ -192,7 +210,7 @@ class GtfsRepository:
     def get_recent_feeds(self, limit: int = 100) -> list[GtfsFeed]:
         with self._session() as db:
             rows = db.execute("SELECT * FROM feeds ORDER BY imported_at DESC LIMIT ?", [limit]).fetchall()
-            return [self._feed(row) for row in rows]
+            return [GtfsFeed(row[0], FeedMetadata(*row[1:])) for row in rows]
 
     def delete_feed(self, feed_id: str) -> None:
         with self._session() as db:
@@ -206,9 +224,13 @@ class GtfsRepository:
                 raise
         logger.info("GTFS feed deleted: %s", feed_id)
 
-    def import_tables(self, fingerprint: FileFingerprint, tables: Iterator[tuple[str, Path]],
-                      check_cancelled: Callable[[], None] = lambda: None,
-                      progress: Callable[[int, str], None] = lambda *_: None) -> GtfsFeed:
+    def import_tables(
+            self,
+            fingerprint: FileFingerprint,
+            tables: Iterator[tuple[str, Path]],
+            check_cancelled: Callable[[], None] = _noop_cancel_check,
+            progress: Callable[[int, str], None] = _noop_progress,
+    ) -> GtfsFeed:
         """Consume one extracted member at a time; publish metadata only at commit."""
         feed_id = uuid4().hex
         with self._session() as db:
@@ -220,8 +242,13 @@ class GtfsRepository:
                     check_cancelled()
                     self._import_csv(db, table, path, feed_id)
                     imported.add(table)
-                    counts[table] = db.execute(f'SELECT count(*) FROM "{table}" WHERE feed_id = ?',
-                                               [feed_id]).fetchone()[0]
+                    count_row = db.execute(
+                        f'SELECT count(*) FROM "{table}" WHERE feed_id = ?',
+                        [feed_id],
+                    ).fetchone()
+                    if count_row is None:
+                        raise RuntimeError(f"Could not count imported {table} rows")
+                    counts[table] = count_row[0]
                     progress(15 + len(imported) * 9, f"Imported {table}")
                 if not REQUIRED_TABLES <= imported or not {"calendar", "calendar_dates"} & imported:
                     raise ValueError("GTFS requires agency, routes, trips, stops, stop_times and a calendar")
@@ -239,10 +266,23 @@ class GtfsRepository:
                                          FROM calendar_dates
                                          WHERE feed_id = ?)
                                    """, [feed_id, feed_id]).fetchone()
+                if info is None or dates is None:
+                    raise RuntimeError("Could not read imported GTFS metadata")
                 metadata = FeedMetadata(
-                    fingerprint.filename, fingerprint.sha256, fingerprint.size, fingerprint.modified,
-                    datetime.now(timezone.utc), info[0], info[1] or dates[0], info[2] or dates[1],
-                    counts["agency"], counts["routes"], counts["trips"], counts["stops"], counts["stop_times"])
+                    fingerprint.filename,
+                    fingerprint.sha256,
+                    fingerprint.size,
+                    fingerprint.modified,
+                    datetime.now(timezone.utc),
+                    info[0],
+                    info[1] or dates[0],
+                    info[2] or dates[1],
+                    counts["agency"],
+                    counts["routes"],
+                    counts["trips"],
+                    counts["stops"],
+                    counts["stop_times"],
+                )
                 values = [feed_id, *asdict(metadata).values()]
                 db.execute(f"INSERT INTO feeds VALUES ({', '.join('?' for _ in values)})", values)
                 check_cancelled()
@@ -253,7 +293,10 @@ class GtfsRepository:
                 raise
 
     @staticmethod
-    def _normalize_single_agency(db, feed_id):
+    def _normalize_single_agency(
+            db: duckdb.DuckDBPyConnection,
+            feed_id: str,
+    ) -> None:
         agencies = db.execute("SELECT agency_id FROM agency WHERE feed_id = ?", [feed_id]).fetchall()
         if len(agencies) == 1:
             agency_id = agencies[0][0] or "__single_agency__"
@@ -265,7 +308,12 @@ class GtfsRepository:
             raise ValueError("agency_id is required for feeds with multiple agencies")
 
     @staticmethod
-    def _import_csv(db, table: str, path: Path, feed_id: str):
+    def _import_csv(
+            db: duckdb.DuckDBPyConnection,
+            table: str,
+            path: Path,
+            feed_id: str,
+    ) -> None:
         if table not in TABLE_COLUMNS:
             raise ValueError(f"Unsupported GTFS table: {table}")
         # Read only the CSV header in Python. DuckDB reads and converts all rows.
@@ -295,9 +343,15 @@ class GtfsRepository:
         db.execute(f'INSERT INTO "{table}" SELECT ?, {", ".join(expressions)} FROM gtfs_csv', [feed_id])
         db.execute("DROP VIEW gtfs_csv")
 
-    def _query(self, table: str, feed_id: str, filters=()) -> pd.DataFrame:
+    def _query(
+            self,
+            table: str,
+            feed_id: str,
+            filters: Iterable[tuple[str, Iterable[object] | None]] = (),
+    ) -> pd.DataFrame:
         columns = ", ".join(f'"{column}"' for column in TABLE_COLUMNS[table])
-        conditions, parameters = ["feed_id = ?"], [feed_id]
+        conditions = ["feed_id = ?"]
+        parameters: list[object] = [feed_id]
         for column, values in filters:
             if values is not None:
                 conditions.append(f'"{column}" IN (SELECT unnest(?))')

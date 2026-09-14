@@ -20,8 +20,8 @@ class ReorderableTableView(QTableView):
     class DropMarkerStyle(QProxyStyle):
         def drawPrimitive(self, element, option, painter, widget=None):
             if (
-                element == QStyle.PrimitiveElement.PE_IndicatorItemViewItemDrop
-                and not option.rect.isNull()
+                    element == QStyle.PrimitiveElement.PE_IndicatorItemViewItemDrop
+                    and not option.rect.isNull()
             ):
                 option_new = QStyleOption(option)
                 option_new.rect.setLeft(0)
@@ -45,9 +45,9 @@ class ReorderableTableView(QTableView):
 
     def dropEvent(self, event):
         if (
-            event.source() is not self
-            or event.dropAction() != Qt.DropAction.MoveAction
-            or self.dragDropMode() != QAbstractItemView.DragDropMode.InternalMove
+                event.source() is not self
+                or event.dropAction() != Qt.DropAction.MoveAction
+                or self.dragDropMode() != QAbstractItemView.DragDropMode.InternalMove
         ):
             super().dropEvent(event)
             return
@@ -57,10 +57,10 @@ class ReorderableTableView(QTableView):
         to_index = self.indexAt(event.position().toPoint()).row()
         model = self.model()
         if (
-            isinstance(model, SortableDataFrameTableModel)
-            and 0 <= from_index < model.rowCount()
-            and 0 <= to_index < model.rowCount()
-            and from_index != to_index
+                isinstance(model, SortableDataFrameTableModel)
+                and 0 <= from_index < model.rowCount()
+                and 0 <= to_index < model.rowCount()
+                and from_index != to_index
         ):
             model.relocate_row(from_index, to_index)
             event.accept()

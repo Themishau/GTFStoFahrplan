@@ -181,7 +181,7 @@ class CacheTests(unittest.TestCase):
                 db.execute("SELECT gtfs_time_to_seconds('24:60:00')")
 
     def test_import_never_materializes_pandas_tables(self):
-        with patch.object(pd, "read_csv", side_effect=AssertionError("no Pandas CSV import")), \
+        with patch("pandas.read_csv", side_effect=AssertionError("no Pandas CSV import")), \
                 patch.object(self.cache.repository, "_query", side_effect=AssertionError("no DataFrame queries")):
             self.cache.open_or_import_gtfs(self.zip_path)
 
@@ -384,7 +384,7 @@ class CacheTests(unittest.TestCase):
     def test_pickle_zip_is_never_deserialized(self):
         with zipfile.ZipFile(self.zip_path, "w") as archive:
             archive.writestr("Tmp/dfTrips.pkl", b"not trusted")
-        with patch.object(pd, "read_pickle", side_effect=AssertionError("unsafe")), self.assertRaises(ValueError):
+        with patch("pandas.read_pickle", side_effect=AssertionError("unsafe")), self.assertRaises(ValueError):
             self.cache.open_or_import_gtfs(self.zip_path)
         self.assertEqual(self.cache.get_recent_feeds(), [])
 

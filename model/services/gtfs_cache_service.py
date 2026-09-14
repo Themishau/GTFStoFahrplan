@@ -2,7 +2,7 @@ import logging
 from dataclasses import dataclass, replace
 from pathlib import Path
 from threading import RLock
-from typing import Callable
+from collections.abc import Callable
 
 from model.domain.gtfs_feed import GtfsFeed, IncompatibleFeedError, is_schema_compatible
 from model.infrastructure.database.gtfs_importer import GtfsImporter
@@ -15,6 +15,14 @@ from .gtfs_fingerprint import GtfsFingerprintService
 logger = logging.getLogger(__name__)
 
 
+def _noop_cancel_check() -> None:
+    """Default cancellation callback for synchronous callers."""
+
+
+def _noop_progress(_value: int, _message: str) -> None:
+    """Default progress callback for synchronous callers."""
+
+
 @dataclass(frozen=True, slots=True)
 class OpenFeedResult:
     feed: GtfsFeed
@@ -23,17 +31,17 @@ class OpenFeedResult:
 
 class GtfsCacheService:
     def __init__(
-        self,
-        repository: GtfsRepository,
-        importer: GtfsImporter,
-        settings_service: SettingsService,
-        fingerprint_service: GtfsFingerprintService | None = None,
-    ):
+            self,
+            repository: GtfsRepository,
+            importer: GtfsImporter,
+            settings_service: SettingsService,
+            fingerprint_service: GtfsFingerprintService | None = None,
+    ) -> None:
         self.repository = repository
         self.importer = importer
         self.settings_service = settings_service
         self.fingerprint_service: GtfsFingerprintService = (
-            fingerprint_service or GtfsFingerprintService()
+                fingerprint_service or GtfsFingerprintService()
         )
         self._settings_lock = RLock()
         self.settings = settings_service.load()
@@ -55,23 +63,27 @@ class GtfsCacheService:
             repository.close()
             raise
 
-    def update_settings(self, **changes) -> None:
+    def update_settings(self, **changes: object) -> None:
         with self._settings_lock:
             settings = replace(self.settings, **changes)
             self.settings_service.save(settings)
             self.settings = settings
 
-    def open_or_import_gtfs(self, zip_path: Path,
-                            check_cancelled: Callable[[], None] = lambda: None,
-                            progress: Callable[[int, str], None] = lambda *_: None) -> OpenFeedResult:
+    def open_or_import_gtfs(
+            self,
+            zip_path: Path,
+            check_cancelled: Callable[[], None] = _noop_cancel_check,
+            progress: Callable[[int, str], None] = _noop_progress,
+    ) -> OpenFeedResult:
         progress(1, "Calculating GTFS fingerprint")
         fingerprint = self.fingerprint_service.calculate(Path(zip_path), check_cancelled)
         check_cancelled()
         feed = self.repository.find_feed_by_hash(fingerprint.sha256)
-        cache_hit = feed is not None
-        if cache_hit:
+        if feed is not None:
+            cache_hit = True
             logger.info("GTFS cache hit: %s", feed.feed_id)
         else:
+            cache_hit = False
             logger.info("GTFS cache miss: %s", fingerprint.filename)
             feed = self.importer.import_feed(Path(zip_path), fingerprint, check_cancelled, progress)
         check_cancelled()

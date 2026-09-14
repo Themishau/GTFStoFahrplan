@@ -1,6 +1,7 @@
 from PySide6.QtCore import QObject, Qt
 from PySide6.QtWidgets import QAbstractItemView
 
+
 class ViewSignalBinder(QObject):
     def __init__(self, view, view_model, parent=None):
         super().__init__(parent)

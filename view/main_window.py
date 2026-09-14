@@ -1,10 +1,11 @@
 import logging
 
 from PySide6.QtCore import QModelIndex, Qt
-from PySide6.QtWidgets import QMainWindow, QMessageBox
+from PySide6.QtWidgets import QMainWindow, QMessageBox, QTableView
 
-from model.enums import PlanMode
-from model.planning.progress import ProgressUpdate
+from model.domain.gtfs_feed import GtfsFeed
+from model.enums import PlanMode, TimeFormat
+from model.planning.progress_update import ProgressUpdate
 from view.pyui.ui_main_window import Ui_MainWindow
 from view.signal_binder import ViewSignalBinder
 from view.widgets.data_frame_table_model import DataFrameTableModel
@@ -29,6 +30,14 @@ class MainWindow(QMainWindow):
         self.ui.setupUi(self)
 
         self.message_box = QMessageBox(self)
+        self._cache_busy = False
+        self._closing_after_worker = False
+        self.recent_feeds_combo = self.ui.recent_feeds_combo
+        self.recent_feed_details = self.ui.recent_feed_details
+        self.open_feed_button = self.ui.open_feed_button
+        self.delete_feed_button = self.ui.delete_feed_button
+        self.delete_all_feeds_button = self.ui.delete_all_feeds_button
+        self.cache_size_label = self.ui.cache_size_label
 
         self.import_nav_button = self.ui.pushButton_2
         self.selection_nav_button = self.ui.pushButton_3
@@ -47,21 +56,13 @@ class MainWindow(QMainWindow):
 
         self._initialize_window()
         self._initialize_tabs()
-        self.initialize_recent_feeds()
-        self.show_home_window()
+        self._initialize_recent_feeds()
+        self.show_home_page()
 
-    def initialize_recent_feeds(self):
+    def _initialize_recent_feeds(self) -> None:
         vm = self.view_model.import_view_model
-        self._cache_busy = False
-        self._closing_after_worker = False
-        self.recent_feeds_combo = self.ui.recent_feeds_combo
-        self.recent_feed_details = self.ui.recent_feed_details
-        self.open_feed_button = self.ui.open_feed_button
-        self.delete_feed_button = self.ui.delete_feed_button
-        self.delete_all_feeds_button = self.ui.delete_all_feeds_button
-        self.cache_size_label = self.ui.cache_size_label
-        self.open_feed_button.clicked.connect(lambda: vm.open_feed(self.recent_feeds_combo.currentData()))
-        self.delete_feed_button.clicked.connect(lambda: vm.delete_feed(self.recent_feeds_combo.currentData()))
+        self.open_feed_button.clicked.connect(self._open_selected_feed)
+        self.delete_feed_button.clicked.connect(self._delete_selected_feed)
         self.delete_all_feeds_button.clicked.connect(self.confirm_delete_all_feeds)
         self.recent_feeds_combo.currentIndexChanged.connect(self.update_recent_feed_details)
         vm.recent_feeds_changed.connect(self.refresh_recent_feeds)
@@ -70,9 +71,21 @@ class MainWindow(QMainWindow):
         self.ui.btnRestart.clicked.connect(self.view_model.model.cancel_current_action)
         settings = self.view_model.model.cache_service.settings
         self.show_output_path(settings.default_export_path)
-        self.ui.comboBox_time_format.setCurrentIndex(0 if settings.time_format == 'HH:mm' else 1)
+        self.ui.comboBox_time_format.setCurrentIndex(
+            0 if settings.time_format == TimeFormat.HOURS_MINUTES else 1
+        )
         self.refresh_recent_feeds()
         self.ui.btnStart.setEnabled(False)
+
+    def _open_selected_feed(self) -> None:
+        self.view_model.import_view_model.open_feed(
+            self.recent_feeds_combo.currentData()
+        )
+
+    def _delete_selected_feed(self) -> None:
+        self.view_model.import_view_model.delete_feed(
+            self.recent_feeds_combo.currentData()
+        )
 
     def refresh_recent_feeds(self):
         vm = self.view_model.import_view_model
@@ -91,12 +104,15 @@ class MainWindow(QMainWindow):
     def update_recent_feed_details(self):
         vm = self.view_model.import_view_model
         feed_id = self.recent_feeds_combo.currentData()
-        feed = next((item for item in vm.recent_feeds if item.feed_id == feed_id), None)
+        feed: GtfsFeed | None = next(
+            (item for item in vm.recent_feeds if item.feed_id == feed_id),
+            None,
+        )
         text = 'No cached feeds yet.'
-        if feed:
+        if feed is not None:
             metadata = feed.metadata
             text = (f'{metadata.source_filename}\n'
-                    f'{metadata.feed_start_date or "?"} – {metadata.feed_end_date or "?"}\n'
+                    f'{metadata.feed_start_date or "?"} - {metadata.feed_end_date or "?"}\n'
                     f'Imported: {metadata.imported_at.astimezone():%d.%m.%Y %H:%M}')
             if not vm.can_open_feed(feed_id):
                 text += '\nRe-import the ZIP to update this cached feed.'
@@ -152,14 +168,15 @@ class MainWindow(QMainWindow):
     def update_selected_date(self, data):
         self.ui.dateEdit.setDate(string_to_qdate(data))
 
-    def _get_selected_row_index(self, table_view, clicked_index: QModelIndex | None = None):
+    @staticmethod
+    def _get_selected_row_index(
+            table_view: QTableView,
+            clicked_index: QModelIndex | None = None,
+    ) -> QModelIndex | None:
         if clicked_index is not None and clicked_index.isValid():
             return clicked_index
 
         selection_model = table_view.selectionModel()
-        if selection_model is None:
-            return None
-
         selected_rows = selection_model.selectedRows()
         if not selected_rows:
             return None

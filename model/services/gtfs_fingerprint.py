@@ -19,8 +19,8 @@ class GtfsFingerprintService:
 
     @staticmethod
     def calculate(
-        path: Path,
-        check_cancelled: Callable[[], None] = _never_cancel,
+            path: Path,
+            check_cancelled: Callable[[], None] = _never_cancel,
     ) -> FileFingerprint:
         path = Path(path)
         before = path.stat()

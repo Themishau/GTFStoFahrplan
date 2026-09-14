@@ -58,10 +58,10 @@ class CachedGtfsData:
         return None if result.empty else result
 
     def get_trips(
-        self,
-        route_id: str | None = None,
-        direction_id: int | None = None,
-        service_ids: Iterable[str] | None = None,
+            self,
+            route_id: str | None = None,
+            direction_id: int | None = None,
+            service_ids: Iterable[str] | None = None,
     ) -> pd.DataFrame:
         return self.repository.get_trips(self.feed.feed_id, route_id, direction_id, service_ids)
 

@@ -39,4 +39,3 @@ class PlanningSettings:
             f"{route['route_id']}, {route['route_short_name']}, "
             f"{route['route_long_name']}"
         )
-

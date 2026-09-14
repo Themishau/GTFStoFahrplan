@@ -7,11 +7,20 @@ import pandas as pd
 
 
 class GtfsDataSource(Protocol):
-    agencies: pd.DataFrame
-    routes: pd.DataFrame
-    calendar: pd.DataFrame
-    calendar_dates: pd.DataFrame
-    feed_info: pd.DataFrame | None
+    @property
+    def agencies(self) -> pd.DataFrame: ...
+
+    @property
+    def routes(self) -> pd.DataFrame: ...
+
+    @property
+    def calendar(self) -> pd.DataFrame: ...
+
+    @property
+    def calendar_dates(self) -> pd.DataFrame: ...
+
+    @property
+    def feed_info(self) -> pd.DataFrame | None: ...
 
     def get_trips(
             self,

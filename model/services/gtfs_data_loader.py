@@ -5,7 +5,7 @@ from PySide6.QtCore import QObject, QThread, Signal
 
 from model.domain.import_settings import ImportSettings
 from model.enums import ProcessKind
-from model.planning.progress import ProgressUpdate
+from model.planning.progress_update import ProgressUpdate
 from model.services.cached_gtfs_data import CachedGtfsData
 from model.services.gtfs_cache_service import GtfsCacheService
 
@@ -17,7 +17,12 @@ class GtfsDataLoader(QObject):
         super().__init__()
         self.cache_service = cache_service
         self._progress = ProgressUpdate()
-        self.missing_columns_in_gtfs_file = pd.DataFrame(columns=["table", "column"])
+        self.missing_columns_in_gtfs_file = pd.DataFrame(
+            {
+                "table": pd.Series(dtype="string"),
+                "column": pd.Series(dtype="string"),
+            }
+        )
 
     @staticmethod
     def _check_cancelled() -> None:
